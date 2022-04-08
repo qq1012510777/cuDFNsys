@@ -1,0 +1,245 @@
+
+
+\documentclass{article}  
+\bibliographystyle{unsrt}
+
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{amsmath}
+\usepackage{esint}
+\usepackage{soul}
+\usepackage{listings}
+\usepackage{xcolor}
+
+
+\lstset{language=C++}%
+
+\lstset{breaklines}%
+
+\lstset{extendedchars=false}%
+\lstset{                        %Settings for listings package.
+	language=[ANSI]{C++},
+	%backgroundcolor=\color{lightgray},
+	basicstyle=\footnotesize,
+	breakatwhitespace=false,
+	breaklines=true,
+	captionpos=b,
+	commentstyle=\color{olive},
+	directivestyle=\color{blue},
+	extendedchars=false,
+	% frame=single,%shadowbox
+	framerule=0pt,
+	keywordstyle=\color{blue}\bfseries,
+	morekeywords={*,define,*,include...},
+	numbersep=5pt,
+	rulesepcolor=\color{red!20!green!20!blue!20},
+	showspaces=false,
+	showstringspaces=false,
+	showtabs=false,
+	stepnumber=2,
+	stringstyle=\color{purple},
+	tabsize=4,
+	title=\lstname
+}
+
+
+\title{C++ coding guideline for $cuDFNsys$}
+\author         {Tingchang YIN\\Zhejiang University\\Westlake University}
+
+%\date{\today}  
+   
+
+\begin{document}
+\maketitle
+\newpage
+\tableofcontents
+\newpage
+\section{File structures}
+Let us denote the first level file by *, second level by + and third level by \^.
+Hierarchy of $cuMechcsysDFN$ should be as follows 
+
+\begin{lstlisting}
+	* include
+		+ HeaderFile1
+			^ Foo1.cuh
+		+ HeaderFile2
+			^ Foo2.cuh
+	* src
+		+ srcFile1
+			^ Foo1.cu
+		+ srcFile2
+			^ Foo2.cu
+	* sandbox1
+		+ src
+			^ main.cu
+		+ bin
+			^ main
+		+ build
+			^ makefile
+		+ CMakeLists.cmake
+		+ CompileCode.sh
+	* sandbox2
+		+ src
+			^ main.cu
+		+ bin
+			^ main
+		+ build
+			^ makefile
+		+ CMakeLists.cmake
+		+ CompileCode.sh
+\end{lstlisting}
+
+\section{Namespace}
+Namespace is $cuDFNsys$.
+
+\section{Separating source members}
+Definitions and implementations of classes/structs/functions should be contained in separated files (i.e. header and source files). All words of the names of files should begin with a \textbf{“capital”} letter.For example, 
+\begin{itemize}
+	\item <FractureRadius.cuh>
+	\item <FractureRadius.cu>
+\end{itemize}
+\begin{lstlisting}
+	//<FractureRadius.cuh>
+	#pragma once
+	#include <iostream>
+	using namespace std;
+	class FractureRadius
+	{
+		public:
+			float Radius;
+		public:
+			FractureRadius(const uint i);	
+			float SecondMoments();
+	};
+\end{lstlisting}
+\begin{lstlisting}
+	//<FractureRadius.cu>
+	#include "FractureRadius.cuh"
+	FractureRadius::FractureRadius(const uint i)
+	{
+		this->Radius = i * 10;
+	};
+	
+	float FractureRadius::SecondMoments()
+	{
+		return pow(this->Radius, 2);
+	};
+\end{lstlisting}
+
+\section{Standard comment headers}
+In header files, we should include the following information
+\begin{lstlisting}
+	///////////////////////////////////////////////////////////////////
+	// NAME:	          FooBar.h
+	//
+	// PURPOSE:	          Definition of FooBar class. This class is
+	//	                  responsible for doing FooBar stuff.
+	//
+	// FUNCTIONS/OBJECTS: CFooBar
+	//
+	// AUTHOR:	          James
+	///////////////////////////////////////////////////////////////////	
+\end{lstlisting}
+
+\section{Class/struct/function naming}
+All words of a class/struct begin with a \textbf{capital} letter. For example:
+\begin{lstlisting}
+	class Animal;
+	struct DriverJames;
+\end{lstlisting}
+
+The naming of a function (including a member function of a class) should be based on the \textbf{purpose} or the \textbf{method}. Again, all words begin with a \textbf{capital} letter. For example,
+\begin{lstlisting}
+	float GetFractureTag(const uint i); 
+	// based on the purpose
+	void ConjugateGradient(); 
+	// based on the method
+\end{lstlisting}
+
+\section{Class member organization}
+For example:
+\begin{lstlisting}
+	class Foo : public FooBase
+	{
+		// methods
+		//-------------------------------
+		public :
+		protected :
+		private :
+		// attributes
+		//-------------------------------
+		public :
+		protected :
+		private :
+	};
+\end{lstlisting}
+
+\section{Data variable naming}
+All words begin with a \textbf{capital} letter. For example,
+\begin{lstlisting}
+	class Foo
+	{
+	public:
+		int             FooTag;
+		string          FooName;
+		bool            FooState;
+	};
+\end{lstlisting}
+When calling a member data variable in a class member function, "this->" should be always used. For example
+\begin{lstlisting}
+	this->Var1 = 1;
+\end{lstlisting}
+
+For naming global variables related to tolerance, the format is
+\begin{lstlisting}
+#define _TOL_IdentifyEleNO 1e-7
+__device__ const float _TOL_DetectIntersection = 1e-7;
+\end{lstlisting}
+
+\section{Member descriptive comments}
+All member data and functions should be prefaced with single line comments describing the purpose of the member. For example:
+\begin{lstlisting}
+	class Foo
+	{
+	public:
+		// the tag of the Foo
+		uint Tag;
+	
+	public:
+		// delete the tag of the foo
+		void DeleteTag();
+	};
+\end{lstlisting}
+
+\section{Descriptive comment of a function}
+In source (.cpp) files, a function should be supplemented by detailed descriptive comments. For example:
+\begin{lstlisting}
+	// ====================================================
+	// NAME	       : GetName
+	//
+	// DESCRIPTION : Accessor for the name of this object.
+	// AUTHOR	   : DEV1
+	// DATE	       : 10/10/99
+	// ====================================================
+	void Foo::GetName( CString& strName )
+	{
+		strName = this->Name;
+	} // GetName	
+	
+\end{lstlisting}
+	Also, all functions should include a trailing comment just after the closing brace of the function scope that identifies the function name.
+
+\section{About inline functions}
+	Inline function may increase efficiency if it is \textbf{small}.
+	
+	Remember, inlining is only a request to the compiler, not a command. Compiler can ignore the request for inlining. Compiler may not perform inlining in such circumstances like:
+	\begin{itemize}
+	\item If a function contains a loop. (for, while, do-while)
+	\item If a function contains static variables.
+	\item If a function is recursive.
+	\item If a function return type is other than void, and the return statement doesn’t exist in function body.
+	\item If a function contains switch or goto statement.	
+	\end{itemize}
+
+\end{document}

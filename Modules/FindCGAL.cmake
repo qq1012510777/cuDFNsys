@@ -1,0 +1,27 @@
+SET(CGAL_INCLUDE_SEARCH_PATH
+  # /usr/include
+  # /usr/local/include
+  # $ENV{MECHSYS_ROOT}/cgal-releases-CGAL-4.10/include
+  $ENV{HOME}/external_lib/CGAL-5.2/include
+  )
+
+SET(CGAL_LIB_SEARCH_PATH
+  /usr/local/lib
+)
+
+FIND_PATH(CGAL_CGAL_H CGAL/Exact_predicates_inexact_constructions_kernel.h ${CGAL_INCLUDE_SEARCH_PATH})
+
+FIND_LIBRARY(GMP_LIB    NAMES gmp    PATHS ${CGAL_LIB_SEARCH_PATH})
+FIND_LIBRARY(MPFR_LIB    NAMES mpfr   PATHS ${CGAL_LIB_SEARCH_PATH})
+
+SET(CGAL_FOUND 1)
+FOREACH(var CGAL_CGAL_H GMP_LIB MPFR_LIB)
+  IF(NOT ${var})
+	  SET(CGAL_FOUND 0)
+  ENDIF(NOT ${var})
+ENDFOREACH(var)
+
+IF(CGAL_FOUND)
+  SET(CGAL_INCLUDE_DIRS ${CGAL_CGAL_H})
+  SET(CGAL_LIBS ${GMP_LIB} ${MPFR_LIB})
+ENDIF(CGAL_FOUND)
