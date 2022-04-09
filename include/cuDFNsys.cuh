@@ -9,7 +9,7 @@
 ///////////////////////////////////////////////////////////////////
 
 #pragma once
-#include "./CpuSecond/CpuSecond.cuh"
+#include "./CPUSecond/CPUSecond.cuh"
 #include "./Exceptions/Exceptions.cuh"
 #include "./Fractures/Fractures.cuh"
 #include "./Fractures/GetAllPercolatingFractures.cuh"
@@ -24,3 +24,4 @@
 #include "./Mesh/Mesh.cuh"
 #include "./Quaternion/Quaternion.cuh"
 #include "./Warmup/Warmup.cuh"
+#include "./MHFEM/MHFEM.cuh"

@@ -37,7 +37,7 @@ cuDFNsys::Mesh::Mesh(const thrust::host_vector<cuDFNsys::Fracture> &Fracs,
 
         thrust::host_vector<cuDFNsys::Fracture> Fracs_ss(NUM_frac);
 
-        double istart = cuDFNsys::CpuSecond();
+        double istart = cuDFNsys::CPUSecond();
 
         for (size_t i = 0; i < NUM_frac; ++i)
         {
@@ -69,17 +69,17 @@ cuDFNsys::Mesh::Mesh(const thrust::host_vector<cuDFNsys::Fracture> &Fracs,
             Fracs_ss[i] = Fracs[FracID];
         }
         gmsh::model::occ::synchronize();
-        cout << "\t\tadded entities, running time: " << cuDFNsys::CpuSecond() - istart << " sec\n";
+        cout << "\t\tadded entities, running time: " << cuDFNsys::CPUSecond() - istart << " sec\n";
 
         //cout << "mesh fragment" << endl;
         size_t pair_size = IntersectionPair_percol.size();
         std::vector<std::pair<int, int>> object_entity(pair_size), tool_entity(pair_size);
 
-        istart = cuDFNsys::CpuSecond();
+        istart = cuDFNsys::CPUSecond();
 
         if (NUM_frac > 1)
         {
-            double istart1 = cuDFNsys::CpuSecond();
+            double istart1 = cuDFNsys::CPUSecond();
             for (size_t i = 0; i < pair_size; ++i)
             {
                 object_entity[i].first = 2;
@@ -89,24 +89,24 @@ cuDFNsys::Mesh::Mesh(const thrust::host_vector<cuDFNsys::Fracture> &Fracs,
                 tool_entity[i].second = Corre_Tag[IntersectionPair_percol[i].second];
                 //cout << IntersectionPair_percol[i].first << ", " << IntersectionPair_percol[i].second << endl;
             }
-            cout << "\t\tadded object-tool pairs; running time: " << cuDFNsys::CpuSecond() - istart1 << " sec\n";
+            cout << "\t\tadded object-tool pairs; running time: " << cuDFNsys::CPUSecond() - istart1 << " sec\n";
 
-            double istart2 = cuDFNsys::CpuSecond();
+            double istart2 = cuDFNsys::CPUSecond();
             std::vector<std::pair<int, int>> out;
             std::vector<std::vector<std::pair<int, int>>> outmap;
             gmsh::model::occ::fragment(object_entity, tool_entity, out, outmap);
             gmsh::model::occ::synchronize();
-            cout << "\t\tfragmented entities, running time: " << cuDFNsys::CpuSecond() - istart2 << " sec\n";
+            cout << "\t\tfragmented entities, running time: " << cuDFNsys::CPUSecond() - istart2 << " sec\n";
         };
 
-        istart = cuDFNsys::CpuSecond();
+        istart = cuDFNsys::CPUSecond();
         gmsh::option::setNumber("Mesh.MeshSizeMin", min_ele_edge);
         gmsh::option::setNumber("Mesh.MeshSizeMax", max_ele_edge);
 
         gmsh::option::setNumber("Mesh.Algorithm", 5);
         cout << "\tmesh ing" << endl;
         gmsh::model::mesh::generate(2);
-        cout << "\t\tmeshing finished, running time: " << cuDFNsys::CpuSecond() - istart << " sec\n";
+        cout << "\t\tmeshing finished, running time: " << cuDFNsys::CPUSecond() - istart << " sec\n";
 
         cout << "\t\tGeting coordinates" << endl;
         this->GetCoordinates();
@@ -114,9 +114,9 @@ cuDFNsys::Mesh::Mesh(const thrust::host_vector<cuDFNsys::Fracture> &Fracs,
         this->GetElements(Fracs_ss);
         //cudaDeviceReset();
         cout << "\t\tNumbering edges\n";
-        istart = cuDFNsys::CpuSecond();
+        istart = cuDFNsys::CPUSecond();
         this->NumberingEdges(L);
-        cout << "\t\tFinished! Running time: " << cuDFNsys::CpuSecond() - istart << " sec\n";
+        cout << "\t\tFinished! Running time: " << cuDFNsys::CPUSecond() - istart << " sec\n";
 
         //gmsh::fltk::run();
         gmsh::model::mesh::clear();
@@ -602,13 +602,13 @@ void cuDFNsys::Mesh::NumberingEdges(const float L)
             this->Element2D[i][0].z != this->Element3D[eleNO_tmp_1].z)
             if_change_ori = true;
 
-        //istart = cuDFNsys::CpuSecond();
+        //istart = cuDFNsys::CPUSecond();
 
         UMapEdge node2element_local = this->SparseMatEdgeAttri(i, if_change_ori);
 
-        //cout << "i: " << i << " gen Matrix " << cuDFNsys::CpuSecond() - istart << " sec\n";
+        //cout << "i: " << i << " gen Matrix " << cuDFNsys::CPUSecond() - istart << " sec\n";
 
-        //istart = cuDFNsys::CpuSecond();
+        //istart = cuDFNsys::CPUSecond();
         for (size_t j = 0; j < this->Element2D[i].size(); ++j)
         {
             size_t tmp_ele_NO = this->GetElementID(i, j);
@@ -692,7 +692,7 @@ void cuDFNsys::Mesh::NumberingEdges(const float L)
                 }
             }
         }
-        //cout << "i: " << i << " identify edge " << cuDFNsys::CpuSecond() - istart << " sec\n";
+        //cout << "i: " << i << " identify edge " << cuDFNsys::CPUSecond() - istart << " sec\n";
     };
 
     this->InletEdgeNOLen.shrink_to_fit();

@@ -37,18 +37,18 @@ int main(int argc, char *argv[])
     cudaDeviceSynchronize();
     Frac_verts_host = Frac_verts_device;
     cout << "DFN 1\n";
-    double TStart = cuDFNsys::CpuSecond();
+    double TStart = cuDFNsys::CPUSecond();
     std::map<pair<size_t, size_t>, pair<float3, float3>> Intersection_map;
-    cuDFNsys::IdentifyIntersection identifyInters{Frac_verts_host, false, Intersection_map};
-    double TElapse = cuDFNsys::CpuSecond() - TStart;
+    cuDFNsys::IdentifyIntersection identifyInters{Frac_verts_host.size(), Frac_verts_device_ptr, false, Intersection_map};
+    double TElapse = cuDFNsys::CPUSecond() - TStart;
     cout << "running time of DFN 1 intersection: " << TElapse << "s \n";
 
     std::vector<std::vector<size_t>> ListClusters;
     std::vector<size_t> Percolation_cluster;
-    TStart = cuDFNsys::CpuSecond();
+    TStart = cuDFNsys::CPUSecond();
     cuDFNsys::Graph G{(size_t)DSIZE, Intersection_map};
     G.UseDFS(ListClusters);
-    TElapse = cuDFNsys::CpuSecond() - TStart;
+    TElapse = cuDFNsys::CPUSecond() - TStart;
     cout << "running time of DFN 1 DFS: " << TElapse << "s \n";
 
     cuDFNsys::IdentifyPercolationCluster IdentiClu{ListClusters, Frac_verts_host, 2, Percolation_cluster};
@@ -57,13 +57,21 @@ int main(int argc, char *argv[])
     Intersection_map.clear();
     ListClusters.clear();
     Percolation_cluster.clear();
-    cuDFNsys::IdentifyIntersection identifyInters2{Frac_verts_host, true, Intersection_map};
+    TStart = cuDFNsys::CPUSecond();
+    cuDFNsys::IdentifyIntersection identifyInters2{Frac_verts_host.size(), Frac_verts_device_ptr, true, Intersection_map};
+    cout << "running time of DFN 2 intersection: " << TElapse << "s \n";
 
+    TStart = cuDFNsys::CPUSecond();
     cuDFNsys::Graph G2{(size_t)DSIZE, Intersection_map};
     G2.UseDFS(ListClusters);
+    cout << "running time of DFN 2 DFS: " << TElapse << "s \n";
+
     cuDFNsys::IdentifyPercolationCluster IdentiClu2{ListClusters, Frac_verts_host, 2, Percolation_cluster};
     cuDFNsys::MatlabPlotDFN Ak{"DFN_II.mat", "DFN_II.m", Frac_verts_host, Intersection_map, ListClusters, Percolation_cluster, true, true, true, true, L, 2};
-
+    cout << "delete Frac_verts_device after 5 seconds\n";
+    sleep(5);
+    Frac_verts_device.clear();
+    Frac_verts_device.shrink_to_fit();    
     if (Percolation_cluster.size() > 0)
     {
         std::vector<size_t> Fracs_percol;
@@ -80,8 +88,12 @@ int main(int argc, char *argv[])
         //cudaDeviceReset();
         cuDFNsys::Mesh meshr{Frac_verts_host, IntersectionPair_percol,
                              &Fracs_percol, 1.5, 2, 2, L};
+
+        cuDFNsys::MHFEM mhfem{meshr,
+                              Frac_verts_host, 100, 20, 2, L};
         meshr.MatlabPlot("DFNMesh.mat",
                          "DFNMesh.m", Frac_verts_host, L, false, true);
+        mhfem.MatlabPlot("DFNmhfem.mat", "DFNmhfem.m", meshr, L);
     };
     return 0;
 };

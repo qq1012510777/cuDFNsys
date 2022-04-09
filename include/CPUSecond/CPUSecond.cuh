@@ -1,9 +1,9 @@
 ///////////////////////////////////////////////////////////////////
-// NAME:              CpuSecond.cuh
+// NAME:              CPUSecond.cuh
 //
 // PURPOSE:           get the current time
 //
-// FUNCTIONS/OBJECTS: CpuSecond
+// FUNCTIONS/OBJECTS: CPUSecond
 //
 // AUTHOR:            Tingchang YIN
 ///////////////////////////////////////////////////////////////////
@@ -13,5 +13,5 @@
 namespace cuDFNsys
 {
 //get the current time
-double CpuSecond();
+double CPUSecond();
 }; // namespace cuDFNsys

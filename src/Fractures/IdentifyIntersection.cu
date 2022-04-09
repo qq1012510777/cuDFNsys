@@ -172,3 +172,83 @@ cuDFNsys::IdentifyIntersection::IdentifyIntersection(thrust::host_vector<cuDFNsy
         }
     }
 }; // IdentifyIntersection
+
+// ====================================================
+// NAME:        IdentifyIntersection
+// DESCRIPTION: Identify Intersections of fractures
+//              in a  DFN with GPU
+// AUTHOR:      Tingchang YIN
+// DATE:        09/04/2022
+// ====================================================
+cuDFNsys::IdentifyIntersection::IdentifyIntersection(const size_t &Fracsize,
+                                                     cuDFNsys::Fracture *Frac_verts_device_ptr,
+                                                     const bool &if_trucncated,
+                                                     MapIntersection &Intersection_map)
+{
+    Intersection_map.clear();
+
+    int DSIZE = (int)Fracsize;
+    int NUM_frac_pairs = DSIZE * floor((DSIZE - 1) / 2) + (DSIZE - 1) % 2 * DSIZE * 0.5;
+
+    thrust::host_vector<int3> FracPairHost(NUM_frac_pairs);
+    thrust::device_vector<int3> FracPairDevice(NUM_frac_pairs);
+
+    int3 *ptrFracPairDevice = thrust::raw_pointer_cast(FracPairDevice.data());
+    //cout << "NUM_frac_pairs: " << NUM_frac_pairs << endl;
+    cuDFNsys::IdentifyFracPairSphericalDetection<<<NUM_frac_pairs / 256 + 1, 256>>>(Frac_verts_device_ptr,
+                                                                                    ptrFracPairDevice,
+                                                                                    NUM_frac_pairs);
+    cudaDeviceSynchronize();
+    FracPairHost = FracPairDevice;
+    FracPairDevice.resize(0);
+    FracPairDevice.shrink_to_fit();
+
+    thrust::host_vector<cuDFNsys::Intersection> IntersectionHost;
+    thrust::device_vector<cuDFNsys::Intersection> IntersectionDevice;
+    IntersectionHost.reserve(NUM_frac_pairs);
+
+    for (size_t i = 0; i < NUM_frac_pairs; ++i)
+    {
+        if (FracPairHost[i].z != 0)
+        {
+            cuDFNsys::Intersection TMP;
+            TMP.FracIDPair.x = FracPairHost[i].x;
+            TMP.FracIDPair.y = FracPairHost[i].y;
+            IntersectionHost.push_back(TMP);
+            //cout << TMP.FracIDPair.x << ", " << TMP.FracIDPair.y << endl;
+        }
+    }
+    //cout << "IntersectionHost.size = " << IntersectionHost.size() << endl;
+    FracPairHost.clear();
+    FracPairHost.shrink_to_fit();
+
+    IntersectionHost.shrink_to_fit();
+    NUM_frac_pairs = IntersectionHost.size();
+    IntersectionDevice.resize(NUM_frac_pairs);
+    IntersectionDevice = IntersectionHost;
+    cuDFNsys::Intersection *ptrIntersection = thrust::raw_pointer_cast(IntersectionDevice.data());
+    cuDFNsys::IdentifyIntersectionKernel<<<NUM_frac_pairs / 256 + 1, 256>>>(Frac_verts_device_ptr,
+                                                                            NUM_frac_pairs,
+                                                                            ptrIntersection,
+                                                                            if_trucncated);
+    cudaDeviceSynchronize();
+    IntersectionHost = IntersectionDevice;
+    IntersectionDevice.clear();
+    IntersectionDevice.shrink_to_fit();
+
+    for (size_t i = 0; i < IntersectionHost.size(); ++i)
+    {
+        if (IntersectionHost[i].FracIDPair.x != -1)
+        {
+            pair<size_t, size_t> key_ = std::make_pair((size_t)IntersectionHost[i].FracIDPair.x,
+                                                       (size_t)IntersectionHost[i].FracIDPair.y);
+            pair<float3, float3> p;
+            p.first = IntersectionHost[i].Coord[0];
+            p.second = IntersectionHost[i].Coord[1];
+            pair<pair<size_t, size_t>, pair<float3, float3>> element_ =
+                std::make_pair(key_, p);
+            Intersection_map.insert(element_);
+        }
+    };
+    //cout << "IdentifyIntersection GPU finished\n";
+}; // IdentifyIntersection

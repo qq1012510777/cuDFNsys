@@ -4,7 +4,7 @@ project (benchmark)
 
 enable_language(CUDA)
 
-set (MECHSYS_DFN_ROOT $ENV{HOME}/Desktop/cuDFNsys)
+set (MECHSYS_DFN_ROOT $ENV{HOME}/cuDFNsys)
 
 set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin) ## bin is the EXECUTABLE_OUTPUT_PATH
 

@@ -8,7 +8,7 @@
 // AUTHOR:            Tingchang YIN
 ///////////////////////////////////////////////////////////////////
 #pragma once
-#include "../CpuSecond/CpuSecond.cuh"
+#include "../CPUSecond/CPUSecond.cuh"
 #include "../Exceptions/Exceptions.cuh"
 #include "../Fractures/Fracture.cuh"
 #include "../Geometry/3D/If3DTriangleSkinny.cuh"
