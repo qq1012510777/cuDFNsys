@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////
-// NAME:              GpuErrCheck.cuh
+// NAME:              GPUErrCheck.cuh
 //
-// PURPOSE:           A GpuErrCheck funtion: check cuda_success
+// PURPOSE:           A GPUErrCheck funtion: check cuda_success
 //
 // FUNCTIONS/OBJECTS: N/A
 //
@@ -10,8 +10,7 @@
 #pragma once
 #include "../GlobalDef/GlobalDef.cuh"
 
-// GpuErrCheck
-#define GpuErrCheck(ans)                      \
+#define GPUErrCheck(ans)                      \
     {                                         \
         gpuAssert((ans), __FILE__, __LINE__); \
     }
@@ -23,4 +22,4 @@ inline void gpuAssert(cudaError_t code, std::string file, int line, bool abort =
         if (abort)
             exit(code);
     }
-}; // GpuErrCheck
+};

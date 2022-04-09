@@ -1,5 +1,5 @@
 // ====================================================
-// NAME:        User's interface
+// NAME:        A test case
 // DESCRIPTION: Call cuDFNsys functions to do simulation.
 // AUTHOR:      Tingchang YIN
 // DATE:        08/04/2022
@@ -10,7 +10,7 @@
 int main(int argc, char *argv[])
 {
     int iDev = 0;
-    GpuErrCheck(cudaSetDevice(iDev));
+    GPUErrCheck(cudaSetDevice(iDev));
     int DSIZE = atoi(argv[1]);
     float L = atof(argv[2]);
     cuDFNsys::Warmup<<<DSIZE / 256 + 1, 256 /*  1, 2*/>>>();
@@ -95,5 +95,12 @@ int main(int argc, char *argv[])
                          "DFNMesh.m", Frac_verts_host, L, false, true);
         mhfem.MatlabPlot("DFNmhfem.mat", "DFNmhfem.m", meshr, L);
     };
+
+    cuDFNsys::HDF5API H5_;
+    H5_.NewFile("Grt.h5");
+    float L_[1] = {60};
+    uint2 dim_ = make_uint2(1, 1);
+    H5_.AddDataset("Grt.h5", "N", "DomainSize", L_, dim_);
+    H5_.AddDataset("Grt.h5", "Domainsize_group", "DomainSizes", L_, dim_);
     return 0;
 };
