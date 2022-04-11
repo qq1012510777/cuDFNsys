@@ -16,5 +16,6 @@ namespace cuDFNsys
 {
 __global__ void IdentifyFracPairSphericalDetection(cuDFNsys::Fracture *verts,
                                                    int3 *Frac_pairs,
+                                                   int InitialPairNO,
                                                    int count);
 }; // namespace cuDFNsys

@@ -35,7 +35,7 @@ namespace cuDFNsys
 class ExceptionsIgnore : public cuDFNsys::Exceptions
 {
 public:
-    ExceptionsIgnore(const string &s) : cuDFNsys::Exceptions("\033[1;33m" + s + "\033[1;33m"){};
+    ExceptionsIgnore(const string &s) : cuDFNsys::Exceptions("\033[1;33m" + s + "\033[0m"){};
 };
 }; // namespace cuDFNsys
 
@@ -45,6 +45,6 @@ namespace cuDFNsys
 class ExceptionsPause : public cuDFNsys::Exceptions
 {
 public:
-    ExceptionsPause(const string &s) : cuDFNsys::Exceptions("\033[1;31m" + s + "\033[1;31m"){};
+    ExceptionsPause(const string &s) : cuDFNsys::Exceptions("\033[1;31m" + s + "\033[0m"){};
 };
 }; // namespace cuDFNsys

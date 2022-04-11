@@ -17,6 +17,7 @@
 #include "IdentifyFracPairSphericalDetection.cuh"
 #include "IdentifyIntersectionKernel.cuh"
 #include "Intersection.cuh"
+#include <unistd.h>
 
 namespace cuDFNsys
 {

@@ -191,20 +191,34 @@ cuDFNsys::IdentifyIntersection::IdentifyIntersection(const size_t &Fracsize,
     int NUM_frac_pairs = DSIZE * floor((DSIZE - 1) / 2) + (DSIZE - 1) % 2 * DSIZE * 0.5;
 
     thrust::host_vector<int3> FracPairHost(NUM_frac_pairs);
-    thrust::device_vector<int3> FracPairDevice(NUM_frac_pairs);
+    int HowManyPairesOneTime = 256 * 6;
 
-    int3 *ptrFracPairDevice = thrust::raw_pointer_cast(FracPairDevice.data());
-    //cout << "NUM_frac_pairs: " << NUM_frac_pairs << endl;
-    cuDFNsys::IdentifyFracPairSphericalDetection<<<NUM_frac_pairs / 256 + 1, 256>>>(Frac_verts_device_ptr,
-                                                                                    ptrFracPairDevice,
-                                                                                    NUM_frac_pairs);
-    cudaDeviceSynchronize();
-    FracPairHost = FracPairDevice;
-    FracPairDevice.resize(0);
-    FracPairDevice.shrink_to_fit();
+    for (int i = 0; i <= NUM_frac_pairs / HowManyPairesOneTime; ++i)
+    {
+        int First_index = i * HowManyPairesOneTime;
+        int Last_index = First_index + ((First_index + HowManyPairesOneTime) < NUM_frac_pairs ? HowManyPairesOneTime : (NUM_frac_pairs - First_index));
 
+        if (Last_index == First_index)
+            break;
+
+        int Span_ = Last_index - First_index;
+        //cout << "First_index: " << First_index << ", Last_index: " << Last_index << endl;
+        thrust::device_vector<int3> FracPairDevice(Span_);
+        int3 *ptrFracPairDevice = thrust::raw_pointer_cast(FracPairDevice.data());
+        //cout << "NUM_frac_pairs: " << NUM_frac_pairs << endl;
+        //cout << "\tSpherical test started\n";
+        cuDFNsys::IdentifyFracPairSphericalDetection<<<Span_ / 256 + 1, 256>>>(Frac_verts_device_ptr,
+                                                                               ptrFracPairDevice,
+                                                                               First_index,
+                                                                               Span_);
+        cudaDeviceSynchronize();
+        //cout << "\tSpherical test finished\n";
+        //FracPairHost = FracPairDevice;
+        //FracPairDevice.resize(0);
+        //FracPairDevice.shrink_to_fit();
+        thrust::copy(FracPairDevice.begin(), FracPairDevice.end(), FracPairHost.begin() + First_index);
+    };
     thrust::host_vector<cuDFNsys::Intersection> IntersectionHost;
-    thrust::device_vector<cuDFNsys::Intersection> IntersectionDevice;
     IntersectionHost.reserve(NUM_frac_pairs);
 
     for (size_t i = 0; i < NUM_frac_pairs; ++i)
@@ -221,20 +235,35 @@ cuDFNsys::IdentifyIntersection::IdentifyIntersection(const size_t &Fracsize,
     //cout << "IntersectionHost.size = " << IntersectionHost.size() << endl;
     FracPairHost.clear();
     FracPairHost.shrink_to_fit();
-
     IntersectionHost.shrink_to_fit();
     NUM_frac_pairs = IntersectionHost.size();
-    IntersectionDevice.resize(NUM_frac_pairs);
-    IntersectionDevice = IntersectionHost;
-    cuDFNsys::Intersection *ptrIntersection = thrust::raw_pointer_cast(IntersectionDevice.data());
-    cuDFNsys::IdentifyIntersectionKernel<<<NUM_frac_pairs / 256 + 1, 256>>>(Frac_verts_device_ptr,
-                                                                            NUM_frac_pairs,
-                                                                            ptrIntersection,
-                                                                            if_trucncated);
-    cudaDeviceSynchronize();
-    IntersectionHost = IntersectionDevice;
-    IntersectionDevice.clear();
-    IntersectionDevice.shrink_to_fit();
+
+    HowManyPairesOneTime = 256 * 3;
+
+    //cout << "NUM_pairs = " << NUM_frac_pairs << endl;
+    for (int i = 0; i <= NUM_frac_pairs / HowManyPairesOneTime; ++i)
+    {
+
+        int First_index = i * HowManyPairesOneTime;
+        int Last_index = First_index + ((First_index + HowManyPairesOneTime) < NUM_frac_pairs ? HowManyPairesOneTime : (NUM_frac_pairs - First_index));
+
+        if (Last_index == First_index)
+            break;
+        //cout << "First_index: " << First_index << ", Last_index: " << Last_index << endl;
+        thrust::device_vector<cuDFNsys::Intersection> IntersectionDevice{IntersectionHost.begin() + First_index, IntersectionHost.begin() + Last_index};
+        cuDFNsys::Intersection *ptrIntersection = thrust::raw_pointer_cast(IntersectionDevice.data());
+
+        //cout << "\tIdentifyIntersectionKernel started\n";
+        //cout << "Number of cores: " << IntersectionDevice.size() << endl;
+        cuDFNsys::IdentifyIntersectionKernel<<<IntersectionDevice.size() / 256 + 1, 256>>>(Frac_verts_device_ptr,
+                                                                                           IntersectionDevice.size(),
+                                                                                           ptrIntersection,
+                                                                                           if_trucncated);
+        cudaDeviceSynchronize();
+
+        //cout << "\tIdentifyIntersectionKernel finished\n";
+        thrust::copy(IntersectionDevice.begin(), IntersectionDevice.end(), IntersectionHost.begin() + First_index);
+    };
 
     for (size_t i = 0; i < IntersectionHost.size(); ++i)
     {

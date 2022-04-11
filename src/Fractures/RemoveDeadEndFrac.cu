@@ -10,7 +10,7 @@
 cuDFNsys::RemoveDeadEndFrac::RemoveDeadEndFrac(std::vector<size_t> &One_cluster,
                                                std::vector<pair<int, int>> &Intersection_pair,
                                                const size_t &dir,
-                                               const thrust::host_vector<cuDFNsys::Fracture> &Fracs,
+                                               thrust::host_vector<cuDFNsys::Fracture> &Fracs,
                                                std::map<pair<size_t, size_t>, pair<float3, float3>> Intersection_map)
 {
     size_t inlet_id = dir * 2, outlet_id = dir * 2 + 1;
@@ -119,4 +119,31 @@ cuDFNsys::RemoveDeadEndFrac::RemoveDeadEndFrac(std::vector<size_t> &One_cluster,
     }
 
     Intersection_pair.shrink_to_fit();
-};
+
+    //  delete deadend fractures in host_vector of cuDFNsys::ractures
+    //  thrust::host_vector<cuDFNsys::Fracture> &Fracs
+    std::map<int, int> Map_ID1_to_ID2;
+    thrust::host_vector<cuDFNsys::Fracture> FracsII(DSIZE);
+    for (size_t i = 0; i < DSIZE; ++i)
+    {
+        FracsII[i] = Fracs[One_cluster[i]];
+        Map_ID1_to_ID2.insert(std::make_pair(One_cluster[i], i));
+    }
+    Fracs.clear();
+    Fracs.resize(DSIZE);
+    Fracs = FracsII;
+    Fracs.shrink_to_fit();
+    One_cluster.shrink_to_fit();
+
+    // std::vector<size_t> &One_cluster,
+    // std::vector<pair<int, int>> &Intersection_pair
+
+    for (size_t i = 0; i < One_cluster.size(); ++i)
+        One_cluster[i] = Map_ID1_to_ID2[One_cluster[i]];
+
+    for (size_t i = 0; i < Intersection_pair.size(); ++i)
+    {
+        Intersection_pair[i].first = Map_ID1_to_ID2[Intersection_pair[i].first];
+        Intersection_pair[i].second = Map_ID1_to_ID2[Intersection_pair[i].second];
+    }
+}; // RemoveDeadEndFrac

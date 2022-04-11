@@ -99,6 +99,7 @@ int main(int argc, char *argv[])
             thrust::host_vector<cuDFNsys::Fracture> Frac_verts_host(DSIZE);
             thrust::device_vector<cuDFNsys::Fracture> Frac_verts_device(DSIZE);
             cuDFNsys::Fracture *Frac_verts_device_ptr = thrust::raw_pointer_cast(Frac_verts_device.data());
+            //cout << "\tAllocated memory to vectors of cuDFNsys::Fracture\n";
             cuDFNsys::Warmup<<<DSIZE / 256 + 1, 256 /*  1, 2*/>>>();
             cudaDeviceSynchronize();
             time_t t;
@@ -115,14 +116,27 @@ int main(int argc, char *argv[])
                                                                      conductivity_powerlaw_e);
             //-----------
             cudaDeviceSynchronize();
+            //cout << "\tGenerated fractures\n";
             Frac_verts_host = Frac_verts_device;
 
             std::map<pair<size_t, size_t>, pair<float3, float3>> Intersection_map;
-            cuDFNsys::IdentifyIntersection identifyInters{Frac_verts_host.size(),
-                                                          Frac_verts_device_ptr,
-                                                          false,
-                                                          Intersection_map};
-
+            try
+            {
+                cuDFNsys::IdentifyIntersection identifyInters{Frac_verts_host.size(),
+                                                              Frac_verts_device_ptr,
+                                                              false,
+                                                              Intersection_map};
+            }
+            catch (thrust::system::system_error &e)
+            {
+                cout << "\033[1;32m\tThrew an exception: " << e.what() << "\n\tLet's use CPU finish identification of intersections\033[0m" << endl;
+                cudaDeviceReset();
+                Intersection_map.clear();
+                cuDFNsys::IdentifyIntersection identifyInters3{Frac_verts_host,
+                                                               false,
+                                                               Intersection_map};
+            };
+            //cout << "\tIdentified intersection of DFN with complete factures\n";
             std::vector<std::vector<size_t>> ListClusters;
             std::vector<size_t> Percolation_cluster;
             cuDFNsys::Graph G{(size_t)DSIZE, Intersection_map};
@@ -134,10 +148,22 @@ int main(int argc, char *argv[])
             Intersection_map.clear();
             ListClusters.clear();
             Percolation_cluster.clear();
-
-            cuDFNsys::IdentifyIntersection identifyInters2{Frac_verts_host.size(),
-                                                           Frac_verts_device_ptr, true,
-                                                           Intersection_map};
+            try
+            {
+                cuDFNsys::IdentifyIntersection identifyInters2{Frac_verts_host.size(),
+                                                               Frac_verts_device_ptr, true,
+                                                               Intersection_map};
+            }
+            catch (thrust::system::system_error &e)
+            {
+                cout << "\033[1;32m\tThrew an exception: " << e.what() << "\n\tLet's use CPU finish identification of intersections\033[0m" << endl;
+                cudaDeviceReset();
+                Intersection_map.clear();
+                cuDFNsys::IdentifyIntersection identifyInters3{Frac_verts_host,
+                                                               true,
+                                                               Intersection_map};
+            };
+            //cout << "\tIdentified intersection of DFN with truncated factures\n";
             cuDFNsys::Graph G2{(size_t)DSIZE, Intersection_map};
             G2.UseDFS(ListClusters);
             cuDFNsys::IdentifyPercolationCluster IdentiClu2{ListClusters,
@@ -190,7 +216,7 @@ int main(int argc, char *argv[])
                                                  Frac_verts_host,
                                                  Intersection_map};
 
-                cout << "\tmeshing ..." << endl;
+                cout << "\tMeshing ..." << endl;
                 //cudaDeviceReset();
                 cuDFNsys::Mesh mesh{Frac_verts_host, IntersectionPair_percol,
                                     &Fracs_percol, minGrid, maxGrid, perco_dir, L};
@@ -216,7 +242,7 @@ int main(int argc, char *argv[])
                 cout << "\tMHFEM finished. Running time: " << iElaps_mhfem << " sec\n";
                 //---------------------
             }
-            //cudaDeviceReset();
+            cudaDeviceReset();
             cout << "\tOutputing data...\n";
             string groupname = "group_" + cuDFNsys::ToStringWithWidth(i + 1, 3);
             vector<string> datasetname = {

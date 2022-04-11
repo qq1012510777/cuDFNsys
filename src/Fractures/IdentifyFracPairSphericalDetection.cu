@@ -9,19 +9,22 @@
 // ====================================================
 __global__ void cuDFNsys::IdentifyFracPairSphericalDetection(cuDFNsys::Fracture *verts,
                                                              int3 *Frac_pairs,
+                                                             int InitialPairNO,
                                                              int count)
 {
-    int idx = threadIdx.x + blockIdx.x * blockDim.x;
+    int idx_TT = threadIdx.x + blockIdx.x * blockDim.x;
 
-    if (idx > count - 1)
+    if (idx_TT > count - 1)
         return;
+
+    int idx = idx_TT + InitialPairNO;
 
     int x_ = floor((pow(2 * (idx + 1), 0.5) + 1 / 2.0));
     int y_ = idx - 0.5 * x_ * (x_ - 1);
     //printf("%d: x_ = %d, y_ =  %d\n",idx, x_, y_);
-    Frac_pairs[idx].x = x_;
-    Frac_pairs[idx].y = y_;
-    Frac_pairs[idx].z = 1;
+    Frac_pairs[idx_TT].x = x_;
+    Frac_pairs[idx_TT].y = y_;
+    Frac_pairs[idx_TT].z = 1;
 
     float3 dist_two_frac = make_float3(verts[x_].Center.x - verts[y_].Center.x,
                                        verts[x_].Center.y - verts[y_].Center.y,
@@ -33,5 +36,5 @@ __global__ void cuDFNsys::IdentifyFracPairSphericalDetection(cuDFNsys::Fracture 
                      0.5);
 
     if (ddis > (verts[x_].Radius + verts[y_].Radius))
-        Frac_pairs[idx].z = 0;
+        Frac_pairs[idx_TT].z = 0;
 };

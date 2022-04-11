@@ -26,7 +26,7 @@ public:
     RemoveDeadEndFrac(std::vector<size_t> &One_cluster,
                       std::vector<pair<int, int>> &Intersection_pair,
                       const size_t &dir,
-                      const thrust::host_vector<cuDFNsys::Fracture> &Fracs,
+                      thrust::host_vector<cuDFNsys::Fracture> &Fracs,
                       std::map<pair<size_t, size_t>, pair<float3, float3>> Intersection_map);
 };
 }; // namespace cuDFNsys
