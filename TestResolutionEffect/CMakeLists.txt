@@ -4,15 +4,15 @@ project (benchmark)
 
 enable_language(CUDA)
 
-set (MECHSYS_DFN_ROOT $ENV{HOME}/cuDFNsys)
+set (CUDFNSYS_ROOT $ENV{HOME}/cuDFNsys)
 
 set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin) ## bin is the EXECUTABLE_OUTPUT_PATH
 
 set (SRC_LIST ${PROJECT_SOURCE_DIR}/src/main.cu)
 
-include_directories(${MECHSYS_DFN_ROOT}/include)
+include_directories(${CUDFNSYS_ROOT}/include)
 
-INCLUDE(${MECHSYS_DFN_ROOT}/Modules/FindDeps.cmake)
+INCLUDE(${CUDFNSYS_ROOT}/Modules/FindDeps.cmake)
 
 include_directories(${HEADERs})
 
@@ -20,7 +20,7 @@ ADD_DEFINITIONS(-std=c++17)
 
 set (SRC_LIST ${PROJECT_SOURCE_DIR}/src/main.cu)
 
-file(GLOB_RECURSE SRC_CU_PATH ${MECHSYS_DFN_ROOT}/src/*.cu)
+file(GLOB_RECURSE SRC_CU_PATH ${CUDFNSYS_ROOT}/src/*.cu)
 
 ADD_EXECUTABLE(main
     ${SRC_LIST} ${SRC_CU_PATH}

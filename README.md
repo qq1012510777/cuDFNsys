@@ -10,7 +10,7 @@ The _cuDFNsys_ is an open-source C++ library for DFN simulation, based on CUDA. 
 
 # Prerequisites
 
-The _cuDFNsys_ relies on several packages: Eigen, Gmsh, Matlab, UMFPACK.
+The _cuDFNsys_ relies on several packages: CUDA, Eigen, Gmsh, Matlab, UMFPACK, HDF5.
 
 # Directories
 
@@ -21,3 +21,5 @@ _Modules_: cmake script to find packages that the _cuDFNsys_ relies on in a Ubun
 _include_: header files containing declarations of functions/classes
 
 _src_: source files containing definitions of functions/classes
+
+_PercolationTest_, _TestFunctionsOnlyForDevlopment_ and _TestResolutionEffect_ are three examples, with different purposes, showing that how to call _cuDFNsys_ functions, with cmake and other tools.
