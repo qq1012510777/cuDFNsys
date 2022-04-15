@@ -41,15 +41,20 @@ int main(int argc, char *argv[])
 
         cout << "generating fractures" << endl;
 
+        uint mode = (uint)(atoi(argv[3]));
+        float4 SizeParaDis;
+        SizeParaDis.x = atof(argv[4]);
+        SizeParaDis.y = atof(argv[5]);
+        SizeParaDis.z = atof(argv[6]);
+        SizeParaDis.w = atof(argv[7]);
         cuDFNsys::Fractures<<<DSIZE / 256 + 1, 256 /*  1, 2*/>>>(Frac_verts_device_ptr,
                                                                  (unsigned long)t,
                                                                  DSIZE,
                                                                  L,
-                                                                 atof(argv[3]),
-                                                                 atof(argv[4]),
-                                                                 atof(argv[5]),
-                                                                 atof(argv[6]),
-                                                                 atof(argv[7]));
+                                                                 mode,
+                                                                 SizeParaDis,
+                                                                 atof(argv[8]),
+                                                                 atof(argv[9]));
         cudaDeviceSynchronize();
         Frac_verts_host = Frac_verts_device;
         cout << "identifying intersections with complete fractures" << endl;

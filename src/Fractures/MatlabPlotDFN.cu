@@ -257,5 +257,14 @@ cuDFNsys::MatlabPlotDFN::MatlabPlotDFN(string mat_key,
         //oss << "set(gca,'thetaticklabel',[]);\n";
         oss << "set(gca,'rticklabel',[]);";
     }
+
+    oss << "\n\n\n%if R values have a lognormal distribution, uncommect the following-------\n";
+    oss << "%figure(4);\n";
+    oss << "%nbins = 20;\n";
+    oss << "%histfit(R, nbins, 'lognormal');\n";
+    oss << "%pd=fitdist(R,'lognormal')\n";
+    oss << "%Ex = exp(pd.mu + pd.sigma^2*0.5)\n";
+    oss << "%Dx = exp(2*pd.mu+pd.sigma^2)*(exp(pd.sigma^2)-1)\n";
+
     oss.close();
 }; // MatlabPlotDFN

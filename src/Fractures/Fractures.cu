@@ -10,9 +10,8 @@ __global__ void cuDFNsys::Fractures(cuDFNsys::Fracture *verts,
                                     unsigned long seed,
                                     int count,
                                     float model_L,
-                                    float alpha,
-                                    float minR,
-                                    float maxR,
+                                    uint ModeSizeDistri,
+                                    float4 ParaSizeDistri,
                                     float kappa,
                                     float conductivity_powerlaw_exponent)
 {
@@ -26,12 +25,27 @@ __global__ void cuDFNsys::Fractures(cuDFNsys::Fracture *verts,
     curand_init(seed, i, 0, &state);
 
     float R_ = 0;
-    if (alpha == 0 && abs(minR - maxR) < 1e-7)
-        R_ = minR;
-    else if (alpha == 0 && abs(minR - maxR) > 1e-7)
-        R_ = cuDFNsys::RandomUniform(minR, maxR, curand_uniform(&state));
-    else
-        R_ = cuDFNsys::RandomPowerlaw(minR, maxR, alpha, curand_uniform(&state));
+
+    // if (alpha == 0 && abs(minR - maxR) < 1e-7)
+    //     R_ = minR;
+    // else if (alpha == 0 && abs(minR - maxR) > 1e-7)
+    //     R_ = cuDFNsys::RandomUniform(minR, maxR, curand_uniform(&state));
+    // else
+    //     R_ = cuDFNsys::RandomPowerlaw(minR, maxR, alpha, curand_uniform(&state));
+
+    if (ModeSizeDistri == 0)
+        R_ = cuDFNsys::RandomPowerlaw(ParaSizeDistri.y, ParaSizeDistri.z,
+                                      ParaSizeDistri.x, curand_uniform(&state));
+    else if (ModeSizeDistri == 1)
+        R_ = cuDFNsys::RandomLognormal(ParaSizeDistri.x,
+                                       ParaSizeDistri.y,
+                                       ParaSizeDistri.z,
+                                       ParaSizeDistri.w, curand_uniform(&state));
+    else if (ModeSizeDistri == 2)
+        R_ = cuDFNsys::RandomUniform(ParaSizeDistri.x,
+                                     ParaSizeDistri.y, curand_uniform(&state));
+    else if (ModeSizeDistri == 3)
+        R_ = ParaSizeDistri.x;
 
     verts[i].Radius = R_;
     //printf("%f\n", verts[i].Radius);

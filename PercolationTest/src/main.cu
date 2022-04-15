@@ -14,29 +14,32 @@ int main(int argc, char *argv[])
 
     double iStart = cuDFNsys::CPUSecond();
 
-    float alpha = atof(argv[1]);
-    float minR = atof(argv[2]);
-    float maxR = atof(argv[3]);
-    float kappa = atof(argv[4]);
-    float conductivity_powerlaw_e = atof(argv[5]);
+    uint ModeSizeDistr = (uint)(atoi(argv[1]));
+    float4 SizeParaDis = make_float4(atof(argv[2]),
+                                     atof(argv[3]),
+                                     atof(argv[4]),
+                                     atof(argv[5]));
 
-    float L = atof(argv[6]);
-    int perco_dir = atoi(argv[7]);
+    float kappa = atof(argv[6]);
+    float conductivity_powerlaw_e = atof(argv[7]);
 
-    int Init_NUM_Frac = atoi(argv[8]);
+    float L = atof(argv[8]);
+    int perco_dir = atoi(argv[9]);
 
-    int Frac_increment = atoi(argv[9]);
+    int Init_NUM_Frac = atoi(argv[10]);
 
-    int LOOP_times = atoi(argv[10]);
+    int Frac_increment = atoi(argv[11]);
+
+    int LOOP_times = atoi(argv[12]);
     int inti_LOOP_times = 0;
 
-    float minGrid = atof(argv[11]);
-    float maxGrid = atof(argv[12]);
-    float InletP = atof(argv[13]);
-    float OutletP = atof(argv[14]);
+    float minGrid = atof(argv[13]);
+    float maxGrid = atof(argv[14]);
+    float InletP = atof(argv[15]);
+    float OutletP = atof(argv[16]);
 
-    int MODEL_NO = atoi(argv[15]);
-    int MC_NO = atoi(argv[16]);
+    int MODEL_NO = atoi(argv[17]);
+    int MC_NO = atoi(argv[18]);
 
     float P33_total_A[1] = {0};
     float P33_connected_A[1] = {0};
@@ -109,10 +112,8 @@ int main(int argc, char *argv[])
                                                                      (unsigned long)t,
                                                                      DSIZE,
                                                                      L,
-                                                                     alpha,
-                                                                     minR,
-                                                                     maxR,
-                                                                     kappa,
+                                                                     ModeSizeDistr,
+                                                                     SizeParaDis,
                                                                      conductivity_powerlaw_e);
             //-----------
             cudaDeviceSynchronize();
