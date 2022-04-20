@@ -107,13 +107,14 @@ int main(int argc, char *argv[])
             cudaDeviceSynchronize();
             time_t t;
             time(&t);
-
+            //cout << "conductivity_powerlaw_e: " << conductivity_powerlaw_e << endl;
             cuDFNsys::Fractures<<<DSIZE / 256 + 1, 256 /*  1, 2*/>>>(Frac_verts_device_ptr,
                                                                      (unsigned long)t,
                                                                      DSIZE,
                                                                      L,
                                                                      ModeSizeDistr,
                                                                      SizeParaDis,
+                                                                     kappa,
                                                                      conductivity_powerlaw_e);
             //-----------
             cudaDeviceSynchronize();

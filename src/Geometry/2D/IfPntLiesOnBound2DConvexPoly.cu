@@ -37,7 +37,7 @@ __device__ __host__ bool cuDFNsys::IfPntLiesOnBound2DConvexPolyReturnEdgeNO(floa
                                                                             float2 *verts,
                                                                             int N,
                                                                             float _tol_,
-                                                                            int *edgeNO)
+                                                                            int *edgeNO) // 0 1 2
 {
     for (int i = 0; i < N; ++i)
     {

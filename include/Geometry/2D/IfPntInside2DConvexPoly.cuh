@@ -14,6 +14,6 @@
 namespace cuDFNsys
 {
 __device__ __host__ bool IfPntInside2DConvexPoly(float2 pnt,
-                                                                 float2 *verts,
-                                                                 int N);
+                                                 float2 *verts,
+                                                 int N);
 }; // namespace cuDFNsys

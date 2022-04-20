@@ -31,7 +31,7 @@ namespace cuDFNsys
 class Mesh
 {
 public:
-    // if mesh generates or not?
+    // if mesh generates successfully or not?
     bool MeshSuccess = true;
     // Fracture ID of each polygon
     std::vector<size_t> *FracID;

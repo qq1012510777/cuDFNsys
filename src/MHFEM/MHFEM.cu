@@ -30,6 +30,7 @@ cuDFNsys::MHFEM::MHFEM(const cuDFNsys::Mesh &mesh,
 // ====================================================
 void cuDFNsys::MHFEM::MatlabPlot(const string &mat_key,
                                  const string &command_key,
+                                 thrust::host_vector<cuDFNsys::Fracture> Fracs,
                                  const cuDFNsys::Mesh &mesh,
                                  const float &L)
 {
@@ -99,23 +100,63 @@ void cuDFNsys::MHFEM::MatlabPlot(const string &mat_key,
     pressure_ELEs = NULL;
 
     //------------------------------
-    float *normal_veloc = new float[ele_num * 3];
-    if (normal_veloc == NULL)
+    //float *normal_veloc = new float[ele_num * 3];
+    //if (normal_veloc == NULL)
+    //{
+    //    string AS = "Alloc error in MHFEM::MatlabPlot\n";
+    //    throw cuDFNsys::ExceptionsPause(AS);
+    //}
+    //
+    //std::copy(this->VelocityNormalScalarSepEdges.data(),
+    //          this->VelocityNormalScalarSepEdges.data() + ele_num * 3,
+    //          normal_veloc);
+    //
+    //M1.WriteMat(mat_key, "u", ele_num * 3,
+    //            ele_num * 3, 1, normal_veloc,
+    //            "normal_velocity");
+    //
+    //delete[] normal_veloc;
+    //normal_veloc = NULL;
+
+    //----------------
+    float *velocity_center_grid = new float[mesh.Element3D.size() * 3];
+    if (velocity_center_grid == NULL)
     {
         string AS = "Alloc error in MHFEM::MatlabPlot\n";
         throw cuDFNsys::ExceptionsPause(AS);
     }
 
-    std::copy(this->VelocityNormalScalarSepEdges.data(),
-              this->VelocityNormalScalarSepEdges.data() + ele_num * 3,
-              normal_veloc);
+    for (uint i = 0; i < mesh.Element3D.size(); ++i)
+    {
+        uint3 EdgeNO = make_uint3((i + 1) * 3 - 3, (i + 1) * 3 - 2, (i + 1) * 3 - 1); // from 0
+        float3 Velocity_ = make_float3((float)this->VelocityNormalScalarSepEdges(EdgeNO.x, 0),
+                                       (float)this->VelocityNormalScalarSepEdges(EdgeNO.y, 0),
+                                       (float)this->VelocityNormalScalarSepEdges(EdgeNO.z, 0));
+        float2 Vertexes[3];
+        Vertexes[0] = make_float2(mesh.Coordinate2D[i].x[0], mesh.Coordinate2D[i].y[0]);
+        Vertexes[1] = make_float2(mesh.Coordinate2D[i].x[1], mesh.Coordinate2D[i].y[1]);
+        Vertexes[2] = make_float2(mesh.Coordinate2D[i].x[2], mesh.Coordinate2D[i].y[2]);
 
-    M1.WriteMat(mat_key, "u", ele_num * 3,
-                ele_num * 3, 1, normal_veloc,
-                "normal_velocity");
+        float2 Center_p = make_float2(1.0f / 3.0f * (Vertexes[0].x + Vertexes[1].x + Vertexes[2].x), 1.0f / 3.0f * (Vertexes[0].y + Vertexes[1].y + Vertexes[2].y));
 
-    delete[] normal_veloc;
-    normal_veloc = NULL;
+        float2 velocity_p = cuDFNsys::ReconstructVelocityGrid(Center_p, Vertexes, Velocity_);
+
+        float3 velocity_p_3D = make_float3(velocity_p.x, velocity_p.y, 0);
+
+        float R_mat[3][3];
+        Fracs[mesh.ElementFracTag[i]].RoationMatrix(R_mat, 23);
+        velocity_p_3D = cuDFNsys::ProductSquare3Float3(R_mat, velocity_p_3D);
+
+        velocity_center_grid[i] = velocity_p_3D.x;
+        velocity_center_grid[i + mesh.Element3D.size()] = velocity_p_3D.y;
+        velocity_center_grid[i + 2 * mesh.Element3D.size()] = velocity_p_3D.z;
+    };
+
+    M1.WriteMat(mat_key, "u", mesh.Element3D.size() * 3,
+                mesh.Element3D.size(), 3, velocity_center_grid,
+                "velocity_center_grid");
+    delete[] velocity_center_grid;
+    velocity_center_grid = NULL;
 
     //-----------------
     std::ofstream oss(command_key, ios::out);
@@ -126,7 +167,9 @@ void cuDFNsys::MHFEM::MatlabPlot(const string &mat_key,
     oss << "figure(1); view(3); title('DFN flow (mhfem)'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
     oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
     oss << endl;
-
+    oss << "xlim([-1.1*L, 1.1*L]);\n";
+    oss << "ylim([-1.1*L, 1.1*L]);\n";
+    oss << "zlim([-1.1*L, 1.1*L]);\nhold on\n";
     //oss << "centers_ele = zeros(size(element_3D, 1), 3);\n";
     //oss << "centers_ele(:, 1) = 0.5 * (coordinate_3D(element_3D(:, 1), 1) + coordinate_3D(element_3D(:, 2), 1) + coordinate_3D(element_3D(:, 3), 1));\n";
     //oss << "centers_ele(:, 2) = 0.5 * (coordinate_3D(element_3D(:, 1), 2) + coordinate_3D(element_3D(:, 2), 2) + coordinate_3D(element_3D(:, 3), 2));\n";
@@ -141,21 +184,27 @@ void cuDFNsys::MHFEM::MatlabPlot(const string &mat_key,
     //oss << "tool_ = [centers_ele; center_s_edge];\n";
     //oss << "pressure_vert = griddata(tool_(:, 1), tool_(:, 2), tool_(:, 3), [pressure_eles; pressure_shared_edge], coordinate_3D(:, 1), coordinate_3D(:, 2), coordinate_3D(:, 3), 'nearest');\n";
     oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, 'FaceVertexCData', pressure_eles, 'FaceColor', 'flat', 'EdgeAlpha', 0.9, 'facealpha', 1); colorbar; view(3); hold on\n";
-    oss << "caxis([" << this->OutletP << ", " << this->InletP << "]);\n";
+    oss << "caxis([" << this->OutletP << ", " << this->InletP << "]);\n\n";
 
-    oss << "element_3D_re = zeros(size(element_3D, 1) * 3, 3);\n";
-    oss << "element_3D_re([1:3:end], :) = element_3D;\n";
-    oss << "element_3D_re([2:3:end], :) = element_3D(:, [2 3 1]);\n";
-    oss << "element_3D_re([3:3:end], :) = element_3D(:, [3 1 2]);\n\n";
+    //oss << "element_3D_re = zeros(size(element_3D, 1) * 3, 3);\n";
+    //oss << "element_3D_re([1:3:end], :) = element_3D;\n";
+    //oss << "element_3D_re([2:3:end], :) = element_3D(:, [2 3 1]);\n";
+    //oss << "element_3D_re([3:3:end], :) = element_3D(:, [3 1 2]);\n\n";
+    //
+    //oss << "Tri_plane_normal = cross([coordinate_3D(element_3D_re(:, 2), :) - coordinate_3D(element_3D_re(:, 1), :)], [coordinate_3D(element_3D_re(:, 3), :) - coordinate_3D(element_3D_re(:, 2), :)]);\n";
+    //oss << "Outward_normal = cross([coordinate_3D(element_3D_re(:, 2), :) - coordinate_3D(element_3D_re(:, 1), :)], Tri_plane_normal);\n";
+    //oss << "Outward_normal = Outward_normal ./ norm(Outward_normal);\n";
+    //oss << "Outward_normal = Outward_normal .* normal_velocity;\n";
+    //
+    //oss << "center_sep_edge = 0.5 * [coordinate_3D(element_3D_re(:, 2), :) + coordinate_3D(element_3D_re(:, 1), :)];\n";
+    //
+    //oss << "quiver3(center_sep_edge(:, 1),center_sep_edge(:, 2),center_sep_edge(:, 3), Outward_normal(:, 1),Outward_normal(:, 2),Outward_normal(:, 3), 4, 'LineWidth', 1.5, 'color', 'r');\n";
 
-    oss << "Tri_plane_normal = cross([coordinate_3D(element_3D_re(:, 2), :) - coordinate_3D(element_3D_re(:, 1), :)], [coordinate_3D(element_3D_re(:, 3), :) - coordinate_3D(element_3D_re(:, 2), :)]);\n";
-    oss << "Outward_normal = cross([coordinate_3D(element_3D_re(:, 2), :) - coordinate_3D(element_3D_re(:, 1), :)], Tri_plane_normal);\n";
-    oss << "Outward_normal = Outward_normal ./ norm(Outward_normal);\n";
-    oss << "Outward_normal = Outward_normal .* normal_velocity;\n";
-
-    oss << "center_sep_edge = 0.5 * [coordinate_3D(element_3D_re(:, 2), :) + coordinate_3D(element_3D_re(:, 1), :)];\n";
-
-    oss << "quiver3(center_sep_edge(:, 1),center_sep_edge(:, 2),center_sep_edge(:, 3), Outward_normal(:, 1),Outward_normal(:, 2),Outward_normal(:, 3), 4, 'LineWidth', 1.5, 'color', 'r');\n";
+    oss << "CenterELE = zeros(size(element_3D, 1), 3);\n";
+    oss << "CenterELE(:, 1) = 1/3 * (coordinate_3D(element_3D(:, 1), 1) + coordinate_3D(element_3D(:, 2), 1) + coordinate_3D(element_3D(:, 3), 1));\n";
+    oss << "CenterELE(:, 2) = 1/3 * (coordinate_3D(element_3D(:, 1), 2) + coordinate_3D(element_3D(:, 2), 2) + coordinate_3D(element_3D(:, 3), 2));\n";
+    oss << "CenterELE(:, 3) = 1/3 * (coordinate_3D(element_3D(:, 1), 3) + coordinate_3D(element_3D(:, 2), 3) + coordinate_3D(element_3D(:, 3), 3));\n";
+    oss << "quiver3(CenterELE(:, 1), CenterELE(:, 2), CenterELE(:, 3), velocity_center_grid(:, 1),velocity_center_grid(:, 2),velocity_center_grid(:, 3), 4, 'LineWidth', 1.5, 'color', 'r');\n";
     oss.close();
 }; // MHFEM
 

@@ -28,7 +28,29 @@ __global__ void Fractures(cuDFNsys::Fracture *verts,
                           float model_L,
                           uint ModeSizeDistri,   // 1 = power law; 2 = lognormal; 3 = uniform; 4 = monosize
                           float4 ParaSizeDistri, // when mode = 1, ;
-                          float kappa = 0,
-                          float conductivity_powerlaw_exponent = 0);
-
+                          float kappa,
+                          float conductivity_powerlaw_exponent);
+// benchmark fracture generator: two vertical crossed fractures
+__global__ void FracturesCrossedVertical(cuDFNsys::Fracture *verts,
+                                         unsigned long seed,
+                                         int count,
+                                         float model_L);
+// benchmark fracture generator: two inclined fractures, with two beta values
+// beta is dip angle here
+__global__ void FracturesBeta50Beta60(cuDFNsys::Fracture *verts,
+                                      unsigned long seed,
+                                      int count,
+                                      float model_L);
+// two incomplet fractures
+__global__ void FracturesIncomplete(cuDFNsys::Fracture *verts,
+                                    unsigned long seed,
+                                    int count,
+                                    float model_L);
+__global__ void Fractures2DLike(cuDFNsys::Fracture *verts,
+                                unsigned long seed,
+                                int count,
+                                float model_L,
+                                float alpha = 1.5,
+                                float minR = 1,
+                                float maxR = 15);
 }; // namespace cuDFNsys

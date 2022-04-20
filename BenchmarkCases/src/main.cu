@@ -1,8 +1,8 @@
 // ====================================================
-// NAME:        A test case
+// NAME:        benchmark cases
 // DESCRIPTION: Call cuDFNsys functions to do simulation.
 // AUTHOR:      Tingchang YIN
-// DATE:        18/04/2022
+// DATE:        20/04/2022
 // ====================================================
 
 #include "cuDFNsys.cuh"
@@ -20,9 +20,16 @@ int main(int argc, char *argv[])
         float L = 0;
         float minGrid = 0;
         float maxGrid = 0;
+        int mode = -1;
 
-        DSIZE = atoi(argv[1]);
+        mode = atoi(argv[1]);
         L = atof(argv[2]);
+        DSIZE = atoi(argv[3]);
+        minGrid = atof(argv[4]);
+        maxGrid = atof(argv[5]);
+
+        if (mode <= 3)
+            DSIZE = 2;
 
         int perco_dir = 2;
 
@@ -40,23 +47,42 @@ int main(int argc, char *argv[])
 
         cout << "generating fractures" << endl;
 
-        uint mode = (uint)(atoi(argv[3]));
-        float4 SizeParaDis;
-        SizeParaDis.x = atof(argv[4]);
-        SizeParaDis.y = atof(argv[5]);
-        SizeParaDis.z = atof(argv[6]);
-        SizeParaDis.w = atof(argv[7]);
-        cuDFNsys::Fractures<<<DSIZE / 256 + 1, 256 /*  1, 2*/>>>(Frac_verts_device_ptr,
-                                                                 (unsigned long)t,
-                                                                 DSIZE,
-                                                                 L,
-                                                                 mode,
-                                                                 SizeParaDis,
-                                                                 atof(argv[8]),
-                                                                 atof(argv[9]));
+        if (mode == 1)
+        {
+            cout << "\nFracturesCrossedVertical\n";
+            cuDFNsys::FracturesCrossedVertical<<<DSIZE / 256 + 1, 256>>>(Frac_verts_device_ptr,
+                                                                         (unsigned long)t,
+                                                                         DSIZE,
+                                                                         L);
+        }
+        else if (mode == 2)
+        {
+            cout << "\nFracturesBeta50Beta60\n";
+            cuDFNsys::FracturesBeta50Beta60<<<DSIZE / 256 + 1, 256>>>(Frac_verts_device_ptr,
+                                                                      (unsigned long)t,
+                                                                      DSIZE,
+                                                                      L);
+        }
+        else if (mode == 3)
+        {
+            cout << "\nFracturesIncomplete\n";
+            cuDFNsys::FracturesIncomplete<<<DSIZE / 256 + 1, 256>>>(Frac_verts_device_ptr,
+                                                                    (unsigned long)t,
+                                                                    DSIZE,
+                                                                    L);
+        }
+        else if (mode == 4)
+        {
+            cout << "\nFractures2DLike\n";
+            cuDFNsys::Fractures2DLike<<<DSIZE / 256 + 1, 256>>>(Frac_verts_device_ptr,
+                                                                (unsigned long)t,
+                                                                DSIZE,
+                                                                L);
+        }
+        else
+            throw cuDFNsys::ExceptionsPause("Undefined benchmark mode!");
+
         cudaDeviceSynchronize();
-        minGrid = atof(argv[10]);
-        maxGrid = atof(argv[11]);
 
         Frac_verts_host = Frac_verts_device;
         cout << "identifying intersections with complete fractures" << endl;

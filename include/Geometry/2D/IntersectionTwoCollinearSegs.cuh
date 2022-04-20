@@ -7,6 +7,7 @@
 //
 // AUTHOR:            Tingchang YIN
 ///////////////////////////////////////////////////////////////////
+#pragma once
 #include "../../GlobalDef/GlobalDef.cuh"
 
 namespace cuDFNsys

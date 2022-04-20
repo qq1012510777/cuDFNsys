@@ -10,6 +10,7 @@
 #pragma once
 #include "../GlobalDef/GlobalDef.cuh"
 #include "../Mesh/Mesh.cuh"
+#include "ReconstructVelocityGrid.cuh"
 #include "AssembleOnGPUKernel.cuh"
 #include "Eigen/Dense"
 #include "Eigen/Sparse"
@@ -32,11 +33,11 @@ public:
     Eigen::MatrixXd PressureInteriorEdge;
     Eigen::MatrixXd PressureEles;
     Eigen::MatrixXd VelocityNormalScalarSepEdges;
+    float InletP = 100;
+    float OutletP = 20;
 
 private:
     int Dir = 2;
-    float InletP = 100;
-    float OutletP = 20;
 
 public:
     MHFEM(const cuDFNsys::Mesh &mesh,
@@ -48,6 +49,7 @@ public:
 
     void MatlabPlot(const string &mat_key,
                     const string &command_key,
+                    thrust::host_vector<cuDFNsys::Fracture> Fracs,
                     const cuDFNsys::Mesh &mesh,
                     const float &L);
 
