@@ -9,6 +9,7 @@
 ///////////////////////////////////////////////////////////////////
 #pragma once
 #include "EdgeToEle.cuh"
+#include "NeighborEle.cuh"
 #include "Particle.cuh"
 #include "ParticleMovementOneTimeStepGPUKernel.cuh"
 #include <cmath>
@@ -21,6 +22,9 @@ public:
     int NumParticles = 0;
     thrust::host_vector<cuDFNsys::Particle> ParticlePlumes;
     thrust::host_vector<cuDFNsys::EdgeToEle> EdgesSharedEle;
+    thrust::host_vector<cuDFNsys::NeighborEle> NeighborEleOfOneEle;
+
+    uint Dir = 2;
 
 private:
     string ParticlePosition = "ParticlePosition.mat";
@@ -33,13 +37,18 @@ public:
                       float Dispersion_local,
                       thrust::host_vector<cuDFNsys::Fracture> Fracs,
                       cuDFNsys::Mesh mesh,
-                      const cuDFNsys::MHFEM &fem)
+                      const cuDFNsys::MHFEM &fem,
+                      uint Dir_flow,
+                      float outletcoordinate)
     {
+        this->Dir = Dir_flow;
         this->IdentifyEdgesSharedEle(mesh);
+        this->IdentifyNeighborElements(mesh);
         this->InitilizeParticles(NumOfParticles, mesh, fem);
         this->OutputParticleInfoStepByStep(ParticlePosition, 0,
                                            Fracs, mesh);
-        this->ParticleMovement(seed, NumTimeStep, delta_T_, Dispersion_local, Fracs, mesh, fem);
+        // cout << NumTimeStep << ", " << delta_T_ << ", " << Dispersion_local << " ______ \n";
+        this->ParticleMovement(seed, NumTimeStep, delta_T_, Dispersion_local, Fracs, mesh, fem, outletcoordinate);
     };
 
     void ParticleMovement(unsigned long seed,
@@ -48,7 +57,8 @@ public:
                           float Dispersion_local,
                           thrust::host_vector<cuDFNsys::Fracture> Fracs,
                           cuDFNsys::Mesh mesh,
-                          const cuDFNsys::MHFEM &fem)
+                          const cuDFNsys::MHFEM &fem,
+                          float outletcoordinate)
     {
         thrust::device_vector<cuDFNsys::Particle> ParticlePlumes_DEV = this->ParticlePlumes;
         thrust::device_vector<cuDFNsys::Fracture> Fracsvec_DEV = Fracs;
@@ -57,6 +67,7 @@ public:
         thrust::device_vector<float> Velocity_sep_edge;
         Velocity_sep_edge.reserve(fem.VelocityNormalScalarSepEdges.rows());
         thrust::device_vector<cuDFNsys::EleCoor> Coordinate2D_Vec_dev = mesh.Coordinate2D;
+        thrust::device_vector<cuDFNsys::NeighborEle> NeighborEleOfOneEle_dev = this->NeighborEleOfOneEle;
 
         Eigen::MatrixXf Vg = fem.VelocityNormalScalarSepEdges.cast<float>();
         float *vc = Vg.data();
@@ -68,23 +79,37 @@ public:
         uint *EleToFracID_ptr = thrust::raw_pointer_cast(ElementFracTag_DEV.data());
         float *velocity_ptr = thrust::raw_pointer_cast(Velocity_sep_edge.data());
         cuDFNsys::EleCoor *Coordinate2D_Vec_dev_ptr = thrust::raw_pointer_cast(Coordinate2D_Vec_dev.data());
+        cuDFNsys::NeighborEle *NeighborEleOfOneEle_dev_ptr = thrust::raw_pointer_cast(NeighborEleOfOneEle_dev.data());
 
         for (uint i = 1; i <= NumTimeStep; ++i)
         {
-            ParticleMovementOneTimeStepGPUKernel<<<this->NumParticles / 256 + 1, 256>>>(seed,
+            time_t t;
+            time(&t);
+
+            cout << "The Step " << i << endl;
+            ParticleMovementOneTimeStepGPUKernel<<<this->NumParticles / 256 + 1, 256>>>((unsigned long)t + (unsigned long)(i * 100),
                                                                                         delta_T_,
                                                                                         Dispersion_local,
                                                                                         P_DEV,
                                                                                         Frac_DEV,
                                                                                         EdgesSharedEle_DEV,
                                                                                         Coordinate2D_Vec_dev_ptr,
+                                                                                        NeighborEleOfOneEle_dev_ptr,
                                                                                         EleToFracID_ptr,
                                                                                         velocity_ptr,
-                                                                                        NumParticles);
+                                                                                        this->Dir,
+                                                                                        outletcoordinate,
+                                                                                        NumParticles,
+                                                                                        mesh.Element3D.size());
             cudaDeviceSynchronize();
             this->ParticlePlumes = ParticlePlumes_DEV;
             this->OutputParticleInfoStepByStep(ParticlePosition, i,
                                                Fracs, mesh);
+            // if (ParticlePlumes[0].IfReachOutletPlane == true)
+            // {
+            //     cout << "step " << i << endl;
+            // }
+            cout << endl;
         }
     };
 
@@ -226,7 +251,7 @@ public:
         oss << "for i = 0:S.NumOfSteps\n";
         oss << "\ttitle(['DFN flow (mhfem); step NO = ', num2str(i)]);\n";
         oss << "\teval(['p_s = patch(''Vertices'', S.particle_position_3D_step_', num2str(i), ', ''Faces'', [1:1:size(S.particle_position_3D_step_', num2str(i), ', 1)], ''FaceVertexCData'', ones(size(S.particle_position_3D_step_1, 1), 1), ''FaceColor'', ''interp'', ''EdgeAlpha'', 0, ''facealpha'', 0, ''Marker'',''o'',''MarkerFaceColor'',''k''); hold on']);\n";
-        oss << "\tpause(1)\n";
+        oss << "\tif (i == 0); pause; else; pause(0.01); end;\n";
 
         oss << "\tif (i ~= S.NumOfSteps); delete(p_s); end\n";
         oss << "end\n";
@@ -319,6 +344,27 @@ private:
                             const cuDFNsys::MHFEM &fem)
     {
         //this->ParticlePlumes.resize(NumOfParticles);
+        //////////////
+        //this->ParticlePlumes.resize(1);
+        //this->NumParticles = 1; //mesh.InletEdgeNOLen.size();
+        //
+        //for (uint i = 8; i < 9; ++i)
+        //{
+        //    uint EdgeNO = (uint)mesh.InletEdgeNOLen[i].x;     // from 1
+        //    uint elementID = (EdgeNO - 1) / 3 + 1;            // from 1
+        //    uint FracID = mesh.ElementFracTag[elementID - 1]; // from 0
+        //    uint LocalEdgeNO = (EdgeNO - 1) % 3;
+        //
+        //    float2 position_ = make_float2(0.5f * (mesh.Coordinate2D[elementID - 1].x[LocalEdgeNO] + mesh.Coordinate2D[elementID - 1].x[(LocalEdgeNO + 1) % 3]),
+        //                                   0.5f * (mesh.Coordinate2D[elementID - 1].y[LocalEdgeNO] + mesh.Coordinate2D[elementID - 1].y[(LocalEdgeNO + 1) % 3]));
+        //
+        //    cuDFNsys::Particle tmpP;
+        //    tmpP.ElementID = elementID;
+        //    tmpP.Position2D = position_;
+        //    ParticlePlumes[0] = tmpP;
+        //};
+        //return;
+        ////
 
         thrust::host_vector<uint> NumParticlesEachEdge(mesh.InletEdgeNOLen.size());
 
@@ -332,10 +378,10 @@ private:
             NumParticlesEachEdge[i] = (uint)round(proportion_ * NumOfParticles);
         }
 
-        NumParticles = 0;
+        this->NumParticles = 0;
         for (size_t i = 0; i < NumParticlesEachEdge.size(); ++i)
         {
-            NumParticles += NumParticlesEachEdge[i];
+            this->NumParticles += NumParticlesEachEdge[i];
         }
         this->ParticlePlumes.resize(NumParticles);
 
@@ -361,6 +407,54 @@ private:
                          tmpPVEC.end(),
                          this->ParticlePlumes.begin() + TmpCountParticle);
             TmpCountParticle += NumParticlesEachEdge[i];
+        }
+    };
+
+    void IdentifyNeighborElements(cuDFNsys::Mesh mesh)
+    {
+        this->NeighborEleOfOneEle.resize(mesh.Element3D.size());
+
+        std::unordered_map<uint, cuDFNsys::NeighborEle> SharedNodeEle;
+        SharedNodeEle.reserve(mesh.Coordinate3D.size());
+
+        //cout << "1\n";
+        for (uint i = 0; i < mesh.Element3D.size(); ++i)
+        {
+            uint *Ptr = &(mesh.Element3D[i].x);
+
+            for (uint j = 0; j < 3; ++j)
+            {
+                //cout << "Ptr[j]: " << Ptr[j] << ";\n";
+                SharedNodeEle[Ptr[j] - 1].NumNeighborEle++;
+                SharedNodeEle[Ptr[j] - 1].EleID[SharedNodeEle[Ptr[j] - 1].NumNeighborEle - 1] = i + 1;
+                //cout << "\t" << SharedNodeEle[Ptr[j] - 1].NumNeighborEle << "\n";
+            }
+        }
+        //cout << "2\n";
+        for (uint i = 0; i < mesh.Element3D.size(); ++i)
+        {
+            uint *Ptr = &(mesh.Element3D[i].x);
+
+            std::set<uint> KL;
+
+            for (uint j = 0; j < 3; ++j)
+            {
+                for (uint k = 0; k < SharedNodeEle[Ptr[j] - 1].NumNeighborEle; ++k)
+                {
+                    if (SharedNodeEle[Ptr[j] - 1].EleID[k] != i + 1)
+                        KL.insert(SharedNodeEle[Ptr[j] - 1].EleID[k]);
+                }
+            }
+
+            this->NeighborEleOfOneEle[i].NumNeighborEle = KL.size();
+            //cout << "element ID " << i + 1 << ": ";
+            uint oo = 0;
+            for (std::set<uint>::iterator j = KL.begin(); j != KL.end(); ++j)
+            {
+                this->NeighborEleOfOneEle[i].EleID[oo] = *j;
+                oo++;
+                // cout << *j << (oo == KL.size() ? "\n" : ", ");
+            }
         }
     };
 };

@@ -2,7 +2,7 @@
 // NAME:        Percolation
 // DESCRIPTION: My percolation program.
 // AUTHOR:      Tingchang YIN
-// DATE:        09/04/2022
+// DATE:        27/04/2022
 // ====================================================
 
 #include "cuDFNsys.cuh"
@@ -14,32 +14,35 @@ int main(int argc, char *argv[])
 
     double iStart = cuDFNsys::CPUSecond();
 
-    uint ModeSizeDistr = (uint)(atoi(argv[1]));
-    float4 SizeParaDis = make_float4(atof(argv[2]),
-                                     atof(argv[3]),
+    uint IfFlowModel = 0;
+    IfFlowModel = (uint)(atoi(argv[1]));
+
+    uint ModeSizeDistr = (uint)(atoi(argv[2]));
+    float4 SizeParaDis = make_float4(atof(argv[3]),
                                      atof(argv[4]),
-                                     atof(argv[5]));
+                                     atof(argv[5]),
+                                     atof(argv[6]));
 
-    float kappa = atof(argv[6]);
-    float conductivity_powerlaw_e = atof(argv[7]);
+    float kappa = atof(argv[7]);
+    float conductivity_powerlaw_e = atof(argv[8]);
 
-    float L = atof(argv[8]);
-    int perco_dir = atoi(argv[9]);
+    float L = atof(argv[9]);
+    int perco_dir = atoi(argv[10]);
 
-    int Init_NUM_Frac = atoi(argv[10]);
+    int Init_NUM_Frac = atoi(argv[11]);
 
-    int Frac_increment = atoi(argv[11]);
+    int Frac_increment = atoi(argv[12]);
 
-    int LOOP_times = atoi(argv[12]);
+    int LOOP_times = atoi(argv[13]);
     int inti_LOOP_times = 0;
 
-    float minGrid = atof(argv[13]);
-    float maxGrid = atof(argv[14]);
-    float InletP = atof(argv[15]);
-    float OutletP = atof(argv[16]);
+    float minGrid = atof(argv[14]);
+    float maxGrid = atof(argv[15]);
+    float InletP = atof(argv[16]);
+    float OutletP = atof(argv[17]);
 
-    int MODEL_NO = atoi(argv[17]);
-    int MC_NO = atoi(argv[18]);
+    int MODEL_NO = atoi(argv[18]);
+    int MC_NO = atoi(argv[19]);
 
     float P33_total_A[1] = {0};
     float P33_connected_A[1] = {0};
@@ -76,19 +79,29 @@ int main(int argc, char *argv[])
     }
     else
     {
-        vector<double> Looptimes_k =
-            h5out.ReadDataset(filename, "N", "Loop_times");
+        try
+        {
+            vector<double> Looptimes_k =
+                h5out.ReadDataset(filename, "N", "Loop_times");
 
-        if (Looptimes_k[0] >= LOOP_times)
-        {
-            cout << "This simulation has been finished!\n";
-            return 0;
+            if (Looptimes_k[0] >= LOOP_times)
+            {
+                cout << "This simulation has been finished!\n";
+                return 0;
+            }
+            else
+            {
+                inti_LOOP_times = (int)Looptimes_k[0];
+            }
         }
-        else
+        catch (...)
         {
-            inti_LOOP_times = (int)Looptimes_k[0];
+            // no dataset "Loop_times" existing means that I did not start loop
+            //
+            inti_LOOP_times = 0;
         }
     }
+
     for (int i = inti_LOOP_times; i < LOOP_times; ++i)
     {
     ReGen_111:;
@@ -147,6 +160,26 @@ int main(int argc, char *argv[])
                                                            Frac_verts_host, perco_dir,
                                                            Percolation_cluster};
 
+            cuDFNsys::GetStatistics(Frac_verts_host,
+                                    Intersection_map,
+                                    ListClusters,
+                                    Percolation_cluster,
+                                    L,
+                                    P33_total_A[0],
+                                    P33_connected_A[0],
+                                    Ratio_of_P33_A[0],
+                                    P33_largest_cluster_A[0],
+                                    P32_total_A[0],
+                                    P32_connected_A[0],
+                                    Ratio_of_P32_A[0],
+                                    P32_largest_cluster_A[0],
+                                    P30_A[0],
+                                    P30_connected_A[0],
+                                    Ratio_of_P30_A[0],
+                                    P30_largest_cluster_A[0],
+                                    Percolation_probability_A[0],
+                                    n_I_A[0]);
+
             Intersection_map.clear();
             ListClusters.clear();
             Percolation_cluster.clear();
@@ -171,25 +204,6 @@ int main(int argc, char *argv[])
             cuDFNsys::IdentifyPercolationCluster IdentiClu2{ListClusters,
                                                             Frac_verts_host, perco_dir,
                                                             Percolation_cluster};
-            cuDFNsys::GetStatistics(Frac_verts_host,
-                                    Intersection_map,
-                                    ListClusters,
-                                    Percolation_cluster,
-                                    L,
-                                    P33_total_A[0],
-                                    P33_connected_A[0],
-                                    Ratio_of_P33_A[0],
-                                    P33_largest_cluster_A[0],
-                                    P32_total_A[0],
-                                    P32_connected_A[0],
-                                    Ratio_of_P32_A[0],
-                                    P32_largest_cluster_A[0],
-                                    P30_A[0],
-                                    P30_connected_A[0],
-                                    Ratio_of_P30_A[0],
-                                    P30_largest_cluster_A[0],
-                                    Percolation_probability_A[0],
-                                    n_I_A[0]);
 
             double iElaps_DFN = cuDFNsys::CPUSecond() - iStart_DFN;
             cout << "\tDFN generated. Running time: " << iElaps_DFN << " sec\n";
@@ -202,47 +216,50 @@ int main(int argc, char *argv[])
             //Connections.shrink_to_fit();
 
             //-------------------------
-            if (Percolation_cluster.size() > 0)
+            if (IfFlowModel == 1)
             {
-                double iStart_mesh = cuDFNsys::CPUSecond();
-                std::vector<size_t> Fracs_percol;
-                cuDFNsys::GetAllPercolatingFractures GetPer{Percolation_cluster,
-                                                            ListClusters,
-                                                            Fracs_percol};
-
-                std::vector<pair<int, int>> IntersectionPair_percol;
-
-                cuDFNsys::RemoveDeadEndFrac RDEF{Fracs_percol,
-                                                 IntersectionPair_percol,
-                                                 (size_t)perco_dir,
-                                                 Frac_verts_host,
-                                                 Intersection_map};
-
-                cout << "\tMeshing ..." << endl;
-                //cudaDeviceReset();
-                cuDFNsys::Mesh mesh{Frac_verts_host, IntersectionPair_percol,
-                                    &Fracs_percol, minGrid, maxGrid, perco_dir, L};
-
-                double iElaps_mesh = cuDFNsys::CPUSecond() - iStart_mesh;
-                cout << "\tMesh finished. Running time: " << iElaps_mesh << " sec\n";
-
-                cout << "\tMHFEM ing ..." << endl;
-                double iStart_mhfem = cuDFNsys::CPUSecond();
-                cuDFNsys::MHFEM fem{mesh, Frac_verts_host, InletP, OutletP, perco_dir, L};
-
-                //cout << "\tFluxes: " << fem.Q_in << ", " << fem.Q_out << ", Permeability: " << fem.Permeability << endl;
-                if (fem.QError > 1 || isnan(fem.Permeability) == 1)
+                if (Percolation_cluster.size() > 0)
                 {
-                    string AS = "Found large error or isnan, the error: " + to_string(fem.QError) + ", the permeability: " + to_string(fem.Permeability);
-                    throw cuDFNsys::ExceptionsIgnore(AS);
+                    double iStart_mesh = cuDFNsys::CPUSecond();
+                    std::vector<size_t> Fracs_percol;
+                    cuDFNsys::GetAllPercolatingFractures GetPer{Percolation_cluster,
+                                                                ListClusters,
+                                                                Fracs_percol};
+
+                    std::vector<pair<int, int>> IntersectionPair_percol;
+
+                    cuDFNsys::RemoveDeadEndFrac RDEF{Fracs_percol,
+                                                     IntersectionPair_percol,
+                                                     (size_t)perco_dir,
+                                                     Frac_verts_host,
+                                                     Intersection_map};
+
+                    cout << "\tMeshing ..." << endl;
+                    //cudaDeviceReset();
+                    cuDFNsys::Mesh mesh{Frac_verts_host, IntersectionPair_percol,
+                                        &Fracs_percol, minGrid, maxGrid, perco_dir, L};
+
+                    double iElaps_mesh = cuDFNsys::CPUSecond() - iStart_mesh;
+                    cout << "\tMesh finished. Running time: " << iElaps_mesh << " sec\n";
+
+                    cout << "\tMHFEM ing ..." << endl;
+                    double iStart_mhfem = cuDFNsys::CPUSecond();
+                    cuDFNsys::MHFEM fem{mesh, Frac_verts_host, InletP, OutletP, perco_dir, L};
+
+                    //cout << "\tFluxes: " << fem.Q_in << ", " << fem.Q_out << ", Permeability: " << fem.Permeability << endl;
+                    if (fem.QError > 1 || isnan(fem.Permeability) == 1)
+                    {
+                        string AS = "Found large error or isnan, the error: " + to_string(fem.QError) + ", the permeability: " + to_string(fem.Permeability);
+                        throw cuDFNsys::ExceptionsIgnore(AS);
+                    }
+
+                    Permeability_A[0] = fem.Permeability;
+                    Q_error_A[0] = fem.QError;
+
+                    double iElaps_mhfem = cuDFNsys::CPUSecond() - iStart_mhfem;
+                    cout << "\tMHFEM finished. Running time: " << iElaps_mhfem << " sec\n";
+                    //---------------------
                 }
-
-                Permeability_A[0] = fem.Permeability;
-                Q_error_A[0] = fem.QError;
-
-                double iElaps_mhfem = cuDFNsys::CPUSecond() - iStart_mhfem;
-                cout << "\tMHFEM finished. Running time: " << iElaps_mhfem << " sec\n";
-                //---------------------
             }
             cudaDeviceReset();
             cout << "\tOutputing data...\n";

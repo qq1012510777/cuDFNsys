@@ -45,7 +45,7 @@ public:
     // 2D coordinates of elements
     thrust::host_vector<cuDFNsys::EleCoor> Coordinate2D;
     // Frac Tag of each element
-    thrust::host_vector<uint> ElementFracTag;
+    thrust::host_vector<uint> ElementFracTag; // from 0
 
     // edge attributes
     thrust::host_vector<cuDFNsys::EleEdgeAttri> EdgeAttri;

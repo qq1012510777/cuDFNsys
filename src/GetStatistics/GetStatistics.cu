@@ -98,5 +98,5 @@ void cuDFNsys::GetStatistics(const thrust::host_vector<cuDFNsys::Fracture> &Frac
     else
         Percolation_probability_B = 0;
 
-    n_I_B = Intersection_map.size() / Frac_verts_host.size();
+    n_I_B = 1.0f * Intersection_map.size() / (Frac_verts_host.size() * 1.0f);
 };

@@ -44,3 +44,4 @@ typedef std::map<pair<size_t, size_t>, pair<float3, float3>> MapIntersection;
 __device__ const float _TOL_ParticleOnGridBound = 1e-7;
 
 const uint _NumOfSharedEleAtMost = 4;
+const uint _NumOfNeighborEleAtMost = 20;

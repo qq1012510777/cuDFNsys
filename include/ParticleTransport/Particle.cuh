@@ -19,5 +19,7 @@ struct Particle
     float2 Position2D;
     // element ID
     uint ElementID;
+
+    bool IfReachOutletPlane = false;
 };
 }; // namespace cuDFNsys

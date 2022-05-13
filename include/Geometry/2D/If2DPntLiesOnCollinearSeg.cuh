@@ -13,12 +13,5 @@
 
 namespace cuDFNsys
 {
-__device__ __host__ bool If2DPntLiesOnCollinearSeg(float2 p, float2 q, float2 r)
-{
-    if (q.x <= max(p.x, r.x) && q.x >= min(p.x, r.x) &&
-        q.y <= max(p.y, r.y) && q.y >= min(p.y, r.y))
-        return true;
-
-    return false;
-};
+__device__ __host__ bool If2DPntLiesOnCollinearSeg(float2 p, float2 q, float2 r);
 }; // namespace cuDFNsys

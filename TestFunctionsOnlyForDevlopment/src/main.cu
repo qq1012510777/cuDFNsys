@@ -21,8 +21,8 @@ int main(int argc, char *argv[])
         float minGrid = 0;
         float maxGrid = 0;
 
-        DSIZE = atoi(argv[1]);
-        L = atof(argv[2]);
+        DSIZE = 1;
+        L = 30;
 
         int perco_dir = 2;
 
@@ -40,23 +40,12 @@ int main(int argc, char *argv[])
 
         cout << "generating fractures" << endl;
 
-        uint mode = (uint)(atoi(argv[3]));
-        float4 SizeParaDis;
-        SizeParaDis.x = atof(argv[4]);
-        SizeParaDis.y = atof(argv[5]);
-        SizeParaDis.z = atof(argv[6]);
-        SizeParaDis.w = atof(argv[7]);
-        cuDFNsys::Fractures<<<DSIZE / 256 + 1, 256 /*  1, 2*/>>>(Frac_verts_device_ptr,
-                                                                 (unsigned long)t,
-                                                                 DSIZE,
-                                                                 L,
-                                                                 mode,
-                                                                 SizeParaDis,
-                                                                 atof(argv[8]),
-                                                                 atof(argv[9]));
+        cuDFNsys::FracturesBeta50Beta60<<<DSIZE / 256 + 1, 256 /*  1, 2*/>>>(Frac_verts_device_ptr,
+                                                                             (unsigned long)t,
+                                                                             DSIZE, L);
         cudaDeviceSynchronize();
-        minGrid = atof(argv[10]);
-        maxGrid = atof(argv[11]);
+        minGrid = 1;
+        maxGrid = 1.5;
 
         Frac_verts_host = Frac_verts_device;
         cout << "identifying intersections with complete fractures" << endl;
@@ -142,10 +131,11 @@ int main(int argc, char *argv[])
                            "MHFEM_" + to_string(i + 1) + ".m",
                            Frac_verts_host, mesh, L);
             //---------------
-            // cout << "Particle transport ing ...\n";
-            // cuDFNsys::ParticleTransport p{(unsigned long)t,
-            //                               atoi(argv[12]), atoi(argv[13]), (float)atof(argv[14]), (float)atof(argv[15]), Frac_verts_host, mesh, fem};
-            // p.MatlabPlot("particle.mat", "particle.m", mesh, fem, L);
+            cout << "Particle transport ing ...\n";
+
+            cuDFNsys::ParticleTransport p{(unsigned long)t,
+                                          atoi(argv[1]), atoi(argv[2]), (float)atof(argv[3]), (float)atof(argv[4]), Frac_verts_host, mesh, fem, (uint)perco_dir, -0.5f * L};
+            p.MatlabPlot("particle.mat", "particle.m", mesh, fem, L);
         }
         //cudaDeviceReset();
         double ielaps = cuDFNsys::CPUSecond() - istart;
