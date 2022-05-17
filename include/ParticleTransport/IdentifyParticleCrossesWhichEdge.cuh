@@ -22,7 +22,11 @@
 
 namespace cuDFNsys
 {
-__host__ __device__ float3 IdentifyParticleCrossesWhichEdge(float2 *P_Trajectory, float2 *Vertex_Triangle, uint init_checking_edgeNO, float _TOL_)
+__host__ __device__ float3 IdentifyParticleCrossesWhichEdge(float2 *P_Trajectory, float2 *Vertex_Triangle, uint init_checking_edgeNO, float _TOL_,
+                                                            uint eleID__,
+                                                            int *CroessedEleID,
+                                                            int *CroessedLocalEdgeNO,
+                                                            int NumCrossedEdge)
 {
     bool If_End1_on_Bound = false;
     int edge_onBound_end1 = -1;
@@ -68,6 +72,12 @@ __host__ __device__ float3 IdentifyParticleCrossesWhichEdge(float2 *P_Trajectory
             Result.z = (float)i;
             Result.x = q1.x;
             Result.y = q1.y;
+
+            for (int l = 0; l < NumCrossedEdge; ++l)
+                if (CroessedEleID[l] == (int)eleID__)
+                    if (CroessedLocalEdgeNO[l] == (int)i)
+                        continue;
+
             return Result;
         }
 
@@ -97,6 +107,12 @@ __host__ __device__ float3 IdentifyParticleCrossesWhichEdge(float2 *P_Trajectory
             Result.y = (a1 * c2 - a2 * c1) / determinant;
 
             Result.z = (float)i;
+
+            for (int l = 0; l < NumCrossedEdge; ++l)
+                if (CroessedEleID[l] == (int)eleID__)
+                    if (CroessedLocalEdgeNO[l] == (int)i)
+                        continue;
+
             return Result;
         };
     };
@@ -107,6 +123,15 @@ __host__ __device__ float3 IdentifyParticleCrossesWhichEdge(float2 *P_Trajectory
         Result.z = (float)edge_onBound_end1;
         Result.x = p1.x;
         Result.y = p1.y;
+
+        for (int l = 0; l < NumCrossedEdge; ++l)
+            if (CroessedEleID[l] == (int)eleID__)
+                if (CroessedLocalEdgeNO[l] == (int)edge_onBound_end1)
+                {
+                    Result.z = -1.0f;
+                    return Result;
+                }
+
         return Result;
     }
 

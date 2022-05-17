@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
         float minGrid = 0;
         float maxGrid = 0;
 
-        DSIZE = 1;
+        DSIZE = 2;
         L = 30;
 
         int perco_dir = 2;

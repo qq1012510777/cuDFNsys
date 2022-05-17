@@ -85,9 +85,16 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
 
     uint Record_1stEleID = EleID;
     uint count_loop = 0;
+    int VisitedEleID[10] = {-1};
+
+    int NumCrossedEdge = 0;
+    int CroessedEleID[10] = {-1};
+    int CroessedLocalEdgeNO[10] = {-1};
 
 StartOfCheckParticlePosition:;
 
+    if (count_loop < 10)
+        VisitedEleID[count_loop] = EleID;
     count_loop++;
 
     float2 Vertex_Triangle[3];
@@ -112,9 +119,12 @@ StartOfCheckParticlePosition:;
     //-----------// in the grid
     //-----------// in the grid
     //-----------// in the grid
+    // printf("FracID: %d, eleID: %d, IfInGrid: %d\n", FracID, EleID, IfInGrid);
+
     if (IfInGrid == true)
     {
         P_DEV[i].Position2D = TargPos;
+        P_DEV[i].ElementID = EleID;
         return;
     }
     //-------- out of the grid---------
@@ -124,7 +134,12 @@ StartOfCheckParticlePosition:;
 
     uint init_checking_edgeNO = (uint)floor(cuDFNsys::RandomUniform(0.0f, 2.99f, curand_uniform(&state)));
 
-    float3 ResultParticle = cuDFNsys::IdentifyParticleCrossesWhichEdge(ParticleTrajectory, Vertex_Triangle, init_checking_edgeNO, 1e-5);
+    float3 ResultParticle = cuDFNsys::IdentifyParticleCrossesWhichEdge(ParticleTrajectory, Vertex_Triangle, init_checking_edgeNO, 1e-5,
+                                                                       EleID,
+                                                                       CroessedEleID,
+                                                                       CroessedLocalEdgeNO,
+                                                                       NumCrossedEdge);
+
     uint CrossedGlobalEdgeNO = 0;
 
     float2 IntersectionPnt = make_float2(ResultParticle.x, ResultParticle.y);
@@ -143,6 +158,15 @@ StartOfCheckParticlePosition:;
     {
         uint *tmp_k = &(EdgeNO.x);
         CrossedGlobalEdgeNO = tmp_k[(uint)ResultParticle.z];
+
+        CroessedEleID[NumCrossedEdge] = EleID;
+        CroessedLocalEdgeNO[NumCrossedEdge] = (int)ResultParticle.z;
+        NumCrossedEdge++;
+        // printf("CroessedEleID: %d %d %d %d %d %d %d %d %d %d\n", CroessedEleID[0], CroessedEleID[1],
+        //        CroessedEleID[2], CroessedEleID[3],
+        //        CroessedEleID[4], CroessedEleID[5],
+        //        CroessedEleID[6], CroessedEleID[7],
+        //        CroessedEleID[8], CroessedEleID[9]);
 
         // printf("P_ID %d, CrossedGlobalEdgeNO: %d, intersection:\n%f, %f\nsegment:\n%f, %f\n%f, %f\nTri:%f, %f\n%f, %f\n%f, %f\n\n", i + 1, CrossedGlobalEdgeNO,
         //        IntersectionPnt.x, IntersectionPnt.y,
@@ -165,7 +189,8 @@ StartOfCheckParticlePosition:;
         // return;
 
         bool GGH = cuDFNsys::IdentifyParticleElementAllElements(InitPos, TargPos, EleID, numElements, EleToFracID_ptr,
-                                                                FracID, NeighborEleOfOneEle_dev_ptr[P_DEV[i].ElementID - 1], Coordinate2D_Vec_dev_ptr);
+                                                                FracID, NeighborEleOfOneEle_dev_ptr[P_DEV[i].ElementID - 1], Coordinate2D_Vec_dev_ptr,
+                                                                VisitedEleID);
         FracID = EleToFracID_ptr[EleID - 1];                              // from 0
         EdgeNO = make_uint3(EleID * 3 - 3, EleID * 3 - 2, EleID * 3 - 1); // from 0
 
@@ -204,7 +229,7 @@ StartOfCheckParticlePosition:;
         {
             P_DEV[i].IfReachOutletPlane = true;
             P_DEV[i].Position2D = IntersectionPnt;
-
+            P_DEV[i].ElementID = EleID;
             return;
         };
 
@@ -240,7 +265,9 @@ StartOfCheckParticlePosition:;
             //printf("Warning: the detection of particle position may get stucked in am endless loop!\n");
 
             bool GGH = cuDFNsys::IdentifyParticleElementAllElements(InitPos, TargPos, EleID, numElements, EleToFracID_ptr,
-                                                                    FracID, NeighborEleOfOneEle_dev_ptr[P_DEV[i].ElementID - 1], Coordinate2D_Vec_dev_ptr);
+                                                                    FracID, NeighborEleOfOneEle_dev_ptr[P_DEV[i].ElementID - 1], Coordinate2D_Vec_dev_ptr,
+                                                                    VisitedEleID);
+
             FracID = EleToFracID_ptr[EleID - 1];                              // from 0
             EdgeNO = make_uint3(EleID * 3 - 3, EleID * 3 - 2, EleID * 3 - 1); // from 0
 
@@ -267,21 +294,41 @@ StartOfCheckParticlePosition:;
     }
     else
     {
-        printf("Warning: more than two shared edge?\n");
-        return;
+
         //
         uint PreviousFracID = FracID;
 
         // determine where to go
+        uint IndexLocal = 0;
+
+        uint newELEID_ = 0;
+        uint newFracID_ = 0;
+
         cuDFNsys::WhichElementToGo(EleID,
                                    NumOfElesSharedEdge,
                                    EdgesSharedEle_DEV[CrossedGlobalEdgeNO].EleID,
+                                   EdgesSharedEle_DEV[CrossedGlobalEdgeNO].LocalEdgeNO,
                                    EleToFracID_ptr,
                                    Coordinate2D_Vec_dev_ptr,
                                    velocity_ptr,
                                    curand_uniform(&state),
-                                   EleID,
-                                   FracID);
+                                   newELEID_,
+                                   newFracID_,
+                                   IndexLocal);
+        FracID = newFracID_;
+        EleID = newELEID_;
+
+        // printf("\ngo to another?\n");
+        // printf("NumOfElesSharedEdge = %d\n", NumOfElesSharedEdge);
+        // printf("PreviousFracID = %d\n", PreviousFracID);
+        // printf("newFracID = %d\n", FracID);
+        // printf("EleID = %d\n\n", EleID);
+
+        // for (uint iy = 0; iy < NumOfElesSharedEdge; ++iy)
+        // {
+        //     printf("%d\n", EdgesSharedEle_DEV[CrossedGlobalEdgeNO].EleID[iy]);
+        // }
+
         EdgeNO = make_uint3(EleID * 3 - 3, EleID * 3 - 2, EleID * 3 - 1); // from 0
 
         // change initial position
@@ -306,7 +353,7 @@ StartOfCheckParticlePosition:;
         // change target and intersection position
         // change target and intersection position
         float2 tmpDis = make_float2(TargPos.x - IntersectionPnt.x, TargPos.y - IntersectionPnt.y);
-        float normDistance = sqrt(tmpDis.x * tmpDis.x + tmpDis.y + tmpDis.y);
+        float normDistance = sqrt(tmpDis.x * tmpDis.x + tmpDis.y * tmpDis.y);
 
         float3 Intersection3D = make_float3(IntersectionPnt.x, IntersectionPnt.y, 0),
                Target3D = make_float3(TargPos.x, TargPos.y, 0);
@@ -330,11 +377,79 @@ StartOfCheckParticlePosition:;
 
         ///// (I -nn) * V
         float3 V_new = cuDFNsys::ProjectVToPlaneN(V_, Frac_DEV[FracID].NormalVec);
-        V_new.x *= normDistance;
-        V_new.y *= normDistance;
-        V_new.z *= normDistance;
 
-        ////
+        //// the angle between the V_new and the 3D velocity vector should be < 90?
+        //// get the 3D velocity vector first
+
+        float3 NewTarPos3D = make_float3(Intersection3D.x + V_new.x * normDistance - Frac_DEV[FracID].Center.x,
+                                         Intersection3D.y + V_new.y * normDistance - Frac_DEV[FracID].Center.y,
+                                         Intersection3D.z + V_new.z * normDistance - Frac_DEV[FracID].Center.z);
+
+        NewTarPos3D = cuDFNsys::ProductSquare3Float3(RK_2, NewTarPos3D);
+        float2 newTagPos2D = make_float2(NewTarPos3D.x, NewTarPos3D.y);
+
+        // test if the particle goes in an opposite way?
+        float2 EdgeSeg[2];
+        EdgeSeg[0].x = Coordinate2D_Vec_dev_ptr[EleID - 1].x[IndexLocal], EdgeSeg[0].y = Coordinate2D_Vec_dev_ptr[EleID - 1].y[IndexLocal];
+        EdgeSeg[1].x = Coordinate2D_Vec_dev_ptr[EleID - 1].x[(IndexLocal + 1) % 3], EdgeSeg[1].y = Coordinate2D_Vec_dev_ptr[EleID - 1].y[(IndexLocal + 1) % 3];
+
+        float2 CenterGrid;
+        CenterGrid.x = (Coordinate2D_Vec_dev_ptr[EleID - 1].x[0] + Coordinate2D_Vec_dev_ptr[EleID - 1].x[1] + Coordinate2D_Vec_dev_ptr[EleID - 1].x[2]) / 3.0f;
+        CenterGrid.y = (Coordinate2D_Vec_dev_ptr[EleID - 1].y[0] + Coordinate2D_Vec_dev_ptr[EleID - 1].y[1] + Coordinate2D_Vec_dev_ptr[EleID - 1].y[2]) / 3.0f;
+
+        uint O1 = cuDFNsys::OrientationThree2DPnts(EdgeSeg[0], EdgeSeg[1], newTagPos2D, 1e-5);
+        uint O2 = cuDFNsys::OrientationThree2DPnts(EdgeSeg[0], EdgeSeg[1], CenterGrid, 1e-5);
+
+        if (O1 == 0)
+        {
+            printf("Warning: particle trajectory is along an intersection!\n");
+            return;
+        }
+        else if (O1 != 0 && O1 == O2)
+        {
+            TargPos = newTagPos2D;
+            //return;
+
+            // float2 Vertex_Triangle_PPP[3];
+            // Vertex_Triangle_PPP[0] = make_float2(Coordinate2D_Vec_dev_ptr[EleID - 1].x[0], Coordinate2D_Vec_dev_ptr[EleID - 1].y[0]);
+            // Vertex_Triangle_PPP[1] = make_float2(Coordinate2D_Vec_dev_ptr[EleID - 1].x[1], Coordinate2D_Vec_dev_ptr[EleID - 1].y[1]);
+            // Vertex_Triangle_PPP[2] = make_float2(Coordinate2D_Vec_dev_ptr[EleID - 1].x[2], Coordinate2D_Vec_dev_ptr[EleID - 1].y[2]);
+            // printf("O1 == O2, ParticleID %d, eleID: %d;\nPntTrajectory:\n%f, %f\n%f, %f\nTri:\n%f, %f\n%f, %f\n%f, %f\nIntersection3D:\n%f, %f, %f\nV_new:\n%f, %f, %f\nNewTarPos3D:\n%f, %f, %f\n",
+            //        i + 1, EleID,
+            //        InitPos.x, InitPos.y, TargPos.x, TargPos.y,
+            //        Vertex_Triangle_PPP[0].x, Vertex_Triangle_PPP[0].y,
+            //        Vertex_Triangle_PPP[1].x, Vertex_Triangle_PPP[1].y,
+            //        Vertex_Triangle_PPP[2].x, Vertex_Triangle_PPP[2].y,
+            //        Intersection3D.x, Intersection3D.y, Intersection3D.z,
+            //        V_new.x, V_new.y, V_new.z,
+            //        NewTarPos3D.x, NewTarPos3D.y, NewTarPos3D.z);
+            goto StartOfCheckParticlePosition;
+        }
+        else
+        {
+            NewTarPos3D = make_float3(Intersection3D.x - V_new.x * normDistance - Frac_DEV[FracID].Center.x,
+                                      Intersection3D.y - V_new.y * normDistance - Frac_DEV[FracID].Center.y,
+                                      Intersection3D.z - V_new.z * normDistance - Frac_DEV[FracID].Center.z);
+            NewTarPos3D = cuDFNsys::ProductSquare3Float3(RK_2, NewTarPos3D);
+            newTagPos2D = make_float2(NewTarPos3D.x, NewTarPos3D.y);
+            TargPos = newTagPos2D;
+            //return;
+
+            // float2 Vertex_Triangle_PPP[3];
+            // Vertex_Triangle_PPP[0] = make_float2(Coordinate2D_Vec_dev_ptr[EleID - 1].x[0], Coordinate2D_Vec_dev_ptr[EleID - 1].y[0]);
+            // Vertex_Triangle_PPP[1] = make_float2(Coordinate2D_Vec_dev_ptr[EleID - 1].x[1], Coordinate2D_Vec_dev_ptr[EleID - 1].y[1]);
+            // Vertex_Triangle_PPP[2] = make_float2(Coordinate2D_Vec_dev_ptr[EleID - 1].x[2], Coordinate2D_Vec_dev_ptr[EleID - 1].y[2]);
+            // printf("O1 != O2, ParticleID %d, eleID: %d;\nPntTrajectory:\n%f, %f\n%f, %f\nTri:\n%f, %f\n%f, %f\n%f, %f\nIntersection3D:\n%f, %f, %f\nV_new:\n%f, %f, %f\nNewTarPos3D:\n%f, %f, %f\n",
+            //        i + 1, EleID,
+            //        InitPos.x, InitPos.y, TargPos.x, TargPos.y,
+            //        Vertex_Triangle_PPP[0].x, Vertex_Triangle_PPP[0].y,
+            //        Vertex_Triangle_PPP[1].x, Vertex_Triangle_PPP[1].y,
+            //        Vertex_Triangle_PPP[2].x, Vertex_Triangle_PPP[2].y,
+            //        Intersection3D.x, Intersection3D.y, Intersection3D.z,
+            //        V_new.x, V_new.y, V_new.z,
+            //        NewTarPos3D.x, NewTarPos3D.y, NewTarPos3D.z);
+            goto StartOfCheckParticlePosition;
+        }
     };
 };
 }; // namespace cuDFNsys
