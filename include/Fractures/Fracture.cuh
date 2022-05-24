@@ -41,6 +41,6 @@ public:
     // get rotation matrix from 2(3) to 3(2)
     __device__ __host__ void RoationMatrix(float tmp_R_1[3][3], const int mode);
     // generate 2D verts
-    __device__ __host__ void Generate2DVerts(float2 verts2DDD[4]);
+    __device__ __host__ void Generate2DVerts(float2 *verts2DDD, uint NUM_verts, bool IfTrimed);
 };
 }; // namespace cuDFNsys

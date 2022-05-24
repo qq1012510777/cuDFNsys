@@ -65,7 +65,7 @@ __device__ __host__ void cuDFNsys::Fracture::RoationMatrix(float tmp_R_1[3][3], 
 // AUTHOR:      Tingchang YIN
 // DATE:        02/04/2022
 // ====================================================
-__device__ __host__ void cuDFNsys::Fracture::Generate2DVerts(float2 verts2DDD[4])
+__device__ __host__ void cuDFNsys::Fracture::Generate2DVerts(float2 *verts2DDD, uint NUM_verts, bool IfTrimed)
 {
     float3 rotate_axis = make_float3(-NormalVec.y, NormalVec.x, 0.00);
     float norm_axis = sqrt(rotate_axis.x * rotate_axis.x + rotate_axis.y * rotate_axis.y);
@@ -74,18 +74,38 @@ __device__ __host__ void cuDFNsys::Fracture::Generate2DVerts(float2 verts2DDD[4]
     cuDFNsys::Quaternion Qua;
     Qua = Qua.DescribeRotation(rotate_axis, -1.0 * acos(this->NormalVec.z));
 
-    float2 verts2D[4];
+    //float2 verts2D[4];
+    //
+    //float3 verts3D__[4];
+    //for (int i = 0; i < 4; ++i)
+    //{
+    //    verts3D__[i] = make_float3(this->Verts3D[i].x - this->Center.x,
+    //                               this->Verts3D[i].y - this->Center.y,
+    //                               this->Verts3D[i].z - this->Center.z);
+    //    verts3D__[i] = Qua.Rotate(verts3D__[i]);
+    //    verts2D[i].x = verts3D__[i].x;
+    //    verts2D[i].y = verts3D__[i].y;
+    //}
+    //for (int i = 0; i < 4; ++i)
+    //    verts2DDD[i] = verts2D[i];
 
-    float3 verts3D__[4];
-    for (int i = 0; i < 4; ++i)
+    if (IfTrimed == false)
+        NUM_verts = 4;
+    for (uint i = 0; i < NUM_verts; ++i)
     {
-        verts3D__[i] = make_float3(this->Verts3D[i].x - this->Center.x,
+        float3 Vertex__;
+
+        if (IfTrimed == false)
+            Vertex__ = make_float3(this->Verts3D[i].x - this->Center.x,
                                    this->Verts3D[i].y - this->Center.y,
                                    this->Verts3D[i].z - this->Center.z);
-        verts3D__[i] = Qua.Rotate(verts3D__[i]);
-        verts2D[i].x = verts3D__[i].x;
-        verts2D[i].y = verts3D__[i].y;
-    }
-    for (int i = 0; i < 4; ++i)
-        verts2DDD[i] = verts2D[i];
+        else
+            Vertex__ = make_float3(this->Verts3DTruncated[i].x - this->Center.x,
+                                   this->Verts3DTruncated[i].y - this->Center.y,
+                                   this->Verts3DTruncated[i].z - this->Center.z);
+
+        Vertex__ = Qua.Rotate(Vertex__);
+        verts2DDD[i].x = Vertex__.x;
+        verts2DDD[i].y = Vertex__.y;
+    };
 }; // Generate2DVerts

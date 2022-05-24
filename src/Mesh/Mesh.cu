@@ -263,7 +263,7 @@ void cuDFNsys::Mesh::MatlabPlot(const string &mat_key,
             size_t tag = *(it);
 
             float2 verts2D_[4];
-            Fracs[tag].Generate2DVerts(verts2D_);
+            Fracs[tag].Generate2DVerts(verts2D_, 4, false);
 
             fracs[vb] = verts2D_[0].x;
             fracs[vb + (*this->FracID).size() * 4] = verts2D_[0].y;

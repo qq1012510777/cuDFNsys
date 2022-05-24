@@ -100,7 +100,8 @@ public:
                                                                                         this->Dir,
                                                                                         outletcoordinate,
                                                                                         NumParticles,
-                                                                                        mesh.Element3D.size());
+                                                                                        mesh.Element3D.size(),
+                                                                                        i);
             cudaDeviceSynchronize();
             this->ParticlePlumes = ParticlePlumes_DEV;
             this->OutputParticleInfoStepByStep(ParticlePosition, i,
@@ -109,7 +110,7 @@ public:
             // {
             //     cout << "step " << i << endl;
             // }
-            cout << endl;
+            cout << "\n\n";
         }
     };
 
@@ -264,7 +265,6 @@ public:
         oss << "\tif (i == 0); pause; else; pause(0.01); end;\n";
         oss << "\tif (i ~= N_); delete(p_s); end\n";
         oss << "end\n";
-
     };
 
 private:
@@ -355,67 +355,85 @@ private:
 
     void InitilizeParticles(const int &NumOfParticles,
                             cuDFNsys::Mesh mesh,
-                            const cuDFNsys::MHFEM &fem){
-        //this->ParticlePlumes.resize(NumOfParticles);
-        //////////////
+                            const cuDFNsys::MHFEM &fem)
+    {
+        ////////////
         // this->ParticlePlumes.resize(1);
         // this->NumParticles = 1; //mesh.InletEdgeNOLen.size();
-        //
-        // for (uint i = 8; i < 9; ++i)
+        // for (uint i = 0; i < 1; ++i)
         // {
         //     uint EdgeNO = (uint)mesh.InletEdgeNOLen[i].x;     // from 1
         //     uint elementID = (EdgeNO - 1) / 3 + 1;            // from 1
         //     uint FracID = mesh.ElementFracTag[elementID - 1]; // from 0
         //     uint LocalEdgeNO = (EdgeNO - 1) % 3;
-        //
         //     float2 position_ = make_float2(0.5f * (mesh.Coordinate2D[elementID - 1].x[LocalEdgeNO] + mesh.Coordinate2D[elementID - 1].x[(LocalEdgeNO + 1) % 3]),
         //                                    0.5f * (mesh.Coordinate2D[elementID - 1].y[LocalEdgeNO] + mesh.Coordinate2D[elementID - 1].y[(LocalEdgeNO + 1) % 3]));
-        //
+        //     // move the position a little toward to the interior of grid
+        //     {
+        //         float2 inwardNormal = make_float2(-(mesh.Coordinate2D[elementID - 1].y[(LocalEdgeNO + 1) % 3] - mesh.Coordinate2D[elementID - 1].y[LocalEdgeNO]),
+        //                                           mesh.Coordinate2D[elementID - 1].x[(LocalEdgeNO + 1) % 3] - mesh.Coordinate2D[elementID - 1].x[LocalEdgeNO]);
+        //         float norm_inward = sqrt(inwardNormal.x * inwardNormal.x + inwardNormal.y * inwardNormal.y);
+        //         inwardNormal.x /= norm_inward;
+        //         inwardNormal.y /= norm_inward;
+        //         position_.x += (inwardNormal.x * 1e-5);
+        //         position_.y += (inwardNormal.y * 1e-5);
+        //     };
         //     cuDFNsys::Particle tmpP;
         //     tmpP.ElementID = elementID;
         //     tmpP.Position2D = position_;
         //     ParticlePlumes[0] = tmpP;
         // };
         // return;
-        ////
+        //
 
         thrust::host_vector<uint> NumParticlesEachEdge(mesh.InletEdgeNOLen.size());
-        
+
         for (size_t i = 0; i < mesh.InletEdgeNOLen.size(); ++i)
         {
             uint EdgeNO = (uint)mesh.InletEdgeNOLen[i].x;
             float length_ = mesh.InletEdgeNOLen[i].y;
-        
+
             float proportion_ = abs(fem.VelocityNormalScalarSepEdges(EdgeNO - 1, 0)) * length_ / fem.QIn;
-        
+
             NumParticlesEachEdge[i] = (uint)round(proportion_ * NumOfParticles);
         }
-        
+
         this->NumParticles = 0;
         for (size_t i = 0; i < NumParticlesEachEdge.size(); ++i)
         {
             this->NumParticles += NumParticlesEachEdge[i];
         }
         this->ParticlePlumes.resize(NumParticles);
-        
+
         uint TmpCountParticle = 0;
         for (size_t i = 0; i < NumParticlesEachEdge.size(); ++i)
         {
             uint EdgeNO = (uint)mesh.InletEdgeNOLen[i].x;     // from 1
             uint elementID = (EdgeNO - 1) / 3 + 1;            // from 1
             uint FracID = mesh.ElementFracTag[elementID - 1]; // from 0
-        
+
             uint LocalEdgeNO = (EdgeNO - 1) % 3;
-        
+
             float2 position_ = make_float2(0.5f * (mesh.Coordinate2D[elementID - 1].x[LocalEdgeNO] + mesh.Coordinate2D[elementID - 1].x[(LocalEdgeNO + 1) % 3]),
                                            0.5f * (mesh.Coordinate2D[elementID - 1].y[LocalEdgeNO] + mesh.Coordinate2D[elementID - 1].y[(LocalEdgeNO + 1) % 3]));
-        
+
+            // move the position a little toward to the interior of grid
+            {
+                float2 inwardNormal = make_float2(-(mesh.Coordinate2D[elementID - 1].y[(LocalEdgeNO + 1) % 3] - mesh.Coordinate2D[elementID - 1].y[LocalEdgeNO]),
+                                                  mesh.Coordinate2D[elementID - 1].x[(LocalEdgeNO + 1) % 3] - mesh.Coordinate2D[elementID - 1].x[LocalEdgeNO]);
+                float norm_inward = sqrt(inwardNormal.x * inwardNormal.x + inwardNormal.y * inwardNormal.y);
+                inwardNormal.x /= norm_inward;
+                inwardNormal.y /= norm_inward;
+
+                position_.x += (inwardNormal.x * 1e-5);
+                position_.y += (inwardNormal.y * 1e-5);
+            };
             cuDFNsys::Particle tmpP;
             tmpP.ElementID = elementID;
             tmpP.Position2D = position_;
-        
+
             thrust::host_vector<cuDFNsys::Particle> tmpPVEC(NumParticlesEachEdge[i], tmpP);
-        
+
             thrust::copy(tmpPVEC.begin(),
                          tmpPVEC.end(),
                          this->ParticlePlumes.begin() + TmpCountParticle);

@@ -22,11 +22,13 @@
 
 namespace cuDFNsys
 {
-__host__ __device__ float3 IdentifyParticleCrossesWhichEdge(float2 *P_Trajectory, float2 *Vertex_Triangle, uint init_checking_edgeNO, float _TOL_,
-                                                            uint eleID__,
-                                                            int *CroessedEleID,
-                                                            int *CroessedLocalEdgeNO,
-                                                            int NumCrossedEdge)
+__host__ __device__ float3 IdentifyParticleCrossesWhichEdge(float2 *P_Trajectory,
+                                                            float2 *Vertex_Triangle,
+                                                            float _TOL_,
+                                                            float2 CrossedGlobalEdge[10][2],
+                                                            int CountCrossedGlobalEdge,
+                                                            uint stepNO,
+                                                            uint particleNO)
 {
     bool If_End1_on_Bound = false;
     int edge_onBound_end1 = -1;
@@ -37,19 +39,51 @@ __host__ __device__ float3 IdentifyParticleCrossesWhichEdge(float2 *P_Trajectory
     p1 = P_Trajectory[0];
     q1 = P_Trajectory[1];
 
-    for (uint ik = 0; ik < 3; ++ik)
+    for (uint i = 0; i < 3; ++i)
     {
-        uint i = (init_checking_edgeNO + ik) % 3;
-
         float2 p2, q2;
         p2 = Vertex_Triangle[i];
         q2 = Vertex_Triangle[(i + 1) % 3];
+
+        // check if the edge has been crossed?
+        // check if the edge has been crossed?
+        // check if the edge has been crossed?
+        if (CountCrossedGlobalEdge > 0)
+        {
+            bool IfEdgeChecked = false;
+            for (int k = 0; k < CountCrossedGlobalEdge; ++k)
+            {
+                float2 a = CrossedGlobalEdge[k][0];
+                float2 b = CrossedGlobalEdge[k][1];
+
+                if (abs(a.x - p2.x) < 1e-7 && abs(a.y - p2.y) < 1e-7 &&
+                    abs(b.x - q2.x) < 1e-7 && abs(b.y - q2.y) < 1e-7)
+                {
+                    IfEdgeChecked = true;
+                    break;
+                }
+
+                if (abs(b.x - p2.x) < 1e-7 && abs(b.y - p2.y) < 1e-7 &&
+                    abs(a.x - q2.x) < 1e-7 && abs(a.y - q2.y) < 1e-7)
+                {
+                    IfEdgeChecked = true;
+                    break;
+                }
+            }
+
+            if (IfEdgeChecked)
+                continue;
+        };
 
         int o1 = cuDFNsys::OrientationThree2DPnts(p1, q1, p2, _TOL_);
         int o2 = cuDFNsys::OrientationThree2DPnts(p1, q1, q2, _TOL_);
         int o3 = cuDFNsys::OrientationThree2DPnts(p2, q2, p1, _TOL_);
         int o4 = cuDFNsys::OrientationThree2DPnts(p2, q2, q1, _TOL_);
-        //printf("o: %d %d %d %d\n", o1, o2, o3, o4);
+
+        if (stepNO == 1)
+        {
+            printf("particleNO: %d, edgeNO: %d, o: %d %d %d %d\n", particleNO, i, o1, o2, o3, o4);
+        }
 
         if (o1 == 0 && o2 == 0 && o3 == 0 && o4 == 0)
         {
@@ -57,26 +91,27 @@ __host__ __device__ float3 IdentifyParticleCrossesWhichEdge(float2 *P_Trajectory
             continue;
         };
 
-        float2 Edge2_[2] = {p2, q2};
+        //float2 Edge2_[2] = {p2, q2};
 
-        if (o3 == 0 && (cuDFNsys::If2DPntLiesOnCollinearSeg(p2, p1, q2) || abs(cuDFNsys::DistancePnt2DSeg(p1, Edge2_)) < _TOL_))
+        ///-------------------first end of the trajectory on an edge
+        ///-------------------first end of the trajectory on an edge
+        ///-------------------first end of the trajectory on an edge
+        if (o3 == 0 && cuDFNsys::If2DPntLiesOnCollinearSeg(p2, p1, q2))
         {
-
             If_End1_on_Bound = true;
             edge_onBound_end1 = i;
             continue;
         }
 
+        ///-------------------second end of the trajectory on an edge
+        ///-------------------second end of the trajectory on an edge
+        ///-------------------second end of the trajectory on an edge
         if (o4 == 0 && cuDFNsys::If2DPntLiesOnCollinearSeg(p2, q1, q2))
         {
+
             Result.z = (float)i;
             Result.x = q1.x;
             Result.y = q1.y;
-
-            for (int l = 0; l < NumCrossedEdge; ++l)
-                if (CroessedEleID[l] == (int)eleID__)
-                    if (CroessedLocalEdgeNO[l] == (int)i)
-                        continue;
 
             return Result;
         }
@@ -108,11 +143,6 @@ __host__ __device__ float3 IdentifyParticleCrossesWhichEdge(float2 *P_Trajectory
 
             Result.z = (float)i;
 
-            for (int l = 0; l < NumCrossedEdge; ++l)
-                if (CroessedEleID[l] == (int)eleID__)
-                    if (CroessedLocalEdgeNO[l] == (int)i)
-                        continue;
-
             return Result;
         };
     };
@@ -123,14 +153,6 @@ __host__ __device__ float3 IdentifyParticleCrossesWhichEdge(float2 *P_Trajectory
         Result.z = (float)edge_onBound_end1;
         Result.x = p1.x;
         Result.y = p1.y;
-
-        for (int l = 0; l < NumCrossedEdge; ++l)
-            if (CroessedEleID[l] == (int)eleID__)
-                if (CroessedLocalEdgeNO[l] == (int)edge_onBound_end1)
-                {
-                    Result.z = -1.0f;
-                    return Result;
-                }
 
         return Result;
     }

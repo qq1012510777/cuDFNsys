@@ -29,16 +29,16 @@ __host__ __device__ void WhichElementToGo(uint currentEleID,
                                           cuDFNsys::EleCoor *Coordinate2D_Vec_dev_ptr,
                                           float *velocity_ptr,
                                           float rand_0_1,
-                                          uint &NextElementID,
-                                          uint &NextFracID,
-                                          uint &IndexInLocal)
+                                          int &NextElementID,
+                                          int &NextFracID,
+                                          int &IndexInLocal)
 {
     float TotalVeloc = 0;
-    float *veloc_vec = new float[NumSharedEle - 1];
+    float veloc_vec[_NumOfSharedEleAtMost];
     uint i_prime = 0;
-    uint *eleID_vec = new uint[NumSharedEle - 1];
+    uint eleID_vec[_NumOfSharedEleAtMost];
 
-    uint *IndexTrans_vec = new uint[NumSharedEle - 1];
+    uint IndexTrans_vec[_NumOfSharedEleAtMost];
 
     for (uint i = 0; i < NumSharedEle; ++i)
     {
@@ -97,12 +97,5 @@ __host__ __device__ void WhichElementToGo(uint currentEleID,
             IndexInLocal = IndexTrans_vec[i];
             break;
         }
-
-    delete[] veloc_vec;
-    veloc_vec = NULL;
-    delete[] eleID_vec;
-    eleID_vec = NULL;
-    delete[] IndexTrans_vec;
-    IndexTrans_vec = NULL;
 };
 }; // namespace cuDFNsys

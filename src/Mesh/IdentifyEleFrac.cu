@@ -49,7 +49,7 @@ __global__ void cuDFNsys::IdentifyEleFrac(uint3 *One_entity_one_ele_dev_ptr,
         //memcpy(MAT_3to2, Frac_verts_device_ptr[j].Roation_Matrix_3Dto2D, sizeof(float) * 9);
 
         float2 verts_2D__s[4];
-        Frac_verts_device_ptr[j].Generate2DVerts(verts_2D__s);
+        Frac_verts_device_ptr[j].Generate2DVerts(verts_2D__s, 4, false);
         //memcpy(verts_2D__s, Frac_verts_device_ptr[j].verts_2D, sizeof(float2) * 4);
 
         bool belong_to_this_frac = true;

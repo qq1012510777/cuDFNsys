@@ -41,7 +41,7 @@ typedef std::map<pair<size_t, size_t>, pair<float3, float3>> MapIntersection;
 #define _TOL_IdentifyEleFrac 1e-2
 #define _TOL_IfTwoEndsDirchlet 1e-7
 
-__device__ const float _TOL_ParticleOnGridBound = 1e-4;
+__device__ const float _TOL_ParticleOnGridBound = 1e-3;
 
 const uint _NumOfSharedEleAtMost = 4;
 const uint _NumOfNeighborEleAtMost = 20;
