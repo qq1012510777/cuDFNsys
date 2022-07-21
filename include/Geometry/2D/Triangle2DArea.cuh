@@ -8,11 +8,14 @@
 // AUTHOR:            Tingchang YIN
 ///////////////////////////////////////////////////////////////////
 #pragma once
+#include "../../DataTypeSelector/DataTypeSelector.cuh"
 #include "../../GlobalDef/GlobalDef.cuh"
+#include "../../MatrixManipulation/MatrixManipulation.cuh"
 
 namespace cuDFNsys
 {
-__device__ __host__ float Triangle2DArea(float2 Pnt1,
-                                         float2 Pnt2,
-                                         float2 Pnt3);
+template <typename T>
+__device__ __host__ T Triangle2DArea(cuDFNsys::Vector2<T> Pnt1,
+                                     cuDFNsys::Vector2<T> Pnt2,
+                                     cuDFNsys::Vector2<T> Pnt3);
 }; // namespace cuDFNsys

@@ -7,8 +7,8 @@
 // AUTHOR:      Tingchang YIN
 // DATE:        07/05/2022
 // ====================================================
-
-__device__ __host__ bool cuDFNsys::If2DPntLiesOnCollinearSeg(float2 p, float2 q, float2 r)
+template <typename T>
+__device__ __host__ bool cuDFNsys::If2DPntLiesOnCollinearSeg(cuDFNsys::Vector2<T> p, cuDFNsys::Vector2<T> q, cuDFNsys::Vector2<T> r)
 {
     if (q.x <= max(p.x, r.x) && q.x >= min(p.x, r.x) &&
         q.y <= max(p.y, r.y) && q.y >= min(p.y, r.y))
@@ -16,3 +16,5 @@ __device__ __host__ bool cuDFNsys::If2DPntLiesOnCollinearSeg(float2 p, float2 q,
 
     return false;
 }; // If2DPntLiesOnCollinearSeg
+template __device__ __host__ bool cuDFNsys::If2DPntLiesOnCollinearSeg<double>(cuDFNsys::Vector2<double> p, cuDFNsys::Vector2<double> q, cuDFNsys::Vector2<double> r);
+template __device__ __host__ bool cuDFNsys::If2DPntLiesOnCollinearSeg<float>(cuDFNsys::Vector2<float> p, cuDFNsys::Vector2<float> q, cuDFNsys::Vector2<float> r);

@@ -2,15 +2,16 @@
 
 // ====================================================
 // NAME:        GetLocalCoordiates
-// DESCRIPTION: Get 2D local coordiates of elements 
+// DESCRIPTION: Get 2D local coordiates of elements
 // AUTHOR:      Tingchang YIN
 // DATE:        08/04/2022
 // ====================================================
+template <typename T>
 __global__ void cuDFNsys::GetLocalCoordiates(uint3 *element_3D_dev_ptr,
-                                             cuDFNsys::Fracture *Frac_verts_device_ptr,
+                                             cuDFNsys::Fracture<T> *Frac_verts_device_ptr,
                                              uint *element_Frac_Tag_dev_ptr,
-                                             cuDFNsys::EleCoor *coordinate_2D_dev_ptr,
-                                             float3 *coordinate_3D_dev_ptr,
+                                             cuDFNsys::EleCoor<T> *coordinate_2D_dev_ptr,
+                                             cuDFNsys::Vector3<T> *coordinate_3D_dev_ptr,
                                              int ele_count)
 {
     int i = threadIdx.x + blockIdx.x * blockDim.x;
@@ -20,9 +21,9 @@ __global__ void cuDFNsys::GetLocalCoordiates(uint3 *element_3D_dev_ptr,
 
     uint FracTag = element_Frac_Tag_dev_ptr[i];
 
-    float3 Center_ = Frac_verts_device_ptr[FracTag].Center;
+    cuDFNsys::Vector3<T> Center_ = Frac_verts_device_ptr[FracTag].Center;
 
-    float MAT_3to2[3][3];
+    T MAT_3to2[3][3];
     Frac_verts_device_ptr[FracTag].RoationMatrix(MAT_3to2, 32);
     //memcpy(MAT_3to2, Frac_verts_device_ptr[FracTag].Roation_Matrix_3Dto2D, sizeof(float) * 9);
 
@@ -30,19 +31,19 @@ __global__ void cuDFNsys::GetLocalCoordiates(uint3 *element_3D_dev_ptr,
     uint node2 = element_3D_dev_ptr[i].y;
     uint node3 = element_3D_dev_ptr[i].z;
 
-    float3 grid_verts[3];
+    cuDFNsys::Vector3<T> grid_verts[3];
     grid_verts[0] = coordinate_3D_dev_ptr[node1 - 1];
     grid_verts[1] = coordinate_3D_dev_ptr[node2 - 1];
     grid_verts[2] = coordinate_3D_dev_ptr[node3 - 1];
 
-    float2 verts2Dlocal[3];
+    cuDFNsys::Vector2<T> verts2Dlocal[3];
     for (int j = 0; j < 3; ++j)
     {
-        grid_verts[j] = make_float3(grid_verts[j].x - Center_.x,
-                                    grid_verts[j].y - Center_.y,
-                                    grid_verts[j].z - Center_.z);
+        grid_verts[j] = cuDFNsys::MakeVector3(grid_verts[j].x - Center_.x,
+                                              grid_verts[j].y - Center_.y,
+                                              grid_verts[j].z - Center_.z);
 
-        grid_verts[j] = cuDFNsys::ProductSquare3Float3(MAT_3to2, grid_verts[j]);
+        grid_verts[j] = cuDFNsys::ProductSquare3Vector3<T>(MAT_3to2, grid_verts[j]);
 
         //coordinate_2D_dev_ptr[i].x[j] = grid_verts[j].x;
         //coordinate_2D_dev_ptr[i].y[j] = grid_verts[j].y;
@@ -59,9 +60,9 @@ __global__ void cuDFNsys::GetLocalCoordiates(uint3 *element_3D_dev_ptr,
 
     //-----------check if the triangle orientation with local coordinates is counterclockwise
 
-    bool ori = cuDFNsys::Triangle2DOrientation(verts2Dlocal[0],
-                                               verts2Dlocal[1],
-                                               verts2Dlocal[2]);
+    bool ori = cuDFNsys::Triangle2DOrientation<T>(verts2Dlocal[0],
+                                                  verts2Dlocal[1],
+                                                  verts2Dlocal[2]);
 
     if (ori == true)
     {
@@ -104,3 +105,15 @@ __global__ void cuDFNsys::GetLocalCoordiates(uint3 *element_3D_dev_ptr,
         coordinate_2D_dev_ptr[i].y[2] = verts2Dlocal[2].y;
     }
 }; //GetLocalCoordiates
+template __global__ void cuDFNsys::GetLocalCoordiates<double>(uint3 *element_3D_dev_ptr,
+                                                              cuDFNsys::Fracture<double> *Frac_verts_device_ptr,
+                                                              uint *element_Frac_Tag_dev_ptr,
+                                                              cuDFNsys::EleCoor<double> *coordinate_2D_dev_ptr,
+                                                              cuDFNsys::Vector3<double> *coordinate_3D_dev_ptr,
+                                                              int ele_count);
+template __global__ void cuDFNsys::GetLocalCoordiates<float>(uint3 *element_3D_dev_ptr,
+                                                             cuDFNsys::Fracture<float> *Frac_verts_device_ptr,
+                                                             uint *element_Frac_Tag_dev_ptr,
+                                                             cuDFNsys::EleCoor<float> *coordinate_2D_dev_ptr,
+                                                             cuDFNsys::Vector3<float> *coordinate_3D_dev_ptr,
+                                                             int ele_count);

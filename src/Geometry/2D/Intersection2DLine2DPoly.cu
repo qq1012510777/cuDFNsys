@@ -7,27 +7,28 @@
 // AUTHOR:      Tingchang YIN
 // DATE:        07/04/2022
 // ====================================================
-__device__ __host__ bool cuDFNsys::Intersection2DLine2DPoly(float2 *Poly2D,
+template <typename T>
+__device__ __host__ bool cuDFNsys::Intersection2DLine2DPoly(cuDFNsys::Vector2<T> *Poly2D,
                                                             int NUM_verts,
-                                                            float2 *Line,
-                                                            float2 *intersection_k,
-                                                            float _TOL_)
+                                                            cuDFNsys::Vector2<T> *Line,
+                                                            cuDFNsys::Vector2<T> *intersection_k,
+                                                            T _TOL_)
 {
     int tmpcc = 0;
-    float2 tmp_pnts[10];
+    cuDFNsys::Vector2<T> tmp_pnts[10];
     for (int i = 0; i < NUM_verts; ++i)
     {
-        float2 Seg[2], intersection[2];
+        cuDFNsys::Vector2<T> Seg[2], intersection[2];
         Seg[0] = Poly2D[i];
         Seg[1] = Poly2D[(i + 1) % NUM_verts];
 
         int sign__ = 0;
 
-        bool ik = cuDFNsys::Intersection2DLine2DSeg(Line,
-                                                    Seg,
-                                                    &sign__,
-                                                    intersection,
-                                                    _TOL_);
+        bool ik = cuDFNsys::Intersection2DLine2DSeg<T>(Line,
+                                                       Seg,
+                                                       &sign__,
+                                                       intersection,
+                                                       _TOL_);
 
         if (ik == true)
         {
@@ -38,8 +39,8 @@ __device__ __host__ bool cuDFNsys::Intersection2DLine2DPoly(float2 *Poly2D,
                 bool if_duplicated = false;
                 for (int j = 0; j < tmpcc; ++j)
                 {
-                    float2 dd = make_float2(intersection[0].x - tmp_pnts[j].x, intersection[0].y - tmp_pnts[j].y);
-                    float distance = pow(dd.x * dd.x + dd.y * dd.y, 0.5);
+                    cuDFNsys::Vector2<T> dd = cuDFNsys::MakeVector2(intersection[0].x - tmp_pnts[j].x, intersection[0].y - tmp_pnts[j].y);
+                    T distance = pow(dd.x * dd.x + dd.y * dd.y, 0.5);
 
                     if (distance < _TOL_)
                     {
@@ -81,13 +82,13 @@ __device__ __host__ bool cuDFNsys::Intersection2DLine2DPoly(float2 *Poly2D,
 
         uint2 pair__;
 
-        float dist = 0;
+        T dist = 0;
         for (int k = 0; k < tmpcc - 1; ++k)
         {
             for (int h = k + 1; h < tmpcc; ++h)
             {
-                float2 kh = make_float2(tmp_pnts[k].x - tmp_pnts[h].x, tmp_pnts[k].y - tmp_pnts[h].y);
-                float distrr = sqrt(kh.x * kh.x + kh.y * kh.y);
+                cuDFNsys::Vector2<T> kh = cuDFNsys::MakeVector2(tmp_pnts[k].x - tmp_pnts[h].x, tmp_pnts[k].y - tmp_pnts[h].y);
+                T distrr = sqrt(kh.x * kh.x + kh.y * kh.y);
 
                 if (distrr > dist)
                 {
@@ -105,3 +106,13 @@ __device__ __host__ bool cuDFNsys::Intersection2DLine2DPoly(float2 *Poly2D,
 
     return false;
 }; // Intersection2DLine2DPoly
+template __device__ __host__ bool cuDFNsys::Intersection2DLine2DPoly<double>(cuDFNsys::Vector2<double> *Poly2D,
+                                                                    int NUM_verts,
+                                                                    cuDFNsys::Vector2<double> *Line,
+                                                                    cuDFNsys::Vector2<double> *intersection_k,
+                                                                    double _TOL_);
+template __device__ __host__ bool cuDFNsys::Intersection2DLine2DPoly<float>(cuDFNsys::Vector2<float> *Poly2D,
+                                                                   int NUM_verts,
+                                                                   cuDFNsys::Vector2<float> *Line,
+                                                                   cuDFNsys::Vector2<float> *intersection_k,
+                                                                   float _TOL_);

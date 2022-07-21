@@ -6,10 +6,13 @@
 // AUTHOR:      Tingchang YIN
 // DATE:        02/04/2022
 // ====================================================
-__device__ __host__ float cuDFNsys::Fracture::Theta()
+template <typename T>
+__device__ __host__ cuDFNsys::Vector1<T> cuDFNsys::Fracture<T>::Theta()
 {
     return acos(NormalVec.z);
 }; // Theta
+template __device__ __host__ cuDFNsys::Vector1<double> cuDFNsys::Fracture<double>::Theta();
+template __device__ __host__ cuDFNsys::Vector1<float> cuDFNsys::Fracture<float>::Theta();
 
 // ====================================================
 // NAME:        Phi
@@ -17,11 +20,14 @@ __device__ __host__ float cuDFNsys::Fracture::Theta()
 // AUTHOR:      Tingchang YIN
 // DATE:        02/04/2022
 // ====================================================
-__device__ __host__ float cuDFNsys::Fracture::Phi()
+template <typename T>
+__device__ __host__ cuDFNsys::Vector1<T> cuDFNsys::Fracture<T>::Phi()
 {
-    float phi = atan2(NormalVec.y, NormalVec.x);
+    cuDFNsys::Vector1<T> phi = atan2(NormalVec.y, NormalVec.x);
     return (phi > 0 ? phi : phi + 2.0 * M_PI);
 }; // Phi
+template __device__ __host__ cuDFNsys::Vector1<double> cuDFNsys::Fracture<double>::Phi();
+template __device__ __host__ cuDFNsys::Vector1<float> cuDFNsys::Fracture<float>::Phi();
 
 // ====================================================
 // NAME:        RoationMatrix
@@ -30,10 +36,13 @@ __device__ __host__ float cuDFNsys::Fracture::Phi()
 // AUTHOR:      Tingchang YIN
 // DATE:        02/04/2022
 // ====================================================
-__device__ __host__ void cuDFNsys::Fracture::RoationMatrix(float tmp_R_1[3][3], const int mode)
+template <typename T>
+__device__ __host__ void cuDFNsys::Fracture<T>::RoationMatrix(cuDFNsys::Vector1<T> tmp_R_1[3][3], const int mode)
 {
-    float3 rotate_axis = make_float3(-NormalVec.y, NormalVec.x, 0.00);
-    float norm_axis = sqrt(rotate_axis.x * rotate_axis.x + rotate_axis.y * rotate_axis.y);
+    cuDFNsys::Vector3<T> rotate_axis;
+    rotate_axis.x = -NormalVec.y, rotate_axis.y = NormalVec.x, rotate_axis.z = 0.00;
+
+    cuDFNsys::Vector1<T> norm_axis = sqrt(rotate_axis.x * rotate_axis.x + rotate_axis.y * rotate_axis.y);
     rotate_axis.x /= norm_axis;
     rotate_axis.y /= norm_axis;
 
@@ -43,21 +52,23 @@ __device__ __host__ void cuDFNsys::Fracture::RoationMatrix(float tmp_R_1[3][3], 
     else if (mode == 23)
         sign_ = 1;
 
-    cuDFNsys::Quaternion Qua;
+    cuDFNsys::Quaternion<T> Qua;
     Qua = Qua.DescribeRotation(rotate_axis, sign_ * acos(NormalVec.z));
 
-    float4 quater_ = Qua.GetQuaternionNum();
-    float w = quater_.x;
-    float x = quater_.y;
-    float y = quater_.z;
-    float z = quater_.w;
-    float tmp_R[3][3] = {1 - 2 * y * y - 2 * z * z, 2 * x * y - 2 * w * z, 2 * x * z + 2 * w * y,
-                         2 * x * y + 2 * w * z, 1 - 2 * x * x - 2 * z * z, 2 * y * z - 2 * w * x,
-                         2 * x * z - 2 * w * y, 2 * y * z + 2 * w * x, 1 - 2 * x * x - 2 * y * y};
+    cuDFNsys::Vector4<T> quater_ = Qua.GetQuaternionNum();
+    cuDFNsys::Vector1<T> w = quater_.x,
+                         x = quater_.y,
+                         y = quater_.z,
+                         z = quater_.w;
+    cuDFNsys::Vector1<T> tmp_R[3][3] = {1 - 2 * y * y - 2 * z * z, 2 * x * y - 2 * w * z, 2 * x * z + 2 * w * y,
+                                        2 * x * y + 2 * w * z, 1 - 2 * x * x - 2 * z * z, 2 * y * z - 2 * w * x,
+                                        2 * x * z - 2 * w * y, 2 * y * z + 2 * w * x, 1 - 2 * x * x - 2 * y * y};
     for (int i = 0; i < 3; ++i)
         for (int j = 0; j < 3; ++j)
             tmp_R_1[i][j] = tmp_R[i][j];
 }; // RoationMatrix
+template __device__ __host__ void cuDFNsys::Fracture<double>::RoationMatrix(cuDFNsys::Vector1<double> tmp_R_1[3][3], const int mode);
+template __device__ __host__ void cuDFNsys::Fracture<float>::RoationMatrix(cuDFNsys::Vector1<float> tmp_R_1[3][3], const int mode);
 
 // ====================================================
 // NAME:        Generate2DVerts
@@ -65,47 +76,41 @@ __device__ __host__ void cuDFNsys::Fracture::RoationMatrix(float tmp_R_1[3][3], 
 // AUTHOR:      Tingchang YIN
 // DATE:        02/04/2022
 // ====================================================
-__device__ __host__ void cuDFNsys::Fracture::Generate2DVerts(float2 *verts2DDD, uint NUM_verts, bool IfTrimed)
+template <typename T>
+__device__ __host__ void cuDFNsys::Fracture<T>::Generate2DVerts(cuDFNsys::Vector2<T> *verts2DDD, uint NUM_verts, bool IfTrimed)
 {
-    float3 rotate_axis = make_float3(-NormalVec.y, NormalVec.x, 0.00);
-    float norm_axis = sqrt(rotate_axis.x * rotate_axis.x + rotate_axis.y * rotate_axis.y);
+    cuDFNsys::Vector3<T> rotate_axis;
+    rotate_axis.x = -NormalVec.y, rotate_axis.y = NormalVec.x, rotate_axis.z = 0.00;
+
+    cuDFNsys::Vector1<T> norm_axis = sqrt(rotate_axis.x * rotate_axis.x + rotate_axis.y * rotate_axis.y);
     rotate_axis.x /= norm_axis;
     rotate_axis.y /= norm_axis;
-    cuDFNsys::Quaternion Qua;
+    cuDFNsys::Quaternion<T> Qua;
     Qua = Qua.DescribeRotation(rotate_axis, -1.0 * acos(this->NormalVec.z));
-
-    //float2 verts2D[4];
-    //
-    //float3 verts3D__[4];
-    //for (int i = 0; i < 4; ++i)
-    //{
-    //    verts3D__[i] = make_float3(this->Verts3D[i].x - this->Center.x,
-    //                               this->Verts3D[i].y - this->Center.y,
-    //                               this->Verts3D[i].z - this->Center.z);
-    //    verts3D__[i] = Qua.Rotate(verts3D__[i]);
-    //    verts2D[i].x = verts3D__[i].x;
-    //    verts2D[i].y = verts3D__[i].y;
-    //}
-    //for (int i = 0; i < 4; ++i)
-    //    verts2DDD[i] = verts2D[i];
 
     if (IfTrimed == false)
         NUM_verts = 4;
     for (uint i = 0; i < NUM_verts; ++i)
     {
-        float3 Vertex__;
+        cuDFNsys::Vector3<T> Vertex__;
 
         if (IfTrimed == false)
-            Vertex__ = make_float3(this->Verts3D[i].x - this->Center.x,
-                                   this->Verts3D[i].y - this->Center.y,
-                                   this->Verts3D[i].z - this->Center.z);
+        {
+            Vertex__.x = this->Verts3D[i].x - this->Center.x,
+            Vertex__.y = this->Verts3D[i].y - this->Center.y,
+            Vertex__.z = this->Verts3D[i].z - this->Center.z;
+        }
         else
-            Vertex__ = make_float3(this->Verts3DTruncated[i].x - this->Center.x,
-                                   this->Verts3DTruncated[i].y - this->Center.y,
-                                   this->Verts3DTruncated[i].z - this->Center.z);
+        {
+            Vertex__.x = this->Verts3DTruncated[i].x - this->Center.x,
+            Vertex__.y = this->Verts3DTruncated[i].y - this->Center.y,
+            Vertex__.z = this->Verts3DTruncated[i].z - this->Center.z;
+        }
 
         Vertex__ = Qua.Rotate(Vertex__);
         verts2DDD[i].x = Vertex__.x;
         verts2DDD[i].y = Vertex__.y;
     };
 }; // Generate2DVerts
+template __device__ __host__ void cuDFNsys::Fracture<double>::Generate2DVerts(cuDFNsys::Vector2<double> *verts2DDD, uint NUM_verts, bool IfTrimed);
+template __device__ __host__ void cuDFNsys::Fracture<float>::Generate2DVerts(cuDFNsys::Vector2<float> *verts2DDD, uint NUM_verts, bool IfTrimed);

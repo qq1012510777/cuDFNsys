@@ -10,15 +10,18 @@
 ///////////////////////////////////////////////////////////////////
 
 #pragma once
+#include "../../DataTypeSelector/DataTypeSelector.cuh"
 #include "../../GlobalDef/GlobalDef.cuh"
+#include "../../MatrixManipulation/MatrixManipulation.cuh"
 #include "Intersection2DLine2DSeg.cuh"
 
 namespace cuDFNsys
 {
 // Intersection between 2D Line (infinite) and 2D Polygon
-__device__ __host__ bool Intersection2DLine2DPoly(float2 *Poly2D,
+template <typename T>
+__device__ __host__ bool Intersection2DLine2DPoly(cuDFNsys::Vector2<T> *Poly2D,
                                                   int NUM_verts,
-                                                  float2 *Line,
-                                                  float2 *intersection_k,
-                                                float _TOL_);
+                                                  cuDFNsys::Vector2<T> *Line,
+                                                  cuDFNsys::Vector2<T> *intersection_k,
+                                                  T _TOL_);
 }; // namespace cuDFNsys

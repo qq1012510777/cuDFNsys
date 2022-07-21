@@ -6,34 +6,35 @@
 // AUTHOR:      Tingchang YIN
 // DATE:        09/04/2022
 // ====================================================
-void cuDFNsys::GetStatistics(const thrust::host_vector<cuDFNsys::Fracture> &Frac_verts_host,
-                             const std::map<pair<size_t, size_t>, pair<float3, float3>> &Intersection_map,
+template <typename T>
+void cuDFNsys::GetStatistics(const thrust::host_vector<cuDFNsys::Fracture<T>> &Frac_verts_host,
+                             const std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<T>, cuDFNsys::Vector3<T>>> &Intersection_map,
                              const std::vector<std::vector<size_t>> &ListClusters,
                              const std::vector<size_t> &Percolation_cluster,
-                             const float L,
-                             float &P33_total_B,
-                             float &P33_connected_B,
-                             float &Ratio_of_P33_B,
-                             float &P33_largest_cluster_B,
-                             float &P32_total_B,
-                             float &P32_connected_B,
-                             float &Ratio_of_P32_B,
-                             float &P32_largest_cluster_B,
-                             float &P30_B,
-                             float &P30_connected_B,
-                             float &Ratio_of_P30_B,
-                             float &P30_largest_cluster_B,
-                             float &Percolation_probability_B,
-                             float &n_I_B)
+                             const T L,
+                             T &P33_total_B,
+                             T &P33_connected_B,
+                             T &Ratio_of_P33_B,
+                             T &P33_largest_cluster_B,
+                             T &P32_total_B,
+                             T &P32_connected_B,
+                             T &Ratio_of_P32_B,
+                             T &P32_largest_cluster_B,
+                             T &P30_B,
+                             T &P30_connected_B,
+                             T &Ratio_of_P30_B,
+                             T &P30_largest_cluster_B,
+                             T &Percolation_probability_B,
+                             T &n_I_B)
 {
     P32_total_B = 0;
     P30_B = 0;
     P32_connected_B = 0;
 
-    float volume_DFN = L * L * L;
+    T volume_DFN = L * L * L;
 
-    float area_total = 0;
-    float volume_total = 0;
+    T area_total = 0;
+    T volume_total = 0;
     for (int i = 0; i < Frac_verts_host.size(); ++i)
     {
         area_total += pow(Frac_verts_host[i].Radius, 2) * 2;
@@ -51,8 +52,8 @@ void cuDFNsys::GetStatistics(const thrust::host_vector<cuDFNsys::Fracture> &Frac
                            ListClusters[Percolation_cluster[i]].end());
     }
 
-    float area_K = 0;
-    float volume_K = 0;
+    T area_K = 0;
+    T volume_K = 0;
     for (int i = 0; i < FRACS_perco.size(); ++i)
     {
         area_K += pow(Frac_verts_host[FRACS_perco[i]].Radius, 2) * 2;
@@ -69,8 +70,8 @@ void cuDFNsys::GetStatistics(const thrust::host_vector<cuDFNsys::Fracture> &Frac
             Tag_largest_cluster = i;
         }
     }
-    float area_s = 0;
-    float volume_s = 0;
+    T area_s = 0;
+    T volume_s = 0;
     for (int i = 0; i < clustersize_max; ++i)
     {
         area_s += pow(Frac_verts_host[ListClusters[Tag_largest_cluster][i]].Radius, 2) * 2;
@@ -99,4 +100,42 @@ void cuDFNsys::GetStatistics(const thrust::host_vector<cuDFNsys::Fracture> &Frac
         Percolation_probability_B = 0;
 
     n_I_B = 1.0f * Intersection_map.size() / (Frac_verts_host.size() * 1.0f);
-};
+}; // GetStatistics
+template void cuDFNsys::GetStatistics<double>(const thrust::host_vector<cuDFNsys::Fracture<double>> &Frac_verts_host,
+                                              const std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<double>, cuDFNsys::Vector3<double>>> &Intersection_map,
+                                              const std::vector<std::vector<size_t>> &ListClusters,
+                                              const std::vector<size_t> &Percolation_cluster,
+                                              const double L,
+                                              double &P33_total_B,
+                                              double &P33_connected_B,
+                                              double &Ratio_of_P33_B,
+                                              double &P33_largest_cluster_B,
+                                              double &P32_total_B,
+                                              double &P32_connected_B,
+                                              double &Ratio_of_P32_B,
+                                              double &P32_largest_cluster_B,
+                                              double &P30_B,
+                                              double &P30_connected_B,
+                                              double &Ratio_of_P30_B,
+                                              double &P30_largest_cluster_B,
+                                              double &Percolation_probability_B,
+                                              double &n_I_B);
+template void cuDFNsys::GetStatistics<float>(const thrust::host_vector<cuDFNsys::Fracture<float>> &Frac_verts_host,
+                                              const std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<float>, cuDFNsys::Vector3<float>>> &Intersection_map,
+                                              const std::vector<std::vector<size_t>> &ListClusters,
+                                              const std::vector<size_t> &Percolation_cluster,
+                                              const float L,
+                                              float &P33_total_B,
+                                              float &P33_connected_B,
+                                              float &Ratio_of_P33_B,
+                                              float &P33_largest_cluster_B,
+                                              float &P32_total_B,
+                                              float &P32_connected_B,
+                                              float &Ratio_of_P32_B,
+                                              float &P32_largest_cluster_B,
+                                              float &P30_B,
+                                              float &P30_connected_B,
+                                              float &Ratio_of_P30_B,
+                                              float &P30_largest_cluster_B,
+                                              float &Percolation_probability_B,
+                                              float &n_I_B);

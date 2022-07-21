@@ -9,6 +9,7 @@
 // AUTHOR:            Tingchang YIN
 ///////////////////////////////////////////////////////////////////
 #pragma once
+#include "../DataTypeSelector/DataTypeSelector.cuh"
 #include "../GlobalDef/GlobalDef.cuh"
 #include "../MatlabAPI/MatlabAPI.cuh"
 #include "Fracture.cuh"
@@ -21,21 +22,22 @@
 
 namespace cuDFNsys
 {
+template <typename T>
 class MatlabPlotDFN
 {
 public:
     // constructor
-    MatlabPlotDFN(string mat_key,                                          // mat file name
-                  string command_key,                                      // m file name
-                  thrust::host_vector<cuDFNsys::Fracture> Frac_verts_host, // Vector of Fracture
-                  MapIntersection Intersection_host,                       // vector of Intersection
-                  std::vector<std::vector<size_t>> ListClusters,           // List of clusters: a cluster is a vector
-                  std::vector<size_t> Percolation_cluster,                 // Percolation cluster contains the cluster vector ID
-                  bool If_show_truncated_frac,                             // if show truncated fractures
+    MatlabPlotDFN(string mat_key,                                                                                     // mat file name
+                  string command_key,                                                                                 // m file name
+                  thrust::host_vector<cuDFNsys::Fracture<T>> Frac_verts_host,                                         // Vector of Fracture
+                  std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<T>, cuDFNsys::Vector3<T>>> Intersection_host, // vector of Intersection
+                  std::vector<std::vector<size_t>> ListClusters,                                                      // List of clusters: a cluster is a vector
+                  std::vector<size_t> Percolation_cluster,                                                            // Percolation cluster contains the cluster vector ID
+                  bool If_show_truncated_frac,                                                                        // if show truncated fractures
                   bool If_show_intersection,
                   bool If_show_cluster,
                   bool If_show_orientation,
-                  float L,
+                  T L,
                   int dir);
 };
 }; // namespace cuDFNsys

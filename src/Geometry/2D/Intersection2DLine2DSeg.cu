@@ -7,27 +7,32 @@
 // AUTHOR:      Tingchang YIN
 // DATE:        07/04/2022
 // ====================================================
-
-__device__ __host__ bool cuDFNsys::Intersection2DLine2DSeg(float2 *Line,
-                                                           float2 *Seg,
+template <typename T>
+__device__ __host__ bool cuDFNsys::Intersection2DLine2DSeg(cuDFNsys::Vector2<T> *Line,
+                                                           cuDFNsys::Vector2<T> *Seg,
                                                            int *sign_, // 1, pnt; 2, seg; 3, none
-                                                           float2 *intersection,
-                                                           float _TOL_)
+                                                           cuDFNsys::Vector2<T> *intersection,
+                                                           T _TOL_)
 {
-    float2 directional_v = make_float2(Line[0].x - Line[1].x, Line[0].y - Line[1].y);
+    cuDFNsys::Vector2<T> directional_v = cuDFNsys::MakeVector2(Line[0].x - Line[1].x,
+                                                               Line[0].y - Line[1].y);
 
-    float2 Normal_To_Line = make_float2(-1.0 * directional_v.y, directional_v.x);
+    cuDFNsys::Vector2<T> Normal_To_Line = cuDFNsys::MakeVector2(-1.0f * directional_v.y,
+                                                                directional_v.x);
 
-    float2 p1 = Seg[0];
-    float2 p2 = Seg[1];
+    cuDFNsys::Vector2<T> p1 = Seg[0];
+    cuDFNsys::Vector2<T> p2 = Seg[1];
 
-    float2 p = make_float2((Line[0].x + Line[1].x) * 0.5, (Line[0].y + Line[1].y) * 0.5);
+    cuDFNsys::Vector2<T> p = cuDFNsys::MakeVector2((Line[0].x + Line[1].x) * 0.5f,
+                                                   (Line[0].y + Line[1].y) * 0.5f);
 
-    float2 j1 = make_float2(p1.x - p.x, p1.y - p.y);
-    float2 j2 = make_float2(p2.x - p.x, p2.y - p.y);
+    cuDFNsys::Vector2<T> j1 = cuDFNsys::MakeVector2(p1.x - p.x, p1.y - p.y);
+    cuDFNsys::Vector2<T> j2 = cuDFNsys::MakeVector2(p2.x - p.x, p2.y - p.y);
 
-    float g1 = Normal_To_Line.x * j1.x + Normal_To_Line.y * j1.y;
-    float g2 = Normal_To_Line.x * j2.x + Normal_To_Line.y * j2.y;
+    T g1 = Normal_To_Line.x * j1.x + Normal_To_Line.y * j1.y;
+    T g2 = Normal_To_Line.x * j2.x + Normal_To_Line.y * j2.y;
+
+    //printf("%f %f\n", g1, g2);
 
     if (abs(g1) < _TOL_ && abs(g2) < _TOL_) // L is containing the Seg
     {
@@ -53,29 +58,39 @@ __device__ __host__ bool cuDFNsys::Intersection2DLine2DSeg(float2 *Line,
     {
         *sign_ = 1;
         // now intersection between two infinite lines is the intersection we need
-        float a1 = Line[0].x;
-        float a2 = Line[0].y;
-        float b1 = Line[1].x;
-        float b2 = Line[1].y;
+        T a1 = Line[0].x;
+        T a2 = Line[0].y;
+        T b1 = Line[1].x;
+        T b2 = Line[1].y;
 
-        float c1 = Seg[0].x;
-        float c2 = Seg[0].y;
-        float d1 = Seg[1].x;
-        float d2 = Seg[1].y;
+        T c1 = Seg[0].x;
+        T c2 = Seg[0].y;
+        T d1 = Seg[1].x;
+        T d2 = Seg[1].y;
 
-        float A1 = a2 - b2;
-        float B1 = b1 - a1;
-        float C1 = (A1 * a1) + (B1 * a2);
-        float A2 = c2 - d2;
-        float B2 = d1 - c1;
-        float C2 = (A2 * c1) + (B2 * c2);
+        T A1 = a2 - b2;
+        T B1 = b1 - a1;
+        T C1 = (A1 * a1) + (B1 * a2);
+        T A2 = c2 - d2;
+        T B2 = d1 - c1;
+        T C2 = (A2 * c1) + (B2 * c2);
 
-        float x = (C1 * B2 - C2 * B1) / (A1 * B2 - A2 * B1);
-        float y = (C2 * A1 - C1 * A2) / (A1 * B2 - B1 * A2);
-        intersection[0] = make_float2(x, y);
+        T x = (C1 * B2 - C2 * B1) / (A1 * B2 - A2 * B1);
+        T y = (C2 * A1 - C1 * A2) / (A1 * B2 - B1 * A2);
+        intersection[0] = cuDFNsys::MakeVector2(x, y);
         return true;
     }
 
     *sign_ = -1;
     return false;
 }; // Intersection2DLine2DSeg
+template __device__ __host__ bool cuDFNsys::Intersection2DLine2DSeg<double>(cuDFNsys::Vector2<double> *Line,
+                                                                            cuDFNsys::Vector2<double> *Seg,
+                                                                            int *sign_, // 1, pnt; 2, seg; 3, none
+                                                                            cuDFNsys::Vector2<double> *intersection,
+                                                                            double _TOL_);
+template __device__ __host__ bool cuDFNsys::Intersection2DLine2DSeg<float>(cuDFNsys::Vector2<float> *Line,
+                                                                           cuDFNsys::Vector2<float> *Seg,
+                                                                           int *sign_, // 1, pnt; 2, seg; 3, none
+                                                                           cuDFNsys::Vector2<float> *intersection,
+                                                                           float _TOL_);

@@ -8,9 +8,7 @@
 // AUTHOR:            Tingchang YIN
 ///////////////////////////////////////////////////////////////////
 #pragma once
-#include "../Geometry/2D/Intersection2DLine2DPoly.cuh"
-#include "../Geometry/2D/IntersectionTwoCollinearSegs.cuh"
-#include "../Geometry/3D/Intersection3DPolyXYPlane.cuh"
+#include "../Geometry/Geometry.cuh"
 #include "../GlobalDef/GlobalDef.cuh"
 #include "../MatrixManipulation/MatrixManipulation.cuh"
 #include "Fracture.cuh"
@@ -19,8 +17,9 @@ using namespace std;
 
 namespace cuDFNsys
 {
-__global__ void IdentifyIntersectionKernel(cuDFNsys::Fracture *verts,
+template <typename T>
+__global__ void IdentifyIntersectionKernel(cuDFNsys::Fracture<T> *verts,
                                            int count,
-                                           cuDFNsys::Intersection *Int_sec,
+                                           cuDFNsys::Intersection<T> *Int_sec,
                                            bool if_trucncated);
 }; // namespace cuDFNsys

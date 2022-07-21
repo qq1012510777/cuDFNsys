@@ -9,8 +9,10 @@
 ///////////////////////////////////////////////////////////////////
 #pragma once
 #include "../Mesh/Mesh.cuh"
+#include "../DataTypeSelector/DataTypeSelector.cuh"
 
 namespace cuDFNsys
 {
-__device__ __host__ void StimaA(cuDFNsys::EleCoor coord, float A[3][3]);
+template <typename T>
+__device__ __host__ void StimaA(cuDFNsys::EleCoor<T> coord, T A[3][3]);
 }; // namespace cuDFNsys

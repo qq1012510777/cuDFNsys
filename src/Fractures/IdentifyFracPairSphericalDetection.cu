@@ -7,7 +7,8 @@
 // AUTHOR:      Tingchang YIN
 // DATE:        09/04/2022
 // ====================================================
-__global__ void cuDFNsys::IdentifyFracPairSphericalDetection(cuDFNsys::Fracture *verts,
+template <typename T>
+__global__ void cuDFNsys::IdentifyFracPairSphericalDetection(cuDFNsys::Fracture<T> *verts,
                                                              int3 *Frac_pairs,
                                                              int InitialPairNO,
                                                              int count)
@@ -26,15 +27,23 @@ __global__ void cuDFNsys::IdentifyFracPairSphericalDetection(cuDFNsys::Fracture 
     Frac_pairs[idx_TT].y = y_;
     Frac_pairs[idx_TT].z = 1;
 
-    float3 dist_two_frac = make_float3(verts[x_].Center.x - verts[y_].Center.x,
-                                       verts[x_].Center.y - verts[y_].Center.y,
-                                       verts[x_].Center.z - verts[y_].Center.z);
+    cuDFNsys::Vector3<T> dist_two_frac = cuDFNsys::MakeVector3<T>(verts[x_].Center.x - verts[y_].Center.x,
+                                                                  verts[x_].Center.y - verts[y_].Center.y,
+                                                                  verts[x_].Center.z - verts[y_].Center.z);
 
-    float ddis = pow(dist_two_frac.x * dist_two_frac.x +
-                         dist_two_frac.y * dist_two_frac.y +
-                         dist_two_frac.z * dist_two_frac.z,
-                     0.5);
+    T ddis = pow(dist_two_frac.x * dist_two_frac.x +
+                     dist_two_frac.y * dist_two_frac.y +
+                     dist_two_frac.z * dist_two_frac.z,
+                 0.5);
 
     if (ddis > (verts[x_].Radius + verts[y_].Radius))
         Frac_pairs[idx_TT].z = 0;
-};
+}; // IdentifyFracPairSphericalDetection
+template __global__ void cuDFNsys::IdentifyFracPairSphericalDetection<double>(cuDFNsys::Fracture<double> *verts,
+                                                                              int3 *Frac_pairs,
+                                                                              int InitialPairNO,
+                                                                              int count);
+template __global__ void cuDFNsys::IdentifyFracPairSphericalDetection<float>(cuDFNsys::Fracture<float> *verts,
+                                                                             int3 *Frac_pairs,
+                                                                             int InitialPairNO,
+                                                                             int count);

@@ -8,13 +8,15 @@
 // AUTHOR:            Tingchang YIN
 ///////////////////////////////////////////////////////////////////
 #pragma once
+#include "../DataTypeSelector/DataTypeSelector.cuh"
 #include "../GlobalDef/GlobalDef.cuh"
 
 namespace cuDFNsys
 {
+template <typename T>
 struct EleCoor
 {
-    float x[3];
-    float y[3];
+    T x[3];
+    T y[3];
 };
 }; // namespace cuDFNsys

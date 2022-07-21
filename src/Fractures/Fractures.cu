@@ -6,14 +6,15 @@
 // AUTHOR:      Tingchang YIN
 // DATE:        04/04/2022
 // ====================================================
-__global__ void cuDFNsys::Fractures(cuDFNsys::Fracture *verts,
+template <typename T>
+__global__ void cuDFNsys::Fractures(cuDFNsys::Fracture<T> *verts,
                                     unsigned long seed,
                                     int count,
-                                    float model_L,
-                                    uint ModeSizeDistri,
-                                    float4 ParaSizeDistri,
-                                    float kappa,
-                                    float conductivity_powerlaw_exponent)
+                                    cuDFNsys::Vector1<T> model_L,
+                                    uint ModeSizeDistri,                 // 1 = power law; 2 = lognormal; 3 = uniform; 4 = monosize
+                                    cuDFNsys::Vector4<T> ParaSizeDistri, // when mode = 1, ;
+                                    cuDFNsys::Vector1<T> kappa,
+                                    cuDFNsys::Vector1<T> conductivity_powerlaw_exponent)
 {
     int i = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -24,7 +25,7 @@ __global__ void cuDFNsys::Fractures(cuDFNsys::Fracture *verts,
 
     curand_init(seed, i, 0, &state);
 
-    float R_ = 0;
+    cuDFNsys::Vector1<T> R_ = 0;
 
     // if (alpha == 0 && abs(minR - maxR) < 1e-7)
     //     R_ = minR;
@@ -34,16 +35,16 @@ __global__ void cuDFNsys::Fractures(cuDFNsys::Fracture *verts,
     //     R_ = cuDFNsys::RandomPowerlaw(minR, maxR, alpha, curand_uniform(&state));
 
     if (ModeSizeDistri == 0)
-        R_ = cuDFNsys::RandomPowerlaw(ParaSizeDistri.y, ParaSizeDistri.z,
-                                      ParaSizeDistri.x, curand_uniform(&state));
+        R_ = cuDFNsys::RandomPowerlaw((T)ParaSizeDistri.y, (T)ParaSizeDistri.z,
+                                      (T)ParaSizeDistri.x, (T)curand_uniform(&state));
     else if (ModeSizeDistri == 1)
-        R_ = cuDFNsys::RandomLognormal(ParaSizeDistri.x,
-                                       ParaSizeDistri.y,
-                                       ParaSizeDistri.z,
-                                       ParaSizeDistri.w, curand_uniform(&state));
+        R_ = cuDFNsys::RandomLognormal((T)ParaSizeDistri.x,
+                                       (T)ParaSizeDistri.y,
+                                       (T)ParaSizeDistri.z,
+                                       (T)ParaSizeDistri.w, (T)curand_uniform(&state));
     else if (ModeSizeDistri == 2)
-        R_ = cuDFNsys::RandomUniform(ParaSizeDistri.x,
-                                     ParaSizeDistri.y, curand_uniform(&state));
+        R_ = cuDFNsys::RandomUniform((T)ParaSizeDistri.x,
+                                     (T)ParaSizeDistri.y, (T)curand_uniform(&state));
     else if (ModeSizeDistri == 3)
         R_ = ParaSizeDistri.x;
 
@@ -58,42 +59,46 @@ __global__ void cuDFNsys::Fractures(cuDFNsys::Fracture *verts,
     else
         verts[i].Conductivity = (1.0e-11) * pow(R_, 3.0 * conductivity_powerlaw_exponent);
 
-    verts[i].Center.x = cuDFNsys::RandomUniform(-model_L * 0.5, model_L * 0.5,
-                                                curand_uniform(&state));
-    verts[i].Center.y = cuDFNsys::RandomUniform(-model_L * 0.5, model_L * 0.5,
-                                                curand_uniform(&state));
-    verts[i].Center.z = cuDFNsys::RandomUniform(-model_L * 0.5, model_L * 0.5,
-                                                curand_uniform(&state));
+    verts[i].Center.x = cuDFNsys::RandomUniform((T)(-model_L * 0.5),
+                                                (T)(model_L * 0.5),
+                                                (T)(curand_uniform(&state)));
+    verts[i].Center.y = cuDFNsys::RandomUniform((T)(-model_L * 0.5),
+                                                (T)(model_L * 0.5),
+                                                (T)(curand_uniform(&state)));
+    verts[i].Center.z = cuDFNsys::RandomUniform((T)(-model_L * 0.5),
+                                                (T)(model_L * 0.5),
+                                                (T)(curand_uniform(&state)));
 
-    verts[i].NormalVec = make_float3(cuDFNsys::RandomUniform(-1.0, 1.0, curand_uniform(&state)),
-                                     cuDFNsys::RandomUniform(-1.0, 1.0, curand_uniform(&state)),
-                                     0);
-    float R_xy = sqrt(verts[i].NormalVec.x * verts[i].NormalVec.x +
-                      verts[i].NormalVec.y * verts[i].NormalVec.y);
-    verts[i].NormalVec.z = R_xy / tan(cuDFNsys::RandomFisher(curand_uniform(&state), kappa));
-    float norm_f = sqrt(verts[i].NormalVec.x * verts[i].NormalVec.x +
-                        verts[i].NormalVec.y * verts[i].NormalVec.y +
-                        verts[i].NormalVec.z * verts[i].NormalVec.z);
+    verts[i].NormalVec = cuDFNsys::MakeVector3((T)cuDFNsys::RandomUniform((cuDFNsys::Vector1<T>)-1.0, (cuDFNsys::Vector1<T>)1.0, (cuDFNsys::Vector1<T>)curand_uniform(&state)),
+                                               (T)cuDFNsys::RandomUniform((cuDFNsys::Vector1<T>)-1.0, (cuDFNsys::Vector1<T>)1.0, (cuDFNsys::Vector1<T>)curand_uniform(&state)),
+                                               (T)0);
+    cuDFNsys::Vector1<T> R_xy = sqrt(verts[i].NormalVec.x * verts[i].NormalVec.x +
+                                     verts[i].NormalVec.y * verts[i].NormalVec.y);
+    verts[i].NormalVec.z = R_xy / tan(cuDFNsys::RandomFisher((T)curand_uniform(&state),
+                                                             (T)kappa));
+    cuDFNsys::Vector1<T> norm_f = sqrt(verts[i].NormalVec.x * verts[i].NormalVec.x +
+                                       verts[i].NormalVec.y * verts[i].NormalVec.y +
+                                       verts[i].NormalVec.z * verts[i].NormalVec.z);
     verts[i].NormalVec.x /= norm_f;
     verts[i].NormalVec.y /= norm_f;
     verts[i].NormalVec.z /= norm_f;
 
-    float *normal_fff = &verts[i].NormalVec.x;
-    float *verts_3D_ptr = &verts[i].Verts3D[0].x;
+    cuDFNsys::Vector1<T> *normal_fff = &verts[i].NormalVec.x;
+    cuDFNsys::Vector1<T> *verts_3D_ptr = &verts[i].Verts3D[0].x;
     for (int j = 0; j < 3; ++j)
     {
         if (abs(normal_fff[j]) > 1e-3)
         {
-            verts_3D_ptr[(j + 1) % 3] = cuDFNsys::RandomUniform(-1.0, 1.0, curand_uniform(&state));
-            verts_3D_ptr[(j + 2) % 3] = cuDFNsys::RandomUniform(-1.0, 1.0, curand_uniform(&state));
+            verts_3D_ptr[(j + 1) % 3] = cuDFNsys::RandomUniform((cuDFNsys::Vector1<T>)-1.0, (cuDFNsys::Vector1<T>)1.0, (cuDFNsys::Vector1<T>)curand_uniform(&state));
+            verts_3D_ptr[(j + 2) % 3] = cuDFNsys::RandomUniform((cuDFNsys::Vector1<T>)-1.0, (cuDFNsys::Vector1<T>)1.0, (cuDFNsys::Vector1<T>)curand_uniform(&state));
             verts_3D_ptr[j] = -1.0 * (verts_3D_ptr[(j + 1) % 3] * normal_fff[(j + 1) % 3] + verts_3D_ptr[(j + 2) % 3] * normal_fff[(j + 2) % 3]) / normal_fff[j];
             break;
         }
     }
 
-    float norm_vert1 = sqrt(verts[i].Verts3D[0].x * verts[i].Verts3D[0].x +
-                            verts[i].Verts3D[0].y * verts[i].Verts3D[0].y +
-                            verts[i].Verts3D[0].z * verts[i].Verts3D[0].z);
+    cuDFNsys::Vector1<T> norm_vert1 = sqrt(verts[i].Verts3D[0].x * verts[i].Verts3D[0].x +
+                                           verts[i].Verts3D[0].y * verts[i].Verts3D[0].y +
+                                           verts[i].Verts3D[0].z * verts[i].Verts3D[0].z);
     norm_vert1 = R_ / norm_vert1;
     verts[i].Verts3D[0].x *= norm_vert1;
     verts[i].Verts3D[0].y *= norm_vert1;
@@ -102,8 +107,8 @@ __global__ void cuDFNsys::Fractures(cuDFNsys::Fracture *verts,
     verts[i].Verts3D[2].y = -1.0 * verts[i].Verts3D[0].y;
     verts[i].Verts3D[2].z = -1.0 * verts[i].Verts3D[0].z;
 
-    verts[i].Verts3D[1] = cuDFNsys::CrossProductFloat3(verts[i].NormalVec,
-                                                       verts[i].Verts3D[0]);
+    verts[i].Verts3D[1] = cuDFNsys::CrossProductVector3<T>(verts[i].NormalVec,
+                                                           verts[i].Verts3D[0]);
     norm_vert1 = sqrt(verts[i].Verts3D[1].x * verts[i].Verts3D[1].x +
                       verts[i].Verts3D[1].y * verts[i].Verts3D[1].y +
                       verts[i].Verts3D[1].z * verts[i].Verts3D[1].z);
@@ -126,24 +131,40 @@ __global__ void cuDFNsys::Fractures(cuDFNsys::Fracture *verts,
         verts[i].Verts3DTruncated[j].z = verts[i].Verts3D[j].z;
     };
 
-    bool gh = cuDFNsys::TruncateFracture(&verts[i], model_L, 0, 1);
+    bool gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 0, 1);
     verts[i].ConnectModelSurf[0] = gh;
 
-    gh = cuDFNsys::TruncateFracture(&verts[i], model_L, 0, -1);
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 0, -1);
     verts[i].ConnectModelSurf[1] = gh;
 
-    gh = cuDFNsys::TruncateFracture(&verts[i], model_L, 1, 1);
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 1, 1);
     verts[i].ConnectModelSurf[2] = gh;
 
-    gh = cuDFNsys::TruncateFracture(&verts[i], model_L, 1, -1);
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 1, -1);
     verts[i].ConnectModelSurf[3] = gh;
 
-    gh = cuDFNsys::TruncateFracture(&verts[i], model_L, 2, 1);
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 2, 1);
     verts[i].ConnectModelSurf[4] = gh;
 
-    gh = cuDFNsys::TruncateFracture(&verts[i], model_L, 2, -1);
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 2, -1);
     verts[i].ConnectModelSurf[5] = gh;
 }; // Fractures
+template __global__ void cuDFNsys::Fractures<double>(cuDFNsys::Fracture<double> *verts,
+                                                     unsigned long seed,
+                                                     int count,
+                                                     cuDFNsys::Vector1<double> model_L,
+                                                     uint ModeSizeDistri,                      // 1 = power law; 2 = lognormal; 3 = uniform; 4 = monosize
+                                                     cuDFNsys::Vector4<double> ParaSizeDistri, // when mode = 1, ;
+                                                     cuDFNsys::Vector1<double> kappa,
+                                                     cuDFNsys::Vector1<double> conductivity_powerlaw_exponent);
+template __global__ void cuDFNsys::Fractures<float>(cuDFNsys::Fracture<float> *verts,
+                                                    unsigned long seed,
+                                                    int count,
+                                                    cuDFNsys::Vector1<float> model_L,
+                                                    uint ModeSizeDistri,                     // 1 = power law; 2 = lognormal; 3 = uniform; 4 = monosize
+                                                    cuDFNsys::Vector4<float> ParaSizeDistri, // when mode = 1, ;
+                                                    cuDFNsys::Vector1<float> kappa,
+                                                    cuDFNsys::Vector1<float> conductivity_powerlaw_exponent);
 
 // ====================================================
 // NAME:        FracturesCrossedVertical
@@ -151,10 +172,11 @@ __global__ void cuDFNsys::Fractures(cuDFNsys::Fracture *verts,
 // AUTHOR:      Tingchang YIN
 // DATE:        20/04/2022
 // ====================================================
-__global__ void cuDFNsys::FracturesCrossedVertical(cuDFNsys::Fracture *verts,
+template <typename T>
+__global__ void cuDFNsys::FracturesCrossedVertical(cuDFNsys::Fracture<T> *verts,
                                                    unsigned long seed,
                                                    int count,
-                                                   float model_L)
+                                                   T model_L)
 {
     int i = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -165,7 +187,7 @@ __global__ void cuDFNsys::FracturesCrossedVertical(cuDFNsys::Fracture *verts,
 
     curand_init(seed, i, 0, &state);
 
-    float R_ = sqrt(model_L * model_L / 2.0f);
+    T R_ = sqrt(model_L * model_L / 2.0f);
 
     verts[i].Radius = R_;
     //printf("%f\n", verts[i].Radius);
@@ -180,18 +202,22 @@ __global__ void cuDFNsys::FracturesCrossedVertical(cuDFNsys::Fracture *verts,
     verts[i].Center.z = 0;
 
     if (i == 0)
-        verts[i].NormalVec = make_float3(0, 1.0f, 0);
+        verts[i].NormalVec = cuDFNsys::MakeVector3((T)0.0, (T)1.0, (T)0.0);
     else
-        verts[i].NormalVec = make_float3(1.0f, 0, 0);
+        verts[i].NormalVec = cuDFNsys::MakeVector3((T)1.0, (T)0.0, (T)0.0);
 
     if (i == 0)
-        verts[i].Verts3D[0] = make_float3(-0.5 * model_L, 0, 0.5 * model_L);
+        verts[i].Verts3D[0] = cuDFNsys::MakeVector3((T)(-0.5 * model_L),
+                                                    (T)0.0,
+                                                    (T)(0.5 * model_L));
     else
-        verts[i].Verts3D[0] = make_float3(0, -0.5 * model_L, 0.5 * model_L);
+        verts[i].Verts3D[0] = cuDFNsys::MakeVector3((T)0.0,
+                                                    (T)(-0.5 * model_L),
+                                                    (T)(0.5 * model_L));
 
-    float norm_vert1 = sqrt(verts[i].Verts3D[0].x * verts[i].Verts3D[0].x +
-                            verts[i].Verts3D[0].y * verts[i].Verts3D[0].y +
-                            verts[i].Verts3D[0].z * verts[i].Verts3D[0].z);
+    T norm_vert1 = sqrt(verts[i].Verts3D[0].x * verts[i].Verts3D[0].x +
+                        verts[i].Verts3D[0].y * verts[i].Verts3D[0].y +
+                        verts[i].Verts3D[0].z * verts[i].Verts3D[0].z);
     norm_vert1 = R_ / norm_vert1;
     verts[i].Verts3D[0].x *= norm_vert1;
     verts[i].Verts3D[0].y *= norm_vert1;
@@ -200,8 +226,8 @@ __global__ void cuDFNsys::FracturesCrossedVertical(cuDFNsys::Fracture *verts,
     verts[i].Verts3D[2].y = -1.0 * verts[i].Verts3D[0].y;
     verts[i].Verts3D[2].z = -1.0 * verts[i].Verts3D[0].z;
 
-    verts[i].Verts3D[1] = cuDFNsys::CrossProductFloat3(verts[i].NormalVec,
-                                                       verts[i].Verts3D[0]);
+    verts[i].Verts3D[1] = cuDFNsys::CrossProductVector3<T>(verts[i].NormalVec,
+                                                           verts[i].Verts3D[0]);
     norm_vert1 = sqrt(verts[i].Verts3D[1].x * verts[i].Verts3D[1].x +
                       verts[i].Verts3D[1].y * verts[i].Verts3D[1].y +
                       verts[i].Verts3D[1].z * verts[i].Verts3D[1].z);
@@ -224,24 +250,32 @@ __global__ void cuDFNsys::FracturesCrossedVertical(cuDFNsys::Fracture *verts,
         verts[i].Verts3DTruncated[j].z = verts[i].Verts3D[j].z;
     };
 
-    bool gh = cuDFNsys::TruncateFracture(&verts[i], model_L, 0, 1);
+    bool gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 0, 1);
     verts[i].ConnectModelSurf[0] = gh;
 
-    gh = cuDFNsys::TruncateFracture(&verts[i], model_L, 0, -1);
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 0, -1);
     verts[i].ConnectModelSurf[1] = gh;
 
-    gh = cuDFNsys::TruncateFracture(&verts[i], model_L, 1, 1);
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 1, 1);
     verts[i].ConnectModelSurf[2] = gh;
 
-    gh = cuDFNsys::TruncateFracture(&verts[i], model_L, 1, -1);
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 1, -1);
     verts[i].ConnectModelSurf[3] = gh;
 
-    gh = cuDFNsys::TruncateFracture(&verts[i], model_L, 2, 1);
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 2, 1);
     verts[i].ConnectModelSurf[4] = gh;
 
-    gh = cuDFNsys::TruncateFracture(&verts[i], model_L, 2, -1);
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 2, -1);
     verts[i].ConnectModelSurf[5] = gh;
 }; // FracturesCrossedVertical
+template __global__ void cuDFNsys::FracturesCrossedVertical<double>(cuDFNsys::Fracture<double> *verts,
+                                                                    unsigned long seed,
+                                                                    int count,
+                                                                    double model_L);
+template __global__ void cuDFNsys::FracturesCrossedVertical<float>(cuDFNsys::Fracture<float> *verts,
+                                                                   unsigned long seed,
+                                                                   int count,
+                                                                   float model_L);
 
 // ====================================================
 // NAME:        FracturesBeta50Beta60
@@ -249,10 +283,11 @@ __global__ void cuDFNsys::FracturesCrossedVertical(cuDFNsys::Fracture *verts,
 // AUTHOR:      Tingchang YIN
 // DATE:        20/04/2022
 // ====================================================
-__global__ void cuDFNsys::FracturesBeta50Beta60(cuDFNsys::Fracture *verts,
+template <typename T>
+__global__ void cuDFNsys::FracturesBeta50Beta60(cuDFNsys::Fracture<T> *verts,
                                                 unsigned long seed,
                                                 int count,
-                                                float model_L)
+                                                T model_L)
 {
     int i = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -263,7 +298,7 @@ __global__ void cuDFNsys::FracturesBeta50Beta60(cuDFNsys::Fracture *verts,
 
     curand_init(seed, i, 0, &state);
 
-    float R_ = model_L * 3.0f;
+    T R_ = model_L * 3.0f;
 
     verts[i].Radius = R_;
     //printf("%f\n", verts[i].Radius);
@@ -274,42 +309,42 @@ __global__ void cuDFNsys::FracturesBeta50Beta60(cuDFNsys::Fracture *verts,
     verts[i].Conductivity = 1.0;
 
     if (i == 0)
-        verts[i].NormalVec = make_float3(1, 0, 0);
+        verts[i].NormalVec = cuDFNsys::MakeVector3((T)1, (T)0, (T)0);
     else if (i == 1)
-        verts[i].NormalVec = make_float3(-1, 0, 0);
+        verts[i].NormalVec = cuDFNsys::MakeVector3((T)-1, (T)0, (T)0);
 
-    float R_xy = sqrt(verts[i].NormalVec.x * verts[i].NormalVec.x +
-                      verts[i].NormalVec.y * verts[i].NormalVec.y);
+    T R_xy = sqrt(verts[i].NormalVec.x * verts[i].NormalVec.x +
+                  verts[i].NormalVec.y * verts[i].NormalVec.y);
     if (i == 0)
         verts[i].NormalVec.z = R_xy / tan(50.0 / 180.0 * M_PI);
     else if (i == 1)
         verts[i].NormalVec.z = R_xy / tan(1.0 / 3.0 * M_PI);
-    float norm_f = sqrt(verts[i].NormalVec.x * verts[i].NormalVec.x +
-                        verts[i].NormalVec.y * verts[i].NormalVec.y +
-                        verts[i].NormalVec.z * verts[i].NormalVec.z);
+    T norm_f = sqrt(verts[i].NormalVec.x * verts[i].NormalVec.x +
+                    verts[i].NormalVec.y * verts[i].NormalVec.y +
+                    verts[i].NormalVec.z * verts[i].NormalVec.z);
     verts[i].NormalVec.x /= norm_f;
     verts[i].NormalVec.y /= norm_f;
     verts[i].NormalVec.z /= norm_f;
 
-    verts[i].Center = make_float3(0, 0, 0);
+    verts[i].Center = cuDFNsys::MakeVector3((T)0, (T)0, (T)0);
 
     //----------
-    float *normal_fff = &verts[i].NormalVec.x;
-    float *verts_3D_ptr = &verts[i].Verts3D[0].x;
+    T *normal_fff = &verts[i].NormalVec.x;
+    T *verts_3D_ptr = &verts[i].Verts3D[0].x;
     for (int j = 0; j < 3; ++j)
     {
         if (abs(normal_fff[j]) > 1e-3)
         {
-            verts_3D_ptr[(j + 1) % 3] = cuDFNsys::RandomUniform(-1.0, 1.0, curand_uniform(&state));
-            verts_3D_ptr[(j + 2) % 3] = cuDFNsys::RandomUniform(-1.0, 1.0, curand_uniform(&state));
+            verts_3D_ptr[(j + 1) % 3] = cuDFNsys::RandomUniform((T)-1.0, (T)1.0, (T)curand_uniform(&state));
+            verts_3D_ptr[(j + 2) % 3] = cuDFNsys::RandomUniform((T)-1.0, (T)1.0, (T)curand_uniform(&state));
             verts_3D_ptr[j] = -1.0 * (verts_3D_ptr[(j + 1) % 3] * normal_fff[(j + 1) % 3] + verts_3D_ptr[(j + 2) % 3] * normal_fff[(j + 2) % 3]) / normal_fff[j];
             break;
         }
     }
 
-    float norm_vert1 = sqrt(verts[i].Verts3D[0].x * verts[i].Verts3D[0].x +
-                            verts[i].Verts3D[0].y * verts[i].Verts3D[0].y +
-                            verts[i].Verts3D[0].z * verts[i].Verts3D[0].z);
+    T norm_vert1 = sqrt(verts[i].Verts3D[0].x * verts[i].Verts3D[0].x +
+                        verts[i].Verts3D[0].y * verts[i].Verts3D[0].y +
+                        verts[i].Verts3D[0].z * verts[i].Verts3D[0].z);
     norm_vert1 = R_ / norm_vert1;
     verts[i].Verts3D[0].x *= norm_vert1;
     verts[i].Verts3D[0].y *= norm_vert1;
@@ -318,8 +353,8 @@ __global__ void cuDFNsys::FracturesBeta50Beta60(cuDFNsys::Fracture *verts,
     verts[i].Verts3D[2].y = -1.0 * verts[i].Verts3D[0].y;
     verts[i].Verts3D[2].z = -1.0 * verts[i].Verts3D[0].z;
 
-    verts[i].Verts3D[1] = cuDFNsys::CrossProductFloat3(verts[i].NormalVec,
-                                                       verts[i].Verts3D[0]);
+    verts[i].Verts3D[1] = cuDFNsys::CrossProductVector3<T>(verts[i].NormalVec,
+                                                           verts[i].Verts3D[0]);
     norm_vert1 = sqrt(verts[i].Verts3D[1].x * verts[i].Verts3D[1].x +
                       verts[i].Verts3D[1].y * verts[i].Verts3D[1].y +
                       verts[i].Verts3D[1].z * verts[i].Verts3D[1].z);
@@ -342,24 +377,32 @@ __global__ void cuDFNsys::FracturesBeta50Beta60(cuDFNsys::Fracture *verts,
         verts[i].Verts3DTruncated[j].z = verts[i].Verts3D[j].z;
     };
 
-    bool gh = cuDFNsys::TruncateFracture(&verts[i], model_L, 0, 1);
+    bool gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 0, 1);
     verts[i].ConnectModelSurf[0] = gh;
 
-    gh = cuDFNsys::TruncateFracture(&verts[i], model_L, 0, -1);
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 0, -1);
     verts[i].ConnectModelSurf[1] = gh;
 
-    gh = cuDFNsys::TruncateFracture(&verts[i], model_L, 1, 1);
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 1, 1);
     verts[i].ConnectModelSurf[2] = gh;
 
-    gh = cuDFNsys::TruncateFracture(&verts[i], model_L, 1, -1);
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 1, -1);
     verts[i].ConnectModelSurf[3] = gh;
 
-    gh = cuDFNsys::TruncateFracture(&verts[i], model_L, 2, 1);
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 2, 1);
     verts[i].ConnectModelSurf[4] = gh;
 
-    gh = cuDFNsys::TruncateFracture(&verts[i], model_L, 2, -1);
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 2, -1);
     verts[i].ConnectModelSurf[5] = gh;
 }; // FracturesBeta50Beta60
+template __global__ void cuDFNsys::FracturesBeta50Beta60<double>(cuDFNsys::Fracture<double> *verts,
+                                                                 unsigned long seed,
+                                                                 int count,
+                                                                 double model_L);
+template __global__ void cuDFNsys::FracturesBeta50Beta60<float>(cuDFNsys::Fracture<float> *verts,
+                                                                unsigned long seed,
+                                                                int count,
+                                                                float model_L);
 
 // ====================================================
 // NAME:        FracturesIncomplete
@@ -367,10 +410,11 @@ __global__ void cuDFNsys::FracturesBeta50Beta60(cuDFNsys::Fracture *verts,
 // AUTHOR:      Tingchang YIN
 // DATE:        20/04/2022
 // ====================================================
-__global__ void cuDFNsys::FracturesIncomplete(cuDFNsys::Fracture *verts,
+template <typename T>
+__global__ void cuDFNsys::FracturesIncomplete(cuDFNsys::Fracture<T> *verts,
                                               unsigned long seed,
                                               int count,
-                                              float model_L)
+                                              T model_L)
 {
     int i = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -381,8 +425,7 @@ __global__ void cuDFNsys::FracturesIncomplete(cuDFNsys::Fracture *verts,
 
     curand_init(seed, i, 0, &state);
 
-    float R_ = (i == 0 ? 0.55 : 0.60) * model_L;
-    ;
+    T R_ = (i == 0 ? 0.55 : 0.60) * model_L;
 
     verts[i].Radius = R_;
     //printf("%f\n", verts[i].Radius);
@@ -393,11 +436,11 @@ __global__ void cuDFNsys::FracturesIncomplete(cuDFNsys::Fracture *verts,
     verts[i].Conductivity = 1.0;
 
     if (i == 0)
-        verts[i].NormalVec = make_float3(1, 0, 0);
+        verts[i].NormalVec = cuDFNsys::MakeVector3((T)1, (T)0, (T)0);
     else if (i == 1)
-        verts[i].NormalVec = make_float3(0, 1, 0);
+        verts[i].NormalVec = cuDFNsys::MakeVector3((T)0, (T)1, (T)0);
 
-    verts[i].Center = make_float3(0, 0, 0);
+    verts[i].Center = cuDFNsys::MakeVector3((T)0, (T)0, (T)0);
 
     //----------
     if (i == 0)
@@ -413,9 +456,9 @@ __global__ void cuDFNsys::FracturesIncomplete(cuDFNsys::Fracture *verts,
         verts[i].Verts3D[0].z = 0;
     }
 
-    float norm_vert1 = sqrt(verts[i].Verts3D[0].x * verts[i].Verts3D[0].x +
-                            verts[i].Verts3D[0].y * verts[i].Verts3D[0].y +
-                            verts[i].Verts3D[0].z * verts[i].Verts3D[0].z);
+    T norm_vert1 = sqrt(verts[i].Verts3D[0].x * verts[i].Verts3D[0].x +
+                        verts[i].Verts3D[0].y * verts[i].Verts3D[0].y +
+                        verts[i].Verts3D[0].z * verts[i].Verts3D[0].z);
     norm_vert1 = R_ / norm_vert1;
     verts[i].Verts3D[0].x *= norm_vert1;
     verts[i].Verts3D[0].y *= norm_vert1;
@@ -424,8 +467,8 @@ __global__ void cuDFNsys::FracturesIncomplete(cuDFNsys::Fracture *verts,
     verts[i].Verts3D[2].y = -1.0 * verts[i].Verts3D[0].y;
     verts[i].Verts3D[2].z = -1.0 * verts[i].Verts3D[0].z;
 
-    verts[i].Verts3D[1] = cuDFNsys::CrossProductFloat3(verts[i].NormalVec,
-                                                       verts[i].Verts3D[0]);
+    verts[i].Verts3D[1] = cuDFNsys::CrossProductVector3<T>(verts[i].NormalVec,
+                                                           verts[i].Verts3D[0]);
     norm_vert1 = sqrt(verts[i].Verts3D[1].x * verts[i].Verts3D[1].x +
                       verts[i].Verts3D[1].y * verts[i].Verts3D[1].y +
                       verts[i].Verts3D[1].z * verts[i].Verts3D[1].z);
@@ -448,24 +491,32 @@ __global__ void cuDFNsys::FracturesIncomplete(cuDFNsys::Fracture *verts,
         verts[i].Verts3DTruncated[j].z = verts[i].Verts3D[j].z;
     };
 
-    bool gh = cuDFNsys::TruncateFracture(&verts[i], model_L, 0, 1);
+    bool gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 0, 1);
     verts[i].ConnectModelSurf[0] = gh;
 
-    gh = cuDFNsys::TruncateFracture(&verts[i], model_L, 0, -1);
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 0, -1);
     verts[i].ConnectModelSurf[1] = gh;
 
-    gh = cuDFNsys::TruncateFracture(&verts[i], model_L, 1, 1);
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 1, 1);
     verts[i].ConnectModelSurf[2] = gh;
 
-    gh = cuDFNsys::TruncateFracture(&verts[i], model_L, 1, -1);
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 1, -1);
     verts[i].ConnectModelSurf[3] = gh;
 
-    gh = cuDFNsys::TruncateFracture(&verts[i], model_L, 2, 1);
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 2, 1);
     verts[i].ConnectModelSurf[4] = gh;
 
-    gh = cuDFNsys::TruncateFracture(&verts[i], model_L, 2, -1);
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 2, -1);
     verts[i].ConnectModelSurf[5] = gh;
 }; // FracturesIncomplete
+template __global__ void cuDFNsys::FracturesIncomplete<double>(cuDFNsys::Fracture<double> *verts,
+                                                               unsigned long seed,
+                                                               int count,
+                                                               double model_L);
+template __global__ void cuDFNsys::FracturesIncomplete<float>(cuDFNsys::Fracture<float> *verts,
+                                                              unsigned long seed,
+                                                              int count,
+                                                              float model_L);
 
 // ====================================================
 // NAME:        Fractures2DLike
@@ -473,13 +524,14 @@ __global__ void cuDFNsys::FracturesIncomplete(cuDFNsys::Fracture *verts,
 // AUTHOR:      Tingchang YIN
 // DATE:        20/04/2022
 // ====================================================
-__global__ void cuDFNsys::Fractures2DLike(cuDFNsys::Fracture *verts,
+template <typename T>
+__global__ void cuDFNsys::Fractures2DLike(cuDFNsys::Fracture<T> *verts,
                                           unsigned long seed,
                                           int count,
-                                          float model_L,
-                                          float alpha,
-                                          float minR,
-                                          float maxR)
+                                          T model_L,
+                                          T alpha,
+                                          T minR,
+                                          T maxR)
 {
     int i = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -490,9 +542,9 @@ __global__ void cuDFNsys::Fractures2DLike(cuDFNsys::Fracture *verts,
 
     curand_init(seed, i, 0, &state);
 
-    float R_ = 0;
+    T R_ = 0;
 
-    R_ = cuDFNsys::RandomPowerlaw(minR, maxR, alpha, curand_uniform(&state));
+    R_ = cuDFNsys::RandomPowerlaw((T)minR, (T)maxR, (T)alpha, (T)curand_uniform(&state));
 
     verts[i].Radius = R_;
     //printf("%f\n", verts[i].Radius);
@@ -502,41 +554,43 @@ __global__ void cuDFNsys::Fractures2DLike(cuDFNsys::Fracture *verts,
 
     verts[i].Conductivity = 1.0;
 
-    verts[i].Center.x = cuDFNsys::RandomUniform(-model_L * 0.5, model_L * 0.5,
-                                                curand_uniform(&state));
+    verts[i].Center.x = cuDFNsys::RandomUniform((T)(-model_L * 0.5),
+                                                (T)(model_L * 0.5),
+                                                (T)(curand_uniform(&state)));
     verts[i].Center.y = 0;
-    verts[i].Center.z = cuDFNsys::RandomUniform(-model_L * 0.5, model_L * 0.5,
-                                                curand_uniform(&state));
+    verts[i].Center.z = cuDFNsys::RandomUniform((T)(-model_L * 0.5),
+                                                (T)(model_L * 0.5),
+                                                (T)(curand_uniform(&state)));
 
-    verts[i].NormalVec = make_float3(cuDFNsys::RandomUniform(-1.0, 1.0, curand_uniform(&state)),
-                                     0,
-                                     cuDFNsys::RandomUniform(-1.0, 1.0, curand_uniform(&state)));
-    float norm_f = sqrt(verts[i].NormalVec.x * verts[i].NormalVec.x +
-                        verts[i].NormalVec.y * verts[i].NormalVec.y +
-                        verts[i].NormalVec.z * verts[i].NormalVec.z);
+    verts[i].NormalVec = cuDFNsys::MakeVector3((T)cuDFNsys::RandomUniform((T)-1.0, (T)1.0, (T)curand_uniform(&state)),
+                                               (T)0,
+                                               (T)cuDFNsys::RandomUniform((T)-1.0, (T)1.0, (T)curand_uniform(&state)));
+    T norm_f = sqrt(verts[i].NormalVec.x * verts[i].NormalVec.x +
+                    verts[i].NormalVec.y * verts[i].NormalVec.y +
+                    verts[i].NormalVec.z * verts[i].NormalVec.z);
     verts[i].NormalVec.x /= norm_f;
     verts[i].NormalVec.y /= norm_f;
     verts[i].NormalVec.z /= norm_f;
 
     //--------------
-    float3 rotate_axis = make_float3(-verts[i].NormalVec.y,
-                                     verts[i].NormalVec.x,
-                                     0);
-    float rotate_axis_norm = sqrt(rotate_axis.x * rotate_axis.x +
-                                  rotate_axis.y * rotate_axis.y +
-                                  rotate_axis.z * rotate_axis.z);
+    cuDFNsys::Vector3<T> rotate_axis = cuDFNsys::MakeVector3(-verts[i].NormalVec.y,
+                                                             verts[i].NormalVec.x,
+                                                             (T)0);
+    T rotate_axis_norm = sqrt(rotate_axis.x * rotate_axis.x +
+                              rotate_axis.y * rotate_axis.y +
+                              rotate_axis.z * rotate_axis.z);
     rotate_axis.x /= rotate_axis_norm;
     rotate_axis.y /= rotate_axis_norm;
     rotate_axis.z /= rotate_axis_norm;
 
-    cuDFNsys::Quaternion qua;
+    cuDFNsys::Quaternion<T> qua;
     qua = qua.DescribeRotation(verts[i].NormalVec, 45.0 / 180.0 * M_PI);
     verts[i].Verts3D[0] = qua.Rotate(rotate_axis);
 
     //--------------
-    float norm_vert1 = sqrt(verts[i].Verts3D[0].x * verts[i].Verts3D[0].x +
-                            verts[i].Verts3D[0].y * verts[i].Verts3D[0].y +
-                            verts[i].Verts3D[0].z * verts[i].Verts3D[0].z);
+    T norm_vert1 = sqrt(verts[i].Verts3D[0].x * verts[i].Verts3D[0].x +
+                        verts[i].Verts3D[0].y * verts[i].Verts3D[0].y +
+                        verts[i].Verts3D[0].z * verts[i].Verts3D[0].z);
     norm_vert1 = R_ / norm_vert1;
     verts[i].Verts3D[0].x *= norm_vert1;
     verts[i].Verts3D[0].y *= norm_vert1;
@@ -545,8 +599,8 @@ __global__ void cuDFNsys::Fractures2DLike(cuDFNsys::Fracture *verts,
     verts[i].Verts3D[2].y = -1.0 * verts[i].Verts3D[0].y;
     verts[i].Verts3D[2].z = -1.0 * verts[i].Verts3D[0].z;
 
-    verts[i].Verts3D[1] = cuDFNsys::CrossProductFloat3(verts[i].NormalVec,
-                                                       verts[i].Verts3D[0]);
+    verts[i].Verts3D[1] = cuDFNsys::CrossProductVector3<T>(verts[i].NormalVec,
+                                                           verts[i].Verts3D[0]);
     norm_vert1 = sqrt(verts[i].Verts3D[1].x * verts[i].Verts3D[1].x +
                       verts[i].Verts3D[1].y * verts[i].Verts3D[1].y +
                       verts[i].Verts3D[1].z * verts[i].Verts3D[1].z);
@@ -572,21 +626,35 @@ __global__ void cuDFNsys::Fractures2DLike(cuDFNsys::Fracture *verts,
         verts[i].Verts3DTruncated[j].z = verts[i].Verts3D[j].z;
     };
 
-    bool gh = cuDFNsys::TruncateFracture(&verts[i], model_L, 0, 1);
+    bool gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 0, 1);
     verts[i].ConnectModelSurf[0] = gh;
 
-    gh = cuDFNsys::TruncateFracture(&verts[i], model_L, 0, -1);
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 0, -1);
     verts[i].ConnectModelSurf[1] = gh;
 
-    gh = cuDFNsys::TruncateFracture(&verts[i], model_L, 1, 1);
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 1, 1);
     verts[i].ConnectModelSurf[2] = gh;
 
-    gh = cuDFNsys::TruncateFracture(&verts[i], model_L, 1, -1);
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 1, -1);
     verts[i].ConnectModelSurf[3] = gh;
 
-    gh = cuDFNsys::TruncateFracture(&verts[i], model_L, 2, 1);
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 2, 1);
     verts[i].ConnectModelSurf[4] = gh;
 
-    gh = cuDFNsys::TruncateFracture(&verts[i], model_L, 2, -1);
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 2, -1);
     verts[i].ConnectModelSurf[5] = gh;
 }; // Fractures2DLike
+template __global__ void cuDFNsys::Fractures2DLike<double>(cuDFNsys::Fracture<double> *verts,
+                                                           unsigned long seed,
+                                                           int count,
+                                                           double model_L,
+                                                           double alpha,
+                                                           double minR,
+                                                           double maxR);
+template __global__ void cuDFNsys::Fractures2DLike<float>(cuDFNsys::Fracture<float> *verts,
+                                                          unsigned long seed,
+                                                          int count,
+                                                          float model_L,
+                                                          float alpha,
+                                                          float minR,
+                                                          float maxR);

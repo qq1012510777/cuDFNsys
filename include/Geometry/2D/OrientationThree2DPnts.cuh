@@ -11,9 +11,11 @@
 // AUTHOR:            Tingchang YIN
 ///////////////////////////////////////////////////////////////////
 #pragma once
+#include "../../DataTypeSelector/DataTypeSelector.cuh"
 #include "../../GlobalDef/GlobalDef.cuh"
 
 namespace cuDFNsys
 {
-__device__ __host__ uint OrientationThree2DPnts(float2 p, float2 q, float2 r, float _tol_);
+template <typename T>
+__device__ __host__ uint OrientationThree2DPnts(cuDFNsys::Vector2<T> p, cuDFNsys::Vector2<T> q, cuDFNsys::Vector2<T> r, T _tol_);
 }; // namespace cuDFNsys

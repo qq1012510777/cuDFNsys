@@ -7,24 +7,25 @@
 // AUTHOR:      Tingchang YIN
 // DATE:        07/04/2022
 // ====================================================
-cuDFNsys::MatlabPlotDFN::MatlabPlotDFN(string mat_key,
-                                       string command_key,
-                                       thrust::host_vector<cuDFNsys::Fracture> Frac_verts_host,
-                                       MapIntersection Intersection_host,
-                                       std::vector<std::vector<size_t>> ListClusters,
-                                       std::vector<size_t> Percolation_cluster,
-                                       bool If_show_truncated_frac,
-                                       bool If_show_intersection,
-                                       bool If_show_cluster,
-                                       bool If_show_orientation,
-                                       float L,
-                                       int dir)
+template <typename T>
+cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                                                                                     // mat file name
+                                          string command_key,                                                                                 // m file name
+                                          thrust::host_vector<cuDFNsys::Fracture<T>> Frac_verts_host,                                         // Vector of Fracture
+                                          std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<T>, cuDFNsys::Vector3<T>>> Intersection_host, // vector of Intersection
+                                          std::vector<std::vector<size_t>> ListClusters,                                                      // List of clusters: a cluster is a vector
+                                          std::vector<size_t> Percolation_cluster,                                                            // Percolation cluster contains the cluster vector ID
+                                          bool If_show_truncated_frac,                                                                        // if show truncated fractures
+                                          bool If_show_intersection,
+                                          bool If_show_cluster,
+                                          bool If_show_orientation,
+                                          T L,
+                                          int dir)
 {
     cuDFNsys::MatlabAPI M1;
 
     int NUM_Frac = Frac_verts_host.size();
     int sum_NUM_verts = 4 * NUM_Frac;
-    float *Frac_NUM_verts = new float[NUM_Frac];
+    T *Frac_NUM_verts = new T[NUM_Frac];
     if (Frac_NUM_verts == NULL)
     {
         string AS = "Alloc error in MatlabPlotDFN!";
@@ -46,7 +47,7 @@ cuDFNsys::MatlabPlotDFN::MatlabPlotDFN(string mat_key,
     delete[] Frac_NUM_verts;
     Frac_NUM_verts = NULL;
     //-----------------
-    float *R_ = new float[NUM_Frac];
+    T *R_ = new T[NUM_Frac];
     if (R_ == NULL)
     {
         string AS = "Alloc error in MatlabPlotDFN!";
@@ -61,7 +62,7 @@ cuDFNsys::MatlabPlotDFN::MatlabPlotDFN(string mat_key,
     delete[] R_;
     R_ = NULL;
     //----------------------
-    float *verts = new float[sum_NUM_verts * 3];
+    T *verts = new T[sum_NUM_verts * 3];
     if (verts == NULL)
     {
         string AS = "Alloc error in MatlabPlotDFN!";
@@ -105,7 +106,7 @@ cuDFNsys::MatlabPlotDFN::MatlabPlotDFN(string mat_key,
     {
         int NUM_intersections = Intersection_host.size();
 
-        float *Intersections_ = new float[NUM_intersections * 6];
+        T *Intersections_ = new T[NUM_intersections * 6];
         if (Intersections_ == NULL)
         {
             string AS = "Alloc error in MatlabPlotDFN!";
@@ -113,7 +114,7 @@ cuDFNsys::MatlabPlotDFN::MatlabPlotDFN(string mat_key,
         }
 
         int tmp_jj = 0;
-        for (std::map<pair<size_t, size_t>, pair<float3, float3>>::iterator i = Intersection_host.begin();
+        for (auto i = Intersection_host.begin();
              i != Intersection_host.end(); ++i)
         {
             Intersections_[tmp_jj] = i->second.first.x;
@@ -139,7 +140,7 @@ cuDFNsys::MatlabPlotDFN::MatlabPlotDFN(string mat_key,
         for (size_t i = 0; i < ListClusters.size(); ++i)
             Max_cluster_size = ListClusters[i].size() > Max_cluster_size ? ListClusters[i].size() : Max_cluster_size;
 
-        float *clustersList = new float[ListClusters.size() * Max_cluster_size];
+        T *clustersList = new T[ListClusters.size() * Max_cluster_size];
         if (clustersList == NULL)
         {
             string AS = "Alloc error in MatlabPlotDFN!";
@@ -164,7 +165,7 @@ cuDFNsys::MatlabPlotDFN::MatlabPlotDFN(string mat_key,
         clustersList = NULL;
         //-----------
 
-        float *percolationcluster = new float[Percolation_cluster.size()];
+        T *percolationcluster = new T[Percolation_cluster.size()];
         if (percolationcluster == NULL)
         {
             string AS = "Alloc error in MatlabPlotDFN!";
@@ -182,7 +183,7 @@ cuDFNsys::MatlabPlotDFN::MatlabPlotDFN(string mat_key,
 
     if (If_show_orientation == true)
     {
-        float *orientation = new float[NUM_Frac * 2];
+        T *orientation = new T[NUM_Frac * 2];
         if (orientation == NULL)
         {
             string AS = "Alloc error in MatlabPlotDFN!";
@@ -259,12 +260,36 @@ cuDFNsys::MatlabPlotDFN::MatlabPlotDFN(string mat_key,
     }
 
     oss << "\n\n\n%if R values have a lognormal distribution, uncommect the following-------\n";
-    oss << "%figure(4);\n";
-    oss << "%nbins = 20;\n";
-    oss << "%histfit(R, nbins, 'lognormal');\n";
-    oss << "%pd=fitdist(R,'lognormal')\n";
-    oss << "%Ex = exp(pd.mu + pd.sigma^2*0.5)\n";
-    oss << "%Dx = exp(2*pd.mu+pd.sigma^2)*(exp(pd.sigma^2)-1)\n";
+    oss << "%% figure(4);\n";
+    oss << "%% nbins = 20;\n";
+    oss << "%% histfit(R, nbins, 'lognormal');\n";
+    oss << "%% pd=fitdist(R,'lognormal')\n";
+    oss << "%% Ex = exp(pd.mu + pd.sigma^2*0.5)\n";
+    oss << "%% Dx = exp(2*pd.mu+pd.sigma^2)*(exp(pd.sigma^2)-1)\n";
 
     oss.close();
-}; // MatlabPlotDFN
+};                                                                                                                                                                    // MatlabPlotDFN
+template cuDFNsys::MatlabPlotDFN<double>::MatlabPlotDFN(string mat_key,                                                                                               // mat file name
+                                                        string command_key,                                                                                           // m file name
+                                                        thrust::host_vector<cuDFNsys::Fracture<double>> Frac_verts_host,                                              // Vector of Fracture
+                                                        std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<double>, cuDFNsys::Vector3<double>>> Intersection_host, // vector of Intersection
+                                                        std::vector<std::vector<size_t>> ListClusters,                                                                // List of clusters: a cluster is a vector
+                                                        std::vector<size_t> Percolation_cluster,                                                                      // Percolation cluster contains the cluster vector ID
+                                                        bool If_show_truncated_frac,                                                                                  // if show truncated fractures
+                                                        bool If_show_intersection,
+                                                        bool If_show_cluster,
+                                                        bool If_show_orientation,
+                                                        double L,
+                                                        int dir);
+template cuDFNsys::MatlabPlotDFN<float>::MatlabPlotDFN(string mat_key,                                                                                             // mat file name
+                                                       string command_key,                                                                                         // m file name
+                                                       thrust::host_vector<cuDFNsys::Fracture<float>> Frac_verts_host,                                             // Vector of Fracture
+                                                       std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<float>, cuDFNsys::Vector3<float>>> Intersection_host, // vector of Intersection
+                                                       std::vector<std::vector<size_t>> ListClusters,                                                              // List of clusters: a cluster is a vector
+                                                       std::vector<size_t> Percolation_cluster,                                                                    // Percolation cluster contains the cluster vector ID
+                                                       bool If_show_truncated_frac,                                                                                // if show truncated fractures
+                                                       bool If_show_intersection,
+                                                       bool If_show_cluster,
+                                                       bool If_show_orientation,
+                                                       float L,
+                                                       int dir);

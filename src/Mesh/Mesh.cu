@@ -6,13 +6,14 @@
 // AUTHOR:      Tingchang YIN
 // DATE:        08/04/2022
 // ====================================================
-cuDFNsys::Mesh::Mesh(const thrust::host_vector<cuDFNsys::Fracture> &Fracs,
-                     const std::vector<pair<int, int>> &IntersectionPair_percol,
-                     std::vector<size_t> *Fracs_percol,
-                     const double &min_ele_edge,
-                     const double &max_ele_edge,
-                     const int &dir_,
-                     const float &L)
+template <typename T>
+cuDFNsys::Mesh<T>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
+                        const std::vector<pair<int, int>> &IntersectionPair_percol,
+                        std::vector<size_t> *Fracs_percol,
+                        const T &min_ele_edge,
+                        const T &max_ele_edge,
+                        const int &dir_,
+                        const T &L)
 {
     this->Dir = dir_;
     this->FracID = Fracs_percol;
@@ -35,7 +36,7 @@ cuDFNsys::Mesh::Mesh(const thrust::host_vector<cuDFNsys::Fracture> &Fracs,
 
         std::vector<size_t>::iterator it_fracID = Fracs_percol->begin();
 
-        thrust::host_vector<cuDFNsys::Fracture> Fracs_ss(NUM_frac);
+        thrust::host_vector<cuDFNsys::Fracture<T>> Fracs_ss(NUM_frac);
 
         double istart = cuDFNsys::CPUSecond();
 
@@ -80,6 +81,7 @@ cuDFNsys::Mesh::Mesh(const thrust::host_vector<cuDFNsys::Fracture> &Fracs,
         if (NUM_frac > 1)
         {
             double istart1 = cuDFNsys::CPUSecond();
+            // cout << "pair_size: " << pair_size << endl;
             for (size_t i = 0; i < pair_size; ++i)
             {
                 object_entity[i].first = 2;
@@ -87,7 +89,7 @@ cuDFNsys::Mesh::Mesh(const thrust::host_vector<cuDFNsys::Fracture> &Fracs,
 
                 object_entity[i].second = Corre_Tag[IntersectionPair_percol[i].first];
                 tool_entity[i].second = Corre_Tag[IntersectionPair_percol[i].second];
-                //cout << IntersectionPair_percol[i].first << ", " << IntersectionPair_percol[i].second << endl;
+                // cout << IntersectionPair_percol[i].first << ", " << IntersectionPair_percol[i].second << endl;
             }
             cout << "\t\tadded object-tool pairs; running time: " << cuDFNsys::CPUSecond() - istart1 << " sec\n";
 
@@ -149,6 +151,20 @@ cuDFNsys::Mesh::Mesh(const thrust::host_vector<cuDFNsys::Fracture> &Fracs,
         throw;
     };
 }; // Mesh
+template cuDFNsys::Mesh<double>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs,
+                                      const std::vector<pair<int, int>> &IntersectionPair_percol,
+                                      std::vector<size_t> *Fracs_percol,
+                                      const double &min_ele_edge,
+                                      const double &max_ele_edge,
+                                      const int &dir_,
+                                      const double &L);
+template cuDFNsys::Mesh<float>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs,
+                                     const std::vector<pair<int, int>> &IntersectionPair_percol,
+                                     std::vector<size_t> *Fracs_percol,
+                                     const float &min_ele_edge,
+                                     const float &max_ele_edge,
+                                     const int &dir_,
+                                     const float &L);
 
 // ====================================================
 // NAME:        MatlabPlot
@@ -157,18 +173,19 @@ cuDFNsys::Mesh::Mesh(const thrust::host_vector<cuDFNsys::Fracture> &Fracs,
 // AUTHOR:      Tingchang YIN
 // DATE:        08/04/2022
 // ====================================================
-void cuDFNsys::Mesh::MatlabPlot(const string &mat_key,
-                                const string &command_key,
-                                thrust::host_vector<cuDFNsys::Fracture> Fracs,
-                                const float &L,
-                                const bool &if_check_2D_coordinates,
-                                const bool &if_check_edge_Numbering)
+template <typename T>
+void cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
+                                   const string &command_key,
+                                   thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
+                                   const T &L,
+                                   const bool &if_check_2D_coordinates,
+                                   const bool &if_check_edge_Numbering)
 {
     cuDFNsys::MatlabAPI M1;
 
     size_t node_num = this->Coordinate3D.size();
-    float *ptr_coordinates_3D;
-    ptr_coordinates_3D = new float[node_num * 3];
+    T *ptr_coordinates_3D;
+    ptr_coordinates_3D = new T[node_num * 3];
 
     if (ptr_coordinates_3D == NULL)
     {
@@ -189,7 +206,7 @@ void cuDFNsys::Mesh::MatlabPlot(const string &mat_key,
     ptr_coordinates_3D = NULL;
 
     size_t ele_num = this->Element3D.size();
-    float *ptr_element_3D = new float[ele_num * 3];
+    T *ptr_element_3D = new T[ele_num * 3];
     if (ptr_element_3D == NULL)
     {
         string AS = "Alloc error in Mesh::MatlabPlot\n";
@@ -212,7 +229,7 @@ void cuDFNsys::Mesh::MatlabPlot(const string &mat_key,
     {
         size_t frac_tag_num = this->ElementFracTag.size();
 
-        float *ptr_element_Frac_Tag = new float[frac_tag_num];
+        T *ptr_element_Frac_Tag = new T[frac_tag_num];
         if (ptr_element_Frac_Tag == NULL)
         {
             string AS = "Alloc error in Mesh::MatlabPlot\n";
@@ -230,7 +247,7 @@ void cuDFNsys::Mesh::MatlabPlot(const string &mat_key,
 
         //thrust::host_vector<ELE_COOR> coordinate_2D;
 
-        float *verts2D = new float[frac_tag_num * 6];
+        T *verts2D = new T[frac_tag_num * 6];
         if (verts2D == NULL)
         {
             string AS = "Alloc error in Mesh::MatlabPlot\n";
@@ -256,13 +273,13 @@ void cuDFNsys::Mesh::MatlabPlot(const string &mat_key,
         verts2D = NULL;
 
         // std::vector<size_t> *Frac_ID
-        float *fracs = new float[(*this->FracID).size() * 4 * 2];
+        T *fracs = new T[(*this->FracID).size() * 4 * 2];
         int vb = 0;
         for (std::vector<size_t>::iterator it = this->FracID->begin(); it != this->FracID->end(); it++)
         {
             size_t tag = *(it);
 
-            float2 verts2D_[4];
+            cuDFNsys::Vector2<T> verts2D_[4];
             Fracs[tag].Generate2DVerts(verts2D_, 4, false);
 
             fracs[vb] = verts2D_[0].x;
@@ -293,7 +310,7 @@ void cuDFNsys::Mesh::MatlabPlot(const string &mat_key,
     {
         size_t NUM_ele = this->Element3D.size();
 
-        float *edge_attri = new float[NUM_ele * 6];
+        T *edge_attri = new T[NUM_ele * 6];
         if (edge_attri == NULL)
         {
             string AS = "Alloc error in Mesh::MatlabPlot\n";
@@ -375,6 +392,18 @@ void cuDFNsys::Mesh::MatlabPlot(const string &mat_key,
         oss_e.close();
     }
 }; // MatlabPlot
+template void cuDFNsys::Mesh<double>::MatlabPlot(const string &mat_key,
+                                                 const string &command_key,
+                                                 thrust::host_vector<cuDFNsys::Fracture<double>> Fracs,
+                                                 const double &L,
+                                                 const bool &if_check_2D_coordinates,
+                                                 const bool &if_check_edge_Numbering);
+template void cuDFNsys::Mesh<float>::MatlabPlot(const string &mat_key,
+                                                const string &command_key,
+                                                thrust::host_vector<cuDFNsys::Fracture<float>> Fracs,
+                                                const float &L,
+                                                const bool &if_check_2D_coordinates,
+                                                const bool &if_check_edge_Numbering);
 
 // ====================================================
 // NAME:        GetCoordinates
@@ -382,7 +411,8 @@ void cuDFNsys::Mesh::MatlabPlot(const string &mat_key,
 // AUTHOR:      Tingchang YIN
 // DATE:        08/04/2022
 // ====================================================
-void cuDFNsys::Mesh::GetCoordinates()
+template <typename T>
+void cuDFNsys::Mesh<T>::GetCoordinates()
 {
     std::vector<size_t> nodes;
     std::vector<double> coord, coordParam;
@@ -392,10 +422,12 @@ void cuDFNsys::Mesh::GetCoordinates()
     this->Coordinate3D.resize(NUM_nodes);
 
     for (size_t i = 0; i < coord.size(); i += 3)
-        Coordinate3D[i / 3] = make_float3((float)coord[i],
-                                          (float)coord[i + 1],
-                                          (float)coord[i + 2]);
+        Coordinate3D[i / 3] = cuDFNsys::MakeVector3((T)coord[i],
+                                                    (T)coord[i + 1],
+                                                    (T)coord[i + 2]);
 }; // GetCoordinates
+template void cuDFNsys::Mesh<double>::GetCoordinates();
+template void cuDFNsys::Mesh<float>::GetCoordinates();
 
 // ====================================================
 // NAME:        GetElements
@@ -403,7 +435,8 @@ void cuDFNsys::Mesh::GetCoordinates()
 // AUTHOR:      Tingchang YIN
 // DATE:        08/04/2022
 // ====================================================
-void cuDFNsys::Mesh::GetElements(const thrust::host_vector<cuDFNsys::Fracture> &Fracs_s)
+template <typename T>
+void cuDFNsys::Mesh<T>::GetElements(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs_s)
 {
     thrust::host_vector<thrust::host_vector<uint3>> elementEntities_2D;
     thrust::host_vector<uint> Largest_ele;
@@ -425,7 +458,7 @@ void cuDFNsys::Mesh::GetElements(const thrust::host_vector<cuDFNsys::Fracture> &
     }
 
     thrust::device_vector<uint3> One_entity_one_ele_dev(elementEntities_2D.size());
-    thrust::device_vector<float3> coordinate_3D_dev;
+    thrust::device_vector<cuDFNsys::Vector3<T>> coordinate_3D_dev;
     thrust::device_vector<int> Elements_Frac_dev(elementEntities_2D.size());
     thrust::host_vector<int> Elements_Frac_host;
 
@@ -435,19 +468,19 @@ void cuDFNsys::Mesh::GetElements(const thrust::host_vector<cuDFNsys::Fracture> &
     int *Elements_Frac_dev_ptr = thrust::raw_pointer_cast(Elements_Frac_dev.data());
 
     uint3 *One_entity_one_ele_dev_ptr = thrust::raw_pointer_cast(One_entity_one_ele_dev.data());
-    float3 *coordinate_3D_dev_ptr = thrust::raw_pointer_cast(coordinate_3D_dev.data());
+    cuDFNsys::Vector3<T> *coordinate_3D_dev_ptr = thrust::raw_pointer_cast(coordinate_3D_dev.data());
 
-    thrust::device_vector<cuDFNsys::Fracture> Fracss;
+    thrust::device_vector<cuDFNsys::Fracture<T>> Fracss;
     Fracss = Fracs_s;
-    cuDFNsys::Fracture *Fracturesss_vert_dev_ptr = thrust::raw_pointer_cast(Fracss.data());
+    cuDFNsys::Fracture<T> *Fracturesss_vert_dev_ptr = thrust::raw_pointer_cast(Fracss.data());
 
-    cuDFNsys::IdentifyEleFrac<<<elementEntities_2D.size() / 256 + 1, 256>>>(One_entity_one_ele_dev_ptr,
-                                                                            coordinate_3D_dev_ptr,
-                                                                            Fracturesss_vert_dev_ptr,
-                                                                            Elements_Frac_dev_ptr,
-                                                                            elementEntities_2D.size(),
-                                                                            Fracs_s.size(),
-                                                                            _TOL_IdentifyEleFrac);
+    cuDFNsys::IdentifyEleFrac<T><<<elementEntities_2D.size() / 256 + 1, 256>>>(One_entity_one_ele_dev_ptr,
+                                                                               coordinate_3D_dev_ptr,
+                                                                               Fracturesss_vert_dev_ptr,
+                                                                               Elements_Frac_dev_ptr,
+                                                                               elementEntities_2D.size(),
+                                                                               Fracs_s.size(),
+                                                                               _TOL_IdentifyEleFrac);
     cudaDeviceSynchronize();
     cout << "\t\t\tIdentified element's fracID" << endl;
     //------------------------------------------------------------------------------------------
@@ -514,52 +547,25 @@ void cuDFNsys::Mesh::GetElements(const thrust::host_vector<cuDFNsys::Fracture> &
     element_3D_dev = this->Element3D;
     uint3 *element_3D_dev_ptr = thrust::raw_pointer_cast(element_3D_dev.data());
 
-    thrust::device_vector<cuDFNsys::EleCoor> coordinate_2D_dev(this->Element3D.size());
-    cuDFNsys::EleCoor *coordinate_2D_dev_ptr = thrust::raw_pointer_cast(coordinate_2D_dev.data());
+    thrust::device_vector<cuDFNsys::EleCoor<T>> coordinate_2D_dev(this->Element3D.size());
+    cuDFNsys::EleCoor<T> *coordinate_2D_dev_ptr = thrust::raw_pointer_cast(coordinate_2D_dev.data());
 
     thrust::device_vector<uint> element_Frac_Tag_dev;
     element_Frac_Tag_dev = ElementFracTag;
     uint *element_Frac_Tag_dev_ptr = thrust::raw_pointer_cast(element_Frac_Tag_dev.data());
 
-    cuDFNsys::GetLocalCoordiates<<<this->Element3D.size() / 256 + 1, 256>>>(element_3D_dev_ptr,
-                                                                            Fracturesss_vert_dev_ptr,
-                                                                            element_Frac_Tag_dev_ptr,
-                                                                            coordinate_2D_dev_ptr,
-                                                                            coordinate_3D_dev_ptr,
-                                                                            this->Element3D.size());
+    cuDFNsys::GetLocalCoordiates<T><<<this->Element3D.size() / 256 + 1, 256>>>(element_3D_dev_ptr,
+                                                                               Fracturesss_vert_dev_ptr,
+                                                                               element_Frac_Tag_dev_ptr,
+                                                                               coordinate_2D_dev_ptr,
+                                                                               coordinate_3D_dev_ptr,
+                                                                               this->Element3D.size());
     cudaDeviceSynchronize();
     this->Element3D = element_3D_dev;
     this->Coordinate2D = coordinate_2D_dev;
-
-    /*
-        int tmp_gh = 0;
-        for (int i = 0; i < this->Element2D.size(); ++i)
-        {
-            if (this->Element2D[i][0].y != this->Element3D[tmp_gh].y &&
-                this->Element2D[i][0].z != this->Element3D[tmp_gh].z)
-            {
-                //cout << "changed " << i + 1 << "\n";
-                for (int j = 0; j < this->Element2D[i].size(); ++j)
-                {
-                    uint tmpss = this->Element2D[i][j].y;
-                    this->Element2D[i][j].y = this->Element2D[i][j].z;
-                    this->Element2D[i][j].z = tmpss;
-                }
-            }
-            tmp_gh += this->Element2D[i].size();
-        }*/
-    /*
-        cout << endl;
-        for (int i = 0; i < this->Element2D.size(); ++i)
-        {
-            cout << "Frac " << i + 1 << endl;
-            for (int j = 0; j < this->Element2D[i].size(); ++j)
-            {
-                cout << this->Element2D[i][j].x << ", " << this->Element2D[i][j].y << ", " << this->Element2D[i][j].z << "\n";
-            }
-            cout << endl;
-        }*/
 }; // GetElements
+template void cuDFNsys::Mesh<double>::GetElements(const thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs_s);
+template void cuDFNsys::Mesh<float>::GetElements(const thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs_s);
 
 // ====================================================
 // NAME:        NumberingEdges
@@ -567,7 +573,8 @@ void cuDFNsys::Mesh::GetElements(const thrust::host_vector<cuDFNsys::Fracture> &
 // AUTHOR:      Tingchang YIN
 // DATE:        08/04/2022
 // ====================================================
-void cuDFNsys::Mesh::NumberingEdges(const float L)
+template <typename T>
+void cuDFNsys::Mesh<T>::NumberingEdges(const T L)
 {
     uint NUM_ele = this->Element3D.size();
     uint NUM_node = this->Coordinate3D.size();
@@ -659,18 +666,18 @@ void cuDFNsys::Mesh::NumberingEdges(const float L)
 
                     if (if_d.first == true)
                     {
-                        float3 vert1 = this->Coordinate3D[node1 - 1];
-                        float3 vert2 = this->Coordinate3D[node2 - 1];
-                        float3 vect = make_float3(vert1.x - vert2.x,
-                                                  vert1.y - vert2.y,
-                                                  vert1.z - vert2.z);
-                        float len = sqrt(vect.x * vect.x + vect.y * vect.y + vect.z * vect.z);
+                        cuDFNsys::Vector3<T> vert1 = this->Coordinate3D[node1 - 1];
+                        cuDFNsys::Vector3<T> vert2 = this->Coordinate3D[node2 - 1];
+                        cuDFNsys::Vector3<T> vect = cuDFNsys::MakeVector3(vert1.x - vert2.x,
+                                                                          vert1.y - vert2.y,
+                                                                          vert1.z - vert2.z);
+                        T len = sqrt(vect.x * vect.x + vect.y * vect.y + vect.z * vect.z);
 
                         if (if_d.second == "in")
                         {
                             this->EdgeAttri[tmp_ele_NO].e[k] = 0;
                             this->EdgeAttri[tmp_ele_NO].no[k] = Sep_NO;
-                            this->InletEdgeNOLen.push_back(make_float2(Sep_NO, len));
+                            this->InletEdgeNOLen.push_back(cuDFNsys::MakeVector2((T)Sep_NO, len));
 
                             Sep_edge_NO_in++;
                         }
@@ -678,7 +685,7 @@ void cuDFNsys::Mesh::NumberingEdges(const float L)
                         {
                             this->EdgeAttri[tmp_ele_NO].e[k] = 1;
                             this->EdgeAttri[tmp_ele_NO].no[k] = Sep_NO;
-                            this->OutletEdgeNOLen.push_back(make_float2(Sep_NO, len));
+                            this->OutletEdgeNOLen.push_back(cuDFNsys::MakeVector2((T)Sep_NO, len));
 
                             Sep_edge_NO_out++;
                         }
@@ -703,6 +710,8 @@ void cuDFNsys::Mesh::NumberingEdges(const float L)
     NumOutletEdges = Sep_edge_NO_out - 1;
     NumNeumannEdges = Sep_edge_NO_neumann - 1;
 }; // NumberingEdges
+template void cuDFNsys::Mesh<double>::NumberingEdges(const double L);
+template void cuDFNsys::Mesh<float>::NumberingEdges(const float L);
 
 // ====================================================
 // NAME:        GetEntitiesElements
@@ -710,8 +719,9 @@ void cuDFNsys::Mesh::NumberingEdges(const float L)
 // AUTHOR:      Tingchang YIN
 // DATE:        08/04/2022
 // ====================================================
-void cuDFNsys::Mesh::GetEntitiesElements(thrust::host_vector<thrust::host_vector<uint3>> &elementEntities_2D,
-                                         thrust::host_vector<uint> &Largest_ele)
+template <typename T>
+void cuDFNsys::Mesh<T>::GetEntitiesElements(thrust::host_vector<thrust::host_vector<uint3>> &elementEntities_2D,
+                                            thrust::host_vector<uint> &Largest_ele)
 {
     gmsh::vectorpair dimTags;
     gmsh::model::occ::getEntities(dimTags, 2);
@@ -724,7 +734,7 @@ void cuDFNsys::Mesh::GetEntitiesElements(thrust::host_vector<thrust::host_vector
     for (size_t i = 0; i < dimTags.size(); ++i)
     {
         Largest_ele[i] = 0;
-        float area_ll = 0;
+        T area_ll = 0;
 
         std::vector<int> elemTypes;
         std::vector<std::vector<std::size_t>> elemTags, elemNodeTags;
@@ -738,19 +748,19 @@ void cuDFNsys::Mesh::GetEntitiesElements(thrust::host_vector<thrust::host_vector
             int node2 = (size_t)elemNodeTags[0][j + 1];
             int node3 = (size_t)elemNodeTags[0][j + 2];
 
-            bool skinny_if = cuDFNsys::If3DTriangleSkinny(this->Coordinate3D[node1 - 1],
-                                                          this->Coordinate3D[node2 - 1],
-                                                          this->Coordinate3D[node3 - 1],
-                                                          _TOL_If3DTriangleSkinny);
+            bool skinny_if = cuDFNsys::If3DTriangleSkinny<T>(this->Coordinate3D[node1 - 1],
+                                                             this->Coordinate3D[node2 - 1],
+                                                             this->Coordinate3D[node3 - 1],
+                                                             _TOL_If3DTriangleSkinny);
 
             if (skinny_if == false)
             {
                 elementEntities_2D[i].push_back(make_uint3(node1, node2, node3));
                 //cout << "YY " << area << "; node " << RowVector3d(node1, node2, node3) << endl;
 
-                float area = cuDFNsys::Triangle3DArea(this->Coordinate3D[node1 - 1],
-                                                      this->Coordinate3D[node2 - 1],
-                                                      this->Coordinate3D[node3 - 1]);
+                T area = cuDFNsys::Triangle3DArea<T>(this->Coordinate3D[node1 - 1],
+                                                     this->Coordinate3D[node2 - 1],
+                                                     this->Coordinate3D[node3 - 1]);
                 if (area > area_ll)
                 {
                     area_ll = area;
@@ -793,6 +803,10 @@ void cuDFNsys::Mesh::GetEntitiesElements(thrust::host_vector<thrust::host_vector
         Largest_ele = tmp_l;
     }
 }; // GetEntitiesElements
+template void cuDFNsys::Mesh<double>::GetEntitiesElements(thrust::host_vector<thrust::host_vector<uint3>> &elementEntities_2D,
+                                                          thrust::host_vector<uint> &Largest_ele);
+template void cuDFNsys::Mesh<float>::GetEntitiesElements(thrust::host_vector<thrust::host_vector<uint3>> &elementEntities_2D,
+                                                         thrust::host_vector<uint> &Largest_ele);
 
 // ====================================================
 // NAME:        SparseMatEdgeAttri
@@ -801,7 +815,8 @@ void cuDFNsys::Mesh::GetEntitiesElements(thrust::host_vector<thrust::host_vector
 // AUTHOR:      Tingchang YIN
 // DATE:        08/04/2022
 // ====================================================
-UMapEdge cuDFNsys::Mesh::SparseMatEdgeAttri(uint i, bool if_change_ori)
+template <typename T>
+UMapEdge cuDFNsys::Mesh<T>::SparseMatEdgeAttri(uint i, bool if_change_ori)
 {
     size_t Dim = this->Coordinate3D.size();
 
@@ -845,6 +860,8 @@ UMapEdge cuDFNsys::Mesh::SparseMatEdgeAttri(uint i, bool if_change_ori)
 
     return umap_s;
 }; // SparseMatEdgeAttri
+template UMapEdge cuDFNsys::Mesh<double>::SparseMatEdgeAttri(uint i, bool if_change_ori);
+template UMapEdge cuDFNsys::Mesh<float>::SparseMatEdgeAttri(uint i, bool if_change_ori);
 
 // ====================================================
 // NAME:        GetElementID
@@ -852,7 +869,8 @@ UMapEdge cuDFNsys::Mesh::SparseMatEdgeAttri(uint i, bool if_change_ori)
 // AUTHOR:      Tingchang YIN
 // DATE:        08/04/2022
 // ====================================================
-size_t cuDFNsys::Mesh::GetElementID(size_t i, size_t j)
+template <typename T>
+size_t cuDFNsys::Mesh<T>::GetElementID(size_t i, size_t j)
 {
     size_t ID = 0;
 
@@ -864,6 +882,8 @@ size_t cuDFNsys::Mesh::GetElementID(size_t i, size_t j)
 
     return ID + j;
 }; // GetElementID
+template size_t cuDFNsys::Mesh<double>::GetElementID(size_t i, size_t j);
+template size_t cuDFNsys::Mesh<float>::GetElementID(size_t i, size_t j);
 
 // ====================================================
 // NAME:        IfTwoEndsDirchlet
@@ -871,19 +891,20 @@ size_t cuDFNsys::Mesh::GetElementID(size_t i, size_t j)
 // AUTHOR:      Tingchang YIN
 // DATE:        08/04/2022
 // ====================================================
-pair<bool, string> cuDFNsys::Mesh::IfTwoEndsDirchlet(const size_t node1,
-                                                     const size_t node2,
-                                                     const float L)
+template <typename T>
+pair<bool, string> cuDFNsys::Mesh<T>::IfTwoEndsDirchlet(const size_t node1,
+                                                        const size_t node2,
+                                                        const T L)
 {
     pair<bool, string> kk = std::make_pair(false, "N");
 
-    float coord_1[3] = {this->Coordinate3D[node1 - 1].x,
-                        this->Coordinate3D[node1 - 1].y,
-                        this->Coordinate3D[node1 - 1].z};
+    T coord_1[3] = {this->Coordinate3D[node1 - 1].x,
+                    this->Coordinate3D[node1 - 1].y,
+                    this->Coordinate3D[node1 - 1].z};
 
-    float coord_2[3] = {this->Coordinate3D[node2 - 1].x,
-                        this->Coordinate3D[node2 - 1].y,
-                        this->Coordinate3D[node2 - 1].z};
+    T coord_2[3] = {this->Coordinate3D[node2 - 1].x,
+                    this->Coordinate3D[node2 - 1].y,
+                    this->Coordinate3D[node2 - 1].z};
 
     if (abs(coord_1[this->Dir] - L * 0.5) < _TOL_IfTwoEndsDirchlet &&
         abs(coord_2[this->Dir] - L * 0.5) < _TOL_IfTwoEndsDirchlet)
@@ -903,3 +924,9 @@ pair<bool, string> cuDFNsys::Mesh::IfTwoEndsDirchlet(const size_t node1,
 
     return kk;
 }; // IfTwoEndsDirchlet
+template pair<bool, string> cuDFNsys::Mesh<double>::IfTwoEndsDirchlet(const size_t node1,
+                                                                      const size_t node2,
+                                                                      const double L);
+template pair<bool, string> cuDFNsys::Mesh<float>::IfTwoEndsDirchlet(const size_t node1,
+                                                                     const size_t node2,
+                                                                     const float L);

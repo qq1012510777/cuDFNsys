@@ -9,11 +9,13 @@
 ///////////////////////////////////////////////////////////////////
 #pragma once
 #include "../../GlobalDef/GlobalDef.cuh"
+#include "./DataTypeSelector/DataTypeSelector.cuh"
 
 namespace cuDFNsys
 {
-__device__ __host__ bool If3DTriangleSkinny(float3 A,
-                                            float3 B,
-                                            float3 C,
-                                            float _TOL_s);
+template <typename T>
+__device__ __host__ bool If3DTriangleSkinny(cuDFNsys::Vector3<T> A,
+                                            cuDFNsys::Vector3<T> B,
+                                            cuDFNsys::Vector3<T> C,
+                                            T _TOL_s);
 }; // namespace cuDFNsys

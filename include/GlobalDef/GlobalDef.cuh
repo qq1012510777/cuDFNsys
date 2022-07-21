@@ -32,8 +32,6 @@
 
 using namespace std;
 
-typedef std::map<pair<size_t, size_t>, pair<float3, float3>> MapIntersection;
-
 #define _TOL_Intersection3DPolyXYPlane 1e-7
 #define _TOL_Intersection2DLine2DPoly 1e-7
 #define _TOL_IntersectionTwoCollinearSegs 1e-7

@@ -10,6 +10,8 @@
 ///////////////////////////////////////////////////////////////////
 
 #pragma once
+#include "../DataTypeSelector/DataTypeSelector.cuh"
+#include "../GlobalDef/GlobalDef.cuh"
 #include <bits/stdc++.h>
 #include <cmath>
 #include <ctime>
@@ -20,6 +22,7 @@ using namespace std;
 
 namespace cuDFNsys
 {
+template <typename T>
 class Graph
 {
 public:
@@ -32,7 +35,7 @@ public:
 public:
     // constructor
     Graph(const size_t &NumOfFractures_1,
-          std::map<pair<size_t, size_t>, pair<float3, float3>> Intersection_map);
+          std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<T>, cuDFNsys::Vector3<T>>> Intersection_map);
     // implement DFS
     void UseDFS(std::vector<std::vector<size_t>> &S);
     // destructor
@@ -47,31 +50,4 @@ private:
     void DFSUtil(int s, vector<bool> &visited, vector<size_t> &onecluster);
     void addEdge(int v, int w);
 };
-
-// ====================================================
-// NAME:        UseDFS
-// DESCRIPTION: UseDFS
-//
-// AUTHOR:      Tingchang YIN
-// DATE:        08/04/2022
-// ====================================================
-inline void Graph::UseDFS(std::vector<std::vector<size_t>> &S)
-{
-    S.clear();
-    DFS(S);
-    S.shrink_to_fit();
-}; // UseDFS
-
-// ====================================================
-// NAME:        addEdge
-// DESCRIPTION: create adjacent list
-//
-// AUTHOR:      Tingchang YIN
-// DATE:        08/04/2022
-// ====================================================
-inline void Graph::addEdge(int v, int w)
-{
-    // Add w to v’s list.
-    Adj[v].push_back(w);
-}; // addEdge
 }; // namespace cuDFNsys

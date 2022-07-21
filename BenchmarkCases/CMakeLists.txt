@@ -4,7 +4,7 @@ project (benchmark)
 
 enable_language(CUDA)
 
-set (CUDFNSYS_ROOT $ENV{HOME}/cuDFNsys)
+set (CUDFNSYS_ROOT $ENV{HOME}/Desktop/cuDFNsys_II)
 
 set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin) ## bin is the EXECUTABLE_OUTPUT_PATH
 
@@ -17,6 +17,7 @@ INCLUDE(${CUDFNSYS_ROOT}/Modules/FindDeps.cmake)
 include_directories(${HEADERs})
 
 ADD_DEFINITIONS(-std=c++17)  
+ADD_DEFINITIONS(-DUSE_DOUBLES) ## use double data type
 
 set (SRC_LIST ${PROJECT_SOURCE_DIR}/src/main.cu)
 

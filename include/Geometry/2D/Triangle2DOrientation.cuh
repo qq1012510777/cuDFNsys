@@ -10,9 +10,13 @@
 // AUTHOR:            Tingchang YIN
 ///////////////////////////////////////////////////////////////////
 #pragma once
+#include "../../DataTypeSelector/DataTypeSelector.cuh"
 #include "../../GlobalDef/GlobalDef.cuh"
 
 namespace cuDFNsys
 {
-__device__ __host__ bool Triangle2DOrientation(float2 a, float2 b, float2 c);
+template <typename T>
+__device__ __host__ bool Triangle2DOrientation(cuDFNsys::Vector2<T> a,
+                                               cuDFNsys::Vector2<T> b,
+                                               cuDFNsys::Vector2<T> c);
 }; // namespace cuDFNsys

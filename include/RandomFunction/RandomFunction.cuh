@@ -13,28 +13,41 @@
 namespace cuDFNsys
 {
 // power law
-__device__ __host__ float RandomPowerlaw(float x0,
-                                         float x1,
-                                         float alpha_g,
-                                         float rand_0_1);
+template <typename T>
+__device__ __host__ T RandomPowerlaw(T x0,
+                                     T x1,
+                                     T alpha_g,
+                                     T rand_0_1);
+
 // uniform
-__device__ __host__ float RandomUniform(float a,
-                                        float b,
-                                        float rand_0_1);
+template <typename T>
+__device__ __host__ T RandomUniform(T a,
+                                    T b,
+                                    T rand_0_1);
+
 // fisher
-__device__ __host__ float RandomFisher(float rand_0_1,
-                                       float fisher_k);
+template <typename T>
+__device__ __host__ T RandomFisher(T rand_0_1,
+                                   T fisher_k);
+
 // lognormal: mean is the mean of log(x),
 // variance is the variance of log(x)
-__device__ __host__ float RandomLognormal(float mean,
-                                          float variance,
-                                          float min,
-                                          float max,
-                                          float rand_0_1);
+template <typename T>
+__device__ __host__ T RandomLognormal(T mean,
+                                      T variance,
+                                      T min,
+                                      T max,
+                                      T rand_0_1);
+
 // return CDF of standard normal distribution (-inf, x)
-__device__ __host__ float StandardNormalCDF(float x);
+template <typename T>
+__device__ __host__ T StandardNormalCDF(T x);
+
 // return a value that is calculated by inverting the standard normal CDF.
-__device__ __host__ float StandardNormalCDFInv(float p);
+template <typename T>
+__device__ __host__ T StandardNormalCDFInv(T p);
+
 // a stable algorithm to calculate polynomial with 8th degrees
-__device__ __host__ float R8PolyValueHorner(int m, float c[], float x);
+template <typename T>
+__device__ __host__ T R8PolyValueHorner(int m, T c[], T x);
 }; // namespace cuDFNsys

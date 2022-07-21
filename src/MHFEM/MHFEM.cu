@@ -6,12 +6,13 @@
 // AUTHOR:      Tingchang YIN
 // DATE:        09/04/2022
 // ====================================================
-cuDFNsys::MHFEM::MHFEM(const cuDFNsys::Mesh &mesh,
-                       const thrust::host_vector<cuDFNsys::Fracture> &Fracs,
-                       const float &inlet_p_,
-                       const float &outlet_p_,
-                       const int &dir_,
-                       const float &L)
+template <typename T>
+cuDFNsys::MHFEM<T>::MHFEM(const cuDFNsys::Mesh<T> &mesh,
+                          const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
+                          const T &inlet_p_,
+                          const T &outlet_p_,
+                          const int &dir_,
+                          const T &L)
 {
     Eigen::setNbThreads(1);
     this->Dir = dir_;
@@ -21,6 +22,18 @@ cuDFNsys::MHFEM::MHFEM(const cuDFNsys::Mesh &mesh,
     this->QError = (abs(QIn - QOut) / (QIn > QOut ? QIn : QOut)) * 100.0f;
     this->Permeability = 0.5f * (QOut + QIn) / L / (inlet_p_ - outlet_p_);
 }; // MHFEM
+template cuDFNsys::MHFEM<double>::MHFEM(const cuDFNsys::Mesh<double> &mesh,
+                                        const thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs,
+                                        const double &inlet_p_,
+                                        const double &outlet_p_,
+                                        const int &dir_,
+                                        const double &L);
+template cuDFNsys::MHFEM<float>::MHFEM(const cuDFNsys::Mesh<float> &mesh,
+                                       const thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs,
+                                       const float &inlet_p_,
+                                       const float &outlet_p_,
+                                       const int &dir_,
+                                       const float &L);
 
 // ====================================================
 // NAME:        MatlabPlot
@@ -28,18 +41,19 @@ cuDFNsys::MHFEM::MHFEM(const cuDFNsys::Mesh &mesh,
 // AUTHOR:      Tingchang YIN
 // DATE:        09/04/2022
 // ====================================================
-void cuDFNsys::MHFEM::MatlabPlot(const string &mat_key,
-                                 const string &command_key,
-                                 thrust::host_vector<cuDFNsys::Fracture> Fracs,
-                                 const cuDFNsys::Mesh &mesh,
-                                 const float &L)
+template <typename T>
+void cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
+                                    const string &command_key,
+                                    thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
+                                    const cuDFNsys::Mesh<T> &mesh,
+                                    const T &L)
 {
     cuDFNsys::MatlabAPI M1;
 
     size_t node_num = mesh.Coordinate3D.size();
 
-    float *ptr_coordinates_3D;
-    ptr_coordinates_3D = new float[node_num * 3];
+    T *ptr_coordinates_3D;
+    ptr_coordinates_3D = new T[node_num * 3];
 
     if (ptr_coordinates_3D == NULL)
     {
@@ -61,7 +75,7 @@ void cuDFNsys::MHFEM::MatlabPlot(const string &mat_key,
 
     //---------------------
     size_t ele_num = mesh.Element3D.size();
-    float *ptr_element_3D = new float[ele_num * 3];
+    T *ptr_element_3D = new T[ele_num * 3];
     if (ptr_element_3D == NULL)
     {
         string AS = "Alloc error in MHFEM::MatlabPlot\n";
@@ -81,7 +95,7 @@ void cuDFNsys::MHFEM::MatlabPlot(const string &mat_key,
     ptr_element_3D = NULL;
     //--------------------------
 
-    float *pressure_ELEs = new float[ele_num];
+    T *pressure_ELEs = new T[ele_num];
     if (pressure_ELEs == NULL)
     {
         string AS = "Alloc error in MHFEM::MatlabPlot\n";
@@ -100,7 +114,7 @@ void cuDFNsys::MHFEM::MatlabPlot(const string &mat_key,
     pressure_ELEs = NULL;
 
     //------------------------------
-    //float *normal_veloc = new float[ele_num * 3];
+    //T *normal_veloc = new T[ele_num * 3];
     //if (normal_veloc == NULL)
     //{
     //    string AS = "Alloc error in MHFEM::MatlabPlot\n";
@@ -119,7 +133,7 @@ void cuDFNsys::MHFEM::MatlabPlot(const string &mat_key,
     //normal_veloc = NULL;
 
     //----------------
-    float *velocity_center_grid = new float[mesh.Element3D.size() * 3];
+    T *velocity_center_grid = new T[mesh.Element3D.size() * 3];
     if (velocity_center_grid == NULL)
     {
         string AS = "Alloc error in MHFEM::MatlabPlot\n";
@@ -129,23 +143,23 @@ void cuDFNsys::MHFEM::MatlabPlot(const string &mat_key,
     for (uint i = 0; i < mesh.Element3D.size(); ++i)
     {
         uint3 EdgeNO = make_uint3((i + 1) * 3 - 3, (i + 1) * 3 - 2, (i + 1) * 3 - 1); // from 0
-        float3 Velocity_ = make_float3((float)this->VelocityNormalScalarSepEdges(EdgeNO.x, 0),
-                                       (float)this->VelocityNormalScalarSepEdges(EdgeNO.y, 0),
-                                       (float)this->VelocityNormalScalarSepEdges(EdgeNO.z, 0));
-        float2 Vertexes[3];
-        Vertexes[0] = make_float2(mesh.Coordinate2D[i].x[0], mesh.Coordinate2D[i].y[0]);
-        Vertexes[1] = make_float2(mesh.Coordinate2D[i].x[1], mesh.Coordinate2D[i].y[1]);
-        Vertexes[2] = make_float2(mesh.Coordinate2D[i].x[2], mesh.Coordinate2D[i].y[2]);
+        cuDFNsys::Vector3<T> Velocity_ = cuDFNsys ::MakeVector3((T)this->VelocityNormalScalarSepEdges(EdgeNO.x, 0),
+                                                                (T)this->VelocityNormalScalarSepEdges(EdgeNO.y, 0),
+                                                                (T)this->VelocityNormalScalarSepEdges(EdgeNO.z, 0));
+        cuDFNsys::Vector2<T> Vertexes[3];
+        Vertexes[0] = cuDFNsys::MakeVector2(mesh.Coordinate2D[i].x[0], mesh.Coordinate2D[i].y[0]);
+        Vertexes[1] = cuDFNsys::MakeVector2(mesh.Coordinate2D[i].x[1], mesh.Coordinate2D[i].y[1]);
+        Vertexes[2] = cuDFNsys::MakeVector2(mesh.Coordinate2D[i].x[2], mesh.Coordinate2D[i].y[2]);
 
-        float2 Center_p = make_float2(1.0f / 3.0f * (Vertexes[0].x + Vertexes[1].x + Vertexes[2].x), 1.0f / 3.0f * (Vertexes[0].y + Vertexes[1].y + Vertexes[2].y));
+        cuDFNsys::Vector2<T> Center_p = cuDFNsys::MakeVector2(1.0f / 3.0f * (Vertexes[0].x + Vertexes[1].x + Vertexes[2].x), 1.0f / 3.0f * (Vertexes[0].y + Vertexes[1].y + Vertexes[2].y));
 
-        float2 velocity_p = cuDFNsys::ReconstructVelocityGrid(Center_p, Vertexes, Velocity_);
+        cuDFNsys::Vector2<T> velocity_p = cuDFNsys::ReconstructVelocityGrid<T>(Center_p, Vertexes, Velocity_);
 
-        float3 velocity_p_3D = make_float3(velocity_p.x, velocity_p.y, 0);
+        cuDFNsys::Vector3<T> velocity_p_3D = cuDFNsys::MakeVector3(velocity_p.x, velocity_p.y, (T)0);
 
-        float R_mat[3][3];
+        T R_mat[3][3];
         Fracs[mesh.ElementFracTag[i]].RoationMatrix(R_mat, 23);
-        velocity_p_3D = cuDFNsys::ProductSquare3Float3(R_mat, velocity_p_3D);
+        velocity_p_3D = cuDFNsys::ProductSquare3Vector3<T>(R_mat, velocity_p_3D);
 
         velocity_center_grid[i] = velocity_p_3D.x;
         velocity_center_grid[i + mesh.Element3D.size()] = velocity_p_3D.y;
@@ -207,6 +221,16 @@ void cuDFNsys::MHFEM::MatlabPlot(const string &mat_key,
     oss << "quiver3(CenterELE(:, 1), CenterELE(:, 2), CenterELE(:, 3), velocity_center_grid(:, 1),velocity_center_grid(:, 2),velocity_center_grid(:, 3), 4, 'LineWidth', 1.5, 'color', 'r');\n";
     oss.close();
 }; // MHFEM
+template void cuDFNsys::MHFEM<double>::MatlabPlot(const string &mat_key,
+                                                  const string &command_key,
+                                                  thrust::host_vector<cuDFNsys::Fracture<double>> Fracs,
+                                                  const cuDFNsys::Mesh<double> &mesh,
+                                                  const double &L);
+template void cuDFNsys::MHFEM<float>::MatlabPlot(const string &mat_key,
+                                                 const string &command_key,
+                                                 thrust::host_vector<cuDFNsys::Fracture<float>> Fracs,
+                                                 const cuDFNsys::Mesh<float> &mesh,
+                                                 const float &L);
 
 // ====================================================
 // NAME:        Implementation
@@ -214,24 +238,32 @@ void cuDFNsys::MHFEM::MatlabPlot(const string &mat_key,
 // AUTHOR:      Tingchang YIN
 // DATE:        09/04/2022
 // ====================================================
-void cuDFNsys::MHFEM::Implementation(const cuDFNsys::Mesh &mesh,
-                                     const thrust::host_vector<cuDFNsys::Fracture> &Fracs)
+template <typename T>
+void cuDFNsys::MHFEM<T>::Implementation(const cuDFNsys::Mesh<T> &mesh,
+                                        const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs)
 {
     size_t NUM_sep_edges = mesh.Element3D.size() * 3,
            NUM_eles = mesh.Element3D.size(),
            NUM_glob_interior_edges = mesh.NumInteriorEdges;
-
+    // cout << "NUM_sep_edges: " << NUM_sep_edges << endl;
+    // cout << "NUM_eles: " << NUM_eles << endl;
+    // cout << "NUM_glob_interior_edges: " << NUM_glob_interior_edges << endl;
     pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> II_K;
     II_K = this->AssembleOnGPU(mesh, Fracs, this->InletP, this->OutletP);
 
     Eigen::SparseMatrix<double> A(NUM_sep_edges, NUM_sep_edges);
     Eigen::SparseMatrix<double> B(NUM_eles, NUM_sep_edges);
     Eigen::SparseMatrix<double> C(NUM_glob_interior_edges, NUM_sep_edges);
-
+    // cout << "K:\n"
+    //      << MatrixXd(II_K.first) << endl;
+    // cout << "\n\n-----------\n\nb:\n"
+    //      << MatrixXd(II_K.second) << endl;
     A = II_K.first.block(0, 0, NUM_sep_edges, NUM_sep_edges);
     B = II_K.first.block(NUM_sep_edges, 0, NUM_eles, NUM_sep_edges);
     C = II_K.first.block(NUM_sep_edges + NUM_eles, 0, NUM_glob_interior_edges, NUM_sep_edges);
-
+    //cout << "A:\n" << MatrixXd(A) << endl;
+    //cout << "B:\n" << MatrixXd(B) << endl;
+    //cout << "C:\n" << MatrixXd(C) << endl;
     Eigen::SparseMatrix<double> g = II_K.second.block(0, 0, NUM_sep_edges, 1);
 
     Eigen::SparseMatrix<double> f = II_K.second.block(NUM_sep_edges, 0, NUM_eles, 1);
@@ -297,6 +329,8 @@ void cuDFNsys::MHFEM::Implementation(const cuDFNsys::Mesh &mesh,
     UmfPackLU<Eigen::SparseMatrix<double>> solver;
     solver.compute(D);
     this->PressureInteriorEdge = solver.solve(r);
+    //cout << "this->PressureInteriorEdge:\n";
+    //cout << this->PressureInteriorEdge << endl;
     cout << "\t\tRunning time of solving matrix: " << cuDFNsys::CPUSecond() - iStart_fem << "sec\n";
 
     iStart_fem = cuDFNsys::CPUSecond();
@@ -304,15 +338,15 @@ void cuDFNsys::MHFEM::Implementation(const cuDFNsys::Mesh &mesh,
     this->PressureEles = U * (Wq * g - Sd * this->PressureInteriorEdge - f);
     this->VelocityNormalScalarSepEdges = A_inv * (g - B_tps * this->PressureEles - C_tps * this->PressureInteriorEdge);
 
-    //cout << this->PressureEles << endl;
+    // cout << this->PressureEles << endl;
     //cout << "\tcalculating flux ...\n";
     //cout << "\n\nin:\n";
     for (size_t i = 0; i < mesh.InletEdgeNOLen.size(); ++i)
     {
         size_t sep_EDGE_no = mesh.InletEdgeNOLen[i].x - 1;
-        float len = mesh.InletEdgeNOLen[i].y;
+        T len = mesh.InletEdgeNOLen[i].y;
 
-        float veloc_length = abs((float)this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0) * len);
+        T veloc_length = abs((T)this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0) * len);
         this->QIn += veloc_length;
         this->InletLength += len;
         //cout << "len: " << len << ";\tq: " << this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0) << "; sep_EDGE_no: " << sep_EDGE_no + 1 << "\n";
@@ -323,15 +357,19 @@ void cuDFNsys::MHFEM::Implementation(const cuDFNsys::Mesh &mesh,
     for (size_t i = 0; i < mesh.OutletEdgeNOLen.size(); ++i)
     {
         size_t sep_EDGE_no = mesh.OutletEdgeNOLen[i].x - 1;
-        float len = mesh.OutletEdgeNOLen[i].y;
+        T len = mesh.OutletEdgeNOLen[i].y;
 
-        float veloc_length = abs((float)this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0) * len);
+        T veloc_length = abs((T)this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0) * len);
         this->QOut += veloc_length;
         this->OutletLength += len;
         //cout << "len: " << len << ";\tq: " << this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0) << "; sep_EDGE_no: " << sep_EDGE_no + 1 << "\n";
     }
     cout << "\t\tRunning time of post treatments: " << cuDFNsys::CPUSecond() - iStart_fem << "sec\n";
 }; // Implementation
+template void cuDFNsys::MHFEM<double>::Implementation(const cuDFNsys::Mesh<double> &mesh,
+                                                      const thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs);
+template void cuDFNsys::MHFEM<float>::Implementation(const cuDFNsys::Mesh<float> &mesh,
+                                                     const thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs);
 
 // ====================================================
 // NAME:        AssembleOnGPU
@@ -339,10 +377,11 @@ void cuDFNsys::MHFEM::Implementation(const cuDFNsys::Mesh &mesh,
 // AUTHOR:      Tingchang YIN
 // DATE:        09/04/2022
 // ====================================================
-pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> cuDFNsys::MHFEM::AssembleOnGPU(const cuDFNsys::Mesh &mesh,
-                                                                                              const thrust::host_vector<cuDFNsys::Fracture> &Fracs,
-                                                                                              float P_in,
-                                                                                              float P_out)
+template <typename T>
+pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> cuDFNsys::MHFEM<T>::AssembleOnGPU(const cuDFNsys::Mesh<T> &mesh,
+                                                                                                 const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
+                                                                                                 T P_in,
+                                                                                                 T P_out)
 {
     double iStart_fem = cuDFNsys::CPUSecond();
 
@@ -353,18 +392,19 @@ pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> cuDFNsys::MHFEM::
         NUM_OUTLET_EDGES = mesh.NumOutletEdges;
 
     int Dim = NUM_sep_edges + NUM_eles + NUM_glob_interior_edges;
+    // cout << "NUM_sep_edges: " << NUM_sep_edges << ", NUM_eles: " << NUM_eles << ", NUM_glob_interior_edges: " << NUM_glob_interior_edges << endl;
 
     int Frac_NUM = mesh.Element2D.size();
 
     size_t tmp_e = 0;
     int iyt = 0;
-    thrust::host_vector<float> Conduc_Frac(NUM_eles);
+    thrust::host_vector<T> Conduc_Frac(NUM_eles);
 
     for (std::vector<size_t>::iterator it_fracID = mesh.FracID->begin();
          it_fracID != mesh.FracID->end();
          it_fracID++)
     {
-        float conduct_tmp = Fracs[*(it_fracID)].Conductivity;
+        T conduct_tmp = Fracs[*(it_fracID)].Conductivity;
 
         for (int j = 0; j < mesh.Element2D[iyt].size(); ++j)
         {
@@ -376,31 +416,31 @@ pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> cuDFNsys::MHFEM::
         iyt++;
     }
 
-    thrust::device_vector<cuDFNsys::EleCoor> Coodin_2D_dev;
+    thrust::device_vector<cuDFNsys::EleCoor<T>> Coodin_2D_dev;
     Coodin_2D_dev = mesh.Coordinate2D;
-    cuDFNsys::EleCoor *coord_2D_dev_ptr = thrust::raw_pointer_cast(Coodin_2D_dev.data());
+    cuDFNsys::EleCoor<T> *coord_2D_dev_ptr = thrust::raw_pointer_cast(Coodin_2D_dev.data());
 
     cuDFNsys::EleEdgeAttri *Edge_attri_dev_ptr;
     thrust::device_vector<cuDFNsys::EleEdgeAttri> Edge_attri_dev;
     Edge_attri_dev = mesh.EdgeAttri;
     Edge_attri_dev_ptr = thrust::raw_pointer_cast(Edge_attri_dev.data());
 
-    thrust::device_vector<float> Conduc_Frac_dev = Conduc_Frac;
-    float *Conduc_Frac_dev_ptr = thrust::raw_pointer_cast(Conduc_Frac_dev.data());
+    thrust::device_vector<T> Conduc_Frac_dev = Conduc_Frac;
+    T *Conduc_Frac_dev_ptr = thrust::raw_pointer_cast(Conduc_Frac_dev.data());
 
-    thrust::host_vector<cuDFNsys::Triplet> tri_h;
-    thrust::device_vector<cuDFNsys::Triplet> tri_dev(21 * NUM_eles);
-    cuDFNsys::Triplet *tri_dev_ptr = thrust::raw_pointer_cast(tri_dev.data());
+    thrust::host_vector<cuDFNsys::Triplet<T>> tri_h;
+    thrust::device_vector<cuDFNsys::Triplet<T>> tri_dev(21 * NUM_eles);
+    cuDFNsys::Triplet<T> *tri_dev_ptr = thrust::raw_pointer_cast(tri_dev.data());
 
-    cuDFNsys::AssembleOnGPUKernel<<<NUM_eles / 256 + 1, 256>>>(tri_dev_ptr,
-                                                               coord_2D_dev_ptr,
-                                                               Edge_attri_dev_ptr,
-                                                               Conduc_Frac_dev_ptr,
-                                                               NUM_sep_edges,
-                                                               NUM_eles,
-                                                               NUM_glob_interior_edges,
-                                                               P_in,
-                                                               P_out);
+    cuDFNsys::AssembleOnGPUKernel<T><<<NUM_eles / 256 + 1, 256>>>(tri_dev_ptr,
+                                                                  coord_2D_dev_ptr,
+                                                                  Edge_attri_dev_ptr,
+                                                                  Conduc_Frac_dev_ptr,
+                                                                  NUM_sep_edges,
+                                                                  NUM_eles,
+                                                                  NUM_glob_interior_edges,
+                                                                  P_in,
+                                                                  P_out);
     cudaDeviceSynchronize();
     cout << "\t\tRunning time of GPU assemble: " << cuDFNsys::CPUSecond() - iStart_fem << "sec\n";
 
@@ -434,3 +474,11 @@ pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> cuDFNsys::MHFEM::
     cout << "\t\tRunning time of Matrix generation: " << cuDFNsys::CPUSecond() - iStart_fem << "sec\n";
     return std::make_pair(K, b);
 }; // AssembleOnGPU
+template pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> cuDFNsys::MHFEM<double>::AssembleOnGPU(const cuDFNsys::Mesh<double> &mesh,
+                                                                                                               const thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs,
+                                                                                                               double P_in,
+                                                                                                               double P_out);
+template pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> cuDFNsys::MHFEM<float>::AssembleOnGPU(const cuDFNsys::Mesh<float> &mesh,
+                                                                                                              const thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs,
+                                                                                                              float P_in,
+                                                                                                              float P_out);

@@ -8,13 +8,15 @@
 // AUTHOR:            Tingchang YIN
 ///////////////////////////////////////////////////////////////////
 #pragma once
+#include "../DataTypeSelector/DataTypeSelector.cuh"
 #include "../GlobalDef/GlobalDef.cuh"
 
 namespace cuDFNsys
 {
+template <typename T>
 struct Intersection
 {
     int2 FracIDPair;
-    float3 Coord[2];
+    cuDFNsys::Vector3<T> Coord[2];
 };
 }; // namespace cuDFNsys

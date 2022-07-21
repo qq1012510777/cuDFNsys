@@ -8,11 +8,13 @@
 // AUTHOR:            Tingchang YIN
 ///////////////////////////////////////////////////////////////////
 #pragma once
-#include "../Geometry/2D/Triangle2DArea.cuh"
+#include "../DataTypeSelector/DataTypeSelector.cuh"
+#include "../Geometry/Geometry.cuh"
 
 namespace cuDFNsys
 {
-__host__ __device__ float2 ReconstructVelocityGrid(float2 Point_,
-                                                   float2 Vertex[3],
-                                                   float3 VelocityEdgeNormal);
+template <typename T>
+__host__ __device__ cuDFNsys::Vector2<T> ReconstructVelocityGrid(cuDFNsys::Vector2<T> Point_,
+                                                                 cuDFNsys::Vector2<T> Vertex[3],
+                                                                 cuDFNsys::Vector3<T> VelocityEdgeNormal);
 }; // namespace cuDFNsys

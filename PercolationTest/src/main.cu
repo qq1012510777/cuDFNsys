@@ -7,6 +7,13 @@
 
 #include "cuDFNsys.cuh"
 #include <unistd.h>
+
+#ifdef USE_DOUBLES
+typedef double _DataType_;
+#else
+typedef float _DataType_;
+#endif
+
 int main(int argc, char *argv[])
 {
     int iDev = 0;
@@ -18,15 +25,15 @@ int main(int argc, char *argv[])
     IfFlowModel = (uint)(atoi(argv[1]));
 
     uint ModeSizeDistr = (uint)(atoi(argv[2]));
-    float4 SizeParaDis = make_float4(atof(argv[3]),
-                                     atof(argv[4]),
-                                     atof(argv[5]),
-                                     atof(argv[6]));
+    cuDFNsys::Vector4<_DataType_> SizeParaDis = cuDFNsys::MakeVector4(atof(argv[3]),
+                                                                      atof(argv[4]),
+                                                                      atof(argv[5]),
+                                                                      atof(argv[6]));
 
-    float kappa = atof(argv[7]);
-    float conductivity_powerlaw_e = atof(argv[8]);
+    _DataType_ kappa = atof(argv[7]);
+    _DataType_ conductivity_powerlaw_e = atof(argv[8]);
 
-    float L = atof(argv[9]);
+    _DataType_ L = atof(argv[9]);
     int perco_dir = atoi(argv[10]);
 
     int Init_NUM_Frac = atoi(argv[11]);
@@ -36,34 +43,34 @@ int main(int argc, char *argv[])
     int LOOP_times = atoi(argv[13]);
     int inti_LOOP_times = 0;
 
-    float minGrid = atof(argv[14]);
-    float maxGrid = atof(argv[15]);
-    float InletP = atof(argv[16]);
-    float OutletP = atof(argv[17]);
+    _DataType_ minGrid = atof(argv[14]);
+    _DataType_ maxGrid = atof(argv[15]);
+    _DataType_ InletP = atof(argv[16]);
+    _DataType_ OutletP = atof(argv[17]);
 
     int MODEL_NO = atoi(argv[18]);
     int MC_NO = atoi(argv[19]);
 
-    float P33_total_A[1] = {0};
-    float P33_connected_A[1] = {0};
-    float Ratio_of_P33_A[1] = {0};
-    float P33_largest_cluster_A[1] = {0};
+    _DataType_ P33_total_A[1] = {0};
+    _DataType_ P33_connected_A[1] = {0};
+    _DataType_ Ratio_of_P33_A[1] = {0};
+    _DataType_ P33_largest_cluster_A[1] = {0};
 
-    float P32_total_A[1] = {0};
-    float P32_connected_A[1] = {0};
-    float Ratio_of_P32_A[1] = {0};
-    float P32_largest_cluster_A[1] = {0};
+    _DataType_ P32_total_A[1] = {0};
+    _DataType_ P32_connected_A[1] = {0};
+    _DataType_ Ratio_of_P32_A[1] = {0};
+    _DataType_ P32_largest_cluster_A[1] = {0};
 
-    float P30_A[1] = {0};
-    float P30_connected_A[1] = {0};
-    float Ratio_of_P30_A[1] = {0};
-    float P30_largest_cluster_A[1] = {0};
+    _DataType_ P30_A[1] = {0};
+    _DataType_ P30_connected_A[1] = {0};
+    _DataType_ Ratio_of_P30_A[1] = {0};
+    _DataType_ P30_largest_cluster_A[1] = {0};
 
-    float Percolation_probability_A[1] = {0};
-    float n_I_A[1] = {0};
+    _DataType_ Percolation_probability_A[1] = {0};
+    _DataType_ n_I_A[1] = {0};
 
-    float Permeability_A[1] = {0};
-    float Q_error_A[1] = {0};
+    _DataType_ Permeability_A[1] = {0};
+    _DataType_ Q_error_A[1] = {0};
 
     cuDFNsys::HDF5API h5out;
     string filename = "Datafile_Model_" + cuDFNsys::ToStringWithWidth(MODEL_NO, 3) +
@@ -74,7 +81,7 @@ int main(int argc, char *argv[])
     if (!h5out.IfH5FileExist(filename))
     {
         h5out.NewFile(filename);
-        float domainsize[1] = {L};
+        _DataType_ domainsize[1] = {L};
         h5out.AddDataset(filename, "N", "Domain_size", domainsize, dim_e);
     }
     else
@@ -112,98 +119,98 @@ int main(int argc, char *argv[])
 
             int DSIZE = Init_NUM_Frac + (i + 1) * Frac_increment;
 
-            thrust::host_vector<cuDFNsys::Fracture> Frac_verts_host(DSIZE);
-            thrust::device_vector<cuDFNsys::Fracture> Frac_verts_device(DSIZE);
-            cuDFNsys::Fracture *Frac_verts_device_ptr = thrust::raw_pointer_cast(Frac_verts_device.data());
-            //cout << "\tAllocated memory to vectors of cuDFNsys::Fracture\n";
+            thrust::host_vector<cuDFNsys::Fracture<_DataType_>> Frac_verts_host(DSIZE);
+            thrust::device_vector<cuDFNsys::Fracture<_DataType_>> Frac_verts_device(DSIZE);
+            cuDFNsys::Fracture<_DataType_> *Frac_verts_device_ptr = thrust::raw_pointer_cast(Frac_verts_device.data());
+            //cout << "\tAllocated memory to vectors of cuDFNsys::Fracture<_DataType_>\n";
             cuDFNsys::Warmup<<<DSIZE / 256 + 1, 256 /*  1, 2*/>>>();
             cudaDeviceSynchronize();
             time_t t;
             time(&t);
             //cout << "conductivity_powerlaw_e: " << conductivity_powerlaw_e << endl;
-            cuDFNsys::Fractures<<<DSIZE / 256 + 1, 256 /*  1, 2*/>>>(Frac_verts_device_ptr,
-                                                                     (unsigned long)t,
-                                                                     DSIZE,
-                                                                     L,
-                                                                     ModeSizeDistr,
-                                                                     SizeParaDis,
-                                                                     kappa,
-                                                                     conductivity_powerlaw_e);
+            cuDFNsys::Fractures<_DataType_><<<DSIZE / 256 + 1, 256 /*  1, 2*/>>>(Frac_verts_device_ptr,
+                                                                                 (unsigned long)t,
+                                                                                 DSIZE,
+                                                                                 L,
+                                                                                 ModeSizeDistr,
+                                                                                 SizeParaDis,
+                                                                                 kappa,
+                                                                                 conductivity_powerlaw_e);
             //-----------
             cudaDeviceSynchronize();
             //cout << "\tGenerated fractures\n";
             Frac_verts_host = Frac_verts_device;
 
-            std::map<pair<size_t, size_t>, pair<float3, float3>> Intersection_map;
+            std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<_DataType_>, cuDFNsys::Vector3<_DataType_>>> Intersection_map;
             try
             {
-                cuDFNsys::IdentifyIntersection identifyInters{Frac_verts_host.size(),
-                                                              Frac_verts_device_ptr,
-                                                              false,
-                                                              Intersection_map};
+                cuDFNsys::IdentifyIntersection<_DataType_> identifyInters{Frac_verts_host.size(),
+                                                                          Frac_verts_device_ptr,
+                                                                          false,
+                                                                          Intersection_map};
             }
             catch (thrust::system::system_error &e)
             {
                 cout << "\033[1;32m\tThrew an exception: " << e.what() << "\n\tLet's use CPU finish identification of intersections\033[0m" << endl;
                 cudaDeviceReset();
                 Intersection_map.clear();
-                cuDFNsys::IdentifyIntersection identifyInters3{Frac_verts_host,
-                                                               false,
-                                                               Intersection_map};
+                cuDFNsys::IdentifyIntersection<_DataType_> identifyInters3{Frac_verts_host,
+                                                                           false,
+                                                                           Intersection_map};
             };
             //cout << "\tIdentified intersection of DFN with complete factures\n";
             std::vector<std::vector<size_t>> ListClusters;
             std::vector<size_t> Percolation_cluster;
-            cuDFNsys::Graph G{(size_t)DSIZE, Intersection_map};
+            cuDFNsys::Graph<_DataType_> G{(size_t)DSIZE, Intersection_map};
             G.UseDFS(ListClusters);
-            cuDFNsys::IdentifyPercolationCluster IdentiClu{ListClusters,
-                                                           Frac_verts_host, perco_dir,
-                                                           Percolation_cluster};
+            cuDFNsys::IdentifyPercolationCluster<_DataType_> IdentiClu{ListClusters,
+                                                                       Frac_verts_host, perco_dir,
+                                                                       Percolation_cluster};
 
-            cuDFNsys::GetStatistics(Frac_verts_host,
-                                    Intersection_map,
-                                    ListClusters,
-                                    Percolation_cluster,
-                                    L,
-                                    P33_total_A[0],
-                                    P33_connected_A[0],
-                                    Ratio_of_P33_A[0],
-                                    P33_largest_cluster_A[0],
-                                    P32_total_A[0],
-                                    P32_connected_A[0],
-                                    Ratio_of_P32_A[0],
-                                    P32_largest_cluster_A[0],
-                                    P30_A[0],
-                                    P30_connected_A[0],
-                                    Ratio_of_P30_A[0],
-                                    P30_largest_cluster_A[0],
-                                    Percolation_probability_A[0],
-                                    n_I_A[0]);
+            cuDFNsys::GetStatistics<_DataType_>(Frac_verts_host,
+                                                Intersection_map,
+                                                ListClusters,
+                                                Percolation_cluster,
+                                                L,
+                                                P33_total_A[0],
+                                                P33_connected_A[0],
+                                                Ratio_of_P33_A[0],
+                                                P33_largest_cluster_A[0],
+                                                P32_total_A[0],
+                                                P32_connected_A[0],
+                                                Ratio_of_P32_A[0],
+                                                P32_largest_cluster_A[0],
+                                                P30_A[0],
+                                                P30_connected_A[0],
+                                                Ratio_of_P30_A[0],
+                                                P30_largest_cluster_A[0],
+                                                Percolation_probability_A[0],
+                                                n_I_A[0]);
 
             Intersection_map.clear();
             ListClusters.clear();
             Percolation_cluster.clear();
             try
             {
-                cuDFNsys::IdentifyIntersection identifyInters2{Frac_verts_host.size(),
-                                                               Frac_verts_device_ptr, true,
-                                                               Intersection_map};
+                cuDFNsys::IdentifyIntersection<_DataType_> identifyInters2{Frac_verts_host.size(),
+                                                                           Frac_verts_device_ptr, true,
+                                                                           Intersection_map};
             }
             catch (thrust::system::system_error &e)
             {
                 cout << "\033[1;32m\tThrew an exception: " << e.what() << "\n\tLet's use CPU finish identification of intersections\033[0m" << endl;
                 cudaDeviceReset();
                 Intersection_map.clear();
-                cuDFNsys::IdentifyIntersection identifyInters3{Frac_verts_host,
-                                                               true,
-                                                               Intersection_map};
+                cuDFNsys::IdentifyIntersection<_DataType_> identifyInters3{Frac_verts_host,
+                                                                           true,
+                                                                           Intersection_map};
             };
             //cout << "\tIdentified intersection of DFN with truncated factures\n";
-            cuDFNsys::Graph G2{(size_t)DSIZE, Intersection_map};
+            cuDFNsys::Graph<_DataType_> G2{(size_t)DSIZE, Intersection_map};
             G2.UseDFS(ListClusters);
-            cuDFNsys::IdentifyPercolationCluster IdentiClu2{ListClusters,
-                                                            Frac_verts_host, perco_dir,
-                                                            Percolation_cluster};
+            cuDFNsys::IdentifyPercolationCluster<_DataType_> IdentiClu2{ListClusters,
+                                                                        Frac_verts_host, perco_dir,
+                                                                        Percolation_cluster};
 
             double iElaps_DFN = cuDFNsys::CPUSecond() - iStart_DFN;
             cout << "\tDFN generated. Running time: " << iElaps_DFN << " sec\n";
@@ -228,23 +235,23 @@ int main(int argc, char *argv[])
 
                     std::vector<pair<int, int>> IntersectionPair_percol;
 
-                    cuDFNsys::RemoveDeadEndFrac RDEF{Fracs_percol,
-                                                     IntersectionPair_percol,
-                                                     (size_t)perco_dir,
-                                                     Frac_verts_host,
-                                                     Intersection_map};
+                    cuDFNsys::RemoveDeadEndFrac<_DataType_> RDEF{Fracs_percol,
+                                                                 IntersectionPair_percol,
+                                                                 (size_t)perco_dir,
+                                                                 Frac_verts_host,
+                                                                 Intersection_map};
 
                     cout << "\tMeshing ..." << endl;
                     //cudaDeviceReset();
-                    cuDFNsys::Mesh mesh{Frac_verts_host, IntersectionPair_percol,
-                                        &Fracs_percol, minGrid, maxGrid, perco_dir, L};
+                    cuDFNsys::Mesh<_DataType_> mesh{Frac_verts_host, IntersectionPair_percol,
+                                                    &Fracs_percol, minGrid, maxGrid, perco_dir, L};
 
                     double iElaps_mesh = cuDFNsys::CPUSecond() - iStart_mesh;
                     cout << "\tMesh finished. Running time: " << iElaps_mesh << " sec\n";
 
                     cout << "\tMHFEM ing ..." << endl;
                     double iStart_mhfem = cuDFNsys::CPUSecond();
-                    cuDFNsys::MHFEM fem{mesh, Frac_verts_host, InletP, OutletP, perco_dir, L};
+                    cuDFNsys::MHFEM<_DataType_> fem{mesh, Frac_verts_host, InletP, OutletP, perco_dir, L};
 
                     //cout << "\tFluxes: " << fem.Q_in << ", " << fem.Q_out << ", Permeability: " << fem.Permeability << endl;
                     if (fem.QError > 1 || isnan(fem.Permeability) == 1)
@@ -281,29 +288,29 @@ int main(int argc, char *argv[])
                 "n_I",
                 "Permeability_z",
                 "Q_error_z"};
-            vector<float *> data_input = {P33_total_A,
-                                          P33_connected_A,
-                                          Ratio_of_P33_A,
-                                          P33_largest_cluster_A,
-                                          P32_total_A,
-                                          P32_connected_A,
-                                          Ratio_of_P32_A,
-                                          P32_largest_cluster_A,
-                                          P30_A,
-                                          P30_connected_A,
-                                          Ratio_of_P30_A,
-                                          P30_largest_cluster_A,
-                                          Percolation_probability_A,
-                                          n_I_A,
-                                          Permeability_A,
-                                          Q_error_A};
+            vector<_DataType_ *> data_input = {P33_total_A,
+                                               P33_connected_A,
+                                               Ratio_of_P33_A,
+                                               P33_largest_cluster_A,
+                                               P32_total_A,
+                                               P32_connected_A,
+                                               Ratio_of_P32_A,
+                                               P32_largest_cluster_A,
+                                               P30_A,
+                                               P30_connected_A,
+                                               Ratio_of_P30_A,
+                                               P30_largest_cluster_A,
+                                               Percolation_probability_A,
+                                               n_I_A,
+                                               Permeability_A,
+                                               Q_error_A};
             uint2 dim_ki;
             dim_ki.x = 1;
             dim_ki.y = 1;
             vector<uint2> dim_ss(data_input.size(), dim_ki);
             h5out.AddDatasetsWithOneGroup(filename, groupname,
                                           datasetname, data_input, dim_ss);
-            float i_p[1] = {(float)i + 1};
+            _DataType_ i_p[1] = {(_DataType_)i + 1};
             if (i == 0)
                 h5out.AddDataset(filename, "N", "Loop_times", i_p, dim_e);
             else

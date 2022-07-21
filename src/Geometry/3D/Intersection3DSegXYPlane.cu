@@ -7,11 +7,11 @@
 // AUTHOR:      Tingchang YIN
 // DATE:        07/04/2022
 // ====================================================
-
-__device__ __host__ bool cuDFNsys::Intersection3DSegXYPlane(float3 *Seg,
-                                                            float3 *Intersec_PNT,
-                                                            int *sign_,
-                                                            float _TOL_) // sign: 1: pnt; 2: seg; -1: none;
+template <typename T>
+__device__ __host__ bool cuDFNsys::Intersection3DSegXYPlane(cuDFNsys::Vector3<T> *Seg,
+                                                            cuDFNsys::Vector3<T> *Intersec_PNT,
+                                                            int *sign_, // sign: 1: pnt; 2: seg; -1: none;
+                                                            T _TOL_)
 {
     if (abs(Seg[0].z) < _TOL_ && abs(Seg[1].z) < _TOL_)
     {
@@ -34,8 +34,8 @@ __device__ __host__ bool cuDFNsys::Intersection3DSegXYPlane(float3 *Seg,
         return true;
     }
 
-    float max_z = 0;
-    float min_z = 0;
+    T max_z = 0;
+    T min_z = 0;
 
     if (Seg[0].z <= Seg[1].z)
     {
@@ -53,19 +53,19 @@ __device__ __host__ bool cuDFNsys::Intersection3DSegXYPlane(float3 *Seg,
     if (max_z > 0 && min_z < 0)
     {
         // cross the xy plane
-        float3 center_seg = make_float3(0.5 * (Seg[0].x + Seg[1].x),
-                                        0.5 * (Seg[0].y + Seg[1].y),
-                                        0.5 * (Seg[0].z + Seg[1].z));
+        cuDFNsys::Vector3<T> center_seg = cuDFNsys::MakeVector3((T)(0.5 * (Seg[0].x + Seg[1].x)),
+                                                                (T)(0.5 * (Seg[0].y + Seg[1].y)),
+                                                                (T)(0.5 * (Seg[0].z + Seg[1].z)));
 
-        float3 vector_seg = make_float3((Seg[0].x - Seg[1].x),
-                                        (Seg[0].y - Seg[1].y),
-                                        (Seg[0].z - Seg[1].z));
+        cuDFNsys::Vector3<T> vector_seg = cuDFNsys::MakeVector3((T)(Seg[0].x - Seg[1].x),
+                                                                (T)(Seg[0].y - Seg[1].y),
+                                                                (T)(Seg[0].z - Seg[1].z));
 
-        float vpt = vector_seg.z * 1;
+        T vpt = vector_seg.z * 1;
 
-        float t = (0 - center_seg.z) * 1 / vpt;
+        T t = (0 - center_seg.z) * 1 / vpt;
 
-        float3 Pnt;
+        cuDFNsys::Vector3<T> Pnt;
         Pnt.x = center_seg.x + vector_seg.x * t;
         Pnt.y = center_seg.y + vector_seg.y * t;
         Pnt.z = center_seg.z + vector_seg.z * t;
@@ -79,3 +79,11 @@ __device__ __host__ bool cuDFNsys::Intersection3DSegXYPlane(float3 *Seg,
     *sign_ = -1;
     return false;
 }; // Intersection3DSegXYPlane
+template __device__ __host__ bool cuDFNsys::Intersection3DSegXYPlane<double>(cuDFNsys::Vector3<double> *Seg,
+                                                                             cuDFNsys::Vector3<double> *Intersec_PNT,
+                                                                             int *sign_, // sign: 1: pnt; 2: seg; -1: none;
+                                                                             double _TOL_);
+template __device__ __host__ bool cuDFNsys::Intersection3DSegXYPlane<float>(cuDFNsys::Vector3<float> *Seg,
+                                                                            cuDFNsys::Vector3<float> *Intersec_PNT,
+                                                                            int *sign_, // sign: 1: pnt; 2: seg; -1: none;
+                                                                            float _TOL_);

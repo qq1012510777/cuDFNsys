@@ -9,14 +9,17 @@
 // AUTHOR:            Tingchang YIN
 ///////////////////////////////////////////////////////////////////
 #pragma once
+#include "../../DataTypeSelector/DataTypeSelector.cuh"
 #include "../../GlobalDef/GlobalDef.cuh"
+#include "../../MatrixManipulation/MatrixManipulation.cuh"
 #include "Intersection3DSegXYPlane.cuh"
 
 namespace cuDFNsys
 {
 // Identify intersection between a 3D Polygon and the XY plane
-__device__ __host__ bool Intersection3DPolyXYPlane(float3 *Poly,
+template <typename T>
+__device__ __host__ bool Intersection3DPolyXYPlane(cuDFNsys::Vector3<T> *Poly,
                                                    int NUM_vert,
-                                                   float3 *Intersection,
-                                                   float _TOL_);
+                                                   cuDFNsys::Vector3<T> *Intersection,
+                                                   T _TOL_);
 }; // namespace cuDFNsys

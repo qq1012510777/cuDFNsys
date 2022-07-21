@@ -9,10 +9,10 @@
 ///////////////////////////////////////////////////////////////////
 #pragma once
 #include "../CPUSecond/CPUSecond.cuh"
+#include "../DataTypeSelector/DataTypeSelector.cuh"
 #include "../Exceptions/Exceptions.cuh"
 #include "../Fractures/Fracture.cuh"
-#include "../Geometry/3D/If3DTriangleSkinny.cuh"
-#include "../Geometry/3D/Triangle3DArea.cuh"
+#include "../Geometry/Geometry.cuh"
 #include "../GlobalDef/GlobalDef.cuh"
 #include "../MatlabAPI/MatlabAPI.cuh"
 #include "EleCoor.cuh"
@@ -28,6 +28,7 @@
 
 namespace cuDFNsys
 {
+template <typename T>
 class Mesh
 {
 public:
@@ -37,22 +38,22 @@ public:
     std::vector<size_t> *FracID;
 
     // 3D coordinates
-    thrust::host_vector<float3> Coordinate3D;
+    thrust::host_vector<cuDFNsys::Vector3<T>> Coordinate3D;
     // 2D elements of each fracture
     thrust::host_vector<thrust::host_vector<uint3>> Element2D;
     // 3D elements of whole DFN
     thrust::host_vector<uint3> Element3D;
     // 2D coordinates of elements
-    thrust::host_vector<cuDFNsys::EleCoor> Coordinate2D;
+    thrust::host_vector<cuDFNsys::EleCoor<T>> Coordinate2D;
     // Frac Tag of each element
     thrust::host_vector<uint> ElementFracTag; // from 0
 
     // edge attributes
     thrust::host_vector<cuDFNsys::EleEdgeAttri> EdgeAttri;
     // length values of inlet edges
-    thrust::host_vector<float2> InletEdgeNOLen;
+    thrust::host_vector<cuDFNsys::Vector2<T>> InletEdgeNOLen;
     // length values of outlet edges
-    thrust::host_vector<float2> OutletEdgeNOLen;
+    thrust::host_vector<cuDFNsys::Vector2<T>> OutletEdgeNOLen;
 
     // number of interior edges
     uint NumInteriorEdges;
@@ -69,19 +70,19 @@ private:
 
 public:
     // constructor
-    Mesh(const thrust::host_vector<cuDFNsys::Fracture> &Fracs,
+    Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
          const std::vector<pair<int, int>> &IntersectionPair_percol,
          std::vector<size_t> *Fracs_percol,
-         const double &min_ele_edge,
-         const double &max_ele_edge,
+         const T &min_ele_edge,
+         const T &max_ele_edge,
          const int &dir_,
-         const float &L);
+         const T &L);
 
     // plot mesh
     void MatlabPlot(const string &mat_key,
                     const string &command_key,
-                    thrust::host_vector<cuDFNsys::Fracture> Fracs,
-                    const float &L,
+                    thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
+                    const T &L,
                     const bool &if_check_2D_coordinates,
                     const bool &if_check_edge_Numbering);
 
@@ -89,9 +90,9 @@ private:
     // get coordinates of mesh
     void GetCoordinates();
     // get elements of mesh
-    void GetElements(const thrust::host_vector<cuDFNsys::Fracture> &Fracs_s);
+    void GetElements(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs_s);
     // numbering edges of elements
-    void NumberingEdges(const float L);
+    void NumberingEdges(const T L);
 
 private:
     // get elements in each 3D surface entity
@@ -104,6 +105,6 @@ private:
     // check if a edge is dirchlet edge
     pair<bool, string> IfTwoEndsDirchlet(const size_t node1,
                                          const size_t node2,
-                                         const float L);
+                                         const T L);
 };
 }; // namespace cuDFNsys

@@ -6,16 +6,17 @@
 // AUTHOR:      Tingchang YIN
 // DATE:        09/04/2022
 // ====================================================
-__global__ void cuDFNsys::AssembleOnGPUKernel(cuDFNsys::Triplet *tri_dev,
-                                              cuDFNsys::EleCoor *coord_2D_dev,
+template <typename T>
+__global__ void cuDFNsys::AssembleOnGPUKernel(cuDFNsys::Triplet<T> *tri_dev,
+                                              cuDFNsys::EleCoor<T> *coord_2D_dev,
                                               cuDFNsys::EleEdgeAttri *Edge_attri,
-                                              float *Conduc_Frac_dev,
+                                              T *Conduc_Frac_dev,
                                               //int *neuman_sep_dev,
                                               int NUM_sep_edges,
                                               int NUM_eles,
                                               int NUM_glob_interior_edges,
-                                              float P_in,
-                                              float P_out)
+                                              T P_in,
+                                              T P_out)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -25,10 +26,10 @@ __global__ void cuDFNsys::AssembleOnGPUKernel(cuDFNsys::Triplet *tri_dev,
                 i * 3 + 2, // 3
                 i * 3};    // 1
 
-    cuDFNsys::EleCoor coord = coord_2D_dev[i];
+    cuDFNsys::EleCoor<T> coord = coord_2D_dev[i];
 
-    float A[3][3];
-    cuDFNsys::StimaA(coord, A);
+    T A[3][3];
+    cuDFNsys::StimaA<T>(coord, A);
 
     size_t j = i * 21;
     size_t j_tt = j;
@@ -38,7 +39,7 @@ __global__ void cuDFNsys::AssembleOnGPUKernel(cuDFNsys::Triplet *tri_dev,
         {
             tri_dev[j].row = I[ik];
             tri_dev[j].col = I[jk];
-            tri_dev[j].val = -1.0 / Conduc_Frac_dev[i] * A[ik][jk];
+            tri_dev[j].val = -1.0f / Conduc_Frac_dev[i] * A[ik][jk];
 
             int edge_1 = tri_dev[j].row % 3;
             int edge_2 = tri_dev[j].col % 3;
@@ -50,7 +51,7 @@ __global__ void cuDFNsys::AssembleOnGPUKernel(cuDFNsys::Triplet *tri_dev,
             j++;
         }
 
-    float B[3] = {0};
+    T B[3] = {0};
     B[0] = pow(pow(coord.x[2] - coord.x[1], 2) + pow(coord.y[2] - coord.y[1], 2), 0.5);
     B[1] = pow(pow(coord.x[0] - coord.x[2], 2) + pow(coord.y[0] - coord.y[2], 2), 0.5);
     B[2] = pow(pow(coord.x[1] - coord.x[0], 2) + pow(coord.y[1] - coord.y[0], 2), 0.5);
@@ -74,7 +75,7 @@ __global__ void cuDFNsys::AssembleOnGPUKernel(cuDFNsys::Triplet *tri_dev,
         }
     }
 
-    float P_in_out[2] = {P_in, P_out};
+    T P_in_out[2] = {P_in, P_out};
 
     for (size_t ik = 0; ik < 3; ++ik)
     {
@@ -108,3 +109,23 @@ __global__ void cuDFNsys::AssembleOnGPUKernel(cuDFNsys::Triplet *tri_dev,
     for (size_t k = j; k < j_tt + 21; ++k)
         tri_dev[k].row = -1;
 }; // AssembleOnGPUKernel
+template __global__ void cuDFNsys::AssembleOnGPUKernel<double>(cuDFNsys::Triplet<double> *tri_dev,
+                                                               cuDFNsys::EleCoor<double> *coord_2D_dev,
+                                                               cuDFNsys::EleEdgeAttri *Edge_attri,
+                                                               double *Conduc_Frac_dev,
+                                                               //int *neuman_sep_dev,
+                                                               int NUM_sep_edges,
+                                                               int NUM_eles,
+                                                               int NUM_glob_interior_edges,
+                                                               double P_in,
+                                                               double P_out);
+template __global__ void cuDFNsys::AssembleOnGPUKernel<float>(cuDFNsys::Triplet<float> *tri_dev,
+                                                              cuDFNsys::EleCoor<float> *coord_2D_dev,
+                                                              cuDFNsys::EleEdgeAttri *Edge_attri,
+                                                              float *Conduc_Frac_dev,
+                                                              //int *neuman_sep_dev,
+                                                              int NUM_sep_edges,
+                                                              int NUM_eles,
+                                                              int NUM_glob_interior_edges,
+                                                              float P_in,
+                                                              float P_out);

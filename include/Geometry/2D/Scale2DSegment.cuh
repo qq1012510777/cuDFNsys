@@ -9,8 +9,9 @@
 ///////////////////////////////////////////////////////////////////
 #pragma once
 #include "../../GlobalDef/GlobalDef.cuh"
-
+#include "../../DataTypeSelector/DataTypeSelector.cuh"
 namespace cuDFNsys
 {
-__host__ __device__ void Scale2DSegment(float2 *Segment, float scaleF);
+template <typename T>
+__host__ __device__ void Scale2DSegment(cuDFNsys::Vector2<T> *Segment, T scaleF);
 }; // namespace cuDFNsys

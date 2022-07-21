@@ -8,9 +8,7 @@
 // AUTHOR:            Tingchang YIN
 ///////////////////////////////////////////////////////////////////
 #pragma once
-#include "../Geometry/2D/Intersection2DLine2DPoly.cuh"
-#include "../Geometry/2D/IntersectionTwoCollinearSegs.cuh"
-#include "../Geometry/3D/Intersection3DPolyXYPlane.cuh"
+#include "../Geometry/Geometry.cuh"
 #include "../GlobalDef/GlobalDef.cuh"
 #include "../MatrixManipulation/MatrixManipulation.cuh"
 #include "Fracture.cuh"
@@ -21,17 +19,18 @@
 
 namespace cuDFNsys
 {
+template <typename T>
 class IdentifyIntersection
 {
 public:
     // constructor CPU
-    IdentifyIntersection(thrust::host_vector<cuDFNsys::Fracture> verts,
+    IdentifyIntersection(thrust::host_vector<cuDFNsys::Fracture<T>> verts,
                          const bool &if_trucncated,
-                         MapIntersection &Intersection_map);
+                         std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<T>, cuDFNsys::Vector3<T>>> &Intersection_map);
     // constructor GPU
     IdentifyIntersection(const size_t &Fracsize,
-                         cuDFNsys::Fracture *Frac_verts_device_ptr,
+                         cuDFNsys::Fracture<T> *Frac_verts_device_ptr,
                          const bool &if_trucncated,
-                         MapIntersection &Intersection_map);
+                         std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<T>, cuDFNsys::Vector3<T>>> &Intersection_map);
 };
 }; // namespace cuDFNsys

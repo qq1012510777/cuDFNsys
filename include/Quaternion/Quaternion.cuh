@@ -8,21 +8,28 @@
 // AUTHOR:            Tingchang YIN
 ///////////////////////////////////////////////////////////////////
 #pragma once
+#include "../DataTypeSelector/DataTypeSelector.cuh"
 #include "../GlobalDef/GlobalDef.cuh"
 
 // Quaternion helper class describing rotations
 // this allows for a nice description and execution of rotations in 3D space.
 namespace cuDFNsys
 {
+template <typename T>
 struct Quaternion
 {
 protected:
     // 1,i,j,k
-    float4 QuaternionNum;
+    cuDFNsys::Vector4<T> QuaternionNum;
 
 public:
-    __device__ __host__ Quaternion DescribeRotation(const float3 v, const float angle);
-    __device__ __host__ float3 Rotate(const float3 v);
-    __device__ __host__ float4 GetQuaternionNum();
+    // describe quaternion
+    __device__ __host__ Quaternion DescribeRotation(const cuDFNsys::Vector3<T> v, const cuDFNsys::Vector1<T> angle);
+
+    // rotate
+    __device__ __host__ cuDFNsys::Vector3<T> Rotate(const cuDFNsys::Vector3<T> v);
+
+    // get QuaternionNum
+    __device__ __host__ cuDFNsys::Vector4<T> GetQuaternionNum();
 };
 }; // namespace cuDFNsys

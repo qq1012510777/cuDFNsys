@@ -8,10 +8,12 @@
 // AUTHOR:            Tingchang YIN
 ///////////////////////////////////////////////////////////////////
 #pragma once
+#include "../../DataTypeSelector/DataTypeSelector.cuh"
 #include "../../GlobalDef/GlobalDef.cuh"
+#include "../../MatrixManipulation/MatrixManipulation.cuh"
 
 namespace cuDFNsys
 {
-__device__ __host__ float DistancePnt2DSeg(float2 pnt,
-                                           float2 *verts);
+template <typename T>
+__device__ __host__ T DistancePnt2DSeg(cuDFNsys::Vector2<T> pnt, cuDFNsys::Vector2<T> *verts);
 }; // namespace cuDFNsys

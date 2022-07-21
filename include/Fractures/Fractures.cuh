@@ -13,6 +13,7 @@
 // AUTHOR:            Tingchang YIN
 ///////////////////////////////////////////////////////////////////
 #pragma once
+#include "../DataTypeSelector/DataTypeSelector.cuh"
 #include "../GlobalDef/GlobalDef.cuh"
 #include "../MatrixManipulation/MatrixManipulation.cuh"
 #include "../RandomFunction/RandomFunction.cuh"
@@ -22,35 +23,46 @@
 namespace cuDFNsys
 {
 // Generate some fractures in a DFN
-__global__ void Fractures(cuDFNsys::Fracture *verts,
+template <typename T>
+__global__ void Fractures(cuDFNsys::Fracture<T> *verts,
                           unsigned long seed,
                           int count,
-                          float model_L,
-                          uint ModeSizeDistri,   // 1 = power law; 2 = lognormal; 3 = uniform; 4 = monosize
-                          float4 ParaSizeDistri, // when mode = 1, ;
-                          float kappa,
-                          float conductivity_powerlaw_exponent);
+                          cuDFNsys::Vector1<T> model_L,
+                          uint ModeSizeDistri,                 // 1 = power law; 2 = lognormal; 3 = uniform; 4 = monosize
+                          cuDFNsys::Vector4<T> ParaSizeDistri, // when mode = 1, ;
+                          cuDFNsys::Vector1<T> kappa,
+                          cuDFNsys::Vector1<T> conductivity_powerlaw_exponent);
+
 // benchmark fracture generator: two vertical crossed fractures
-__global__ void FracturesCrossedVertical(cuDFNsys::Fracture *verts,
+template <typename T>
+__global__ void FracturesCrossedVertical(cuDFNsys::Fracture<T> *verts,
                                          unsigned long seed,
                                          int count,
-                                         float model_L);
+                                         T model_L);
+
 // benchmark fracture generator: two inclined fractures, with two beta values
 // beta is dip angle here
-__global__ void FracturesBeta50Beta60(cuDFNsys::Fracture *verts,
+template <typename T>
+__global__ void FracturesBeta50Beta60(cuDFNsys::Fracture<T> *verts,
                                       unsigned long seed,
                                       int count,
-                                      float model_L);
+                                      T model_L);
+
 // two incomplet fractures
-__global__ void FracturesIncomplete(cuDFNsys::Fracture *verts,
+template <typename T>
+__global__ void FracturesIncomplete(cuDFNsys::Fracture<T> *verts,
                                     unsigned long seed,
                                     int count,
-                                    float model_L);
-__global__ void Fractures2DLike(cuDFNsys::Fracture *verts,
+                                    T model_L);
+
+// Fractures like 2D sticks
+template <typename T>
+__global__ void Fractures2DLike(cuDFNsys::Fracture<T> *verts,
                                 unsigned long seed,
                                 int count,
-                                float model_L,
-                                float alpha = 1.5,
-                                float minR = 1,
-                                float maxR = 15);
+                                T model_L,
+                                T alpha = 1.5,
+                                T minR = 1,
+                                T maxR = 15);
+
 }; // namespace cuDFNsys

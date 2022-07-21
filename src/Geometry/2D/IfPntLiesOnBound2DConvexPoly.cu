@@ -6,25 +6,31 @@
 // AUTHOR:      Tingchang YIN
 // DATE:        08/04/2022
 // ====================================================
-__device__ __host__ bool cuDFNsys::IfPntLiesOnBound2DConvexPoly(float2 pnt,
-                                                                float2 *verts,
+template <typename T>
+__device__ __host__ bool cuDFNsys::IfPntLiesOnBound2DConvexPoly(cuDFNsys::Vector2<T> pnt,
+                                                                cuDFNsys::Vector2<T> *verts,
                                                                 int N,
-                                                                float _tol_)
+                                                                T _tol_)
 {
     for (int i = 0; i < N; ++i)
     {
-        float2 Seg[2] = {verts[i], verts[(i + 1) % N]};
+        cuDFNsys::Vector2<T> Seg[2] = {verts[i], verts[(i + 1) % N]};
 
-        float dist = cuDFNsys::DistancePnt2DSeg(pnt, Seg);
+        T dist = cuDFNsys::DistancePnt2DSeg<T>(pnt, Seg);
 
         if (dist < _tol_)
-        {
             return true;
-        }
     }
-
     return false;
 }; // IfPntLiesOnBound2DConvexPoly
+template __device__ __host__ bool cuDFNsys::IfPntLiesOnBound2DConvexPoly<double>(cuDFNsys::Vector2<double> pnt,
+                                                                                 cuDFNsys::Vector2<double> *verts,
+                                                                                 int N,
+                                                                                 double _tol_);
+template __device__ __host__ bool cuDFNsys::IfPntLiesOnBound2DConvexPoly<float>(cuDFNsys::Vector2<float> pnt,
+                                                                                cuDFNsys::Vector2<float> *verts,
+                                                                                int N,
+                                                                                float _tol_);
 
 // ====================================================
 // NAME:        IfPntLiesOnBound2DConvexPolyReturnEdgeNO
@@ -33,17 +39,18 @@ __device__ __host__ bool cuDFNsys::IfPntLiesOnBound2DConvexPoly(float2 pnt,
 // AUTHOR:      Tingchang YIN
 // DATE:        08/04/2022
 // ====================================================
-__device__ __host__ bool cuDFNsys::IfPntLiesOnBound2DConvexPolyReturnEdgeNO(float2 pnt,
-                                                                            float2 *verts,
+template <typename T>
+__device__ __host__ bool cuDFNsys::IfPntLiesOnBound2DConvexPolyReturnEdgeNO(cuDFNsys::Vector2<T> pnt,
+                                                                            cuDFNsys::Vector2<T> *verts,
                                                                             int N,
-                                                                            float _tol_,
-                                                                            int *edgeNO) // 0 1 2
+                                                                            T _tol_,
+                                                                            int *edgeNO) // 0 1 2 3 4 5
 {
     for (int i = 0; i < N; ++i)
     {
-        float2 Seg[2] = {verts[i], verts[(i + 1) % N]};
+        cuDFNsys::Vector2<T> Seg[2] = {verts[i], verts[(i + 1) % N]};
 
-        float dist = cuDFNsys::DistancePnt2DSeg(pnt, Seg);
+        T dist = cuDFNsys::DistancePnt2DSeg<T>(pnt, Seg);
 
         if (dist < _tol_)
         {
@@ -54,3 +61,13 @@ __device__ __host__ bool cuDFNsys::IfPntLiesOnBound2DConvexPolyReturnEdgeNO(floa
 
     return false;
 }; // IfPntLiesOnBound2DConvexPolyReturnEdgeNO
+template __device__ __host__ bool cuDFNsys::IfPntLiesOnBound2DConvexPolyReturnEdgeNO<double>(cuDFNsys::Vector2<double> pnt,
+                                                                                             cuDFNsys::Vector2<double> *verts,
+                                                                                             int N,
+                                                                                             double _tol_,
+                                                                                             int *edgeNO);
+template __device__ __host__ bool cuDFNsys::IfPntLiesOnBound2DConvexPolyReturnEdgeNO<float>(cuDFNsys::Vector2<float> pnt,
+                                                                                            cuDFNsys::Vector2<float> *verts,
+                                                                                            int N,
+                                                                                            float _tol_,
+                                                                                            int *edgeNO);

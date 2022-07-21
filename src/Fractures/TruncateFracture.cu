@@ -6,32 +6,32 @@
 // AUTHOR:      Tingchang YIN
 // DATE:        06/04/2022
 // ====================================================
-
-__device__ __host__ bool cuDFNsys::TruncateFracture(cuDFNsys::Fracture *verts,
-                                                    float L,
+template <typename T>
+__device__ __host__ bool cuDFNsys::TruncateFracture(cuDFNsys::Fracture<T> *verts,
+                                                    cuDFNsys::Vector1<T> L,
                                                     int plane,
                                                     int dir)
 {
     bool if_touch = false;
 
-    float bound = L * 0.5 * dir;
+    cuDFNsys::Vector1<T> bound = L * 0.5 * dir;
     //printf("bound %f\n", bound);
 
-    float3 TT[8];
+    cuDFNsys::Vector3<T> TT[8];
 
     int tmpcc = 0;
 
     for (int i = 0; i < verts->NumVertsTruncated; ++i)
     {
-        float3 source = verts->Verts3DTruncated[i];
-        float3 target = verts->Verts3DTruncated[(i + 1) % verts->NumVertsTruncated];
+        cuDFNsys::Vector3<T> source = verts->Verts3DTruncated[i];
+        cuDFNsys::Vector3<T> target = verts->Verts3DTruncated[(i + 1) % verts->NumVertsTruncated];
 
         //printf("The %d edge is being clipped:\n", i + 1);
         //printf("\tsource: %f, %f, %f\n", source.x, source.y, source.z);
         //printf("\ttarget: %f, %f, %f\n", target.x, target.y, target.z);
 
-        float x1 = 0;
-        float x2 = 0;
+        cuDFNsys::Vector1<T> x1 = 0;
+        cuDFNsys::Vector1<T> x2 = 0;
         if (plane == 0)
         {
             x1 = source.x;
@@ -48,7 +48,7 @@ __device__ __host__ bool cuDFNsys::TruncateFracture(cuDFNsys::Fracture *verts,
             x2 = target.z;
         }
 
-        float3 KK[2];
+        cuDFNsys::Vector3<T> KK[2];
         int tmpll = -1;
 
         bool if_both_inside = false;
@@ -93,20 +93,7 @@ __device__ __host__ bool cuDFNsys::TruncateFracture(cuDFNsys::Fracture *verts,
         }
         else
         {
-            float3 discardPNT, keepPNT;
-
-            //------------------
-            // if (abs(x1) > abs(bound))
-            // {
-            //     discardPNT = source;
-            //     keepPNT = target;
-            // }
-            // else if (abs(x2) > abs(bound))
-            // {
-            //     discardPNT = target;
-            //     keepPNT = source;
-            // }
-            //----------------------
+            cuDFNsys::Vector3<T> discardPNT, keepPNT;
 
             if (dir == -1) // sign = -1
             {
@@ -135,16 +122,15 @@ __device__ __host__ bool cuDFNsys::TruncateFracture(cuDFNsys::Fracture *verts,
                 }
             }
 
-            //printf("Discard:\n\t%f, %f, %f\n", discardPNT.x, discardPNT.y, discardPNT.z);
-            //printf("Keep:\n\t%f, %f, %f\n", keepPNT.x, keepPNT.y, keepPNT.z);
-            // find intersection point
-            // parametric function of a line
-            float3 v = make_float3(discardPNT.x - keepPNT.x,
-                                   discardPNT.y - keepPNT.y,
-                                   discardPNT.z - keepPNT.z);
+            cuDFNsys::Vector3<T> v;
+            v.x = (discardPNT.x - keepPNT.x),
+            v.y = (discardPNT.y - keepPNT.y),
+            v.z = (discardPNT.z - keepPNT.z);
 
-            float t = 0;
-            float3 Intersection_ = make_float3(0, 0, 0);
+            cuDFNsys::Vector1<T> t = 0;
+            cuDFNsys::Vector3<T> Intersection_;
+            Intersection_.x = 0, Intersection_.y = 0, Intersection_.z = 0;
+
             if (plane == 0)
             {
                 t = (bound - keepPNT.x) / v.x;
@@ -166,17 +152,6 @@ __device__ __host__ bool cuDFNsys::TruncateFracture(cuDFNsys::Fracture *verts,
                 Intersection_.y = keepPNT.y + t * v.y;
                 Intersection_.z = bound;
             }
-
-            /*if (abs(x1) > abs(bound))
-            {
-                KK[0] = Intersection_;
-                KK[1] = keepPNT;
-            }
-            else if (abs(x2) > abs(bound))
-            {
-                KK[1] = Intersection_;
-                KK[0] = keepPNT;
-            }*/
 
             if (dir == -1)
             {
@@ -214,16 +189,18 @@ __device__ __host__ bool cuDFNsys::TruncateFracture(cuDFNsys::Fracture *verts,
             //printf("inserting pnts\n");
             for (int j = 0; j < tmpll; ++j)
             {
-                float3 PNT_this = KK[j];
+                cuDFNsys::Vector3<T> PNT_this = KK[j];
 
                 bool if_duplicated = false;
 
                 for (int k = 0; k < tmpcc; ++k)
                 {
-                    float3 PNT_e = TT[k];
+                    cuDFNsys::Vector3<T> PNT_e = TT[k];
 
-                    float3 dd = make_float3(PNT_this.x - PNT_e.x, PNT_this.y - PNT_e.y, PNT_this.z - PNT_e.z);
-                    float distance = pow(dd.x * dd.x + dd.y * dd.y + dd.z * dd.z, 0.5);
+                    cuDFNsys::Vector3<T> dd;
+                    dd.x = PNT_this.x - PNT_e.x, dd.y = PNT_this.y - PNT_e.y, dd.z = PNT_this.z - PNT_e.z;
+
+                    cuDFNsys::Vector1<T> distance = pow(dd.x * dd.x + dd.y * dd.y + dd.z * dd.z, 0.5);
                     if (distance == 0)
                     {
                         if_duplicated = true;
@@ -252,4 +229,12 @@ __device__ __host__ bool cuDFNsys::TruncateFracture(cuDFNsys::Fracture *verts,
     };
     //printf("]");
     return if_touch;
-};
+}; // TruncateFracture
+template __device__ __host__ bool cuDFNsys::TruncateFracture<double>(cuDFNsys::Fracture<double> *verts,
+                                                                     cuDFNsys::Vector1<double> L,
+                                                                     int plane,
+                                                                     int dir);
+template __device__ __host__ bool cuDFNsys::TruncateFracture<float>(cuDFNsys::Fracture<float> *verts,
+                                                                    cuDFNsys::Vector1<float> L,
+                                                                    int plane,
+                                                                    int dir);

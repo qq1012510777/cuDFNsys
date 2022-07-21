@@ -16,11 +16,12 @@
 
 namespace cuDFNsys
 {
+template <typename T>
 __global__ void IdentifyEleFrac(uint3 *One_entity_one_ele_dev_ptr,
-                                float3 *coordinate_3D_dev_ptr,
-                                cuDFNsys::Fracture *Frac_verts_device_ptr,
+                                cuDFNsys::Vector3<T> *coordinate_3D_dev_ptr,
+                                cuDFNsys::Fracture<T> *Frac_verts_device_ptr,
                                 int *Elements_Frac_dev_ptr,
                                 int entity_count,
                                 int frac_count,
-                                float _tol_);
+                                T _tol_);
 }; // namespace cuDFNsys

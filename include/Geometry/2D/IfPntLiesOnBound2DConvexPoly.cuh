@@ -8,20 +8,25 @@
 // AUTHOR:            Tingchang YIN
 ///////////////////////////////////////////////////////////////////
 #pragma once
+#include "../../DataTypeSelector/DataTypeSelector.cuh"
 #include "../../GlobalDef/GlobalDef.cuh"
+#include "../../MatrixManipulation/MatrixManipulation.cuh"
 #include "DistancePnt2DSeg.cuh"
 
 namespace cuDFNsys
 {
 //if a point lies on 2D bound
-__device__ __host__ bool IfPntLiesOnBound2DConvexPoly(float2 pnt,
-                                                      float2 *verts,
+template <typename T>
+__device__ __host__ bool IfPntLiesOnBound2DConvexPoly(cuDFNsys::Vector2<T> pnt,
+                                                      cuDFNsys::Vector2<T> *verts,
                                                       int N,
-                                                      float _tol_);
+                                                      T _tol_);
+
 // if a point lies on 2D bound, also return the edge NO
-__device__ __host__ bool IfPntLiesOnBound2DConvexPolyReturnEdgeNO(float2 pnt,
-                                                                  float2 *verts,
+template <typename T>
+__device__ __host__ bool IfPntLiesOnBound2DConvexPolyReturnEdgeNO(cuDFNsys::Vector2<T> pnt,
+                                                                  cuDFNsys::Vector2<T> *verts,
                                                                   int N,
-                                                                  float _tol_,
+                                                                  T _tol_,
                                                                   int *edgeNO);
 }; // namespace cuDFNsys

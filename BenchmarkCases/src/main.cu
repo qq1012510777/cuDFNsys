@@ -7,6 +7,13 @@
 
 #include "cuDFNsys.cuh"
 #include <unistd.h>
+
+#ifdef USE_DOUBLES
+typedef double _DataType_;
+#else
+typedef float _DataType_;
+#endif
+
 int main(int argc, char *argv[])
 {
     try
@@ -17,9 +24,9 @@ int main(int argc, char *argv[])
         GPUErrCheck(cudaSetDevice(dev));
 
         int DSIZE = 0;
-        float L = 0;
-        float minGrid = 0;
-        float maxGrid = 0;
+        _DataType_ L = 0;
+        _DataType_ minGrid = 0;
+        _DataType_ maxGrid = 0;
         int mode = -1;
 
         mode = atoi(argv[1]);
@@ -35,9 +42,9 @@ int main(int argc, char *argv[])
 
         cout << "preparing" << endl;
 
-        thrust::host_vector<cuDFNsys::Fracture> Frac_verts_host(DSIZE);
-        thrust::device_vector<cuDFNsys::Fracture> Frac_verts_device(DSIZE);
-        cuDFNsys::Fracture *Frac_verts_device_ptr;
+        thrust::host_vector<cuDFNsys::Fracture<_DataType_>> Frac_verts_host(DSIZE);
+        thrust::device_vector<cuDFNsys::Fracture<_DataType_>> Frac_verts_device(DSIZE);
+        cuDFNsys::Fracture<_DataType_> *Frac_verts_device_ptr;
         Frac_verts_device_ptr = thrust::raw_pointer_cast(Frac_verts_device.data());
 
         cuDFNsys::Warmup<<<DSIZE / 256 + 1, 256 /*  1, 2*/>>>();
@@ -50,34 +57,35 @@ int main(int argc, char *argv[])
         if (mode == 1)
         {
             cout << "\nFracturesCrossedVertical\n";
-            cuDFNsys::FracturesCrossedVertical<<<DSIZE / 256 + 1, 256>>>(Frac_verts_device_ptr,
-                                                                         (unsigned long)t,
-                                                                         DSIZE,
-                                                                         L);
+            cuDFNsys::FracturesCrossedVertical<_DataType_><<<DSIZE / 256 + 1, 256>>>(Frac_verts_device_ptr,
+                                                                                     (unsigned long)t,
+                                                                                     DSIZE,
+                                                                                     L);
+            cudaDeviceSynchronize();
         }
         else if (mode == 2)
         {
             cout << "\nFracturesBeta50Beta60\n";
-            cuDFNsys::FracturesBeta50Beta60<<<DSIZE / 256 + 1, 256>>>(Frac_verts_device_ptr,
-                                                                      (unsigned long)t,
-                                                                      DSIZE,
-                                                                      L);
+            cuDFNsys::FracturesBeta50Beta60<_DataType_><<<DSIZE / 256 + 1, 256>>>(Frac_verts_device_ptr,
+                                                                                  (unsigned long)t,
+                                                                                  DSIZE,
+                                                                                  L);
         }
         else if (mode == 3)
         {
             cout << "\nFracturesIncomplete\n";
-            cuDFNsys::FracturesIncomplete<<<DSIZE / 256 + 1, 256>>>(Frac_verts_device_ptr,
-                                                                    (unsigned long)t,
-                                                                    DSIZE,
-                                                                    L);
+            cuDFNsys::FracturesIncomplete<_DataType_><<<DSIZE / 256 + 1, 256>>>(Frac_verts_device_ptr,
+                                                                                (unsigned long)t,
+                                                                                DSIZE,
+                                                                                L);
         }
         else if (mode == 4)
         {
             cout << "\nFractures2DLike\n";
-            cuDFNsys::Fractures2DLike<<<DSIZE / 256 + 1, 256>>>(Frac_verts_device_ptr,
-                                                                (unsigned long)t,
-                                                                DSIZE,
-                                                                L);
+            cuDFNsys::Fractures2DLike<_DataType_><<<DSIZE / 256 + 1, 256>>>(Frac_verts_device_ptr,
+                                                                            (unsigned long)t,
+                                                                            DSIZE,
+                                                                            L);
         }
         else
             throw cuDFNsys::ExceptionsPause("Undefined benchmark mode!");
@@ -85,44 +93,51 @@ int main(int argc, char *argv[])
         cudaDeviceSynchronize();
 
         Frac_verts_host = Frac_verts_device;
+
+        std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<_DataType_>, cuDFNsys::Vector3<_DataType_>>> Intersection_map;
+        cout << "Frac_verts_host.size(): " << Frac_verts_host.size() << endl;
+        cout << Frac_verts_host[0].Verts3D[0].x << ", " << Frac_verts_host[0].Verts3D[0].y << ", " << Frac_verts_host[0].Verts3D[0].z << endl;
+        cout << Frac_verts_host[0].Verts3D[1].x << ", " << Frac_verts_host[0].Verts3D[1].y << ", " << Frac_verts_host[1].Verts3D[0].z << endl;
+        cout << Frac_verts_host[0].Verts3D[2].x << ", " << Frac_verts_host[0].Verts3D[2].y << ", " << Frac_verts_host[2].Verts3D[0].z << endl;
+        cout << Frac_verts_host[0].Verts3D[3].x << ", " << Frac_verts_host[0].Verts3D[3].y << ", " << Frac_verts_host[3].Verts3D[0].z << endl;
+
         cout << "identifying intersections with complete fractures" << endl;
-        std::map<pair<size_t, size_t>, pair<float3, float3>> Intersection_map;
-        cuDFNsys::IdentifyIntersection identifyInters{Frac_verts_host.size(),
-                                                      Frac_verts_device_ptr,
-                                                      false,
-                                                      Intersection_map};
+        cuDFNsys::IdentifyIntersection<_DataType_> identifyInters{Frac_verts_host.size(),
+                                                                  Frac_verts_device_ptr,
+                                                                  false,
+                                                                  Intersection_map};
         cout << "identifying cluster with complete fractures" << endl;
         std::vector<std::vector<size_t>> ListClusters;
         std::vector<size_t> Percolation_cluster;
-        cuDFNsys::Graph G{(size_t)DSIZE, Intersection_map};
+        cuDFNsys::Graph<_DataType_> G{(size_t)DSIZE, Intersection_map};
         G.UseDFS(ListClusters);
-        cuDFNsys::IdentifyPercolationCluster IdentiClu{ListClusters,
-                                                       Frac_verts_host, perco_dir,
-                                                       Percolation_cluster};
+        cuDFNsys::IdentifyPercolationCluster<_DataType_> IdentiClu{ListClusters,
+                                                                   Frac_verts_host, perco_dir,
+                                                                   Percolation_cluster};
         cout << "DFN I finished" << endl;
-        cuDFNsys::MatlabPlotDFN As{"DFN_I.mat", "DFN_I.m",
-                                   Frac_verts_host, Intersection_map, ListClusters,
-                                   Percolation_cluster, false, true, true, true,
-                                   L, perco_dir};
+        cuDFNsys::MatlabPlotDFN<_DataType_> As{"DFN_I.mat", "DFN_I.m",
+                                               Frac_verts_host, Intersection_map, ListClusters,
+                                               Percolation_cluster, false, true, true, true,
+                                               L, perco_dir};
         //
         Intersection_map.clear();
         ListClusters.clear();
         Percolation_cluster.clear();
         cout << "identifying intersections with truncated fractures" << endl;
-        cuDFNsys::IdentifyIntersection identifyInters2{Frac_verts_host.size(),
-                                                       Frac_verts_device_ptr, true,
-                                                       Intersection_map};
+        cuDFNsys::IdentifyIntersection<_DataType_> identifyInters2{Frac_verts_host.size(),
+                                                                   Frac_verts_device_ptr, true,
+                                                                   Intersection_map};
         cout << "identifying cluster with truncated fractures" << endl;
-        cuDFNsys::Graph G2{(size_t)DSIZE, Intersection_map};
+        cuDFNsys::Graph<_DataType_> G2{(size_t)DSIZE, Intersection_map};
         G2.UseDFS(ListClusters);
-        cuDFNsys::IdentifyPercolationCluster IdentiClu2{ListClusters,
-                                                        Frac_verts_host, perco_dir,
-                                                        Percolation_cluster};
+        cuDFNsys::IdentifyPercolationCluster<_DataType_> IdentiClu2{ListClusters,
+                                                                    Frac_verts_host, perco_dir,
+                                                                    Percolation_cluster};
         cout << "DFN II finished" << endl;
-        cuDFNsys::MatlabPlotDFN As2{"DFN_II.mat", "DFN_II.m",
-                                    Frac_verts_host, Intersection_map, ListClusters,
-                                    Percolation_cluster, true, true, true, true,
-                                    L, perco_dir};
+        cuDFNsys::MatlabPlotDFN<_DataType_> As2{"DFN_II.mat", "DFN_II.m",
+                                                Frac_verts_host, Intersection_map, ListClusters,
+                                                Percolation_cluster, true, true, true, true,
+                                                L, perco_dir};
         Frac_verts_device.clear();
         Frac_verts_device.shrink_to_fit();
         //-----------
@@ -136,19 +151,19 @@ int main(int argc, char *argv[])
                                                         Fracs_percol};
             std::vector<pair<int, int>> IntersectionPair_percol;
 
-            cuDFNsys::RemoveDeadEndFrac RDEF{Fracs_percol,
-                                             IntersectionPair_percol,
-                                             (size_t)perco_dir,
-                                             Frac_verts_host,
-                                             Intersection_map};
+            cuDFNsys::RemoveDeadEndFrac<_DataType_> RDEF{Fracs_percol,
+                                                         IntersectionPair_percol,
+                                                         (size_t)perco_dir,
+                                                         Frac_verts_host,
+                                                         Intersection_map};
             cout << "meshing ..." << endl;
 
-            cuDFNsys::Mesh mesh{Frac_verts_host, IntersectionPair_percol,
-                                &Fracs_percol, minGrid, maxGrid, perco_dir, L};
+            cuDFNsys::Mesh<_DataType_> mesh{Frac_verts_host, IntersectionPair_percol,
+                                            &Fracs_percol, minGrid, maxGrid, perco_dir, L};
 
             cout << "MHFEM ing ..." << endl;
 
-            cuDFNsys::MHFEM fem{mesh, Frac_verts_host, 100, 20, perco_dir, L};
+            cuDFNsys::MHFEM<_DataType_> fem{mesh, Frac_verts_host, 100, 20, perco_dir, L};
             cout << "Fluxes: " << fem.QIn << ", ";
             cout << fem.QOut << ", Permeability: ";
             cout << fem.Permeability << endl;
@@ -168,10 +183,6 @@ int main(int argc, char *argv[])
                            "MHFEM_" + to_string(i + 1) + ".m",
                            Frac_verts_host, mesh, L);
             //---------------
-            // cout << "Particle transport ing ...\n";
-            // cuDFNsys::ParticleTransport p{(unsigned long)t,
-            //                               atoi(argv[12]), atoi(argv[13]), (float)atof(argv[14]), (float)atof(argv[15]), Frac_verts_host, mesh, fem};
-            // p.MatlabPlot("particle.mat", "particle.m", mesh, fem, L);
         }
         //cudaDeviceReset();
         double ielaps = cuDFNsys::CPUSecond() - istart;

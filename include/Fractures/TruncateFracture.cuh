@@ -10,14 +10,17 @@
 // AUTHOR:            Tingchang YIN
 ///////////////////////////////////////////////////////////////////
 #pragma once
+#include "../DataTypeSelector/DataTypeSelector.cuh"
 #include "../GlobalDef/GlobalDef.cuh"
+#include "../MatrixManipulation/MatrixManipulation.cuh"
 #include "Fracture.cuh"
 
 namespace cuDFNsys
 {
 // Truncate a fracture in a DFN
-__device__ __host__ bool TruncateFracture(cuDFNsys::Fracture *verts,
-                                          float L,
+template <typename T>
+__device__ __host__ bool TruncateFracture(cuDFNsys::Fracture<T> *verts,
+                                          cuDFNsys::Vector1<T> L,
                                           int plane,
                                           int dir);
 }; // namespace cuDFNsys

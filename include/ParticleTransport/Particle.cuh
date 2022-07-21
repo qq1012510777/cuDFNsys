@@ -9,14 +9,16 @@
 // AUTHOR:            Tingchang YIN
 ///////////////////////////////////////////////////////////////////
 #pragma once
-#include "../MHFEM/MHFEM.cuh"
+#include "../GlobalDef/GlobalDef.cuh"
+#include "../DataTypeSelector/DataTypeSelector.cuh"
 
 namespace cuDFNsys
 {
+template <typename T>
 struct Particle
 {
     // position in 2d
-    float2 Position2D;
+    cuDFNsys::Vector2<T> Position2D;
     // element ID
     uint ElementID;
 
