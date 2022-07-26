@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
         float minGrid = 0;
         float maxGrid = 0;
 
-        DSIZE = 2;
+        DSIZE = 150;
         L = 30;
 
         int perco_dir = 2;
@@ -47,10 +47,11 @@ int main(int argc, char *argv[])
         time(&t);
 
         cout << "generating fractures" << endl;
-
-        cuDFNsys::FracturesBeta50Beta60<_DataType_><<<DSIZE / 256 + 1, 256 /*  1, 2*/>>>(Frac_verts_device_ptr,
-                                                                                         (unsigned long)t,
-                                                                                         DSIZE, L);
+        cuDFNsys::Vector4<_DataType_> ParaSizeDistri = cuDFNsys::MakeVector4((_DataType_)1.5, (_DataType_)1., (_DataType_)15., (_DataType_)0.);
+        cuDFNsys::Fractures<_DataType_><<<DSIZE / 256 + 1, 256 /*  1, 2*/>>>(Frac_verts_device_ptr,
+                                                                             (unsigned long)t,
+                                                                             DSIZE, L,
+                                                                             0, ParaSizeDistri, 0, 0);
         cudaDeviceSynchronize();
         minGrid = 1;
         maxGrid = 1.5;
@@ -142,8 +143,8 @@ int main(int argc, char *argv[])
             cout << "Particle transport ing ...\n";
 
             cuDFNsys::ParticleTransport<_DataType_> p{(unsigned long)t,
-                                                      atoi(argv[1]), // number of particle
-                                                      atoi(argv[2]), // number of time steps
+                                                      atoi(argv[1]),             // number of particle
+                                                      atoi(argv[2]),             // number of time steps
                                                       (_DataType_)atof(argv[3]), // delta T
                                                       (_DataType_)atof(argv[4]), // molecular diffusion
                                                       Frac_verts_host, mesh, fem, (uint)perco_dir, -0.5f * L};

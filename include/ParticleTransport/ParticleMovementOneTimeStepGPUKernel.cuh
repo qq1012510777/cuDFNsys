@@ -50,6 +50,15 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
     if (i >= count)
         return;
 
+    /// ----------------------- debug -----------------------
+    /// ----------------------- debug -----------------------
+    /// ----------------------- debug -----------------------
+    // P_DEV[i].ElementID = 445;
+    // P_DEV[i].Position2D = cuDFNsys::MakeVector2<T>(-0.240469999999999989315213611007, 14.778629999999999711235432187095);
+    /// ----------------------- debug -----------------------
+    /// ----------------------- debug -----------------------
+    /// ----------------------- debug -----------------------
+
     if (P_DEV[i].IfReachOutletPlane == true)
         return;
 
@@ -68,6 +77,22 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
 
     cuDFNsys::Vector2<T> Veloc_p = cuDFNsys::ReconstructVelocityGrid<T>(InitPos, Vertex_Triangle_ForVelocity, Veloc_triangle);
 
+    /// ----------------------- debug -----------------------
+    /// ----------------------- debug -----------------------
+    /// ----------------------- debug -----------------------
+    //bool IfTargPosInGrid_yy = cuDFNsys::IfPntInside2DConvexPoly<T>(InitPos, Vertex_Triangle_ForVelocity, 3);
+    //if (!IfTargPosInGrid_yy)
+    //{
+    //    printf("not inside~\n");
+    //    return;
+    //}
+    //
+    //printf("velocity 2D: %.30f, %.30f\n", Veloc_p.x, Veloc_p.y);
+
+    /// ----------------------- debug -----------------------
+    /// ----------------------- debug -----------------------
+    /// ----------------------- debug -----------------------
+
     // ------------------move the particle
     // ------------------move the particle
     // ------------------move the particle
@@ -85,6 +110,15 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
     TargPos.x = round(TargPos.x * 1e5) / 1e5;
     TargPos.y = round(TargPos.y * 1e5) / 1e5;
 
+    /// ----------------------- debug -----------------------
+    /// ----------------------- debug -----------------------
+    /// ----------------------- debug -----------------------
+    // TargPos.x = 0.048109999999999999986677323704;
+    // TargPos.y = 15.071410000000000195541360881180;
+    /// ----------------------- debug -----------------------
+    /// ----------------------- debug -----------------------
+    /// ----------------------- debug -----------------------
+
     //------------record data to debug-------------
     //------------record data to debug-------------
     //------------record data to debug-------------
@@ -94,14 +128,16 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
     //---------------------------------------------
     //---------------------------------------------
 
-    cuDFNsys::Vector2<T> CrossedGlobalEdge[10][2];
+    cuDFNsys::Vector2<T> CrossedGlobalEdge[12][2];
     int CountCrossedGlobalEdge = 0;
 
     cuDFNsys::Vector2<T> whole_Particle_trajectory[2] = {InitPos, TargPos};
 
     for (uint Loop_time = 1;; Loop_time++)
     {
-        if (Loop_time >= 8 || CountCrossedGlobalEdge == 9)
+        //printf("\n--------------------\nThe looptime: %d\n", Loop_time);
+
+        if (Loop_time >= 10 || CountCrossedGlobalEdge == 11)
         {
             printf("Particle %d, Loop times is too many!\n", i + 1);
             goto Debug100;
@@ -168,7 +204,7 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
             IntersectionOnCrossedEdge = cuDFNsys::MakeVector2(Result_.x, Result_.y);
             uint *tmp_k = &(EdgeNO.x);
             GlobalEdgeNO = tmp_k[(uint)Result_.z];
-            //printf("Result_.z >= 0; Result_.z = %.30f, edgeno: %d, %d, %d\n", Result_.z, EdgeNO.x, EdgeNO.y, EdgeNO.z);
+            // printf("\nResult_.z >= 0; Result_.z = %.30f, edgeno: %d, %d, %d\n", Result_.z, EdgeNO.x, EdgeNO.y, EdgeNO.z);
 
             CrossedGlobalEdge[CountCrossedGlobalEdge][0] = cuDFNsys::MakeVector2(Coordinate2D_Vec_dev_ptr[EleID - 1].x[(uint)Result_.z],
                                                                                  Coordinate2D_Vec_dev_ptr[EleID - 1].y[(uint)Result_.z]);
@@ -283,6 +319,7 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
         /// ----------------crossed edge is identified-----------
         /// ----------------crossed edge is identified-----------
         /// ----------------crossed edge is identified-----------
+        // printf("\n\nNumOfElesSharedEdge = %d\n\n", NumOfElesSharedEdge);
 
         if (NumOfElesSharedEdge == 1)
         {
@@ -320,12 +357,13 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
                     /// the target point is indeed out of fracture
                     /// the target point is indeed out of fracture
 
-                    //printf("Particle %d trajectory meets a non flux bound, before reflection, the trajectory is\n\t%.30f, %.30f\n\t%.30f, %.30f\n", i + 1, InitPos.x, InitPos.y, TargPos.x, TargPos.y);
+                    // printf("Particle %d trajectory meets a non flux bound, before reflection, the trajectory is\n\t%.30f, %.30f\n\t%.30f, %.30f\n",
+                    //        i + 1, InitPos.x, InitPos.y, TargPos.x, TargPos.y);
                     TargPos = cuDFNsys::ParticleReflection<T>(TargPos, Vertex_Triangle[(uint)Result_.z], Vertex_Triangle[((uint)Result_.z + 1) % 3]);
                     // we do not need to change element ID right now
                     // let us determine element ID in next loop
                     InitPos = IntersectionOnCrossedEdge;
-                    //printf("Particle %d trajectory meets a non flux bound, after reflction, the trajectory is\n\t%.30f, %.30f\n\t%.30f, %.30f\n", i + 1, InitPos.x, InitPos.y, TargPos.x, TargPos.y);
+                    // printf("Particle %d trajectory meets a non flux bound, after reflction, the trajectory is\n\t%.30f, %.30f\n\t%.30f, %.30f\n", i + 1, InitPos.x, InitPos.y, TargPos.x, TargPos.y);
 
                     whole_Particle_trajectory[0] = InitPos;
                     whole_Particle_trajectory[1] = TargPos;
@@ -420,6 +458,9 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
             // change initial position
 
             cuDFNsys::Vector3<T> InitiPos3D = cuDFNsys::MakeVector3(IntersectionOnCrossedEdge.x, IntersectionOnCrossedEdge.y, (T)0.0f);
+
+            // printf("before go through intersection, Intersection 2D:\n\t%.30f, %.30f\n", IntersectionOnCrossedEdge.x, IntersectionOnCrossedEdge.y);
+
             T RK_1[3][3];
 
             Frac_DEV[PreviousFracID].RoationMatrix(RK_1, 23);
@@ -427,6 +468,8 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
             InitiPos3D.x += Frac_DEV[PreviousFracID].Center.x;
             InitiPos3D.y += Frac_DEV[PreviousFracID].Center.y;
             InitiPos3D.z += Frac_DEV[PreviousFracID].Center.z;
+
+            // printf("before go through intersection, initial position 3D:\n%.30f, %.30f, %.30f\n\n", InitiPos3D.x, InitiPos3D.y, InitiPos3D.z);
 
             InitiPos3D.x -= Frac_DEV[FracID].Center.x;
             InitiPos3D.y -= Frac_DEV[FracID].Center.y;
@@ -451,11 +494,14 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
             Intersection3D.x += Frac_DEV[PreviousFracID].Center.x;
             Intersection3D.y += Frac_DEV[PreviousFracID].Center.y;
             Intersection3D.z += Frac_DEV[PreviousFracID].Center.z;
+
+            //printf("intersection 3D:\n%.30f, %.30f, %.30f\n\n", Intersection3D.x, Intersection3D.y, Intersection3D.z);
+
             Target3D = cuDFNsys::ProductSquare3Vector3<T>(RK_1, Target3D);
             Target3D.x += Frac_DEV[PreviousFracID].Center.x;
             Target3D.y += Frac_DEV[PreviousFracID].Center.y;
             Target3D.z += Frac_DEV[PreviousFracID].Center.z;
-
+            // printf("before go through intersection, target position 3D:\n%.30f, %.30f, %.30f\n\n", Target3D.x, Target3D.y, Target3D.z);
             cuDFNsys::Vector3<T> V_ = cuDFNsys::MakeVector3(Target3D.x - Intersection3D.x,
                                                             Target3D.y - Intersection3D.y,
                                                             Target3D.z - Intersection3D.z);
@@ -479,7 +525,7 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
             cuDFNsys::Vector3<T> NewTarPos3D = cuDFNsys::MakeVector3(Intersection3D.x + V_new.x * normDistance - Frac_DEV[FracID].Center.x,
                                                                      Intersection3D.y + V_new.y * normDistance - Frac_DEV[FracID].Center.y,
                                                                      Intersection3D.z + V_new.z * normDistance - Frac_DEV[FracID].Center.z);
-
+            // printf("after go through intersection but no correction, target position 3D:\n%.30f, %.30f, %.30f\n\n", NewTarPos3D.x, NewTarPos3D.y, NewTarPos3D.z);
             NewTarPos3D = cuDFNsys::ProductSquare3Vector3<T>(RK_2, NewTarPos3D);
             cuDFNsys::Vector2<T> newTagPos2D = cuDFNsys::MakeVector2(NewTarPos3D.x, NewTarPos3D.y);
 
@@ -502,6 +548,7 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
             CenterGrid.x = (Coordinate2D_Vec_dev_ptr[EleID - 1].x[0] + Coordinate2D_Vec_dev_ptr[EleID - 1].x[1] + Coordinate2D_Vec_dev_ptr[EleID - 1].x[2]) / 3.0f;
             CenterGrid.y = (Coordinate2D_Vec_dev_ptr[EleID - 1].y[0] + Coordinate2D_Vec_dev_ptr[EleID - 1].y[1] + Coordinate2D_Vec_dev_ptr[EleID - 1].y[2]) / 3.0f;
 
+            // printf("no correction, ele to %d, 2D trajectory:\n\t%.30f, %.30f\n\t%.30f, %.30f\n", EleID, InitPos.x, InitPos.y, newTagPos2D.x, newTagPos2D.y);
             uint O1 = cuDFNsys::OrientationThree2DPnts<T>(EdgeSeg[0], EdgeSeg[1], newTagPos2D, (T)1e-7);
             uint O2 = cuDFNsys::OrientationThree2DPnts<T>(EdgeSeg[0], EdgeSeg[1], CenterGrid, (T)1e-7);
 
@@ -546,6 +593,7 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
                 NewTarPos3D = cuDFNsys::MakeVector3(Intersection3D.x - V_new.x * normDistance - Frac_DEV[FracID].Center.x,
                                                     Intersection3D.y - V_new.y * normDistance - Frac_DEV[FracID].Center.y,
                                                     Intersection3D.z - V_new.z * normDistance - Frac_DEV[FracID].Center.z);
+                //printf("after correction, target position 3D:\n%.30f, %.30f, %.30f\n\n", NewTarPos3D.x, NewTarPos3D.y, NewTarPos3D.z);
                 NewTarPos3D = cuDFNsys::ProductSquare3Vector3<T>(RK_2, NewTarPos3D);
                 newTagPos2D = cuDFNsys::MakeVector2(NewTarPos3D.x, NewTarPos3D.y);
                 TargPos = newTagPos2D;
@@ -556,15 +604,15 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
                 // Vertex_Triangle_PPP[0] = cuDFNsys::MakeVector2(Coordinate2D_Vec_dev_ptr[EleID - 1].x[0], Coordinate2D_Vec_dev_ptr[EleID - 1].y[0]);
                 // Vertex_Triangle_PPP[1] = cuDFNsys::MakeVector2(Coordinate2D_Vec_dev_ptr[EleID - 1].x[1], Coordinate2D_Vec_dev_ptr[EleID - 1].y[1]);
                 // Vertex_Triangle_PPP[2] = cuDFNsys::MakeVector2(Coordinate2D_Vec_dev_ptr[EleID - 1].x[2], Coordinate2D_Vec_dev_ptr[EleID - 1].y[2]);
-                // printf("O1 != O2, ParticleID %d, eleID: %d;\nPntTrajectory:\n%f, %f\n%f, %f\nTri:\n%f, %f\n%f, %f\n%f, %f\nIntersection3D:\n%f, %f, %f\nV_new:\n%f, %f, %f\nNewTarPos3D:\n%f, %f, %f\n",
-                //        i + 1, EleID,
-                //        InitPos.x, InitPos.y, TargPos.x, TargPos.y,
-                //        Vertex_Triangle_PPP[0].x, Vertex_Triangle_PPP[0].y,
-                //        Vertex_Triangle_PPP[1].x, Vertex_Triangle_PPP[1].y,
-                //        Vertex_Triangle_PPP[2].x, Vertex_Triangle_PPP[2].y,
-                //        Intersection3D.x, Intersection3D.y, Intersection3D.z,
-                //        V_new.x, V_new.y, V_new.z,
-                //        NewTarPos3D.x, NewTarPos3D.y, NewTarPos3D.z);
+                //printf("O1 != O2, ParticleID %d, eleID: %d;\nPntTrajectory:\n%f, %f\n%f, %f\nTri:\n%f, %f\n%f, %f\n%f, %f\nIntersection3D:\n%f, %f, %f\nV_new:\n%f, %f, %f\nNewTarPos3D:\n%f, %f, %f\n",
+                //       i + 1, EleID,
+                //       InitPos.x, InitPos.y, TargPos.x, TargPos.y,
+                //       Vertex_Triangle_PPP[0].x, Vertex_Triangle_PPP[0].y,
+                //       Vertex_Triangle_PPP[1].x, Vertex_Triangle_PPP[1].y,
+                //       Vertex_Triangle_PPP[2].x, Vertex_Triangle_PPP[2].y,
+                //       Intersection3D.x, Intersection3D.y, Intersection3D.z,
+                //       V_new.x, V_new.y, V_new.z,
+                //       NewTarPos3D.x, NewTarPos3D.y, NewTarPos3D.z);
                 continue;
             }
         };
@@ -581,6 +629,7 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
                    Vertex_Triangle_ForVelocity[0].x, Vertex_Triangle_ForVelocity[0].y,
                    Vertex_Triangle_ForVelocity[1].x, Vertex_Triangle_ForVelocity[1].y,
                    Vertex_Triangle_ForVelocity[2].x, Vertex_Triangle_ForVelocity[2].y);
+
             for (uint k = 0; k < NeighborEleOfOneEle_dev_ptr[InitELeID - 1].NumNeighborEle; ++k)
             {
                 uint ele2 = NeighborEleOfOneEle_dev_ptr[InitELeID - 1].EleID[k];

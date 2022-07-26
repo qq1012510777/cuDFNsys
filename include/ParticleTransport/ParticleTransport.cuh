@@ -43,12 +43,16 @@ public:
                       T outletcoordinate)
     {
         this->Dir = Dir_flow;
+
         this->IdentifyEdgesSharedEle(mesh);
+
         this->IdentifyNeighborElements(mesh);
+
         this->InitilizeParticles(NumOfParticles, mesh, fem);
+
         this->OutputParticleInfoStepByStep(ParticlePosition, 0,
                                            Fracs, mesh);
-        // cout << NumTimeStep << ", " << delta_T_ << ", " << Dispersion_local << " ______ \n";
+        //cout << NumTimeStep << ", " << delta_T_ << ", " << Dispersion_local << " ______ \n";
         this->ParticleMovement(seed, NumTimeStep, delta_T_, Dispersion_local, Fracs, mesh, fem, outletcoordinate);
     };
 
@@ -415,25 +419,40 @@ private:
 
             uint LocalEdgeNO = (EdgeNO - 1) % 3;
 
-            cuDFNsys::Vector2<T> position_ = cuDFNsys::MakeVector2((T)0.5f * (mesh.Coordinate2D[elementID - 1].x[LocalEdgeNO] + mesh.Coordinate2D[elementID - 1].x[(LocalEdgeNO + 1) % 3]),
-                                                                   (T)0.5f * (mesh.Coordinate2D[elementID - 1].y[LocalEdgeNO] + mesh.Coordinate2D[elementID - 1].y[(LocalEdgeNO + 1) % 3]));
+            // cuDFNsys::Vector2<T> position_ = cuDFNsys::MakeVector2((T)0.5f * (mesh.Coordinate2D[elementID - 1].x[LocalEdgeNO] + mesh.Coordinate2D[elementID - 1].x[(LocalEdgeNO + 1) % 3]),
+            //                                                        (T)0.5f * (mesh.Coordinate2D[elementID - 1].y[LocalEdgeNO] + mesh.Coordinate2D[elementID - 1].y[(LocalEdgeNO + 1) % 3]));
+            // // move the position a little toward to the interior of grid
+            // {
+            //     cuDFNsys::Vector2<T> inwardNormal = cuDFNsys::MakeVector2(-(mesh.Coordinate2D[elementID - 1].y[(LocalEdgeNO + 1) % 3] - mesh.Coordinate2D[elementID - 1].y[LocalEdgeNO]),
+            //                                                               mesh.Coordinate2D[elementID - 1].x[(LocalEdgeNO + 1) % 3] - mesh.Coordinate2D[elementID - 1].x[LocalEdgeNO]);
+            //     T norm_inward = sqrt(inwardNormal.x * inwardNormal.x + inwardNormal.y * inwardNormal.y);
+            //     inwardNormal.x /= norm_inward;
+            //     inwardNormal.y /= norm_inward;
+            //     position_.x += (inwardNormal.x * 1e-5);
+            //     position_.y += (inwardNormal.y * 1e-5);
+            // };
+            // cuDFNsys::Particle<T> tmpP;
+            // tmpP.ElementID = elementID;
+            // tmpP.Position2D = position_;
+            // thrust::host_vector<cuDFNsys::Particle<T>> tmpPVEC(NumParticlesEachEdge[i], tmpP);
 
-            // move the position a little toward to the interior of grid
+            thrust::host_vector<cuDFNsys::Particle<T>> tmpPVEC(NumParticlesEachEdge[i]);
+            cuDFNsys::Vector2<T> Vec2D;
+            Vec2D.x = mesh.Coordinate2D[elementID - 1].x[(LocalEdgeNO + 1) % 3] - mesh.Coordinate2D[elementID - 1].x[LocalEdgeNO];
+            Vec2D.y = mesh.Coordinate2D[elementID - 1].y[(LocalEdgeNO + 1) % 3] - mesh.Coordinate2D[elementID - 1].y[LocalEdgeNO];
+            T norm_e = sqrt(Vec2D.x * Vec2D.x + Vec2D.y * Vec2D.y);
+            Vec2D.x /= norm_e, Vec2D.y /= norm_e;
+
+            norm_e /= NumParticlesEachEdge[i] + 1;
+
+            for (uint j = 1; j <= NumParticlesEachEdge[i]; ++j)
             {
-                cuDFNsys::Vector2<T> inwardNormal = cuDFNsys::MakeVector2(-(mesh.Coordinate2D[elementID - 1].y[(LocalEdgeNO + 1) % 3] - mesh.Coordinate2D[elementID - 1].y[LocalEdgeNO]),
-                                                                          mesh.Coordinate2D[elementID - 1].x[(LocalEdgeNO + 1) % 3] - mesh.Coordinate2D[elementID - 1].x[LocalEdgeNO]);
-                T norm_inward = sqrt(inwardNormal.x * inwardNormal.x + inwardNormal.y * inwardNormal.y);
-                inwardNormal.x /= norm_inward;
-                inwardNormal.y /= norm_inward;
-
-                position_.x += (inwardNormal.x * 1e-5);
-                position_.y += (inwardNormal.y * 1e-5);
-            };
-            cuDFNsys::Particle<T> tmpP;
-            tmpP.ElementID = elementID;
-            tmpP.Position2D = position_;
-
-            thrust::host_vector<cuDFNsys::Particle<T>> tmpPVEC(NumParticlesEachEdge[i], tmpP);
+                tmpPVEC[j - 1].ElementID = elementID;
+                cuDFNsys::Vector2<T> position_rr;
+                position_rr.x = mesh.Coordinate2D[elementID - 1].x[LocalEdgeNO] + Vec2D.x * norm_e * j,
+                position_rr.y = mesh.Coordinate2D[elementID - 1].y[LocalEdgeNO] + Vec2D.y * norm_e * j;
+                tmpPVEC[j - 1].Position2D = position_rr;
+            }
 
             thrust::copy(tmpPVEC.begin(),
                          tmpPVEC.end(),
@@ -449,20 +468,29 @@ private:
         std::unordered_map<uint, cuDFNsys::NeighborEle> SharedNodeEle;
         SharedNodeEle.reserve(mesh.Coordinate3D.size());
 
-        //cout << "1\n";
+        //cout << "t 1\n";
         for (uint i = 0; i < mesh.Element3D.size(); ++i)
         {
             uint *Ptr = &(mesh.Element3D[i].x);
 
             for (uint j = 0; j < 3; ++j)
             {
-                //cout << "Ptr[j]: " << Ptr[j] << ";\n";
-                SharedNodeEle[Ptr[j] - 1].NumNeighborEle++;
-                SharedNodeEle[Ptr[j] - 1].EleID[SharedNodeEle[Ptr[j] - 1].NumNeighborEle - 1] = i + 1;
-                //cout << "\t" << SharedNodeEle[Ptr[j] - 1].NumNeighborEle << "\n";
+                //cout << "Ptr[j]: " << Ptr[j] << ", mesh.Coordinate3D.size() = " << mesh.Coordinate3D.size() << endl;
+                uint nodeID = Ptr[j] - 1;
+                //cout << "\t\t~1" << endl;
+                SharedNodeEle[nodeID].NumNeighborEle++;
+                if (SharedNodeEle[nodeID].NumNeighborEle > _NumOfNeighborEleAtMost)
+                {
+                    string AS = "The number of elements sharing the same node exceeds the allowed value\n";
+                    throw cuDFNsys::ExceptionsPause(AS);
+                }
+                //cout << "\t\t~2" << endl;
+                SharedNodeEle[nodeID].EleID[SharedNodeEle[nodeID].NumNeighborEle - 1] = i + 1;
+                //cout << "\t\t~3" << endl;
+                //cout << "\t" << SharedNodeEle[nodeID].NumNeighborEle << ", " << SharedNodeEle[nodeID].EleID[SharedNodeEle[nodeID].NumNeighborEle - 1] << "\n";
             }
         }
-        //cout << "2\n";
+
         for (uint i = 0; i < mesh.Element3D.size(); ++i)
         {
             uint *Ptr = &(mesh.Element3D[i].x);
@@ -479,6 +507,12 @@ private:
             }
 
             this->NeighborEleOfOneEle[i].NumNeighborEle = KL.size();
+
+            if (KL.size() > _NumOfNeighborEleAtMost)
+            {
+                string AS = "The number of neighbering elements of an element exceeds the allowed value\n";
+                throw cuDFNsys::ExceptionsPause(AS);
+            }
             //cout << "element ID " << i + 1 << ": ";
             uint oo = 0;
             for (std::set<uint>::iterator j = KL.begin(); j != KL.end(); ++j)

@@ -42,4 +42,4 @@ using namespace std;
 __device__ const float _TOL_ParticleOnGridBound = 1e-3;
 
 const uint _NumOfSharedEleAtMost = 4;
-const uint _NumOfNeighborEleAtMost = 20;
+const uint _NumOfNeighborEleAtMost = 50;

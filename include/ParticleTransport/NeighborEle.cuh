@@ -15,7 +15,7 @@ namespace cuDFNsys
 {
 struct NeighborEle
 {
-    // number of shared elements for an edge, (at least = 1, at most = _NumOfSharedEleAtMost in GlobalDef.cuh)
+    // number of shared elements for an edge, (at least = 1, at most = _NumOfNeighborEleAtMost in GlobalDef.cuh)
     uint NumNeighborEle = 0;
     // here, the default of number of shared elements is _NumOfNeighborEleAtMost.
     uint EleID[_NumOfNeighborEleAtMost] = {0};
