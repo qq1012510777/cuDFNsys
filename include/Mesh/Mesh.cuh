@@ -64,11 +64,14 @@ public:
     // number of neaumann edges
     uint NumNeumannEdges;
 
-private:
+public:
     // checked percolation direction
     int Dir = 2;
 
 public:
+    // constructor
+    Mesh(){};
+    
     // constructor
     Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
          const std::vector<pair<int, int>> &IntersectionPair_percol,

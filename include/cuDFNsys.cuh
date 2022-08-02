@@ -52,6 +52,10 @@
 #include "./ParticleTransport/Roate2DPositionTo3D.cuh"
 #include "./ParticleTransport/WhichElementToGo.cuh"
 
+#include "./OutputObjectData/OutputObjectData.cuh"
+
+#include "./InputObjectData/InputObjectData.cuh"
+
 //#include "./CPUSecond/CPUSecond.cuh"
 //#include "./Exceptions/Exceptions.cuh"
 //#include "./Fractures/Fractures.cuh"

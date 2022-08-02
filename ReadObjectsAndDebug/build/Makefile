@@ -48,10 +48,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/tingchangyin/cuDFNsys/TestFunctionsOnlyForDevlopment
+CMAKE_SOURCE_DIR = /home/tingchangyin/cuDFNsys/ReadObjectsAndDebug
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/tingchangyin/cuDFNsys/TestFunctionsOnlyForDevlopment/build
+CMAKE_BINARY_DIR = /home/tingchangyin/cuDFNsys/ReadObjectsAndDebug/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -80,9 +80,9 @@ edit_cache/fast: edit_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/tingchangyin/cuDFNsys/TestFunctionsOnlyForDevlopment/build/CMakeFiles /home/tingchangyin/cuDFNsys/TestFunctionsOnlyForDevlopment/build/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/tingchangyin/cuDFNsys/ReadObjectsAndDebug/build/CMakeFiles /home/tingchangyin/cuDFNsys/ReadObjectsAndDebug/build/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/tingchangyin/cuDFNsys/TestFunctionsOnlyForDevlopment/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/tingchangyin/cuDFNsys/ReadObjectsAndDebug/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -960,6 +960,33 @@ home/tingchangyin/cuDFNsys/src/HDF5API/HDF5API.cu.s:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/HDF5API/HDF5API.cu.s
 .PHONY : home/tingchangyin/cuDFNsys/src/HDF5API/HDF5API.cu.s
 
+home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.o: home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.cu.o
+
+.PHONY : home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.o
+
+# target to build an object file
+home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.cu.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.cu.o
+.PHONY : home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.cu.o
+
+home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.i: home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.cu.i
+
+.PHONY : home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.i
+
+# target to preprocess a source file
+home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.cu.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.cu.i
+.PHONY : home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.cu.i
+
+home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.s: home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.cu.s
+
+.PHONY : home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.s
+
+# target to generate assembly for a file
+home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.cu.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.cu.s
+.PHONY : home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.cu.s
+
 home/tingchangyin/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.o: home/tingchangyin/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.cu.o
 
 .PHONY : home/tingchangyin/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.o
@@ -1467,6 +1494,9 @@ help:
 	@echo "... home/tingchangyin/cuDFNsys/src/HDF5API/HDF5API.o"
 	@echo "... home/tingchangyin/cuDFNsys/src/HDF5API/HDF5API.i"
 	@echo "... home/tingchangyin/cuDFNsys/src/HDF5API/HDF5API.s"
+	@echo "... home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.o"
+	@echo "... home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.i"
+	@echo "... home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.s"
 	@echo "... home/tingchangyin/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.o"
 	@echo "... home/tingchangyin/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.i"
 	@echo "... home/tingchangyin/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.s"
