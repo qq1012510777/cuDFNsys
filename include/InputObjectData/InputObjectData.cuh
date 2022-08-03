@@ -24,6 +24,7 @@ public:
     InputObjectData(){};
 
 public:
+    // Input fractures' data
     void InputFractures(const string &filename,
                         thrust::host_vector<cuDFNsys::Fracture<T>> &Frac_verts_host);
 

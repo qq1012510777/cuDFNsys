@@ -86,6 +86,7 @@ public:
         cuDFNsys::EleCoor<T> *Coordinate2D_Vec_dev_ptr = thrust::raw_pointer_cast(Coordinate2D_Vec_dev.data());
         cuDFNsys::NeighborEle *NeighborEleOfOneEle_dev_ptr = thrust::raw_pointer_cast(NeighborEleOfOneEle_dev.data());
 
+        bool errors = false;
         for (uint i = 1; i <= NumTimeStep; ++i)
         {
             time_t t;
@@ -106,11 +107,17 @@ public:
                                                                                            outletcoordinate,
                                                                                            NumParticles,
                                                                                            mesh.Element3D.size(),
-                                                                                           i);
+                                                                                           i,
+                                                                                           errors);
             cudaDeviceSynchronize();
             this->ParticlePlumes = ParticlePlumes_DEV;
             this->OutputParticleInfoStepByStep(ParticlePosition, i,
                                                Fracs, mesh);
+            if (errors == true)
+            {
+                cout << "error step\n";
+                return;
+            }
             // if (ParticlePlumes[0].IfReachOutletPlane == true)
             // {
             //     cout << "step " << i << endl;

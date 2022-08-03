@@ -136,7 +136,6 @@ int main(int argc, char *argv[])
             fem.MatlabPlot("MHFEM_" + to_string(i + 1) + ".mat",
                            "MHFEM_" + to_string(i + 1) + ".m",
                            Frac_verts_host, mesh, L);
-            return 0;
             //---------------
             cout << "Particle transport ing ...\n";
 
