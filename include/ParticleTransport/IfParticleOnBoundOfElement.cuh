@@ -26,6 +26,7 @@ __host__ __device__ bool IfParticleOnBoundOfElement(cuDFNsys::Vector2<T> Positio
         int o1 = cuDFNsys::OrientationThree2DPnts<T>(GridVertex[i],
                                                      GridVertex[(i + 1) % 3],
                                                      PositionP, _TOL_);
+        // printf("In 'IfParticleOnBoundOfElement', cuDFNsys::OrientationThree2DPnts: %d\n", o1);
         if (o1 == 0 && cuDFNsys::If2DPntLiesOnCollinearSeg<T>(GridVertex[i],
                                                               PositionP,
                                                               GridVertex[(i + 1) % 3]))
