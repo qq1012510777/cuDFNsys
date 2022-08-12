@@ -12,7 +12,11 @@
 #include "NeighborEle.cuh"
 #include "Particle.cuh"
 #include "ParticleMovementOneTimeStepGPUKernel.cuh"
+#include "PredicateNumOfReachedOutletParticles.cuh"
 #include <cmath>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 namespace cuDFNsys
 {
@@ -40,7 +44,9 @@ public:
                       cuDFNsys::Mesh<T> mesh,
                       const cuDFNsys::MHFEM<T> &fem,
                       uint Dir_flow,
-                      T outletcoordinate)
+                      T outletcoordinate,
+                      const string &Particle_mode,
+                      const string &Injection_mode)
     {
         this->Dir = Dir_flow;
 
@@ -48,23 +54,85 @@ public:
 
         this->IdentifyNeighborElements(mesh);
 
-        this->InitilizeParticles(NumOfParticles, mesh, fem);
+        this->InitilizeParticles(NumOfParticles, mesh, fem, Injection_mode);
 
         this->OutputParticleInfoStepByStep(ParticlePosition, 0,
+                                           delta_T_,
+                                           Dispersion_local,
+                                           Particle_mode,
+                                           Injection_mode,
                                            Fracs, mesh);
         //cout << NumTimeStep << ", " << delta_T_ << ", " << Dispersion_local << " ______ \n";
-        this->ParticleMovement(seed, NumTimeStep, delta_T_, Dispersion_local, Fracs, mesh, fem, outletcoordinate);
+        this->ParticleMovement(seed, 1, NumTimeStep, delta_T_, Dispersion_local, Particle_mode,
+                               Injection_mode, Fracs, mesh, fem, outletcoordinate);
+    };
+
+    ParticleTransport(unsigned long seed,
+                      const int &NumTimeStep,
+                      thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
+                      cuDFNsys::Mesh<T> mesh,
+                      const cuDFNsys::MHFEM<T> &fem,
+                      uint Dir_flow,
+                      T outletcoordinate)
+    {
+        cuDFNsys::MatlabAPI M1;
+
+        this->Dir = Dir_flow;
+
+        this->IdentifyEdgesSharedEle(mesh);
+
+        this->IdentifyNeighborElements(mesh);
+
+        MatrixXd PreNumSteps;
+        M1.ReadMat(ParticlePosition, "NumOfSteps", PreNumSteps);
+        uint ExistingNumsteps = (uint)PreNumSteps(0, 0);
+
+        string Particle_mode = M1.ReadMatString(ParticlePosition, "Particle_mode");
+        string Injection_mode = M1.ReadMatString(ParticlePosition, "Injection_mode");
+
+        MatrixXd LastStepParticle;
+        M1.ReadMat(ParticlePosition, "particle_position_3D_step_" + std::to_string(ExistingNumsteps),
+                   LastStepParticle);
+
+        this->NumParticles = LastStepParticle.rows();
+        this->ParticlePlumes.resize(this->NumParticles);
+        for (uint i = 0; i < this->NumParticles; ++i)
+        {
+            this->ParticlePlumes[i].Position2D.x = LastStepParticle(i, 5);
+            this->ParticlePlumes[i].Position2D.y = LastStepParticle(i, 6);
+            this->ParticlePlumes[i].ElementID = LastStepParticle(i, 4);
+            this->ParticlePlumes[i].IfReachOutletPlane = (LastStepParticle(i, 3) == 0 ? false : true);
+        };
+
+        MatrixXd delta_T_b, Dispersion_local_b;
+        M1.ReadMat(ParticlePosition, "Delta_T",
+                   delta_T_b);
+        M1.ReadMat(ParticlePosition, "Dispersion_local",
+                   Dispersion_local_b);
+
+        T delta_T_ = (T)delta_T_b(0, 0),
+          Dispersion_local = (T)Dispersion_local_b(0, 0);
+
+        this->ParticleMovement(seed, ExistingNumsteps + 1, NumTimeStep,
+                               delta_T_, Dispersion_local,
+                               Particle_mode,
+                               Injection_mode,
+                               Fracs, mesh, fem, outletcoordinate);
     };
 
     void ParticleMovement(unsigned long seed,
+                          const int &init_NO_STEP,
                           const int &NumTimeStep,
                           T delta_T_,
                           T Dispersion_local,
+                          const string &Particle_mode,
+                          const string &Injection_mode,
                           thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
                           cuDFNsys::Mesh<T> mesh,
                           const cuDFNsys::MHFEM<T> &fem,
                           T outletcoordinate)
     {
+
         thrust::device_vector<cuDFNsys::Particle<T>> ParticlePlumes_DEV = this->ParticlePlumes;
         thrust::device_vector<cuDFNsys::Fracture<T>> Fracsvec_DEV = Fracs;
         thrust::device_vector<cuDFNsys::EdgeToEle> EdgesSharedEle_vec_dev = this->EdgesSharedEle;
@@ -86,13 +154,17 @@ public:
         cuDFNsys::EleCoor<T> *Coordinate2D_Vec_dev_ptr = thrust::raw_pointer_cast(Coordinate2D_Vec_dev.data());
         cuDFNsys::NeighborEle *NeighborEleOfOneEle_dev_ptr = thrust::raw_pointer_cast(NeighborEleOfOneEle_dev.data());
 
-        bool errors = false;
-        for (uint i = 1; i <= NumTimeStep; ++i)
+        for (uint i = init_NO_STEP; i <= NumTimeStep + init_NO_STEP; ++i)
         {
+            thrust::host_vector<uint> Particle_runtime_error(this->ParticlePlumes.size(), 0);
+            thrust::device_vector<uint> Particle_runtime_error_dev = Particle_runtime_error;
+            uint *Particle_runtime_error_dev_pnt = thrust::raw_pointer_cast(Particle_runtime_error_dev.data());
+
             time_t t;
             time(&t);
 
             cout << "The Step " << i << endl;
+            double istart_b = cuDFNsys::CPUSecond();
             ParticleMovementOneTimeStepGPUKernel<T><<<this->NumParticles / 256 + 1, 256>>>((unsigned long)t + (unsigned long)(i * 100),
                                                                                            delta_T_,
                                                                                            Dispersion_local,
@@ -108,37 +180,60 @@ public:
                                                                                            NumParticles,
                                                                                            mesh.Element3D.size(),
                                                                                            i,
-                                                                                           errors);
+                                                                                           Particle_runtime_error_dev_pnt);
             cudaDeviceSynchronize();
+            Particle_runtime_error = Particle_runtime_error_dev;
+
+            double ielaps_b = cuDFNsys::CPUSecond() - istart_b;
+
+            uint sum = thrust::reduce(Particle_runtime_error.begin(), Particle_runtime_error.end(), (uint)0, thrust::plus<uint>());
+            if (sum != 0)
+                throw cuDFNsys::ExceptionsPause("Error happens when particle is moving!\n");
+
             this->ParticlePlumes = ParticlePlumes_DEV;
+            double istart = cuDFNsys::CPUSecond();
+
+            int NumReachedParticle = thrust::count_if(this->ParticlePlumes.begin(),
+                                                      this->ParticlePlumes.end(),
+                                                      cuDFNsys::PredicateNumOfReachedOutletParticles<T>());
+            double ielaps = cuDFNsys::CPUSecond() - istart;
+            cout << NumReachedParticle << "/" << this->ParticlePlumes.size() << " reached outlet plane, running time: " << ielaps_b << "; counting time: " << ielaps << "s\n";
             this->OutputParticleInfoStepByStep(ParticlePosition, i,
+                                               delta_T_,
+                                               Dispersion_local,
+                                               Particle_mode,
+                                               Injection_mode,
                                                Fracs, mesh);
-            if (errors == true)
-            {
-                cout << "error step\n";
-                return;
-            }
-            // if (ParticlePlumes[0].IfReachOutletPlane == true)
-            // {
-            //     cout << "step " << i << endl;
-            // }
-            cout << "\n\n";
+
+            cout << "\n";
         }
     };
 
     void OutputParticleInfoStepByStep(const string &mat_key,
                                       const uint &StepNO,
+                                      const T delta_T,
+                                      const T Dispersion_local,
+                                      const string &Particle_mode,
+                                      const string &Injection_mode,
                                       thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
                                       cuDFNsys::Mesh<T> mesh)
     {
         cuDFNsys::MatlabAPI M1;
 
-        string mode = "u";
         if (StepNO == 0)
-            mode = "w";
+        {
+            M1.WriteMatString(mat_key, "w", Particle_mode, "Particle_mode");
+            M1.WriteMatString(mat_key, "u", Injection_mode, "Injection_mode");
+            T po[1] = {delta_T};
+            M1.WriteMat(mat_key, "u", 1,
+                        1, 1, po, "Delta_T");
+            po[0] = {Dispersion_local};
+            M1.WriteMat(mat_key, "u", 1,
+                        1, 1, po, "Dispersion_local");
+        }
 
         T *particle_position_3D;
-        particle_position_3D = new T[this->NumParticles * 3];
+        particle_position_3D = new T[this->NumParticles * 7];
         if (particle_position_3D == NULL)
         {
             string AS = "Alloc error in ParticleTransport::OutputParticleInfoStepByStep\n";
@@ -166,9 +261,14 @@ public:
             particle_position_3D[i] = tmpPos.x;
             particle_position_3D[i + this->NumParticles] = tmpPos.y;
             particle_position_3D[i + this->NumParticles * 2] = tmpPos.z;
+            particle_position_3D[i + this->NumParticles * 3] = (this->ParticlePlumes[i].IfReachOutletPlane == false ? 0 : 1);
+            particle_position_3D[i + this->NumParticles * 4] = this->ParticlePlumes[i].ElementID;
+            particle_position_3D[i + this->NumParticles * 5] = this->ParticlePlumes[i].Position2D.x;
+            particle_position_3D[i + this->NumParticles * 6] = this->ParticlePlumes[i].Position2D.y;
         }
-        M1.WriteMat(mat_key, mode, this->NumParticles * 3,
-                    this->NumParticles, 3, particle_position_3D, "particle_position_3D_step_" + to_string(StepNO));
+        M1.WriteMat(mat_key, "u", this->NumParticles * 7,
+                    this->NumParticles, 7, particle_position_3D,
+                    "particle_position_3D_step_" + to_string(StepNO));
         delete[] particle_position_3D;
         particle_position_3D = NULL;
 
@@ -367,48 +467,49 @@ private:
 
     void InitilizeParticles(const int &NumOfParticles,
                             cuDFNsys::Mesh<T> mesh,
-                            const cuDFNsys::MHFEM<T> &fem)
+                            const cuDFNsys::MHFEM<T> &fem,
+                            const string &Injection_mode)
     {
-        ////////////
-        // this->ParticlePlumes.resize(1);
-        // this->NumParticles = 1; //mesh.InletEdgeNOLen.size();
-        // for (uint i = 0; i < 1; ++i)
-        // {
-        //     uint EdgeNO = (uint)mesh.InletEdgeNOLen[i].x;     // from 1
-        //     uint elementID = (EdgeNO - 1) / 3 + 1;            // from 1
-        //     uint FracID = mesh.ElementFracTag[elementID - 1]; // from 0
-        //     uint LocalEdgeNO = (EdgeNO - 1) % 3;
-        //     float2 position_ = make_float2(0.5f * (mesh.Coordinate2D[elementID - 1].x[LocalEdgeNO] + mesh.Coordinate2D[elementID - 1].x[(LocalEdgeNO + 1) % 3]),
-        //                                    0.5f * (mesh.Coordinate2D[elementID - 1].y[LocalEdgeNO] + mesh.Coordinate2D[elementID - 1].y[(LocalEdgeNO + 1) % 3]));
-        //     // move the position a little toward to the interior of grid
-        //     {
-        //         float2 inwardNormal = make_float2(-(mesh.Coordinate2D[elementID - 1].y[(LocalEdgeNO + 1) % 3] - mesh.Coordinate2D[elementID - 1].y[LocalEdgeNO]),
-        //                                           mesh.Coordinate2D[elementID - 1].x[(LocalEdgeNO + 1) % 3] - mesh.Coordinate2D[elementID - 1].x[LocalEdgeNO]);
-        //         float norm_inward = sqrt(inwardNormal.x * inwardNormal.x + inwardNormal.y * inwardNormal.y);
-        //         inwardNormal.x /= norm_inward;
-        //         inwardNormal.y /= norm_inward;
-        //         position_.x += (inwardNormal.x * 1e-5);
-        //         position_.y += (inwardNormal.y * 1e-5);
-        //     };
-        //     cuDFNsys::Particle tmpP;
-        //     tmpP.ElementID = elementID;
-        //     tmpP.Position2D = position_;
-        //     ParticlePlumes[0] = tmpP;
-        // };
-        // return;
-        //
+        thrust::host_vector<uint> NumParticlesEachEdge(mesh.InletEdgeNOLen.size(), 0);
 
-        thrust::host_vector<uint> NumParticlesEachEdge(mesh.InletEdgeNOLen.size());
+        if (Injection_mode == "Flux-weighted" || Injection_mode == "Resident")
+            for (size_t i = 0; i < mesh.InletEdgeNOLen.size(); ++i)
+            {
+                uint EdgeNO = (uint)mesh.InletEdgeNOLen[i].x;
+                T length_ = mesh.InletEdgeNOLen[i].y;
 
-        for (size_t i = 0; i < mesh.InletEdgeNOLen.size(); ++i)
+                if (Injection_mode == "Flux-weighted")
+                {
+
+                    T proportion_ = abs(fem.VelocityNormalScalarSepEdges(EdgeNO - 1, 0)) * length_ / fem.QIn;
+                    /// flux-weighted
+
+                    NumParticlesEachEdge[i] = (uint)round(proportion_ * NumOfParticles);
+                }
+                else if (Injection_mode == "Resident")
+                {
+                    // uniform
+                    T proportion_ = abs(length_ / fem.InletLength);
+                    NumParticlesEachEdge[i] = (uint)round(proportion_ * NumOfParticles);
+                }
+            }
+        else if (Injection_mode == "Point")
         {
-            uint EdgeNO = (uint)mesh.InletEdgeNOLen[i].x;
-            T length_ = mesh.InletEdgeNOLen[i].y;
-
-            T proportion_ = abs(fem.VelocityNormalScalarSepEdges(EdgeNO - 1, 0)) * length_ / fem.QIn;
-
-            NumParticlesEachEdge[i] = (uint)round(proportion_ * NumOfParticles);
+            int a;
+            srand((unsigned)time(NULL));
+            //cout << "NumOfParticles: " << NumOfParticles << endl;
+            for (uint i = 0; i < 100; ++i)
+            {
+                a = rand() % (int)mesh.InletEdgeNOLen.size();
+                //printf("a = %d\n", a);
+                uint EdgeNO = (uint)mesh.InletEdgeNOLen[a].x;
+                if (fem.VelocityNormalScalarSepEdges(EdgeNO - 1, 0) < 0)
+                    NumParticlesEachEdge[a] = NumOfParticles;
+                break;
+            }
         }
+        else
+            throw cuDFNsys::ExceptionsPause("Undefined particle injection mode!\n");
 
         this->NumParticles = 0;
         for (size_t i = 0; i < NumParticlesEachEdge.size(); ++i)

@@ -47,7 +47,7 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
                                                      int count,
                                                      int numElements,
                                                      uint stepNO,
-                                                     bool &error_happens)
+                                                     uint *Particle_runtime_error_dev_pnt)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -57,8 +57,8 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
-    // P_DEV[i].ElementID = 6982;
-    // P_DEV[i].Position2D = cuDFNsys::MakeVector2<T>(-1.8239199999999999857180910112219862639904, 0.7219200000000000061461946643248666077852);
+    /// P_DEV[i].ElementID = 1697;
+    /// P_DEV[i].Position2D = cuDFNsys::MakeVector2<T>(-0.3724700000000000232880381645372835919261, 1.5858099999999999418776042148238047957420);
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
@@ -84,12 +84,12 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
-    // bool IfTargPosInGrid_yy = cuDFNsys::IfPntInside2DConvexPoly<T>(InitPos, Vertex_Triangle_ForVelocity, 3);
-    // if (!IfTargPosInGrid_yy)
-    // {
-    //     printf("not inside~\n");
-    //     return;
-    // }
+    /// bool IfTargPosInGrid_yy = cuDFNsys::IfPntInside2DConvexPoly<T>(InitPos, Vertex_Triangle_ForVelocity, 3);
+    /// if (!IfTargPosInGrid_yy)
+    /// {
+    ///     printf("not inside~\n");
+    ///     return;
+    /// }
     //
     //printf("velocity 2D: %.40f, %.40f\n", Veloc_p.x, Veloc_p.y);
 
@@ -117,8 +117,7 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
-    //TargPos.x = -1.8203499999999999126032435015076771378517;
-    //TargPos.y = 0.7195399999999999574029629911819938570261;
+    /// TargPos = cuDFNsys::MakeVector2<T>(-0.3752199999999999979749532030837144702673, 1.5814299999999998913580157022806815803051);
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
@@ -505,6 +504,11 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
                 InitPos = IntersectionOnCrossedEdge;
                 TargPos = cuDFNsys::ParticleReflection<T>(TargPos, EdgeSeg_II[0], EdgeSeg_II[1]);
 
+                CrossedGlobalEdge[0][0] = EdgeSeg_II[0];
+                CrossedGlobalEdge[0][1] = EdgeSeg_II[1];
+
+                CountCrossedGlobalEdge = 1;
+
                 continue;
             };
 
@@ -578,7 +582,7 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
             ///------------------ d2 is a directional vector on the designed next element and perpendicular to rotation axis
             cuDFNsys::Vector3<T> d1, d2;
             //----------------------------------------------------------------------------------------------------------
-            //printf("PreEleID: %d, EleID: %d, designed_next_EleID: %d\n", PreEleID, EleID, designed_next_EleID);
+            // printf("PreEleID: %d, EleID: %d, designed_next_EleID: %d\n", PreEleID, EleID, designed_next_EleID);
             T angle_ = cuDFNsys::AngleBetweenTwoNeighboringTriangles<T>(designed_element, next_element, localedgeno_ppp, IndexLocal, d1, d2);
 
             cuDFNsys::Vector3<T> Target3D = cuDFNsys::MakeVector3(TargPos.x, TargPos.y, (T)0.0f);
@@ -693,7 +697,7 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
                        Vertex_Triangle_PPP[2].x, Vertex_Triangle_PPP[2].y);
             }
         };
-        error_happens = true;
+        Particle_runtime_error_dev_pnt[i] = 1;
         return;
     }
 
@@ -749,7 +753,7 @@ template __global__ void ParticleMovementOneTimeStepGPUKernel<double>(unsigned l
                                                                       double outletcoordinate,
                                                                       int count,
                                                                       int numElements,
-                                                                      uint stepNO, bool &error_happens);
+                                                                      uint stepNO, uint *Particle_runtime_error_dev_pnt);
 template __global__ void ParticleMovementOneTimeStepGPUKernel<float>(unsigned long seed,
                                                                      float delta_T_,
                                                                      float Dispersion_local,
@@ -764,5 +768,5 @@ template __global__ void ParticleMovementOneTimeStepGPUKernel<float>(unsigned lo
                                                                      float outletcoordinate,
                                                                      int count,
                                                                      int numElements,
-                                                                     uint stepNO, bool &error_happens);
+                                                                     uint stepNO, uint *Particle_runtime_error_dev_pnt);
 }; // namespace cuDFNsys

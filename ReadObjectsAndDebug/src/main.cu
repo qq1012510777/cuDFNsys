@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 
         int dev = 0;
         GPUErrCheck(cudaSetDevice(dev));
-        
+
         time_t t;
         time(&t);
 
@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 
         thrust::host_vector<cuDFNsys::Fracture<_DataType_>> Frac_verts_host;
         thrust::device_vector<cuDFNsys::Fracture<_DataType_>> Frac_verts_device;
-        
+
         cuDFNsys::InputObjectData<_DataType_> lk;
         lk.InputFractures("Fractures.h5", Frac_verts_host);
 
@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
                                                          Frac_verts_host,
                                                          Intersection_map};
             cout << "meshing ..." << endl;
-            cuDFNsys::Mesh<_DataType_> mesh;  
+            cuDFNsys::Mesh<_DataType_> mesh;
 
             lk.InputMesh("mesh.h5", mesh, &Fracs_percol);
 
@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
             mesh.MatlabPlot("DFN_mesh_" + to_string(i + 1) + ".mat",
                             "DFN_mesh_" + to_string(i + 1) + ".m",
                             Frac_verts_host, L, true, true);
-       
+
             cout << "MHFEM ing ..." << endl;
 
             cuDFNsys::MHFEM<_DataType_> fem{mesh, Frac_verts_host, 100, 20, perco_dir, L};
@@ -144,7 +144,8 @@ int main(int argc, char *argv[])
                                                       atoi(argv[2]),             // number of time steps
                                                       (_DataType_)atof(argv[3]), // delta T
                                                       (_DataType_)atof(argv[4]), // molecular diffusion
-                                                      Frac_verts_host, mesh, fem, (uint)perco_dir, -0.5f * L};
+                                                      Frac_verts_host, mesh, fem, (uint)perco_dir, -0.5f * L,
+                                                      "Particle_tracking", "Resident"};
             p.MatlabPlot("particle.mat", "particle.m", mesh, fem, L);
         }
         //cudaDeviceReset();

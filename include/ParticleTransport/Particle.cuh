@@ -9,8 +9,8 @@
 // AUTHOR:            Tingchang YIN
 ///////////////////////////////////////////////////////////////////
 #pragma once
-#include "../GlobalDef/GlobalDef.cuh"
 #include "../DataTypeSelector/DataTypeSelector.cuh"
+#include "../GlobalDef/GlobalDef.cuh"
 
 namespace cuDFNsys
 {
