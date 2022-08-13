@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
         //_DataType_ minGrid = 0;
         //_DataType_ maxGrid = 0;
 
-        DSIZE = 150;
+        DSIZE = 0;
         L = 30;
 
         cuDFNsys::Warmup<<<DSIZE / 256 + 1, 256 /*  1, 2*/>>>();
@@ -47,6 +47,7 @@ int main(int argc, char *argv[])
 
         cuDFNsys::InputObjectData<_DataType_> lk;
         lk.InputFractures("Fractures.h5", Frac_verts_host);
+        DSIZE = Frac_verts_host.size();
 
         Frac_verts_device = Frac_verts_host;
         cuDFNsys::Fracture<_DataType_> *Frac_verts_device_ptr;
@@ -142,7 +143,7 @@ int main(int argc, char *argv[])
             cuDFNsys::ParticleTransport<_DataType_> p{(unsigned long)t,
                                                       atoi(argv[1]), // number of particle
                                                       Frac_verts_host, mesh, fem, (uint)perco_dir, -0.5f * L};
-            p.MatlabPlot("particle.mat", "particle.m", mesh, fem, L);
+            p.MatlabPlot("MHFEM_" + to_string(i + 1) + ".mat", "particle.m", mesh, fem, L);
         }
         //cudaDeviceReset();
         double ielaps = cuDFNsys::CPUSecond() - istart;

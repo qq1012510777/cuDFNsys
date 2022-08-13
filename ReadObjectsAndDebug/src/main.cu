@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
                                                       (_DataType_)atof(argv[4]), // molecular diffusion
                                                       Frac_verts_host, mesh, fem, (uint)perco_dir, -0.5f * L,
                                                       "Particle_tracking", "Resident"};
-            p.MatlabPlot("particle.mat", "particle.m", mesh, fem, L);
+            p.MatlabPlot("MHFEM_" + to_string(i + 1) + ".mat", "particle.m", mesh, fem, L);
         }
         //cudaDeviceReset();
         double ielaps = cuDFNsys::CPUSecond() - istart;

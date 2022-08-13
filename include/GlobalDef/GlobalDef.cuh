@@ -42,5 +42,5 @@ using namespace std;
 __device__ const float _TOL_ParticleOnGridBound = 1e-3;
 
 const uint _NumOfSharedEleAtMost = 4;
-const uint _NumOfNeighborEleAtMost = 50;
+const uint _NumOfNeighborEleAtMost = 80;
 const uint _ParTran_MaxLoopTimes = 20;

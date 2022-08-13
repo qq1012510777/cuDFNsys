@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
         float minGrid = 0;
         float maxGrid = 0;
 
-        DSIZE = 150;
+        DSIZE = 180;
         L = 30;
 
         int perco_dir = 2;
@@ -155,7 +155,7 @@ int main(int argc, char *argv[])
                                                       (_DataType_)atof(argv[4]), // molecular diffusion
                                                       Frac_verts_host, mesh, fem, (uint)perco_dir, -0.5f * L,
                                                       "Particle_tracking", "Flux-weighted"};
-            p.MatlabPlot("particle.mat", "particle.m", mesh, fem, L);
+            p.MatlabPlot("MHFEM_" + to_string(i + 1) + ".mat", "particle.m", mesh, fem, L);
         }
         //cudaDeviceReset();
         double ielaps = cuDFNsys::CPUSecond() - istart;

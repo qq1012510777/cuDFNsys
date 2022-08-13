@@ -32,7 +32,7 @@ public:
     uint Dir = 2;
 
 private:
-    string ParticlePosition = "ParticlePosition.mat";
+    string ParticlePosition = "ParticlePositionResult/ParticlePosition";
 
 public:
     ParticleTransport(unsigned long seed,
@@ -84,14 +84,15 @@ public:
         this->IdentifyNeighborElements(mesh);
 
         MatrixXd PreNumSteps;
-        M1.ReadMat(ParticlePosition, "NumOfSteps", PreNumSteps);
+        string matfile = ParticlePosition + "_step_" + cuDFNsys::ToStringWithWidth(0, 7) + ".mat";
+        M1.ReadMat(matfile, "NumOfSteps", PreNumSteps);
         uint ExistingNumsteps = (uint)PreNumSteps(0, 0);
 
-        string Particle_mode = M1.ReadMatString(ParticlePosition, "Particle_mode");
-        string Injection_mode = M1.ReadMatString(ParticlePosition, "Injection_mode");
+        string Particle_mode = M1.ReadMatString(matfile, "Particle_mode");
+        string Injection_mode = M1.ReadMatString(matfile, "Injection_mode");
 
         MatrixXd LastStepParticle;
-        M1.ReadMat(ParticlePosition, "particle_position_3D_step_" + std::to_string(ExistingNumsteps),
+        M1.ReadMat(ParticlePosition + "_step_" + cuDFNsys::ToStringWithWidth(ExistingNumsteps, 7) + ".mat", "particle_position_3D_step_" + std::to_string(ExistingNumsteps),
                    LastStepParticle);
 
         this->NumParticles = LastStepParticle.rows();
@@ -105,14 +106,14 @@ public:
         };
 
         MatrixXd delta_T_b, Dispersion_local_b;
-        M1.ReadMat(ParticlePosition, "Delta_T",
+        M1.ReadMat(matfile, "Delta_T",
                    delta_T_b);
-        M1.ReadMat(ParticlePosition, "Dispersion_local",
+        M1.ReadMat(matfile, "Dispersion_local",
                    Dispersion_local_b);
 
         T delta_T_ = (T)delta_T_b(0, 0),
           Dispersion_local = (T)Dispersion_local_b(0, 0);
-
+        
         this->ParticleMovement(seed, ExistingNumsteps + 1, NumTimeStep,
                                delta_T_, Dispersion_local,
                                Particle_mode,
@@ -209,7 +210,7 @@ public:
         }
     };
 
-    void OutputParticleInfoStepByStep(const string &mat_key,
+    void OutputParticleInfoStepByStep(const string &mat_key_r,
                                       const uint &StepNO,
                                       const T delta_T,
                                       const T Dispersion_local,
@@ -219,6 +220,8 @@ public:
                                       cuDFNsys::Mesh<T> mesh)
     {
         cuDFNsys::MatlabAPI M1;
+
+        string mat_key = mat_key_r + "_step_" + cuDFNsys::ToStringWithWidth(StepNO, 7) + ".mat";
 
         if (StepNO == 0)
         {
@@ -231,6 +234,10 @@ public:
             M1.WriteMat(mat_key, "u", 1,
                         1, 1, po, "Dispersion_local");
         }
+
+        uint Step[1] = {StepNO};
+        M1.WriteMat(mat_key_r + "_step_" + cuDFNsys::ToStringWithWidth(0, 7) + ".mat", "u", 1,
+                    1, 1, Step, "NumOfSteps");
 
         T *particle_position_3D;
         particle_position_3D = new T[this->NumParticles * 7];
@@ -266,15 +273,17 @@ public:
             particle_position_3D[i + this->NumParticles * 5] = this->ParticlePlumes[i].Position2D.x;
             particle_position_3D[i + this->NumParticles * 6] = this->ParticlePlumes[i].Position2D.y;
         }
-        M1.WriteMat(mat_key, "u", this->NumParticles * 7,
+
+        string mode = "w";
+
+        if (StepNO == 0)
+            mode = "u";
+
+        M1.WriteMat(mat_key, mode, this->NumParticles * 7,
                     this->NumParticles, 7, particle_position_3D,
                     "particle_position_3D_step_" + to_string(StepNO));
         delete[] particle_position_3D;
         particle_position_3D = NULL;
-
-        uint Step[1] = {StepNO};
-        M1.WriteMat(mat_key, "u", 1,
-                    1, 1, Step, "NumOfSteps");
     };
 
     void MatlabPlot(const string &mat_key,
@@ -283,99 +292,119 @@ public:
                     const cuDFNsys::MHFEM<T> &fem,
                     const T &L)
     {
-        cuDFNsys::MatlabAPI M1;
-
-        size_t node_num = mesh.Coordinate3D.size();
-
-        T *ptr_coordinates_3D;
-        ptr_coordinates_3D = new T[node_num * 3];
-
-        if (ptr_coordinates_3D == NULL)
-        {
-            string AS = "Alloc error in ParticleTransport::MatlabPlot\n";
-            throw cuDFNsys::ExceptionsPause(AS);
-        }
-
-        for (size_t i = 0; i < node_num; ++i)
-        {
-            ptr_coordinates_3D[i] = mesh.Coordinate3D[i].x;
-            ptr_coordinates_3D[i + node_num] = mesh.Coordinate3D[i].y;
-            ptr_coordinates_3D[i + node_num * 2] = mesh.Coordinate3D[i].z;
-        }
-        M1.WriteMat(mat_key, "w", node_num * 3,
-                    node_num, 3, ptr_coordinates_3D, "coordinate_3D");
-
-        delete[] ptr_coordinates_3D;
-        ptr_coordinates_3D = NULL;
-
-        //---------------------
-        size_t ele_num = mesh.Element3D.size();
-        T *ptr_element_3D = new T[ele_num * 3];
-        if (ptr_element_3D == NULL)
-        {
-            string AS = "Alloc error in ParticleTransport::MatlabPlot\n";
-            throw cuDFNsys::ExceptionsPause(AS);
-        }
-
-        for (size_t i = 0; i < ele_num; ++i)
-        {
-            ptr_element_3D[i] = mesh.Element3D[i].x;
-            ptr_element_3D[i + ele_num] = mesh.Element3D[i].y;
-            ptr_element_3D[i + ele_num * 2] = mesh.Element3D[i].z;
-        }
-        M1.WriteMat(mat_key, "u", ele_num * 3,
-                    ele_num, 3, ptr_element_3D, "element_3D");
-
-        delete[] ptr_element_3D;
-        ptr_element_3D = NULL;
-        //--------------------------
-
-        T *pressure_ELEs = new T[ele_num];
-        if (pressure_ELEs == NULL)
-        {
-            string AS = "Alloc error in ParticleTransport::MatlabPlot\n";
-            throw cuDFNsys::ExceptionsPause(AS);
-        }
-
-        std::copy(fem.PressureEles.data(),
-                  fem.PressureEles.data() + ele_num,
-                  pressure_ELEs);
-
-        M1.WriteMat(mat_key, "u", ele_num,
-                    ele_num, 1, pressure_ELEs,
-                    "pressure_eles");
-
-        delete[] pressure_ELEs;
-        pressure_ELEs = NULL;
+        // cuDFNsys::MatlabAPI M1;
+        //
+        // size_t node_num = mesh.Coordinate3D.size();
+        //
+        // T *ptr_coordinates_3D;
+        // ptr_coordinates_3D = new T[node_num * 3];
+        //
+        // if (ptr_coordinates_3D == NULL)
+        // {
+        //     string AS = "Alloc error in ParticleTransport::MatlabPlot\n";
+        //     throw cuDFNsys::ExceptionsPause(AS);
+        // }
+        //
+        // for (size_t i = 0; i < node_num; ++i)
+        // {
+        //     ptr_coordinates_3D[i] = mesh.Coordinate3D[i].x;
+        //     ptr_coordinates_3D[i + node_num] = mesh.Coordinate3D[i].y;
+        //     ptr_coordinates_3D[i + node_num * 2] = mesh.Coordinate3D[i].z;
+        // }
+        // M1.WriteMat(mat_key, "w", node_num * 3,
+        //             node_num, 3, ptr_coordinates_3D, "coordinate_3D");
+        //
+        // delete[] ptr_coordinates_3D;
+        // ptr_coordinates_3D = NULL;
+        //
+        // //---------------------
+        // size_t ele_num = mesh.Element3D.size();
+        // T *ptr_element_3D = new T[ele_num * 3];
+        // if (ptr_element_3D == NULL)
+        // {
+        //     string AS = "Alloc error in ParticleTransport::MatlabPlot\n";
+        //     throw cuDFNsys::ExceptionsPause(AS);
+        // }
+        //
+        // for (size_t i = 0; i < ele_num; ++i)
+        // {
+        //     ptr_element_3D[i] = mesh.Element3D[i].x;
+        //     ptr_element_3D[i + ele_num] = mesh.Element3D[i].y;
+        //     ptr_element_3D[i + ele_num * 2] = mesh.Element3D[i].z;
+        // }
+        // M1.WriteMat(mat_key, "u", ele_num * 3,
+        //             ele_num, 3, ptr_element_3D, "element_3D");
+        //
+        // delete[] ptr_element_3D;
+        // ptr_element_3D = NULL;
+        // //--------------------------
+        //
+        // T *pressure_ELEs = new T[ele_num];
+        // if (pressure_ELEs == NULL)
+        // {
+        //     string AS = "Alloc error in ParticleTransport::MatlabPlot\n";
+        //     throw cuDFNsys::ExceptionsPause(AS);
+        // }
+        //
+        // std::copy(fem.PressureEles.data(),
+        //           fem.PressureEles.data() + ele_num,
+        //           pressure_ELEs);
+        //
+        // M1.WriteMat(mat_key, "u", ele_num,
+        //             ele_num, 1, pressure_ELEs,
+        //             "pressure_eles");
+        //
+        // delete[] pressure_ELEs;
+        // pressure_ELEs = NULL;
         //----------------------------------
 
         std::ofstream oss(command_key, ios::out);
-        oss << "clc;\nclose all;\nclear all;\n";
+        oss << "clc;\nclose all;\nclear all;\ncurrentPath = fileparts(mfilename('fullpath'));\n";
         oss << "load('" << mat_key << "');\n";
         oss << "L = 0.5 * " << L << ";\n";
         oss << "cube_frame = [-L, -L, L; -L, L, L; L, L, L; L -L, L; -L, -L, -L; -L, L, -L; L, L, -L; L -L, -L; -L, L, L; -L, L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L, -L; L, -L, -L; L, -L, L; L, -L, L; L, -L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L,-L; -L, L, -L; -L,L, L];\n";
         oss << "figure(1); view(3); title('DFN flow (mhfem)'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
         oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
         oss << endl;
-        oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, 'FaceVertexCData', pressure_eles, 'FaceColor', 'flat', 'EdgeAlpha', 0.9, 'facealpha', 1); colorbar; view(3); hold on\n";
+        oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, 'FaceVertexCData', pressure_eles, 'FaceColor', 'flat', 'EdgeAlpha', 0.2, 'facealpha', 0.9); colorbar; view(3); hold on\n";
         oss << "caxis([" << fem.OutletP << ", " << fem.InletP << "]);\n";
         oss << "xlim([-(0.1 * L + L), (0.1 * L + L)])\nylim([ -(0.1 * L + L), (0.1 * L + L) ])\nzlim([ -(0.1 * L + L), (0.1 * L + L) ]);hold on\n\n";
-        oss << "S = load('" << ParticlePosition << "');\n";
-        oss << "Matrx3D_pso = [];\n";
-        oss << "for i = 0:S.NumOfSteps\n";
+        oss << "S = load([currentPath, '/" << ParticlePosition << "_step_" << cuDFNsys::ToStringWithWidth(0, 7) << ".mat']);\n";
+        oss << "N_steps = S.NumOfSteps;\n";
+        oss << "N_particles = size(S.particle_position_3D_step_0, 1);\n";
+        oss << "Matrx3D_pso = zeros(N_particles, size(S.particle_position_3D_step_0, 2), N_steps + 1);\nclear S;\n";
+        oss << "for i = 0:N_steps\n";
         //oss << "\ttitle(['DFN flow (mhfem); step NO = ', num2str(i)]);\n";
+        oss << "\tS = load([currentPath, '/" << ParticlePosition << "_step_', num2str(i, '%07d'), '.mat']);\n";
         oss << "\teval(['Matrx3D_pso(:, :, i + 1) = S.particle_position_3D_step_', num2str(i), '(:, :);']);\n";
         //oss << "\teval(['p_s = scatter3(S.particle_position_3D_step_', num2str(i), '(:, 1), S.particle_position_3D_step_', num2str(i), '(:, 2), S.particle_position_3D_step_', num2str(i), '(:, 3), ''k'', ''o'', ''filled'');']);\n";
         //oss << "\tif (i == 0); pause; else; pause(0.01); end;\n";
-
+        oss << "\tclear S;\n";
         //oss << "\tif (i ~= S.NumOfSteps); delete(p_s); end\n";
         oss << "end\n";
-        oss << "N_ = S.NumOfSteps; clear S\n\n";
-        oss << "for i = 0:N_\n";
+
+        oss << "ReachedParticleNO = find(Matrx3D_pso(:, 4, N_steps) == 0);\n";
+        oss << "AK_1 = [reshape(Matrx3D_pso(:, 1, :), size(Matrx3D_pso, 1), size(Matrx3D_pso, 3))]';\n";
+        oss << "AK_2 = [reshape(Matrx3D_pso(:, 2, :), size(Matrx3D_pso, 1), size(Matrx3D_pso, 3))]';\n";
+        oss << "AK_3 = [reshape(Matrx3D_pso(:, 3, :), size(Matrx3D_pso, 1), size(Matrx3D_pso, 3))]';\n";
+        oss << "AK_1(:, ReachedParticleNO) = [];\n";
+        oss << "AK_2(:, ReachedParticleNO) = [];\n";
+        oss << "AK_3(:, ReachedParticleNO) = [];\n";
+        oss << "newcolors = rand(size(ReachedParticleNO, 1), 3);\n";
+        oss << "colororder(newcolors)\n";
+        oss << "plot3(AK_1, AK_2, AK_3, 'linewidth', 2);\n\n";
+
+        oss << "figure(2); view(3); title('DFN flow (mhfem)'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
+        oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
+        oss << endl;
+        oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, 'FaceVertexCData', pressure_eles, 'FaceColor', 'flat', 'EdgeAlpha', 0.2, 'facealpha', 0.9); colorbar; view(3); hold on\n";
+        oss << "caxis([" << fem.OutletP << ", " << fem.InletP << "]);\n";
+        oss << "xlim([-(0.1 * L + L), (0.1 * L + L)])\nylim([ -(0.1 * L + L), (0.1 * L + L) ])\nzlim([ -(0.1 * L + L), (0.1 * L + L) ]);hold on\n\n";
+        oss << "figure(2)\nfor i = 0:N_steps\n";
         oss << "\ttitle(['DFN flow (mhfem); step NO = ', num2str(i)]);\n";
         oss << "\tp_s = scatter3(Matrx3D_pso(:, 1, i + 1), Matrx3D_pso(:, 2, i + 1), Matrx3D_pso(:, 3, i + 1), 'k', 'o', 'filled');\n";
         oss << "\tif (i == 0); pause; else; pause(0.01); end;\n";
-        oss << "\tif (i ~= N_); delete(p_s); end\n";
+        oss << "\tif (i ~= N_steps); delete(p_s); end\n";
         oss << "end\n";
     };
 
