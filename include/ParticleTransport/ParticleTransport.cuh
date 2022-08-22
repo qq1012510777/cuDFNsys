@@ -14,6 +14,7 @@
 #include "ParticleMovementOneTimeStepGPUKernel.cuh"
 #include "PredicateNumOfReachedOutletParticles.cuh"
 #include <cmath>
+#include <cstdlib>
 #include <fstream>
 #include <stdio.h>
 #include <stdlib.h>
@@ -86,7 +87,7 @@ public:
         this->Dir = Dir_flow;
 
         this->IdentifyEdgesSharedEle(mesh);
-        string matfile = ParticlePosition + "_step_" + cuDFNsys::ToStringWithWidth(0, 7) + ".mat";
+        string matfile = ParticlePosition + ".h5";
         //this->IdentifyNeighborElements(mesh);
 
         std::ifstream file(matfile);
@@ -96,42 +97,79 @@ public:
         {
             cout << "\n\e[1;32mContinue to perform particle transport\e[0m\n\n";
 
-            MatrixXd PreNumSteps;
+            cuDFNsys::HDF5API h5g;
+            vector<double> Tem_p = h5g.ReadDataset(matfile, "N", "NumOfSteps");
+            uint ExistingNumsteps = (uint)Tem_p[0];
 
-            M1.ReadMat(matfile, "NumOfSteps", PreNumSteps);
-            uint ExistingNumsteps = (uint)PreNumSteps(0, 0);
+            string Particle_mode = h5g.ReadDatasetString(matfile, "N", "Particle_mode");
+            string Injection_mode = h5g.ReadDatasetString(matfile, "N", "Injection_mode");
 
-            string Particle_mode = M1.ReadMatString(matfile, "Particle_mode");
-            string Injection_mode = M1.ReadMatString(matfile, "Injection_mode");
-
-            MatrixXd LastStepParticle;
-            M1.ReadMat(ParticlePosition + "_step_" + cuDFNsys::ToStringWithWidth(ExistingNumsteps, 7) + ".mat", "particle_position_3D_step_" + std::to_string(ExistingNumsteps),
-                       LastStepParticle);
-
-            this->NumParticles = LastStepParticle.rows();
+            vector<double> LastStepParticle = h5g.ReadDataset(matfile, "N", "Step_" + cuDFNsys::ToStringWithWidth(ExistingNumsteps, 10));
+            this->NumParticles = LastStepParticle.size() / 7;
             this->ParticlePlumes.resize(this->NumParticles);
-            for (uint i = 0; i < this->NumParticles; ++i)
+
+            for (uint i = 0; i < this->NumParticles; i++)
             {
-                this->ParticlePlumes[i].Position2D.x = LastStepParticle(i, 5);
-                this->ParticlePlumes[i].Position2D.y = LastStepParticle(i, 6);
-                this->ParticlePlumes[i].ElementID = LastStepParticle(i, 4);
-                this->ParticlePlumes[i].IfReachOutletPlane = (LastStepParticle(i, 3) == 0 ? false : true);
-            };
+                this->ParticlePlumes[i].Position2D.x = LastStepParticle[i + this->NumParticles * 5];
+                this->ParticlePlumes[i].Position2D.y = LastStepParticle[i + this->NumParticles * 6];
+                this->ParticlePlumes[i].ElementID = LastStepParticle[i + this->NumParticles * 4];
+                this->ParticlePlumes[i].IfReachOutletPlane = (LastStepParticle[i + this->NumParticles * 3] == 0 ? false : true);
+                // cout << this->ParticlePlumes[i].Position2D.x << ", ";
+                // cout << this->ParticlePlumes[i].Position2D.y << ", ";
+                // cout << this->ParticlePlumes[i].ElementID << ", ";
+                // cout << this->ParticlePlumes[i].IfReachOutletPlane << endl;
+            }
 
-            MatrixXd delta_T_b, Dispersion_local_b;
-            M1.ReadMat(matfile, "Delta_T",
-                       delta_T_b);
-            M1.ReadMat(matfile, "Dispersion_local",
-                       Dispersion_local_b);
-
-            T delta_T_ = (T)delta_T_b(0, 0),
-              Dispersion_local = (T)Dispersion_local_b(0, 0);
+            Tem_p = h5g.ReadDataset(matfile, "N", "Delta_T");
+            T delta_T_ = (T)Tem_p[0];
+            Tem_p = h5g.ReadDataset(matfile, "N", "Dispersion_local");
+            T Dispersion_local = (T)Tem_p[0];
 
             this->ParticleMovement(seed, ExistingNumsteps + 1, NumTimeStep,
                                    delta_T_, Dispersion_local,
                                    Particle_mode,
                                    Injection_mode,
                                    Fracs, mesh, fem, outletcoordinate);
+
+            ///////
+            ///////
+            ///////
+            //MatrixXd PreNumSteps;
+            //
+            //M1.ReadMat(matfile, "NumOfSteps", PreNumSteps);
+            //uint ExistingNumsteps = (uint)PreNumSteps(0, 0);
+            //
+            //string Particle_mode = M1.ReadMatString(matfile, "Particle_mode");
+            //string Injection_mode = M1.ReadMatString(matfile, "Injection_mode");
+            //
+            //MatrixXd LastStepParticle;
+            //M1.ReadMat(ParticlePosition + "_step_" + cuDFNsys::ToStringWithWidth(ExistingNumsteps, 7) + ".mat", "particle_position_3D_step_" + std::to_string(ExistingNumsteps),
+            //           LastStepParticle);
+            //
+            //this->NumParticles = LastStepParticle.rows();
+            //this->ParticlePlumes.resize(this->NumParticles);
+            //for (uint i = 0; i < this->NumParticles; ++i)
+            //{
+            //    this->ParticlePlumes[i].Position2D.x = LastStepParticle(i, 5);
+            //    this->ParticlePlumes[i].Position2D.y = LastStepParticle(i, 6);
+            //    this->ParticlePlumes[i].ElementID = LastStepParticle(i, 4);
+            //    this->ParticlePlumes[i].IfReachOutletPlane = (LastStepParticle(i, 3) == 0 ? false : true);
+            //};
+            //
+            //MatrixXd delta_T_b, Dispersion_local_b;
+            //M1.ReadMat(matfile, "Delta_T",
+            //           delta_T_b);
+            //M1.ReadMat(matfile, "Dispersion_local",
+            //           Dispersion_local_b);
+            //
+            //T delta_T_ = (T)delta_T_b(0, 0),
+            //  Dispersion_local = (T)Dispersion_local_b(0, 0);
+            //
+            //this->ParticleMovement(seed, ExistingNumsteps + 1, NumTimeStep,
+            //                       delta_T_, Dispersion_local,
+            //                       Particle_mode,
+            //                       Injection_mode,
+            //                       Fracs, mesh, fem, outletcoordinate);
         }
         else
         {
@@ -259,25 +297,38 @@ public:
                                       thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
                                       cuDFNsys::Mesh<T> mesh)
     {
-        cuDFNsys::MatlabAPI M1;
 
-        string mat_key = mat_key_r + "_step_" + cuDFNsys::ToStringWithWidth(StepNO, 7) + ".mat";
+        cuDFNsys::HDF5API h5g;
 
+        string mat_key = mat_key_r + ".h5";
+
+        uint2 dim_scalar = make_uint2(1, 1);
         if (StepNO == 0)
         {
-            M1.WriteMatString(mat_key, "w", Particle_mode, "Particle_mode");
-            M1.WriteMatString(mat_key, "u", Injection_mode, "Injection_mode");
+            std::ifstream file("ParticlePositionResult");
+            bool pwq = file.good();
+
+            if (!pwq)
+            {
+                const int dir_err = system("mkdir -p ./ParticlePositionResult");
+                if (-1 == dir_err)
+                    throw cuDFNsys::ExceptionsPause("Error creating directory of 'ParticlePositionResult'!\n");
+            }
+
+            h5g.NewFile(mat_key);
+            h5g.AddDatasetString(mat_key, "N", "Particle_mode", Particle_mode);
+            h5g.AddDatasetString(mat_key, "N", "Injection_mode", Injection_mode);
             T po[1] = {delta_T};
-            M1.WriteMat(mat_key, "u", 1,
-                        1, 1, po, "Delta_T");
+            h5g.AddDataset(mat_key, "N", "Delta_T", po, dim_scalar);
             po[0] = {Dispersion_local};
-            M1.WriteMat(mat_key, "u", 1,
-                        1, 1, po, "Dispersion_local");
+            h5g.AddDataset(mat_key, "N", "Dispersion_local", po, dim_scalar);
         }
 
         uint Step[1] = {StepNO};
-        M1.WriteMat(mat_key_r + "_step_" + cuDFNsys::ToStringWithWidth(0, 7) + ".mat", "u", 1,
-                    1, 1, Step, "NumOfSteps");
+        if (StepNO != 0)
+            h5g.OverWrite(mat_key, "N", "NumOfSteps", Step, dim_scalar);
+        else
+            h5g.AddDataset(mat_key, "N", "NumOfSteps", Step, dim_scalar);
 
         T *particle_position_3D;
         particle_position_3D = new T[this->NumParticles * 7];
@@ -314,16 +365,84 @@ public:
             particle_position_3D[i + this->NumParticles * 6] = this->ParticlePlumes[i].Position2D.y;
         }
 
-        string mode = "w";
+        uint2 dim_data = make_uint2(7, this->NumParticles);
+        h5g.AddDataset(mat_key, "N", "Step_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
+                       particle_position_3D, dim_data);
 
-        if (StepNO == 0)
-            mode = "u";
-
-        M1.WriteMat(mat_key, mode, this->NumParticles * 7,
-                    this->NumParticles, 7, particle_position_3D,
-                    "particle_position_3D_step_" + to_string(StepNO));
         delete[] particle_position_3D;
         particle_position_3D = NULL;
+
+        //////
+        //////
+        //////
+        //////
+        //////
+        //////
+        //cuDFNsys::MatlabAPI M1;
+        //
+        //string mat_key = mat_key_r + "_step_" + cuDFNsys::ToStringWithWidth(StepNO, 7) + ".mat";
+        //
+        //if (StepNO == 0)
+        //{
+        //    M1.WriteMatString(mat_key, "w", Particle_mode, "Particle_mode");
+        //    M1.WriteMatString(mat_key, "u", Injection_mode, "Injection_mode");
+        //    T po[1] = {delta_T};
+        //    M1.WriteMat(mat_key, "u", 1,
+        //                1, 1, po, "Delta_T");
+        //    po[0] = {Dispersion_local};
+        //    M1.WriteMat(mat_key, "u", 1,
+        //                1, 1, po, "Dispersion_local");
+        //}
+        //
+        //uint Step[1] = {StepNO};
+        //M1.WriteMat(mat_key_r + "_step_" + cuDFNsys::ToStringWithWidth(0, 7) + ".mat", "u", 1,
+        //            1, 1, Step, "NumOfSteps");
+        //
+        //T *particle_position_3D;
+        //particle_position_3D = new T[this->NumParticles * 7];
+        //if (particle_position_3D == NULL)
+        //{
+        //    string AS = "Alloc error in ParticleTransport::OutputParticleInfoStepByStep\n";
+        //    throw cuDFNsys::ExceptionsPause(AS);
+        //}
+        //
+        //for (size_t i = 0; i < this->NumParticles; ++i)
+        //{
+        //    cuDFNsys::Vector3<T> tmpPos = cuDFNsys::MakeVector3(this->ParticlePlumes[i].Position2D.x,
+        //                                                        this->ParticlePlumes[i].Position2D.y,
+        //                                                        (T)0);
+        //
+        //    uint elementID = this->ParticlePlumes[i].ElementID; // from 1
+        //    uint FracID = mesh.ElementFracTag[elementID - 1];   // from 0
+        //
+        //    T Rotate2DTo3D[3][3];
+        //    Fracs[FracID].RoationMatrix(Rotate2DTo3D, 23);
+        //
+        //    tmpPos = cuDFNsys::ProductSquare3Vector3<T>(Rotate2DTo3D, tmpPos);
+        //
+        //    tmpPos = cuDFNsys::MakeVector3(tmpPos.x + Fracs[FracID].Center.x,
+        //                                   tmpPos.y + Fracs[FracID].Center.y,
+        //                                   tmpPos.z + Fracs[FracID].Center.z);
+        //
+        //    particle_position_3D[i] = tmpPos.x;
+        //    particle_position_3D[i + this->NumParticles] = tmpPos.y;
+        //    particle_position_3D[i + this->NumParticles * 2] = tmpPos.z;
+        //    particle_position_3D[i + this->NumParticles * 3] = (this->ParticlePlumes[i].IfReachOutletPlane == false ? 0 : 1);
+        //    particle_position_3D[i + this->NumParticles * 4] = this->ParticlePlumes[i].ElementID;
+        //    particle_position_3D[i + this->NumParticles * 5] = this->ParticlePlumes[i].Position2D.x;
+        //    particle_position_3D[i + this->NumParticles * 6] = this->ParticlePlumes[i].Position2D.y;
+        //}
+        //
+        //string mode = "w";
+        //
+        //if (StepNO == 0)
+        //    mode = "u";
+        //
+        //M1.WriteMat(mat_key, mode, this->NumParticles * 7,
+        //            this->NumParticles, 7, particle_position_3D,
+        //            "particle_position_3D_step_" + to_string(StepNO));
+        //delete[] particle_position_3D;
+        //particle_position_3D = NULL;
     };
 
     void MatlabPlot(const string &mat_key,
@@ -409,9 +528,9 @@ public:
         oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, 'FaceVertexCData', pressure_eles, 'FaceColor', 'flat', 'EdgeAlpha', 0.1, 'facealpha', 0.1); colorbar; view(3); hold on\n";
         oss << "caxis([" << fem.OutletP << ", " << fem.InletP << "]);\n";
         oss << "xlim([-(0.1 * L + L), (0.1 * L + L)])\nylim([ -(0.1 * L + L), (0.1 * L + L) ])\nzlim([ -(0.1 * L + L), (0.1 * L + L) ]);hold on\n\n";
-        oss << "S = load([currentPath, '/" << ParticlePosition << "_step_" << cuDFNsys::ToStringWithWidth(0, 7) << ".mat']);\n";
-        oss << "N_steps = S.NumOfSteps;\n";
-        oss << "N_particles = size(S.particle_position_3D_step_0, 1);\n clear S;\n\n";
+        // oss << "S = load([currentPath, '/" << ParticlePosition << "_step_" << cuDFNsys::ToStringWithWidth(0, 7) << ".mat']);\n";
+        // oss << "N_steps = S.NumOfSteps;\n";
+        // oss << "N_particles = size(S.particle_position_3D_step_0, 1);\n clear S;\n\n";
         // oss << "Matrx3D_pso = zeros(N_particles, size(S.particle_position_3D_step_0, 2), N_steps + 1);\nclear S;\n";
         // oss << "for i = 0:N_steps\n";
         // //oss << "\ttitle(['DFN flow (mhfem); step NO = ', num2str(i)]);\n";
@@ -422,16 +541,21 @@ public:
         // oss << "\tclear S;\n";
         // //oss << "\tif (i ~= S.NumOfSteps); delete(p_s); end\n";
         // oss << "end\n";
+        oss << "N_steps = h5read([currentPath, '/ParticlePositionResult/ParticlePosition.h5'], '/NumOfSteps');\n";
+        oss << "S = h5read([currentPath, '/ParticlePositionResult/ParticlePosition.h5'], '/Step_0000000000');\n";
+        oss << "N_particles = size(S, 1);\n";
+        oss << "clear S;\n";
 
-        oss << "S = load([currentPath, '/" << ParticlePosition << "_step_', num2str(N_steps, '%07d'),'.mat']);\n";
-
-        oss << "eval(['ReachedParticleNO = find(S.particle_position_3D_step_', num2str(N_steps), '(:, 4) == 0);'])\nclear S\n";
+        //oss << "S = load([currentPath, '/" << ParticlePosition << "_step_', num2str(N_steps, '%07d'),'.mat']);\n";
+        //oss << "eval(['ReachedParticleNO = find(S.particle_position_3D_step_', num2str(N_steps), '(:, 4) == 0);'])\nclear S\n";
         //oss << "AK_1 = [reshape(Matrx3D_pso(:, 1, :), size(Matrx3D_pso, 1), size(Matrx3D_pso, 3))]';\n";
         //oss << "AK_2 = [reshape(Matrx3D_pso(:, 2, :), size(Matrx3D_pso, 1), size(Matrx3D_pso, 3))]';\n";
         //oss << "AK_3 = [reshape(Matrx3D_pso(:, 3, :), size(Matrx3D_pso, 1), size(Matrx3D_pso, 3))]';\n";
         //oss << "AK_1(:, ReachedParticleNO) = [];\n";
         //oss << "AK_2(:, ReachedParticleNO) = [];\n";
         //oss << "AK_3(:, ReachedParticleNO) = [];\n";
+        oss << "S = h5read([currentPath, '/ParticlePositionResult/ParticlePosition.h5'], ['/Step_', num2str(N_steps, '%010d')]); \n";
+        oss << "ReachedParticleNO = find(S(:, 4) == 0);\nclear S\n";
         oss << "newcolors = rand(N_particles - size(ReachedParticleNO, 1), 3);\n";
 
         oss << "delta_t2 = 200;\ninit_ = 0;\nfinal_ = 0;\n";
@@ -446,10 +570,14 @@ public:
         oss << "\t\tfinal_\n";
         oss << "\t\tAK_1 = [];AK_2 = [];AK_3 = [];\n";
         oss << "\t\tfor j = init_:final_\n";
-        oss << "\t\t\tS1 = load([currentPath, '/" << ParticlePosition << "_step_', num2str(j, '%07d'),'.mat']);\n";
-        oss << "\t\t\teval(['AK_1(j - init_ + 1, :) = S1.particle_position_3D_step_', num2str(j), '(:, 1);']);\n";
-        oss << "\t\t\teval(['AK_2(j - init_ + 1, :) = S1.particle_position_3D_step_', num2str(j), '(:, 2);']);\n";
-        oss << "\t\t\teval(['AK_3(j - init_ + 1, :) = S1.particle_position_3D_step_', num2str(j), '(:, 3);']);\n";
+        // oss << "\t\t\tS1 = load([currentPath, '/" << ParticlePosition << "_step_', num2str(j, '%07d'),'.mat']);\n";
+        oss << "\t\t\tS = h5read([currentPath, '/ParticlePositionResult/ParticlePosition.h5'], ['/Step_', num2str(j, '%010d')]);\n";
+        // oss << "\t\t\teval(['AK_1(j - init_ + 1, :) = S1.particle_position_3D_step_', num2str(j), '(:, 1);']);\n";
+        // oss << "\t\t\teval(['AK_2(j - init_ + 1, :) = S1.particle_position_3D_step_', num2str(j), '(:, 2);']);\n";
+        // oss << "\t\t\teval(['AK_3(j - init_ + 1, :) = S1.particle_position_3D_step_', num2str(j), '(:, 3);']);\n";
+        oss << "\t\t\tAK_1(j - init_ + 1, :) = S(:, 1);\n";
+        oss << "\t\t\tAK_2(j - init_ + 1, :) = S(:, 2);\n";
+        oss << "\t\t\tAK_3(j - init_ + 1, :) = S(:, 3); clear S\n";
         oss << "\t\tend\n";
         oss << "\t\tAK_1(:, ReachedParticleNO) = [];AK_2(:, ReachedParticleNO) = [];AK_3(:, ReachedParticleNO) = [];\n";
         oss << "\t\tcolororder(newcolors)\n";
@@ -458,8 +586,8 @@ public:
         oss << "\t\t\tbreak\n";
         oss << "\t\tend\n";
         oss << "\tend\n\n";
-        oss << "clear AK_1 AK_2 AK_3\n";  
-        oss << "end\n";  
+        oss << "clear AK_1 AK_2 AK_3\n";
+        oss << "end\n";
 
         oss << "figure(2); view(3); title('DFN flow (mhfem)'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
         oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
@@ -469,8 +597,10 @@ public:
         oss << "xlim([-(0.1 * L + L), (0.1 * L + L)])\nylim([ -(0.1 * L + L), (0.1 * L + L) ])\nzlim([ -(0.1 * L + L), (0.1 * L + L) ]);hold on\n\n";
         oss << "figure(2)\nfor i = 0:N_steps\n";
         oss << "\ttitle(['DFN flow (mhfem); step NO = ', num2str(i)]);\n";
-        oss << "\tS = load([currentPath, '/" << ParticlePosition << "_step_', num2str(i, '%07d'),'.mat']);\n";
-        oss << "\teval(['Matrx3D_pso = S.particle_position_3D_step_', num2str(i), '(:, [1 2 3]);']); clear S\n";
+        // oss << "\tS = load([currentPath, '/" << ParticlePosition << "_step_', num2str(i, '%07d'),'.mat']);\n";
+        // oss << "\teval(['Matrx3D_pso = S.particle_position_3D_step_', num2str(i), '(:, [1 2 3]);']); clear S\n";
+        oss << "\tS = h5read([currentPath, '/ParticlePositionResult/ParticlePosition.h5'], ['/Step_', num2str(i, '%010d')]);\n";
+        oss << "\tMatrx3D_pso = S(:, [1 2 3]);\n";
         oss << "\tp_s = scatter3(Matrx3D_pso(:, 1), Matrx3D_pso(:, 2), Matrx3D_pso(:, 3), 'k', 'o', 'filled'); clear Matrx3D_pso\n";
         oss << "\tif (i == 0); pause; else; pause(0.01); end;\n";
         oss << "\tif (i ~= N_steps); delete(p_s); end\n";

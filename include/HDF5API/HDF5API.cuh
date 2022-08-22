@@ -50,7 +50,7 @@ public:
                    const string &datasetname,
                    const T *data,
                    const uint2 &dim);
-    // read dataset in a h5
+    // read dataset in a h5; the function returns a vector that is column major
     vector<double> ReadDataset(const string &filename,
                                const string &groupname,
                                const string &datasetname);
