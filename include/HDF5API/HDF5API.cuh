@@ -56,5 +56,51 @@ public:
                                const string &datasetname);
     //check if a h5 exits?
     bool IfH5FileExist(const string &filename);
+    // add string data
+    void AddDatasetString(const string &filename,
+                          const string &groupname,
+                          const string &datasetname,
+                          const string &sdata);
+    // read string
+    string ReadDatasetString(const string &filename,
+                             const string &groupname,
+                             const string &datasetname)
+    {
+        try
+        {
+            H5::Exception::dontPrint();
+            H5File file1(filename, H5F_ACC_RDONLY);
+            file1.close();
+        }
+        catch (...)
+        {
+            string AS = "File '" + filename + "' does not exist!\n";
+            throw ExceptionsPause(AS);
+        };
+
+        H5File file(filename, H5F_ACC_RDONLY);
+        DataSet dataset;
+        Group group;
+        if (groupname != "N")
+        {
+            Group group = file.openGroup(groupname);
+            dataset = group.openDataSet(datasetname);
+        }
+        else
+            dataset = file.openDataSet(datasetname);
+
+        DataSpace filespace = dataset.getSpace();
+        H5::StrType datatype = dataset.getStrType();
+
+        std::string data;
+
+        dataset.read(data, datatype, filespace);
+
+        if (groupname != "N")
+            group.close();
+        file.close();
+
+        return data;
+    };
 };
 }; // namespace cuDFNsys

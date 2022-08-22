@@ -321,3 +321,62 @@ bool cuDFNsys::HDF5API::IfH5FileExist(const string &filename)
     };
     return false;
 }; //IfH5FileExist
+
+// ====================================================
+// NAME:        AddDatasetString
+// DESCRIPTION: add string to a file
+// AUTHOR:      Tingchang YIN
+// DATE:        21/08/2022
+// ====================================================
+void cuDFNsys::HDF5API::AddDatasetString(const string &filename,
+                                         const string &groupname,
+                                         const string &datasetname,
+                                         const string &sdata) // the T should be column-major
+
+{
+    H5File file(filename, H5F_ACC_RDWR);
+
+    H5::StrType datatype(H5::PredType::C_S1, sdata.length() + 1);
+
+    if (groupname != "N")
+    {
+        Group group;
+
+        H5::Exception::dontPrint();
+        try
+        {
+            //cout << "try to open a group!\n";
+            group = file.openGroup(groupname);
+            //cout << "opened group!\n";
+        }
+        catch (...)
+        {
+            //cout << "no this group! create a new group!\n";
+            group = file.createGroup(groupname);
+            //cout << "created group!\n";
+        }
+
+        DataSet dataset =
+            group.createDataSet(datasetname, datatype, H5::DataSpace(H5S_SCALAR));
+
+        //char *buffer = new double[dim.x * dim.y]();
+        dataset.write(sdata.data(), datatype);
+
+        //delete[] buffer;
+        //buffer = NULL;
+
+        group.close();
+    }
+    else
+    {
+
+        DataSet dataset =
+            file.createDataSet(datasetname, datatype, H5::DataSpace(H5S_SCALAR));
+
+        //const char *buffer = sdata.data();
+
+        dataset.write(sdata.data(), datatype);
+    }
+
+    file.close();
+}; // AddDatasetString

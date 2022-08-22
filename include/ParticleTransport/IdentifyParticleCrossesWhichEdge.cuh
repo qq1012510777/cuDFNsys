@@ -78,10 +78,7 @@ __host__ __device__ cuDFNsys::Vector3<T> IdentifyParticleCrossesWhichEdge(cuDFNs
         int o3 = cuDFNsys::OrientationThree2DPnts<T>(p2, q2, p1, _TOL_);
         int o4 = cuDFNsys::OrientationThree2DPnts<T>(p2, q2, q1, _TOL_);
 
-        // if (stepNO == 1)
-        // {
-        //     printf("particleNO: %d, edgeNO: %d, o: %d %d %d %d\n", particleNO, i, o1, o2, o3, o4);
-        // }
+        // printf("particleNO: %d, edgeNO: %d, o: %d %d %d %d\n", particleNO, i, o1, o2, o3, o4);
 
         if (o1 == 0 && o2 == 0 && o3 == 0 && o4 == 0)
         {

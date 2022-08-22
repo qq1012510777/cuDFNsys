@@ -25,7 +25,9 @@ public:
 
 public:
     // output Fractures in H5
-    void OutputFractures(const string &filename_, const thrust::host_vector<cuDFNsys::Fracture<T>> &Frac_verts_host);
+    void OutputFractures(const string &filename_,
+                         const thrust::host_vector<cuDFNsys::Fracture<T>> &Frac_verts_host,
+                         const T &L);
 
     // output Mesh in h5
     void OutputMesh(const string &filename_,

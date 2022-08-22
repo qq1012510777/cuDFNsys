@@ -14,6 +14,7 @@
 #include "ParticleMovementOneTimeStepGPUKernel.cuh"
 #include "PredicateNumOfReachedOutletParticles.cuh"
 #include <cmath>
+#include <fstream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -52,7 +53,7 @@ public:
 
         this->IdentifyEdgesSharedEle(mesh);
 
-        this->IdentifyNeighborElements(mesh);
+        //this->IdentifyNeighborElements(mesh);
 
         this->InitilizeParticles(NumOfParticles, mesh, fem, Injection_mode);
 
@@ -73,52 +74,85 @@ public:
                       cuDFNsys::Mesh<T> mesh,
                       const cuDFNsys::MHFEM<T> &fem,
                       uint Dir_flow,
-                      T outletcoordinate)
+                      T outletcoordinate,
+                      int NumOfParticles_ii = 0,
+                      T delta_T_ii = 0,
+                      T Dispersion_local_ii = 0,
+                      string Particle_mode_ii = "Particle_tracking",
+                      string Injection_mode_ii = "Flux-weighted")
     {
         cuDFNsys::MatlabAPI M1;
 
         this->Dir = Dir_flow;
 
         this->IdentifyEdgesSharedEle(mesh);
-
-        this->IdentifyNeighborElements(mesh);
-
-        MatrixXd PreNumSteps;
         string matfile = ParticlePosition + "_step_" + cuDFNsys::ToStringWithWidth(0, 7) + ".mat";
-        M1.ReadMat(matfile, "NumOfSteps", PreNumSteps);
-        uint ExistingNumsteps = (uint)PreNumSteps(0, 0);
+        //this->IdentifyNeighborElements(mesh);
 
-        string Particle_mode = M1.ReadMatString(matfile, "Particle_mode");
-        string Injection_mode = M1.ReadMatString(matfile, "Injection_mode");
+        std::ifstream file(matfile);
+        bool pwq = file.good();
 
-        MatrixXd LastStepParticle;
-        M1.ReadMat(ParticlePosition + "_step_" + cuDFNsys::ToStringWithWidth(ExistingNumsteps, 7) + ".mat", "particle_position_3D_step_" + std::to_string(ExistingNumsteps),
-                   LastStepParticle);
-
-        this->NumParticles = LastStepParticle.rows();
-        this->ParticlePlumes.resize(this->NumParticles);
-        for (uint i = 0; i < this->NumParticles; ++i)
+        if (pwq)
         {
-            this->ParticlePlumes[i].Position2D.x = LastStepParticle(i, 5);
-            this->ParticlePlumes[i].Position2D.y = LastStepParticle(i, 6);
-            this->ParticlePlumes[i].ElementID = LastStepParticle(i, 4);
-            this->ParticlePlumes[i].IfReachOutletPlane = (LastStepParticle(i, 3) == 0 ? false : true);
-        };
+            cout << "\n\e[1;32mContinue to perform particle transport\e[0m\n\n";
 
-        MatrixXd delta_T_b, Dispersion_local_b;
-        M1.ReadMat(matfile, "Delta_T",
-                   delta_T_b);
-        M1.ReadMat(matfile, "Dispersion_local",
-                   Dispersion_local_b);
+            MatrixXd PreNumSteps;
 
-        T delta_T_ = (T)delta_T_b(0, 0),
-          Dispersion_local = (T)Dispersion_local_b(0, 0);
-        
-        this->ParticleMovement(seed, ExistingNumsteps + 1, NumTimeStep,
-                               delta_T_, Dispersion_local,
-                               Particle_mode,
-                               Injection_mode,
-                               Fracs, mesh, fem, outletcoordinate);
+            M1.ReadMat(matfile, "NumOfSteps", PreNumSteps);
+            uint ExistingNumsteps = (uint)PreNumSteps(0, 0);
+
+            string Particle_mode = M1.ReadMatString(matfile, "Particle_mode");
+            string Injection_mode = M1.ReadMatString(matfile, "Injection_mode");
+
+            MatrixXd LastStepParticle;
+            M1.ReadMat(ParticlePosition + "_step_" + cuDFNsys::ToStringWithWidth(ExistingNumsteps, 7) + ".mat", "particle_position_3D_step_" + std::to_string(ExistingNumsteps),
+                       LastStepParticle);
+
+            this->NumParticles = LastStepParticle.rows();
+            this->ParticlePlumes.resize(this->NumParticles);
+            for (uint i = 0; i < this->NumParticles; ++i)
+            {
+                this->ParticlePlumes[i].Position2D.x = LastStepParticle(i, 5);
+                this->ParticlePlumes[i].Position2D.y = LastStepParticle(i, 6);
+                this->ParticlePlumes[i].ElementID = LastStepParticle(i, 4);
+                this->ParticlePlumes[i].IfReachOutletPlane = (LastStepParticle(i, 3) == 0 ? false : true);
+            };
+
+            MatrixXd delta_T_b, Dispersion_local_b;
+            M1.ReadMat(matfile, "Delta_T",
+                       delta_T_b);
+            M1.ReadMat(matfile, "Dispersion_local",
+                       Dispersion_local_b);
+
+            T delta_T_ = (T)delta_T_b(0, 0),
+              Dispersion_local = (T)Dispersion_local_b(0, 0);
+
+            this->ParticleMovement(seed, ExistingNumsteps + 1, NumTimeStep,
+                                   delta_T_, Dispersion_local,
+                                   Particle_mode,
+                                   Injection_mode,
+                                   Fracs, mesh, fem, outletcoordinate);
+        }
+        else
+        {
+
+            this->InitilizeParticles(NumOfParticles_ii,
+                                     mesh, fem, Injection_mode_ii);
+
+            this->OutputParticleInfoStepByStep(ParticlePosition, 0,
+                                               delta_T_ii,
+                                               Dispersion_local_ii,
+                                               Particle_mode_ii,
+                                               Injection_mode_ii,
+                                               Fracs, mesh);
+            //cout << NumTimeStep << ", " << delta_T_ii << ", " << Dispersion_local << " ______ \n";
+            this->ParticleMovement(seed, 1, NumTimeStep, delta_T_ii,
+                                   Dispersion_local_ii,
+                                   Particle_mode_ii,
+                                   Injection_mode_ii,
+                                   Fracs, mesh, fem,
+                                   outletcoordinate);
+        }
     };
 
     void ParticleMovement(unsigned long seed,
@@ -141,7 +175,7 @@ public:
         thrust::device_vector<T> Velocity_sep_edge;
         Velocity_sep_edge.reserve(fem.VelocityNormalScalarSepEdges.rows());
         thrust::device_vector<cuDFNsys::EleCoor<T>> Coordinate2D_Vec_dev = mesh.Coordinate2D;
-        thrust::device_vector<cuDFNsys::NeighborEle> NeighborEleOfOneEle_dev = this->NeighborEleOfOneEle;
+        //thrust::device_vector<cuDFNsys::NeighborEle> NeighborEleOfOneEle_dev = this->NeighborEleOfOneEle;
 
         Eigen::MatrixXd Vg = fem.VelocityNormalScalarSepEdges;
         double *vc = Vg.data();
@@ -153,7 +187,7 @@ public:
         uint *EleToFracID_ptr = thrust::raw_pointer_cast(ElementFracTag_DEV.data());
         T *velocity_ptr = thrust::raw_pointer_cast(Velocity_sep_edge.data());
         cuDFNsys::EleCoor<T> *Coordinate2D_Vec_dev_ptr = thrust::raw_pointer_cast(Coordinate2D_Vec_dev.data());
-        cuDFNsys::NeighborEle *NeighborEleOfOneEle_dev_ptr = thrust::raw_pointer_cast(NeighborEleOfOneEle_dev.data());
+        //cuDFNsys::NeighborEle *NeighborEleOfOneEle_dev_ptr = thrust::raw_pointer_cast(NeighborEleOfOneEle_dev.data());
 
         for (uint i = init_NO_STEP; i <= NumTimeStep + init_NO_STEP; ++i)
         {
@@ -173,7 +207,7 @@ public:
                                                                                            Frac_DEV,
                                                                                            EdgesSharedEle_DEV,
                                                                                            Coordinate2D_Vec_dev_ptr,
-                                                                                           NeighborEleOfOneEle_dev_ptr,
+                                                                                           //NeighborEleOfOneEle_dev_ptr,
                                                                                            EleToFracID_ptr,
                                                                                            velocity_ptr,
                                                                                            this->Dir,
@@ -205,6 +239,12 @@ public:
                                                Particle_mode,
                                                Injection_mode,
                                                Fracs, mesh);
+
+            if (NumReachedParticle == this->ParticlePlumes.size() && Particle_mode == "Particle_tracking")
+            {
+                cout << "\e[1;32mAll particles reached outlet plane!\e[0m\n";
+                break;
+            }
 
             cout << "\n";
         }
@@ -366,33 +406,60 @@ public:
         oss << "figure(1); view(3); title('DFN flow (mhfem)'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
         oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
         oss << endl;
-        oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, 'FaceVertexCData', pressure_eles, 'FaceColor', 'flat', 'EdgeAlpha', 0.2, 'facealpha', 0.9); colorbar; view(3); hold on\n";
+        oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, 'FaceVertexCData', pressure_eles, 'FaceColor', 'flat', 'EdgeAlpha', 0.1, 'facealpha', 0.1); colorbar; view(3); hold on\n";
         oss << "caxis([" << fem.OutletP << ", " << fem.InletP << "]);\n";
         oss << "xlim([-(0.1 * L + L), (0.1 * L + L)])\nylim([ -(0.1 * L + L), (0.1 * L + L) ])\nzlim([ -(0.1 * L + L), (0.1 * L + L) ]);hold on\n\n";
         oss << "S = load([currentPath, '/" << ParticlePosition << "_step_" << cuDFNsys::ToStringWithWidth(0, 7) << ".mat']);\n";
         oss << "N_steps = S.NumOfSteps;\n";
-        oss << "N_particles = size(S.particle_position_3D_step_0, 1);\n";
-        oss << "Matrx3D_pso = zeros(N_particles, size(S.particle_position_3D_step_0, 2), N_steps + 1);\nclear S;\n";
-        oss << "for i = 0:N_steps\n";
-        //oss << "\ttitle(['DFN flow (mhfem); step NO = ', num2str(i)]);\n";
-        oss << "\tS = load([currentPath, '/" << ParticlePosition << "_step_', num2str(i, '%07d'), '.mat']);\n";
-        oss << "\teval(['Matrx3D_pso(:, :, i + 1) = S.particle_position_3D_step_', num2str(i), '(:, :);']);\n";
-        //oss << "\teval(['p_s = scatter3(S.particle_position_3D_step_', num2str(i), '(:, 1), S.particle_position_3D_step_', num2str(i), '(:, 2), S.particle_position_3D_step_', num2str(i), '(:, 3), ''k'', ''o'', ''filled'');']);\n";
-        //oss << "\tif (i == 0); pause; else; pause(0.01); end;\n";
-        oss << "\tclear S;\n";
-        //oss << "\tif (i ~= S.NumOfSteps); delete(p_s); end\n";
-        oss << "end\n";
+        oss << "N_particles = size(S.particle_position_3D_step_0, 1);\n clear S;\n\n";
+        // oss << "Matrx3D_pso = zeros(N_particles, size(S.particle_position_3D_step_0, 2), N_steps + 1);\nclear S;\n";
+        // oss << "for i = 0:N_steps\n";
+        // //oss << "\ttitle(['DFN flow (mhfem); step NO = ', num2str(i)]);\n";
+        // oss << "\tS = load([currentPath, '/" << ParticlePosition << "_step_', num2str(i, '%07d'), '.mat']);\n";
+        // oss << "\teval(['Matrx3D_pso(:, :, i + 1) = S.particle_position_3D_step_', num2str(i), '(:, :);']);\n";
+        // //oss << "\teval(['p_s = scatter3(S.particle_position_3D_step_', num2str(i), '(:, 1), S.particle_position_3D_step_', num2str(i), '(:, 2), S.particle_position_3D_step_', num2str(i), '(:, 3), ''k'', ''o'', ''filled'');']);\n";
+        // //oss << "\tif (i == 0); pause; else; pause(0.01); end;\n";
+        // oss << "\tclear S;\n";
+        // //oss << "\tif (i ~= S.NumOfSteps); delete(p_s); end\n";
+        // oss << "end\n";
 
-        oss << "ReachedParticleNO = find(Matrx3D_pso(:, 4, N_steps) == 0);\n";
-        oss << "AK_1 = [reshape(Matrx3D_pso(:, 1, :), size(Matrx3D_pso, 1), size(Matrx3D_pso, 3))]';\n";
-        oss << "AK_2 = [reshape(Matrx3D_pso(:, 2, :), size(Matrx3D_pso, 1), size(Matrx3D_pso, 3))]';\n";
-        oss << "AK_3 = [reshape(Matrx3D_pso(:, 3, :), size(Matrx3D_pso, 1), size(Matrx3D_pso, 3))]';\n";
-        oss << "AK_1(:, ReachedParticleNO) = [];\n";
-        oss << "AK_2(:, ReachedParticleNO) = [];\n";
-        oss << "AK_3(:, ReachedParticleNO) = [];\n";
-        oss << "newcolors = rand(size(ReachedParticleNO, 1), 3);\n";
-        oss << "colororder(newcolors)\n";
-        oss << "plot3(AK_1, AK_2, AK_3, 'linewidth', 2);\n\n";
+        oss << "S = load([currentPath, '/" << ParticlePosition << "_step_', num2str(N_steps, '%07d'),'.mat']);\n";
+
+        oss << "eval(['ReachedParticleNO = find(S.particle_position_3D_step_', num2str(N_steps), '(:, 4) == 0);'])\nclear S\n";
+        //oss << "AK_1 = [reshape(Matrx3D_pso(:, 1, :), size(Matrx3D_pso, 1), size(Matrx3D_pso, 3))]';\n";
+        //oss << "AK_2 = [reshape(Matrx3D_pso(:, 2, :), size(Matrx3D_pso, 1), size(Matrx3D_pso, 3))]';\n";
+        //oss << "AK_3 = [reshape(Matrx3D_pso(:, 3, :), size(Matrx3D_pso, 1), size(Matrx3D_pso, 3))]';\n";
+        //oss << "AK_1(:, ReachedParticleNO) = [];\n";
+        //oss << "AK_2(:, ReachedParticleNO) = [];\n";
+        //oss << "AK_3(:, ReachedParticleNO) = [];\n";
+        oss << "newcolors = rand(N_particles - size(ReachedParticleNO, 1), 3);\n";
+
+        oss << "delta_t2 = 200;\ninit_ = 0;\nfinal_ = 0;\n";
+
+        oss << "show_trajector_whole = false;\n";
+        oss << "if (show_trajector_whole == true)\n";
+        oss << "\tfor i = 0 : ceil(N_steps / delta_t2)\n";
+        oss << "\t\tinit_ = final_; final_ = init_ + delta_t2;\n";
+        oss << "\t\tif (final_ > N_steps)\n";
+        oss << "\t\t\tfinal_ = N_steps;\n";
+        oss << "\t\tend\n";
+        oss << "\t\tfinal_\n";
+        oss << "\t\tAK_1 = [];AK_2 = [];AK_3 = [];\n";
+        oss << "\t\tfor j = init_:final_\n";
+        oss << "\t\t\tS1 = load([currentPath, '/" << ParticlePosition << "_step_', num2str(j, '%07d'),'.mat']);\n";
+        oss << "\t\t\teval(['AK_1(j - init_ + 1, :) = S1.particle_position_3D_step_', num2str(j), '(:, 1);']);\n";
+        oss << "\t\t\teval(['AK_2(j - init_ + 1, :) = S1.particle_position_3D_step_', num2str(j), '(:, 2);']);\n";
+        oss << "\t\t\teval(['AK_3(j - init_ + 1, :) = S1.particle_position_3D_step_', num2str(j), '(:, 3);']);\n";
+        oss << "\t\tend\n";
+        oss << "\t\tAK_1(:, ReachedParticleNO) = [];AK_2(:, ReachedParticleNO) = [];AK_3(:, ReachedParticleNO) = [];\n";
+        oss << "\t\tcolororder(newcolors)\n";
+        oss << "\t\tplot3(AK_1, AK_2, AK_3, 'linewidth', 2); hold on\n";
+        oss << "\t\tif (final_ == N_steps)\n";
+        oss << "\t\t\tbreak\n";
+        oss << "\t\tend\n";
+        oss << "\tend\n\n";
+        oss << "clear AK_1 AK_2 AK_3\n";  
+        oss << "end\n";  
 
         oss << "figure(2); view(3); title('DFN flow (mhfem)'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
         oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
@@ -402,7 +469,9 @@ public:
         oss << "xlim([-(0.1 * L + L), (0.1 * L + L)])\nylim([ -(0.1 * L + L), (0.1 * L + L) ])\nzlim([ -(0.1 * L + L), (0.1 * L + L) ]);hold on\n\n";
         oss << "figure(2)\nfor i = 0:N_steps\n";
         oss << "\ttitle(['DFN flow (mhfem); step NO = ', num2str(i)]);\n";
-        oss << "\tp_s = scatter3(Matrx3D_pso(:, 1, i + 1), Matrx3D_pso(:, 2, i + 1), Matrx3D_pso(:, 3, i + 1), 'k', 'o', 'filled');\n";
+        oss << "\tS = load([currentPath, '/" << ParticlePosition << "_step_', num2str(i, '%07d'),'.mat']);\n";
+        oss << "\teval(['Matrx3D_pso = S.particle_position_3D_step_', num2str(i), '(:, [1 2 3]);']); clear S\n";
+        oss << "\tp_s = scatter3(Matrx3D_pso(:, 1), Matrx3D_pso(:, 2), Matrx3D_pso(:, 3), 'k', 'o', 'filled'); clear Matrx3D_pso\n";
         oss << "\tif (i == 0); pause; else; pause(0.01); end;\n";
         oss << "\tif (i ~= N_steps); delete(p_s); end\n";
         oss << "end\n";

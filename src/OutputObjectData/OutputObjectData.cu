@@ -8,7 +8,8 @@
 // ====================================================
 template <typename T>
 void cuDFNsys::OutputObjectData<T>::OutputFractures(const string &filename_,
-                                                    const thrust::host_vector<cuDFNsys::Fracture<T>> &Frac_verts_host)
+                                                    const thrust::host_vector<cuDFNsys::Fracture<T>> &Frac_verts_host,
+                                                    const T &L)
 {
     uint Dsize = Frac_verts_host.size();
 
@@ -28,6 +29,9 @@ void cuDFNsys::OutputObjectData<T>::OutputFractures(const string &filename_,
     uint2 dim_e = make_uint2(1, 1);
     uint DiszeP[1] = {Dsize};
     h5_.AddDataset(filename_, "N", "NumFractures", DiszeP, dim_e);
+
+    T L_m[1] = {L};
+    h5_.AddDataset(filename_, "N", "L", L_m, dim_e);
 
     for (uint i = 0; i < Dsize; ++i)
     {
@@ -118,9 +122,11 @@ void cuDFNsys::OutputObjectData<T>::OutputFractures(const string &filename_,
     }
 }; // OutputFractures
 template void cuDFNsys::OutputObjectData<double>::OutputFractures(const string &filename_,
-                                                                  const thrust::host_vector<cuDFNsys::Fracture<double>> &Frac_verts_host);
+                                                                  const thrust::host_vector<cuDFNsys::Fracture<double>> &Frac_verts_host,
+                                                                  const double &L);
 template void cuDFNsys::OutputObjectData<float>::OutputFractures(const string &filename_,
-                                                                 const thrust::host_vector<cuDFNsys::Fracture<float>> &Frac_verts_host);
+                                                                 const thrust::host_vector<cuDFNsys::Fracture<float>> &Frac_verts_host,
+                                                                 const float &L);
 
 // ====================================================
 // NAME:        OutputMesh
@@ -251,7 +257,6 @@ void cuDFNsys::OutputObjectData<T>::OutputMesh(const string &filename_,
         {
             T *KL = &(mesh.OutletEdgeNOLen[j].x);
             OutletEdgeNOLen[i * NumOutletEdge[0] + j] = KL[i];
-            
         }
 
     T NumInteriorEdges[1] = {(T)mesh.NumInteriorEdges};

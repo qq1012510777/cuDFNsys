@@ -8,7 +8,8 @@
 // ====================================================
 template <typename T>
 void cuDFNsys::InputObjectData<T>::InputFractures(const string &filename,
-                                                  thrust::host_vector<cuDFNsys::Fracture<T>> &Frac_verts_host)
+                                                  thrust::host_vector<cuDFNsys::Fracture<T>> &Frac_verts_host,
+                                                  T &L)
 {
     //
     try
@@ -61,9 +62,48 @@ void cuDFNsys::InputObjectData<T>::InputFractures(const string &filename,
 
     delete[] buffer;
     buffer = NULL;
+
     //--------------------------- finish getting the number of fractures
     //--------------------------- finish getting the number of fractures
     //--------------------------- finish getting the number of fractures
+
+    DataSet dataset2 = file.openDataSet("L");
+    DataSpace filespace2 = dataset2.getSpace();
+    int rank2 = filespace2.getSimpleExtentNdims();
+
+    hsize_t dims2[rank2];
+
+    rank2 = filespace2.getSimpleExtentDims(dims2);
+
+    DataSpace myspace2(rank2, dims2);
+
+    int NUM_size2 = 1;
+    for (int i = 0; i < rank2; ++i)
+        NUM_size2 *= dims2[i];
+
+    if (NUM_size2 != 1)
+    {
+        string AS = "dimension should be equal to one!\n";
+        throw ExceptionsPause(AS);
+    }
+
+    double *buffer2 = new double[NUM_size2]();
+    if (buffer2 == NULL)
+    {
+        string AS = "Alloc error in InputFractures::InputFractures!\n";
+        throw ExceptionsPause(AS);
+    }
+
+    dataset2.read(buffer2, PredType::NATIVE_DOUBLE, myspace2, filespace2);
+
+    L = (uint)buffer2[0];
+
+    delete[] buffer2;
+    buffer2 = NULL;
+
+    //--------------------------- finish getting model size
+    //--------------------------- finish getting model size
+    //--------------------------- finish getting model size
 
     Frac_verts_host.resize(Dsize);
 
@@ -166,9 +206,11 @@ void cuDFNsys::InputObjectData<T>::InputFractures(const string &filename,
     file.close();
 }; // InputFractures
 template void cuDFNsys::InputObjectData<double>::InputFractures(const string &filename,
-                                                                thrust::host_vector<cuDFNsys::Fracture<double>> &Frac_verts_host);
+                                                                thrust::host_vector<cuDFNsys::Fracture<double>> &Frac_verts_host,
+                                                                double &L);
 template void cuDFNsys::InputObjectData<float>::InputFractures(const string &filename,
-                                                               thrust::host_vector<cuDFNsys::Fracture<float>> &Frac_verts_host);
+                                                               thrust::host_vector<cuDFNsys::Fracture<float>> &Frac_verts_host,
+                                                               float &L);
 
 // ====================================================
 // NAME:        InputMesh

@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
         //_DataType_ minGrid = 0;
         //_DataType_ maxGrid = 0;
 
-        DSIZE = 0;
+        DSIZE = 256;
         L = 30;
 
         cuDFNsys::Warmup<<<DSIZE / 256 + 1, 256 /*  1, 2*/>>>();
@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
         thrust::device_vector<cuDFNsys::Fracture<_DataType_>> Frac_verts_device;
 
         cuDFNsys::InputObjectData<_DataType_> lk;
-        lk.InputFractures("Fractures.h5", Frac_verts_host);
+        lk.InputFractures("Fractures.h5", Frac_verts_host, L);
         DSIZE = Frac_verts_host.size();
 
         Frac_verts_device = Frac_verts_host;
@@ -141,8 +141,13 @@ int main(int argc, char *argv[])
             cout << "Particle transport ing ...\n";
 
             cuDFNsys::ParticleTransport<_DataType_> p{(unsigned long)t,
-                                                      atoi(argv[1]), // number of particle
-                                                      Frac_verts_host, mesh, fem, (uint)perco_dir, -0.5f * L};
+                                                      atoi(argv[1]), // number of time step
+                                                      Frac_verts_host, mesh, fem, (uint)perco_dir, -0.5f * L,
+                                                      atoi(argv[2]), // num of particle
+                                                      atof(argv[3]), // delta_T_ii
+                                                      atof(argv[4]),
+                                                      "Particle_tracking",
+                                                      "Flux-weighted"};
             p.MatlabPlot("MHFEM_" + to_string(i + 1) + ".mat", "particle.m", mesh, fem, L);
         }
         //cudaDeviceReset();

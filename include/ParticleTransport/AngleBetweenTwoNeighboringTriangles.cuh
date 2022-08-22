@@ -18,9 +18,9 @@ template <typename T>
 __host__ __device__ T AngleBetweenTwoNeighboringTriangles(const cuDFNsys::Vector3<T> preEle[3],
                                                           const cuDFNsys::Vector3<T> nextEle[3],
                                                           const uint &localEdgeNo_preEle,
-                                                          const uint &localEdgeNo_nextEle,
+                                                          const uint &localEdgeNo_nextEle/*,
                                                           cuDFNsys::Vector3<T> &d1,
-                                                          cuDFNsys::Vector3<T> &d2)
+                                                          cuDFNsys::Vector3<T> &d2*/)
 {
     cuDFNsys::Vector3<T> pntA = preEle[(localEdgeNo_preEle + 2) % 3];
     cuDFNsys::Vector3<T> pntB = preEle[localEdgeNo_preEle];
@@ -57,7 +57,7 @@ __host__ __device__ T AngleBetweenTwoNeighboringTriangles(const cuDFNsys::Vector
     a.x /= norm_a;
     a.y /= norm_a;
     a.z /= norm_a;
-    d1 = a;
+    //d1 = a;
 
     cuDFNsys::Vector3<T> b = cuDFNsys::CrossProductVector3<T>(BD, V);
     b = cuDFNsys::CrossProductVector3<T>(V, b);
@@ -65,7 +65,7 @@ __host__ __device__ T AngleBetweenTwoNeighboringTriangles(const cuDFNsys::Vector
     b.x /= norm_b;
     b.y /= norm_b;
     b.z /= norm_b;
-    d2 = b;
+    //d2 = b;
 
     double theta = 0;
     theta = acos((a.x * b.x + a.y * b.y + a.z * b.z));
@@ -74,13 +74,13 @@ __host__ __device__ T AngleBetweenTwoNeighboringTriangles(const cuDFNsys::Vector
 template __host__ __device__ double AngleBetweenTwoNeighboringTriangles<double>(const cuDFNsys::Vector3<double> preEle[3],
                                                                                 const cuDFNsys::Vector3<double> nextEle[3],
                                                                                 const uint &localEdgeNo_preEle,
-                                                                                const uint &localEdgeNo_nextEle,
+                                                                                const uint &localEdgeNo_nextEle/*,
                                                                                 cuDFNsys::Vector3<double> &d1,
-                                                                                cuDFNsys::Vector3<double> &d2);
+                                                                                cuDFNsys::Vector3<double> &d2*/);
 template __host__ __device__ float AngleBetweenTwoNeighboringTriangles<float>(const cuDFNsys::Vector3<float> preEle[3],
                                                                               const cuDFNsys::Vector3<float> nextEle[3],
                                                                               const uint &localEdgeNo_preEle,
-                                                                              const uint &localEdgeNo_nextEle,
+                                                                              const uint &localEdgeNo_nextEle/*,
                                                                               cuDFNsys::Vector3<float> &d1,
-                                                                              cuDFNsys::Vector3<float> &d2);
+                                                                              cuDFNsys::Vector3<float> &d2*/);
 }; // namespace cuDFNsys

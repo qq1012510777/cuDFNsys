@@ -39,7 +39,7 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
                                                      cuDFNsys::Fracture<T> *Frac_DEV,
                                                      cuDFNsys::EdgeToEle *EdgesSharedEle_DEV,
                                                      cuDFNsys::EleCoor<T> *Coordinate2D_Vec_dev_ptr,
-                                                     cuDFNsys::NeighborEle *NeighborEleOfOneEle_dev_ptr,
+                                                     //cuDFNsys::NeighborEle *NeighborEleOfOneEle_dev_ptr,
                                                      uint *EleToFracID_ptr,
                                                      T *velocity_ptr,
                                                      uint Dir_flow,
@@ -57,8 +57,8 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
-    /// P_DEV[i].ElementID = 1697;
-    /// P_DEV[i].Position2D = cuDFNsys::MakeVector2<T>(-0.3724700000000000232880381645372835919261, 1.5858099999999999418776042148238047957420);
+    // P_DEV[i].ElementID = 18363;
+    // P_DEV[i].Position2D = cuDFNsys::MakeVector2<T>(7.5189700000000003754507815756369382143021, -1.8094399999999999373301307059591636061668);
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
@@ -117,7 +117,7 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
-    /// TargPos = cuDFNsys::MakeVector2<T>(-0.3752199999999999979749532030837144702673, 1.5814299999999998913580157022806815803051);
+    // TargPos = cuDFNsys::MakeVector2<T>(7.5191699999999999093347469170112162828445, -1.8093200000000000393640675611095502972603);
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
@@ -138,33 +138,33 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
 
     for (uint Loop_time = 1;; Loop_time++)
     {
-        // printf("\n%%--------------------\n%% The looptime: %d, fracid: %d, elementid: %d\n %%Present trajectory:\n%.40f, %.40f\n%.40f, %.40f,\n\n",
-        //        Loop_time, FracID, EleID, InitPos.x, InitPos.y, TargPos.x, TargPos.y);
-        // ////// debug: turn trajectory to 3D --------------------
-        // ////// debug: turn trajectory to 3D --------------------
-        // ////// debug: turn trajectory to 3D --------------------
-        // if (1)
-        // {
-        //     cuDFNsys::Vector3<T> InitiPos3D = cuDFNsys::MakeVector3(InitPos.x, InitPos.y, (T)0.0);
-        //     cuDFNsys::Vector3<T> TargPos3D = cuDFNsys::MakeVector3(TargPos.x, TargPos.y, (T)0.0);
-        //     T RK_1[3][3];
-        //     Frac_DEV[FracID].RoationMatrix(RK_1, 23);
-        //     InitiPos3D = cuDFNsys::ProductSquare3Vector3<T>(RK_1, InitiPos3D);
-        //     TargPos3D = cuDFNsys::ProductSquare3Vector3<T>(RK_1, TargPos3D);
-        //     InitiPos3D.x += Frac_DEV[FracID].Center.x;
-        //     InitiPos3D.y += Frac_DEV[FracID].Center.y;
-        //     InitiPos3D.z += Frac_DEV[FracID].Center.z;
-        //     TargPos3D.x += Frac_DEV[FracID].Center.x;
-        //     TargPos3D.y += Frac_DEV[FracID].Center.y;
-        //     TargPos3D.z += Frac_DEV[FracID].Center.z;
-        //     printf("Trajectory3D:\n\t%.40f, %.40f, %.40f\n\t%.40f, %.40f, %.40f\n",
-        //            InitiPos3D.x,
-        //            InitiPos3D.y,
-        //            InitiPos3D.z,
-        //            TargPos3D.x,
-        //            TargPos3D.y,
-        //            TargPos3D.z);
-        // }
+        ///  printf("\n%%--------------------\n%% The looptime: %d, fracid: %d, elementid: %d\n %%Present trajectory:\n%.40f, %.40f\n%.40f, %.40f,\n\n",
+        ///         Loop_time, FracID, EleID, InitPos.x, InitPos.y, TargPos.x, TargPos.y);
+        ///  ////// debug: turn trajectory to 3D --------------------
+        ///  ////// debug: turn trajectory to 3D --------------------
+        ///  ////// debug: turn trajectory to 3D --------------------
+        ///  if (1)
+        ///  {
+        ///      cuDFNsys::Vector3<T> InitiPos3D = cuDFNsys::MakeVector3(InitPos.x, InitPos.y, (T)0.0);
+        ///      cuDFNsys::Vector3<T> TargPos3D = cuDFNsys::MakeVector3(TargPos.x, TargPos.y, (T)0.0);
+        ///      T RK_1[3][3];
+        ///      Frac_DEV[FracID].RoationMatrix(RK_1, 23);
+        ///      InitiPos3D = cuDFNsys::ProductSquare3Vector3<T>(RK_1, InitiPos3D);
+        ///      TargPos3D = cuDFNsys::ProductSquare3Vector3<T>(RK_1, TargPos3D);
+        ///      InitiPos3D.x += Frac_DEV[FracID].Center.x;
+        ///      InitiPos3D.y += Frac_DEV[FracID].Center.y;
+        ///      InitiPos3D.z += Frac_DEV[FracID].Center.z;
+        ///      TargPos3D.x += Frac_DEV[FracID].Center.x;
+        ///      TargPos3D.y += Frac_DEV[FracID].Center.y;
+        ///      TargPos3D.z += Frac_DEV[FracID].Center.z;
+        ///      printf("Trajectory3D:\n\t%.40f, %.40f, %.40f\n\t%.40f, %.40f, %.40f\n",
+        ///             InitiPos3D.x,
+        ///             InitiPos3D.y,
+        ///             InitiPos3D.z,
+        ///             TargPos3D.x,
+        ///             TargPos3D.y,
+        ///             TargPos3D.z);
+        ///  }
 
         if (Loop_time >= _ParTran_MaxLoopTimes || CountCrossedGlobalEdge == 11)
         {
@@ -176,6 +176,8 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
         Vertex_Triangle[1] = cuDFNsys::MakeVector2(Coordinate2D_Vec_dev_ptr[EleID - 1].x[1], Coordinate2D_Vec_dev_ptr[EleID - 1].y[1]);
         Vertex_Triangle[2] = cuDFNsys::MakeVector2(Coordinate2D_Vec_dev_ptr[EleID - 1].x[2], Coordinate2D_Vec_dev_ptr[EleID - 1].y[2]);
 
+        // printf("Element id: %d, 2D coordinates:\n\t%.40f, %.40f\n\t%.40f, %.40f\n\t%.40f, %.40f\n",
+        //        EleID, Vertex_Triangle[0].x, Vertex_Triangle[0].y, Vertex_Triangle[1].x, Vertex_Triangle[1].y, Vertex_Triangle[2].x, Vertex_Triangle[2].y);
         // ----------------check if the new position is in the grid----------------
         // ----------------check if the new position is in the grid----------------
         // ----------------check if the new position is in the grid----------------
@@ -266,9 +268,90 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
                 goto YK100;
             else
             {
+                /// in case of: a particle went through a fracture trace and got into anther fracture, and the rotation
+                /// made the initial point out of the element, because the previous trajectory crossed a vertex!!!
 
-                printf("Warning: I cannot find which edge of element %d does the particle trajectory step over! Particle ID: %d\n", EleID, i + 1);
-                goto Debug100;
+                bool IfInitPosInGrid_yy = cuDFNsys::IfPntInside2DConvexPoly<T>(InitPos, Vertex_Triangle, 3);
+                bool IfTargPosInGrid_yy = cuDFNsys::IfPntInside2DConvexPoly<T>(TargPos, Vertex_Triangle, 3);
+
+                //printf("IfInitPosInGrid_yy %d, IfTargPosInGrid_yy %d\n", IfInitPosInGrid_yy, IfTargPosInGrid_yy);
+
+                if (!IfInitPosInGrid_yy && !IfTargPosInGrid_yy)
+                    for (uint yi = 0; yi < 3; ++yi)
+                    {
+                        cuDFNsys::Vector2<T> p2, q2;
+                        p2 = Vertex_Triangle[yi];
+                        q2 = Vertex_Triangle[(yi + 1) % 3];
+
+                        // check if the edge has been crossed?
+                        // check if the edge has been crossed?
+                        // check if the edge has been crossed?
+                        if (CountCrossedGlobalEdge > 0)
+                        {
+                            bool IfEdgeChecked = false;
+                            for (int k = 0; k < CountCrossedGlobalEdge; ++k)
+                            {
+                                cuDFNsys::Vector2<T> a = CrossedGlobalEdge[k][0];
+                                cuDFNsys::Vector2<T> b = CrossedGlobalEdge[k][1];
+
+                                if (abs(a.x - p2.x) < 1e-7 && abs(a.y - p2.y) < 1e-7 &&
+                                    abs(b.x - q2.x) < 1e-7 && abs(b.y - q2.y) < 1e-7)
+                                {
+                                    IfEdgeChecked = true;
+                                    break;
+                                }
+
+                                if (abs(b.x - p2.x) < 1e-7 && abs(b.y - p2.y) < 1e-7 &&
+                                    abs(a.x - q2.x) < 1e-7 && abs(a.y - q2.y) < 1e-7)
+                                {
+                                    IfEdgeChecked = true;
+                                    break;
+                                }
+                            }
+
+                            if (IfEdgeChecked)
+                                continue;
+                        };
+
+                        /// if p2 or q2 is very close to InitPos ?
+                        bool close_p2_or_q2 = false;
+
+                        T dis1 = sqrt((p2.x - InitPos.x) * (p2.x - InitPos.x) + (p2.y - InitPos.y) * (p2.y - InitPos.y));
+                        T dis2 = sqrt((q2.x - InitPos.x) * (q2.x - InitPos.x) + (q2.y - InitPos.y) * (q2.y - InitPos.y));
+
+                        if (dis1 < 1e-7 || dis2 < 1e-7)
+                            close_p2_or_q2 = true;
+
+                        // printf("dis1 %.40f, dis2 %.40f\n", dis1, dis2);
+                        if (close_p2_or_q2)
+                        {
+                            IntersectionOnCrossedEdge = InitPos;
+                            uint *tmp_k = &(EdgeNO.x);
+                            GlobalEdgeNO = tmp_k[yi];
+                            // printf("\nResult_.z >= 0; Result_.z = %.40f, edgeno: %d, %d, %d\nIntersection2D: %.40f, %.40f\n",
+                            //        Result_.z, EdgeNO.x, EdgeNO.y, EdgeNO.z,
+                            //        IntersectionOnCrossedEdge.x, IntersectionOnCrossedEdge.y);
+
+                            CrossedGlobalEdge[CountCrossedGlobalEdge][0] = cuDFNsys::MakeVector2(p2.x,
+                                                                                                 p2.y);
+                            CrossedGlobalEdge[CountCrossedGlobalEdge][1] = cuDFNsys::MakeVector2(q2.x,
+                                                                                                 q2.y);
+                            CountCrossedGlobalEdge++;
+
+                            break;
+                        }
+                        else if (!close_p2_or_q2 && yi == 2)
+                        {
+                            /////
+                            printf("Warning: I cannot find which edge of element %d does the particle trajectory step over I! Particle ID: %d\n", EleID, i + 1);
+                            goto Debug100;
+                        }
+                    }
+                else
+                {
+                    printf("Warning: I cannot find which edge of element %d does the particle trajectory step over II! Particle ID: %d\n", EleID, i + 1);
+                    goto Debug100;
+                }
             }
         };
 
@@ -461,8 +544,8 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
             int newELEID_ = -1;
             int newFracID_ = -1;
 
-            // for (uint p = 0; p < NumOfElesSharedEdge; ++p)
-            // printf("EdgesSharedEle_DEV[GlobalEdgeNO].EleID[p]: %d, fracid: %d\n", EdgesSharedEle_DEV[GlobalEdgeNO].EleID[p], EleToFracID_ptr[EdgesSharedEle_DEV[GlobalEdgeNO].EleID[p] - 1]);
+            //for (uint p = 0; p < NumOfElesSharedEdge; ++p)
+            //printf("EdgesSharedEle_DEV[GlobalEdgeNO].EleID[p]: %d, fracid: %d\n", EdgesSharedEle_DEV[GlobalEdgeNO].EleID[p], EleToFracID_ptr[EdgesSharedEle_DEV[GlobalEdgeNO].EleID[p] - 1]);
 
             bool ifAllsharedEdgeVelocityPositive = false;
             cuDFNsys::WhichElementToGo<T>(EleID,
@@ -580,10 +663,11 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
 
             ///------------------ d1 is a directional vector on the true next element and perpendicular to rotation axis
             ///------------------ d2 is a directional vector on the designed next element and perpendicular to rotation axis
-            cuDFNsys::Vector3<T> d1, d2;
+            // cuDFNsys::Vector3<T> d1, d2;
             //----------------------------------------------------------------------------------------------------------
             // printf("PreEleID: %d, EleID: %d, designed_next_EleID: %d\n", PreEleID, EleID, designed_next_EleID);
-            T angle_ = cuDFNsys::AngleBetweenTwoNeighboringTriangles<T>(designed_element, next_element, localedgeno_ppp, IndexLocal, d1, d2);
+            T angle_ = cuDFNsys::AngleBetweenTwoNeighboringTriangles<T>(designed_element, next_element,
+                                                                        localedgeno_ppp, IndexLocal /*, d1, d2*/);
 
             cuDFNsys::Vector3<T> Target3D = cuDFNsys::MakeVector3(TargPos.x, TargPos.y, (T)0.0f);
             Target3D = cuDFNsys::ProductSquare3Vector3<T>(RK_1, Target3D);
@@ -603,25 +687,31 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
             for (uint yr = 0; yr < 2; ++yr)
             {
                 new_Target3D = cuDFNsys::RotationRemainningTrajectoryBetweenTwo3DTriangles<T>(designed_element_ppp, angle_);
-                //printf("new_Target3D: %.40f, %.40f, %.40f\n", new_Target3D.x, new_Target3D.y, new_Target3D.z);
+                // printf("new_Target3D: %.40f, %.40f, %.40f\n", new_Target3D.x, new_Target3D.y, new_Target3D.z);
                 //------------test--------
-                cuDFNsys::Vector3<T> d3, d4;
+                //cuDFNsys::Vector3<T> d3, d4;
+
+                /// test if the new_Target3D is in the correct 3D element?
+                /// test if the new_Target3D is in the correct 3D element?
+                /// test if the new_Target3D is in the correct 3D element?
 
                 cuDFNsys::Vector3<T> next_element_ppp[3];
                 next_element_ppp[0] = new_Target3D;
                 next_element_ppp[1] = next_element[IndexLocal];
                 next_element_ppp[2] = next_element[(IndexLocal + 1) % 3];
 
-                angle_ppp[yr] = cuDFNsys::AngleBetweenTwoNeighboringTriangles<T>(next_element_ppp, next_element, 1, IndexLocal, d3, d4);
+                angle_ppp[yr] = cuDFNsys::AngleBetweenTwoNeighboringTriangles<T>(next_element_ppp, next_element, 1,
+                                                                                 IndexLocal /*, d3, d4*/);
 
                 //printf("angle_ppp[%d]: %.40f\n", yr, angle_ppp[yr]);
+                T ang_degree = angle_ppp[yr] * 180.0 / M_PI;
 
-                if (angle_ppp[yr] > 1e-4 && yr < 1)
+                if (ang_degree > 1e-1 && yr < 1)
                 {
                     angle_ = (T)2.0 * M_PI - angle_;
                     continue;
                 }
-                else if (angle_ppp[yr] > 1e-4 && yr == 1)
+                else if (ang_degree > 1e-1 && yr == 1)
                 {
                     printf("warning: I cannot correctly rotate the remainning trajectory when particle goes through a fracture trace! angle_ppp: %.40f, %.40f\n",
                            angle_ppp[0] * 180.0f / M_PI, angle_ppp[1] * 180.0f / M_PI);
@@ -682,20 +772,19 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
                    Vertex_Triangle_ForVelocity[1].x, Vertex_Triangle_ForVelocity[1].y,
                    Vertex_Triangle_ForVelocity[2].x, Vertex_Triangle_ForVelocity[2].y);
 
-            for (uint k = 0; k < NeighborEleOfOneEle_dev_ptr[InitELeID - 1].NumNeighborEle; ++k)
-            {
-                uint ele2 = NeighborEleOfOneEle_dev_ptr[InitELeID - 1].EleID[k];
-
-                cuDFNsys::Vector2<T> Vertex_Triangle_PPP[3];
-                Vertex_Triangle_PPP[0] = cuDFNsys::MakeVector2(Coordinate2D_Vec_dev_ptr[ele2 - 1].x[0], Coordinate2D_Vec_dev_ptr[ele2 - 1].y[0]);
-                Vertex_Triangle_PPP[1] = cuDFNsys::MakeVector2(Coordinate2D_Vec_dev_ptr[ele2 - 1].x[1], Coordinate2D_Vec_dev_ptr[ele2 - 1].y[1]);
-                Vertex_Triangle_PPP[2] = cuDFNsys::MakeVector2(Coordinate2D_Vec_dev_ptr[ele2 - 1].x[2], Coordinate2D_Vec_dev_ptr[ele2 - 1].y[2]);
-                printf("%% ParticleID: %d, neighboring elementID: %d, fracID: %d:\n\t%.40f, %.40f\n\t%.40f, %.40f\n\t%.40f, %.40f\n",
-                       i + 1, ele2, EleToFracID_ptr[ele2 - 1],
-                       Vertex_Triangle_PPP[0].x, Vertex_Triangle_PPP[0].y,
-                       Vertex_Triangle_PPP[1].x, Vertex_Triangle_PPP[1].y,
-                       Vertex_Triangle_PPP[2].x, Vertex_Triangle_PPP[2].y);
-            }
+            //for (uint k = 0; k < NeighborEleOfOneEle_dev_ptr[InitELeID - 1].NumNeighborEle; ++k)
+            //{
+            //    uint ele2 = NeighborEleOfOneEle_dev_ptr[InitELeID - 1].EleID[k];
+            //    cuDFNsys::Vector2<T> Vertex_Triangle_PPP[3];
+            //    Vertex_Triangle_PPP[0] = cuDFNsys::MakeVector2(Coordinate2D_Vec_dev_ptr[ele2 - 1].x[0], Coordinate2D_Vec_dev_ptr[ele2 - 1].y[0]);
+            //    Vertex_Triangle_PPP[1] = cuDFNsys::MakeVector2(Coordinate2D_Vec_dev_ptr[ele2 - 1].x[1], Coordinate2D_Vec_dev_ptr[ele2 - 1].y[1]);
+            //    Vertex_Triangle_PPP[2] = cuDFNsys::MakeVector2(Coordinate2D_Vec_dev_ptr[ele2 - 1].x[2], Coordinate2D_Vec_dev_ptr[ele2 - 1].y[2]);
+            //    printf("%% ParticleID: %d, neighboring elementID: %d, fracID: %d:\n\t%.40f, %.40f\n\t%.40f, %.40f\n\t%.40f, %.40f\n",
+            //           i + 1, ele2, EleToFracID_ptr[ele2 - 1],
+            //           Vertex_Triangle_PPP[0].x, Vertex_Triangle_PPP[0].y,
+            //           Vertex_Triangle_PPP[1].x, Vertex_Triangle_PPP[1].y,
+            //           Vertex_Triangle_PPP[2].x, Vertex_Triangle_PPP[2].y);
+            //}
         };
         Particle_runtime_error_dev_pnt[i] = 1;
         return;
@@ -746,7 +835,7 @@ template __global__ void ParticleMovementOneTimeStepGPUKernel<double>(unsigned l
                                                                       cuDFNsys::Fracture<double> *Frac_DEV,
                                                                       cuDFNsys::EdgeToEle *EdgesSharedEle_DEV,
                                                                       cuDFNsys::EleCoor<double> *Coordinate2D_Vec_dev_ptr,
-                                                                      cuDFNsys::NeighborEle *NeighborEleOfOneEle_dev_ptr,
+                                                                      //cuDFNsys::NeighborEle *NeighborEleOfOneEle_dev_ptr,
                                                                       uint *EleToFracID_ptr,
                                                                       double *velocity_ptr,
                                                                       uint Dir_flow,
@@ -761,7 +850,7 @@ template __global__ void ParticleMovementOneTimeStepGPUKernel<float>(unsigned lo
                                                                      cuDFNsys::Fracture<float> *Frac_DEV,
                                                                      cuDFNsys::EdgeToEle *EdgesSharedEle_DEV,
                                                                      cuDFNsys::EleCoor<float> *Coordinate2D_Vec_dev_ptr,
-                                                                     cuDFNsys::NeighborEle *NeighborEleOfOneEle_dev_ptr,
+                                                                     //cuDFNsys::NeighborEle *NeighborEleOfOneEle_dev_ptr,
                                                                      uint *EleToFracID_ptr,
                                                                      float *velocity_ptr,
                                                                      uint Dir_flow,

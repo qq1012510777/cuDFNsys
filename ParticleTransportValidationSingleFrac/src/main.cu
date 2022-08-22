@@ -24,34 +24,41 @@ int main(int argc, char *argv[])
         int dev = 0;
         GPUErrCheck(cudaSetDevice(dev));
 
-        time_t t;
-        time(&t);
-
         int DSIZE = 0;
         _DataType_ L = 0;
-        //_DataType_ minGrid = 0;
-        //_DataType_ maxGrid = 0;
+        _DataType_ minGrid = 0;
+        _DataType_ maxGrid = 0;
 
-        DSIZE = 0;
-        L = 0;
+        DSIZE = 1;
+        L = 30;
 
-        cuDFNsys::Warmup<<<256 / 256 + 1, 256 /*  1, 2*/>>>();
-        cudaDeviceSynchronize();
+        minGrid = 2;
+        maxGrid = 3; // recommend as 1 / 10 times the largest size of fractures
 
         int perco_dir = 2;
 
         cout << "preparing" << endl;
 
-        thrust::host_vector<cuDFNsys::Fracture<_DataType_>> Frac_verts_host;
-        thrust::device_vector<cuDFNsys::Fracture<_DataType_>> Frac_verts_device;
-
-        cuDFNsys::InputObjectData<_DataType_> lk;
-        lk.InputFractures("Fractures.h5", Frac_verts_host, L);
-        DSIZE = Frac_verts_host.size();
-
-        Frac_verts_device = Frac_verts_host;
+        thrust::host_vector<cuDFNsys::Fracture<_DataType_>> Frac_verts_host(DSIZE);
+        thrust::device_vector<cuDFNsys::Fracture<_DataType_>> Frac_verts_device(DSIZE);
         cuDFNsys::Fracture<_DataType_> *Frac_verts_device_ptr;
         Frac_verts_device_ptr = thrust::raw_pointer_cast(Frac_verts_device.data());
+
+        cuDFNsys::Warmup<<<DSIZE / 256 + 1, 256 /*  1, 2*/>>>();
+        cudaDeviceSynchronize();
+        time_t t;
+        time(&t);
+
+        cout << "generating fractures" << endl;
+
+        cuDFNsys::FracturesCrossedVertical<_DataType_><<<DSIZE / 256 + 1, 256>>>(Frac_verts_device_ptr,
+                                                                                 (unsigned long)t,
+                                                                                 DSIZE, L);
+        cudaDeviceSynchronize();
+
+        Frac_verts_host = Frac_verts_device;
+        
+        //cout << "conductivity: " << Frac_verts_host[0].Conductivity << endl;
 
         cout << "identifying intersections with complete fractures" << endl;
         std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<_DataType_>, cuDFNsys::Vector3<_DataType_>>> Intersection_map;
@@ -60,7 +67,6 @@ int main(int argc, char *argv[])
                                                                   false,
                                                                   Intersection_map};
         cout << "identifying cluster with complete fractures" << endl;
-        
         std::vector<std::vector<size_t>> ListClusters;
         std::vector<size_t> Percolation_cluster;
         cuDFNsys::Graph<_DataType_> G{(size_t)DSIZE, Intersection_map};
@@ -73,6 +79,9 @@ int main(int argc, char *argv[])
                                                Frac_verts_host, Intersection_map, ListClusters,
                                                Percolation_cluster, false, true, true, true,
                                                L, perco_dir};
+
+        cuDFNsys::OutputObjectData<_DataType_> lk;
+        lk.OutputFractures("Fractures.h5", Frac_verts_host, L);
 
         //
         Intersection_map.clear();
@@ -112,10 +121,10 @@ int main(int argc, char *argv[])
                                                          Frac_verts_host,
                                                          Intersection_map};
             cout << "meshing ..." << endl;
-            cuDFNsys::Mesh<_DataType_> mesh;
 
-            lk.InputMesh("mesh.h5", mesh, &Fracs_percol);
-
+            cuDFNsys::Mesh<_DataType_> mesh{Frac_verts_host, IntersectionPair_percol,
+                                            &Fracs_percol, minGrid, maxGrid, perco_dir, L};
+            lk.OutputMesh("mesh.h5", mesh, Fracs_percol);
             int i = 0;
             mesh.MatlabPlot("DFN_mesh_" + to_string(i + 1) + ".mat",
                             "DFN_mesh_" + to_string(i + 1) + ".m",
@@ -124,6 +133,7 @@ int main(int argc, char *argv[])
             cout << "MHFEM ing ..." << endl;
 
             cuDFNsys::MHFEM<_DataType_> fem{mesh, Frac_verts_host, 100, 20, perco_dir, L};
+
             cout << "Fluxes: " << fem.QIn << ", ";
             cout << fem.QOut << ", Permeability: ";
             cout << fem.Permeability << endl;
@@ -139,15 +149,16 @@ int main(int argc, char *argv[])
                            "MHFEM_" + to_string(i + 1) + ".m",
                            Frac_verts_host, mesh, L);
             //---------------
+
             cout << "Particle transport ing ...\n";
 
             cuDFNsys::ParticleTransport<_DataType_> p{(unsigned long)t,
-                                                      atoi(argv[1]),             // number of particle
+                                                      atoi(argv[1]),              // number of particle
                                                       atoi(argv[2]),             // number of time steps
                                                       (_DataType_)atof(argv[3]), // delta T
                                                       (_DataType_)atof(argv[4]), // molecular diffusion
                                                       Frac_verts_host, mesh, fem, (uint)perco_dir, -0.5f * L,
-                                                      "Particle_tracking", "Resident"};
+                                                      "Particle_tracking", "Flux-weighted"};
             p.MatlabPlot("MHFEM_" + to_string(i + 1) + ".mat", "particle.m", mesh, fem, L);
         }
         //cudaDeviceReset();
