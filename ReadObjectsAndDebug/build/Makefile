@@ -852,6 +852,33 @@ home/tingchangyin/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.cu.s:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.cu.s
 .PHONY : home/tingchangyin/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.cu.s
 
+home/tingchangyin/cuDFNsys/src/Geometry/3D/Scale3DTriangle.o: home/tingchangyin/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.o
+
+.PHONY : home/tingchangyin/cuDFNsys/src/Geometry/3D/Scale3DTriangle.o
+
+# target to build an object file
+home/tingchangyin/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.o
+.PHONY : home/tingchangyin/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.o
+
+home/tingchangyin/cuDFNsys/src/Geometry/3D/Scale3DTriangle.i: home/tingchangyin/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.i
+
+.PHONY : home/tingchangyin/cuDFNsys/src/Geometry/3D/Scale3DTriangle.i
+
+# target to preprocess a source file
+home/tingchangyin/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.i
+.PHONY : home/tingchangyin/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.i
+
+home/tingchangyin/cuDFNsys/src/Geometry/3D/Scale3DTriangle.s: home/tingchangyin/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.s
+
+.PHONY : home/tingchangyin/cuDFNsys/src/Geometry/3D/Scale3DTriangle.s
+
+# target to generate assembly for a file
+home/tingchangyin/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.s
+.PHONY : home/tingchangyin/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.s
+
 home/tingchangyin/cuDFNsys/src/Geometry/3D/Triangle3DArea.o: home/tingchangyin/cuDFNsys/src/Geometry/3D/Triangle3DArea.cu.o
 
 .PHONY : home/tingchangyin/cuDFNsys/src/Geometry/3D/Triangle3DArea.o
@@ -1482,6 +1509,9 @@ help:
 	@echo "... home/tingchangyin/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.o"
 	@echo "... home/tingchangyin/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.i"
 	@echo "... home/tingchangyin/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.s"
+	@echo "... home/tingchangyin/cuDFNsys/src/Geometry/3D/Scale3DTriangle.o"
+	@echo "... home/tingchangyin/cuDFNsys/src/Geometry/3D/Scale3DTriangle.i"
+	@echo "... home/tingchangyin/cuDFNsys/src/Geometry/3D/Scale3DTriangle.s"
 	@echo "... home/tingchangyin/cuDFNsys/src/Geometry/3D/Triangle3DArea.o"
 	@echo "... home/tingchangyin/cuDFNsys/src/Geometry/3D/Triangle3DArea.i"
 	@echo "... home/tingchangyin/cuDFNsys/src/Geometry/3D/Triangle3DArea.s"

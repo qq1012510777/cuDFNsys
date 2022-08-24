@@ -19,6 +19,18 @@ int main(int argc, char *argv[])
 
     try
     {
+        /// uint iyu[1000] = {1};
+        /// uint2 dim_s = make_uint2(1, 1000);
+        /// cuDFNsys::HDF5API hg0;
+        /// vector<string> datasetname = {"kl", "lio"};
+        /// vector<uint *> sd = {iyu, iyu};
+        /// vector<uint2> ee = {dim_s, dim_s};
+        /// hg0.NewFile("Test1.h5");
+        /// hg0.AddDatasetsWithOneGroup("Test1.h5", "N", datasetname, sd, ee);
+        /// vector<uint> sdd = hg0.ReadDataset<uint>("Test1.h5", "N", "lio");
+        /// cout << sdd[0] << ", " << sdd[1] << endl;
+        /// return 0;
+
         double istart = cuDFNsys::CPUSecond();
 
         int dev = 0;

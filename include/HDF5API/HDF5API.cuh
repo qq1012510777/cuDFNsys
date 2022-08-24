@@ -51,7 +51,8 @@ public:
                    const T *data,
                    const uint2 &dim);
     // read dataset in a h5; the function returns a vector that is column major
-    vector<double> ReadDataset(const string &filename,
+    template <class T>
+    vector<T> ReadDataset(const string &filename,
                                const string &groupname,
                                const string &datasetname);
     //check if a h5 exits?
@@ -64,43 +65,6 @@ public:
     // read string
     string ReadDatasetString(const string &filename,
                              const string &groupname,
-                             const string &datasetname)
-    {
-        try
-        {
-            H5::Exception::dontPrint();
-            H5File file1(filename, H5F_ACC_RDONLY);
-            file1.close();
-        }
-        catch (...)
-        {
-            string AS = "File '" + filename + "' does not exist!\n";
-            throw ExceptionsPause(AS);
-        };
-
-        H5File file(filename, H5F_ACC_RDONLY);
-        DataSet dataset;
-        Group group;
-        if (groupname != "N")
-        {
-            Group group = file.openGroup(groupname);
-            dataset = group.openDataSet(datasetname);
-        }
-        else
-            dataset = file.openDataSet(datasetname);
-
-        DataSpace filespace = dataset.getSpace();
-        H5::StrType datatype = dataset.getStrType();
-
-        std::string data;
-
-        dataset.read(data, datatype, filespace);
-
-        if (groupname != "N")
-            group.close();
-        file.close();
-
-        return data;
-    };
+                             const string &datasetname);
 };
 }; // namespace cuDFNsys

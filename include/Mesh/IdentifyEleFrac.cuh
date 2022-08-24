@@ -12,6 +12,8 @@
 #include "../Geometry/2D/IfPntInside2DConvexPoly.cuh"
 #include "../Geometry/2D/IfPntLiesOnBound2DConvexPoly.cuh"
 #include "../Geometry/3D/DistancePnt3DPlane.cuh"
+#include "../Geometry/3D/Triangle3DArea.cuh"
+#include "../Geometry/3D/Scale3DTriangle.cuh"
 #include "../GlobalDef/GlobalDef.cuh"
 
 namespace cuDFNsys

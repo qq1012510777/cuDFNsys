@@ -53,6 +53,21 @@ void cuDFNsys::HDF5API::AddDataset(const string &filename,
     delete[] dims;
     dims = NULL;
 
+    auto datatype = PredType::NATIVE_DOUBLE;
+
+    if (typeid(data[0]) == typeid(double))
+        datatype = PredType::NATIVE_DOUBLE;
+    else if (typeid(data[0]) == typeid(float))
+        datatype = PredType::NATIVE_FLOAT;
+    else if (typeid(data[0]) == typeid(size_t))
+        datatype = PredType::NATIVE_UINT;
+    else if (typeid(data[0]) == typeid(int))
+        datatype = PredType::NATIVE_INT;
+    else if (typeid(data[0]) == typeid(uint))
+        datatype = PredType::NATIVE_UINT;
+    else
+        throw ExceptionsPause("Undefined datatype in HDF5API::AddDataset\n");
+
     if (groupname != "N")
     {
         Group group;
@@ -72,47 +87,18 @@ void cuDFNsys::HDF5API::AddDataset(const string &filename,
         }
 
         DataSet dataset =
-            group.createDataSet(datasetname, PredType::NATIVE_DOUBLE, dataspace);
+            group.createDataSet(datasetname, datatype, dataspace);
 
-        double *buffer = new double[dim.x * dim.y]();
-        if (buffer == NULL)
-        {
-            string AS = "Alloc error in HDF5API::AddDataset!\n";
-            group.close();
-            file.close();
-            throw ExceptionsPause(AS);
-        }
-
-        for (size_t i = 0; i < dim.x * dim.y; ++i)
-            buffer[i] = data[i];
-
-        dataset.write(buffer, PredType::NATIVE_DOUBLE);
-
-        delete[] buffer;
-        buffer = NULL;
+        dataset.write(data, datatype);
 
         group.close();
     }
     else
     {
         DataSet dataset =
-            file.createDataSet(datasetname, PredType::NATIVE_DOUBLE, dataspace);
+            file.createDataSet(datasetname, datatype, dataspace);
 
-        double *buffer = new double[dim.x * dim.y]();
-        if (buffer == NULL)
-        {
-            string AS = "Alloc error in HDF5API::AddDataset!\n";
-            file.close();
-            throw ExceptionsPause(AS);
-        }
-
-        for (size_t i = 0; i < dim.x * dim.y; ++i)
-            buffer[i] = data[i];
-
-        dataset.write(buffer, PredType::NATIVE_DOUBLE);
-
-        delete[] buffer;
-        buffer = NULL;
+        dataset.write(data, datatype);
     }
 
     file.close();
@@ -137,6 +123,9 @@ void cuDFNsys::HDF5API::AddDatasetsWithOneGroup(const string &filename,
                                                 const vector<T *> data,
                                                 const vector<uint2> &dim)
 {
+    if(groupname == "N")
+    throw ExceptionsPause("You should define group name when you are using HDF5API::AddDatasetsWithOneGroup!\n");
+
     H5File file(filename, H5F_ACC_RDWR);
 
     Group group;
@@ -155,6 +144,21 @@ void cuDFNsys::HDF5API::AddDatasetsWithOneGroup(const string &filename,
         //cout << "created group!\n";
     };
 
+    auto datatype = PredType::NATIVE_DOUBLE;
+
+    if (typeid(data[0][0]) == typeid(double))
+        datatype = PredType::NATIVE_DOUBLE;
+    else if (typeid(data[0][0]) == typeid(float))
+        datatype = PredType::NATIVE_FLOAT;
+    else if (typeid(data[0][0]) == typeid(size_t))
+        datatype = PredType::NATIVE_UINT;
+    else if (typeid(data[0][0]) == typeid(int))
+        datatype = PredType::NATIVE_INT;
+    else if (typeid(data[0][0]) == typeid(uint))
+        datatype = PredType::NATIVE_UINT;
+    else
+        throw ExceptionsPause("Undefined datatype in HDF5API::AddDataset\n");
+
     for (int i = 0; i < datasetname.size(); ++i)
     {
         hsize_t *dims; // dataset dimensions for each rank
@@ -171,24 +175,9 @@ void cuDFNsys::HDF5API::AddDatasetsWithOneGroup(const string &filename,
         dims = NULL;
 
         DataSet dataset =
-            group.createDataSet(datasetname[i], PredType::NATIVE_DOUBLE, dataspace);
+            group.createDataSet(datasetname[i], datatype, dataspace);
 
-        double *buffer = new double[dim[i].x * dim[i].y]();
-        if (buffer == NULL)
-        {
-            string AS = "Alloc error in HDF5API::AddDatasetsWithOneGroup!\n";
-            group.close();
-            file.close();
-            throw ExceptionsPause(AS);
-        }
-
-        for (size_t j = 0; j < dim[i].x * dim[i].y; ++j)
-            buffer[j] = data[i][j];
-
-        dataset.write(buffer, PredType::NATIVE_DOUBLE);
-
-        delete[] buffer;
-        buffer = NULL;
+        dataset.write(data[i], datatype);
     }
 
     group.close();
@@ -240,9 +229,10 @@ template void cuDFNsys::HDF5API::OverWrite(const string &filename, const string 
 // AUTHOR:      Tingchang YIN
 // DATE:        09/04/2022
 // ====================================================
-vector<double> cuDFNsys::HDF5API::ReadDataset(const string &filename,
-                                              const string &groupname,
-                                              const string &datasetname)
+template <class T>
+vector<T> cuDFNsys::HDF5API::ReadDataset(const string &filename,
+                                         const string &groupname,
+                                         const string &datasetname)
 {
     try
     {
@@ -270,6 +260,8 @@ vector<double> cuDFNsys::HDF5API::ReadDataset(const string &filename,
     DataSpace filespace = dataset.getSpace();
     int rank = filespace.getSimpleExtentNdims();
 
+    DataType dt_org = dataset.getDataType();
+
     hsize_t dims[rank];
 
     rank = filespace.getSimpleExtentDims(dims);
@@ -280,25 +272,44 @@ vector<double> cuDFNsys::HDF5API::ReadDataset(const string &filename,
     for (int i = 0; i < rank; ++i)
         NUM_size *= dims[i];
 
-    double *buffer = new double[NUM_size]();
-    if (buffer == NULL)
-    {
-        string AS = "Alloc error in HDF5API::ReadDataset!\n";
-        throw ExceptionsPause(AS);
-    }
+    T *buffer = new T[NUM_size];
 
-    dataset.read(buffer, PredType::NATIVE_DOUBLE, myspace, filespace);
+    if (typeid(buffer[0]) == typeid(double))
+        dataset.read(buffer, PredType::NATIVE_DOUBLE, myspace, filespace);
+    else if (typeid(buffer[0]) == typeid(float))
+        dataset.read(buffer, PredType::NATIVE_FLOAT, myspace, filespace);
+    else if (typeid(buffer[0]) == typeid(int))
+        dataset.read(buffer, PredType::NATIVE_INT, myspace, filespace);
+    else if (typeid(buffer[0]) == typeid(uint))
+        dataset.read(buffer, PredType::NATIVE_UINT, myspace, filespace);
+    else
+        throw ExceptionsPause("Undefined datatype in HDF5API::ReadDataset\n");
 
-    vector<double> AK(buffer, buffer + NUM_size);
+    vector<T> AK(buffer, buffer + NUM_size);
+
+    //cout << AK[0] << endl;
 
     delete[] buffer;
     buffer = NULL;
+
     if (groupname != "N")
         group.close();
     file.close();
 
     return AK;
 }; // ReadDataset
+template vector<double> cuDFNsys::HDF5API::ReadDataset<double>(const string &filename,
+                                                               const string &groupname,
+                                                               const string &datasetname);
+template vector<float> cuDFNsys::HDF5API::ReadDataset<float>(const string &filename,
+                                                             const string &groupname,
+                                                             const string &datasetname);
+template vector<uint> cuDFNsys::HDF5API::ReadDataset<uint>(const string &filename,
+                                                           const string &groupname,
+                                                           const string &datasetname);
+template vector<int> cuDFNsys::HDF5API::ReadDataset<int>(const string &filename,
+                                                         const string &groupname,
+                                                         const string &datasetname);
 
 // ====================================================
 // NAME:        IfH5FileExist
@@ -380,3 +391,50 @@ void cuDFNsys::HDF5API::AddDatasetString(const string &filename,
 
     file.close();
 }; // AddDatasetString
+
+// ====================================================
+// NAME:        ReadDatasetString
+// DESCRIPTION: read string in a file
+// AUTHOR:      Tingchang YIN
+// DATE:        22/08/2022
+// ====================================================
+string cuDFNsys::HDF5API::ReadDatasetString(const string &filename,
+                                            const string &groupname,
+                                            const string &datasetname)
+{
+    try
+    {
+        H5::Exception::dontPrint();
+        H5File file1(filename, H5F_ACC_RDONLY);
+        file1.close();
+    }
+    catch (...)
+    {
+        string AS = "File '" + filename + "' does not exist!\n";
+        throw ExceptionsPause(AS);
+    };
+
+    H5File file(filename, H5F_ACC_RDONLY);
+    DataSet dataset;
+    Group group;
+    if (groupname != "N")
+    {
+        Group group = file.openGroup(groupname);
+        dataset = group.openDataSet(datasetname);
+    }
+    else
+        dataset = file.openDataSet(datasetname);
+
+    DataSpace filespace = dataset.getSpace();
+    H5::StrType datatype = dataset.getStrType();
+
+    std::string data;
+
+    dataset.read(data, datatype, filespace);
+
+    if (groupname != "N")
+        group.close();
+    file.close();
+
+    return data;
+}; // ReadDatasetString

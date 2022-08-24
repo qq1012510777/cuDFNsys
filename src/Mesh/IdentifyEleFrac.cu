@@ -57,10 +57,14 @@ __global__ void cuDFNsys::IdentifyEleFrac(uint3 *One_entity_one_ele_dev_ptr,
 
         bool belong_to_this_frac = true;
         //printf("kernel 2\n");
+
         for (int k = 0; k < 3; ++k)
         {
             T dis = cuDFNsys::DistancePnt3DPlane<T>(Plane, (*verts_ele[k]));
-
+            // if (node1 == 357 && node2 == 351 && node3 == 2460)
+            // {
+            //     printf("k : %d, dis: %.40f\n", k, dis);
+            // };
             if (abs(dis) > _tol_)
             {
                 //printf("%f\n", abs(dis));

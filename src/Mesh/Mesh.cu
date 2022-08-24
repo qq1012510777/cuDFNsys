@@ -454,7 +454,6 @@ void cuDFNsys::Mesh<T>::GetElements(const thrust::host_vector<cuDFNsys::Fracture
     for (size_t i = 0; i < One_entity_one_ele.size(); ++i)
     {
         One_entity_one_ele[i] = elementEntities_2D[i][Largest_ele[i] - 1];
-        //cout << One_entity_one_ele[i].x << ", " << One_entity_one_ele[i].y << ", " << One_entity_one_ele[i].z << endl;
     }
 
     thrust::device_vector<uint3> One_entity_one_ele_dev(elementEntities_2D.size());
