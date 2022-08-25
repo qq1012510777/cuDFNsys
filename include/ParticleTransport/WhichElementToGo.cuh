@@ -43,7 +43,11 @@ __host__ __device__ void WhichElementToGo(uint currentEleID,
         if (EleID_vec[i] == currentEleID)
             continue;
 
-        uint EleID = EleID_vec[i];               // from 1
+        uint EleID = EleID_vec[i]; // from 1
+
+        /// if (currentEleID == 13510)
+        ///     printf("%d, ", EleID);
+
         uint LocalEdgeNO__ = LocalEdgeNo_vec[i]; // 0, 1 or 2
         //uint FracID = EleToFracID_ptr[EleID - 1];                               // from 0
         uint3 EdgeNO = make_uint3(EleID * 3 - 3, EleID * 3 - 2, EleID * 3 - 1); // from 0
@@ -101,6 +105,27 @@ __host__ __device__ void WhichElementToGo(uint currentEleID,
         if (i > 0)
             veloc_vec[i] += veloc_vec[i - 1];
     }
+    //for (uint i = 0; i < NumSharedEle - 1; ++i)
+    //    printf("%.40f, ", veloc_vec[i]);
+    //printf("\n");
+
+    if (Dispersion_local == 0)
+    {
+        T velocity_error = (T)0.05;
+        for (uint i = 0; i < NumSharedEle - 2; ++i)
+        {
+            if (veloc_vec[i] - (i == 0 ? 0 : veloc_vec[i - 1]) < velocity_error)
+                veloc_vec[i] = (i == 0 ? 0 : veloc_vec[i - 1]);
+            if (veloc_vec[i] > 1.0 - velocity_error)
+                veloc_vec[i] = 1.0;
+        }
+    };
+    //if (currentEleID == 13510)
+    //{
+    //for (uint i = 0; i < NumSharedEle - 1; ++i)
+    //    printf("%.40f, ", veloc_vec[i]);
+    //printf("\n");
+    //}
 
     if (Dispersion_local > 0)
     {

@@ -140,6 +140,9 @@ int main(int argc, char *argv[])
             //---------------
             cout << "Particle transport ing ...\n";
 
+            cuDFNsys::OutputObjectData<_DataType_> lk;
+            lk.OutputFractures("FracturesForParticle.h5", Frac_verts_host, L);
+
             cuDFNsys::ParticleTransport<_DataType_> p{(unsigned long)t,
                                                       atoi(argv[1]), // number of time step
                                                       Frac_verts_host, mesh, fem, (uint)perco_dir, -0.5f * L,

@@ -10,6 +10,7 @@
 #pragma once
 #include "EdgeToEle.cuh"
 #include "NeighborEle.cuh"
+#include "OutputObjectData/OutputObjectData.cuh"
 #include "Particle.cuh"
 #include "ParticleMovementOneTimeStepGPUKernel.cuh"
 #include "PredicateNumOfReachedOutletParticles.cuh"
@@ -121,18 +122,17 @@ public:
             vector<T> LastStepParticle =
                 h5g.ReadDataset<T>(file_block_last, "N",
                                    datasetname_last);
-            this->NumParticles = LastStepParticle.size() / 5;
+            this->NumParticles = LastStepParticle.size() / 2;
             this->ParticlePlumes.resize(this->NumParticles);
 
             vector<T> Ifreached =
                 h5g.ReadDataset<T>(file_block_last, "N",
                                    "IfReachedAndElementFracTag_" + cuDFNsys::ToStringWithWidth(ExistingNumsteps, 10));
 
-    
             for (uint i = 0; i < this->NumParticles; i++)
             {
-                this->ParticlePlumes[i].Position2D.x = LastStepParticle[i + this->NumParticles * 3];
-                this->ParticlePlumes[i].Position2D.y = LastStepParticle[i + this->NumParticles * 4];
+                this->ParticlePlumes[i].Position2D.x = LastStepParticle[i /*this->NumParticles * 3*/];
+                this->ParticlePlumes[i].Position2D.y = LastStepParticle[i + this->NumParticles * 1];
                 this->ParticlePlumes[i].ElementID = Ifreached[i + this->NumParticles];
                 this->ParticlePlumes[i].IfReachOutletPlane = (Ifreached[i] == 0 ? false : true);
                 // cout << this->ParticlePlumes[i].Position2D.x << ", ";
@@ -140,7 +140,7 @@ public:
                 // cout << this->ParticlePlumes[i].ElementID << ", ";
                 // cout << this->ParticlePlumes[i].IfReachOutletPlane << endl;
             }
-            
+
             vector<T> Tem_ps = h5g.ReadDataset<T>(matfile, "N", "Delta_T");
             T delta_T_ = Tem_ps[0];
             Tem_ps = h5g.ReadDataset<T>(matfile, "N", "Dispersion_local");
@@ -318,7 +318,7 @@ public:
             h5g.AddDataset(h5dispersioninfo, "N", "NumOfSteps", Step, dim_scalar);
 
         T *particle_position_3D;
-        particle_position_3D = new T[this->NumParticles * 5];
+        particle_position_3D = new T[this->NumParticles * 2];
         if (particle_position_3D == NULL)
         {
             string AS = "Alloc error in ParticleTransport::OutputParticleInfoStepByStep\n";
@@ -334,25 +334,22 @@ public:
             uint elementID = this->ParticlePlumes[i].ElementID; // from 1
             uint FracID = mesh.ElementFracTag[elementID - 1];   // from 0
 
-            T Rotate2DTo3D[3][3];
-            Fracs[FracID].RoationMatrix(Rotate2DTo3D, 23);
-
-            tmpPos = cuDFNsys::ProductSquare3Vector3<T>(Rotate2DTo3D, tmpPos);
-
-            tmpPos = cuDFNsys::MakeVector3(tmpPos.x + Fracs[FracID].Center.x,
-                                           tmpPos.y + Fracs[FracID].Center.y,
-                                           tmpPos.z + Fracs[FracID].Center.z);
-
-            particle_position_3D[i] = tmpPos.x;
-            particle_position_3D[i + this->NumParticles] = tmpPos.y;
-            particle_position_3D[i + this->NumParticles * 2] = tmpPos.z;
+            // T Rotate2DTo3D[3][3];
+            // Fracs[FracID].RoationMatrix(Rotate2DTo3D, 23);
+            // tmpPos = cuDFNsys::ProductSquare3Vector3<T>(Rotate2DTo3D, tmpPos);
+            // tmpPos = cuDFNsys::MakeVector3(tmpPos.x + Fracs[FracID].Center.x,
+            //                                tmpPos.y + Fracs[FracID].Center.y,
+            //                                tmpPos.z + Fracs[FracID].Center.z);
+            // particle_position_3D[i] = tmpPos.x;
+            // particle_position_3D[i + this->NumParticles] = tmpPos.y;
+            // particle_position_3D[i + this->NumParticles * 2] = tmpPos.z;
             //particle_position_3D[i + this->NumParticles * 3] = (this->ParticlePlumes[i].IfReachOutletPlane == false ? 0 : 1);
             //particle_position_3D[i + this->NumParticles * 4] = this->ParticlePlumes[i].ElementID;
-            particle_position_3D[i + this->NumParticles * 3] = this->ParticlePlumes[i].Position2D.x;
-            particle_position_3D[i + this->NumParticles * 4] = this->ParticlePlumes[i].Position2D.y;
+            particle_position_3D[i /*this->NumParticles * 0*/] = this->ParticlePlumes[i].Position2D.x;
+            particle_position_3D[i + this->NumParticles * 1] = this->ParticlePlumes[i].Position2D.y;
         }
 
-        uint2 dim_data = make_uint2(5, this->NumParticles);
+        uint2 dim_data = make_uint2(2, this->NumParticles);
         uint2 dim_datauu = make_uint2(2, this->NumParticles);
         uint *_IfReaded_and_ElementFracTag_ = new uint[this->NumParticles * 2];
         if (_IfReaded_and_ElementFracTag_ == NULL)
@@ -423,19 +420,7 @@ public:
         oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, 'FaceVertexCData', pressure_eles, 'FaceColor', 'flat', 'EdgeAlpha', 0.1, 'facealpha', 0.1); colorbar; view(3); hold on\n";
         oss << "caxis([" << fem.OutletP << ", " << fem.InletP << "]);\n";
         oss << "xlim([-(0.1 * L + L), (0.1 * L + L)])\nylim([ -(0.1 * L + L), (0.1 * L + L) ])\nzlim([ -(0.1 * L + L), (0.1 * L + L) ]);hold on\n\n";
-        // oss << "S = load([currentPath, '/" << ParticlePosition << "_step_" << cuDFNsys::ToStringWithWidth(0, 7) << ".mat']);\n";
-        // oss << "N_steps = S.NumOfSteps;\n";
-        // oss << "N_particles = size(S.particle_position_3D_step_0, 1);\n clear S;\n\n";
-        // oss << "Matrx3D_pso = zeros(N_particles, size(S.particle_position_3D_step_0, 2), N_steps + 1);\nclear S;\n";
-        // oss << "for i = 0:N_steps\n";
-        // //oss << "\ttitle(['DFN flow (mhfem); step NO = ', num2str(i)]);\n";
-        // oss << "\tS = load([currentPath, '/" << ParticlePosition << "_step_', num2str(i, '%07d'), '.mat']);\n";
-        // oss << "\teval(['Matrx3D_pso(:, :, i + 1) = S.particle_position_3D_step_', num2str(i), '(:, :);']);\n";
-        // //oss << "\teval(['p_s = scatter3(S.particle_position_3D_step_', num2str(i), '(:, 1), S.particle_position_3D_step_', num2str(i), '(:, 2), S.particle_position_3D_step_', num2str(i), '(:, 3), ''k'', ''o'', ''filled'');']);\n";
-        // //oss << "\tif (i == 0); pause; else; pause(0.01); end;\n";
-        // oss << "\tclear S;\n";
-        // //oss << "\tif (i ~= S.NumOfSteps); delete(p_s); end\n";
-        // oss << "end\n";
+
         oss << "N_steps = h5read([currentPath, '/ParticlePositionResult/DispersionInfo.h5'], '/NumOfSteps');\n";
         oss << "S = h5read([currentPath, '/ParticlePositionResult/ParticlePositionInit.h5'], '/Step_0000000000');\n";
         oss << "N_particles = size(S, 1);\n";
@@ -462,7 +447,7 @@ public:
         oss << "\t\tfor j = init_:final_\n";
         // oss << "\t\t\tS1 = load([currentPath, '/" << ParticlePosition << "_step_', num2str(j, '%07d'),'.mat']);\n";
         oss << "\t\t\tH5name = [];\n";
-        oss << "\t\t\tif (j == 0); H5name = [currentPath, '/ParticlePositionResult/ParticlePositionInit.h5']; else; H5name = [currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(ceil(double(j) / double(SizeOfDataBlock)), '%010d'), '.h5']; end;\n";
+        oss << "\t\t\tif (j == 0); H5name = [currentPath, '/ParticlePositionResult/ParticlePositionInit3D.h5']; else; H5name = [currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(ceil(double(j) / double(SizeOfDataBlock)), '%010d'), '3D.h5']; end;\n";
         oss << "\t\t\tS = h5read(H5name, ['/Step_', num2str(j, '%010d')]);\n";
         oss << "\t\t\tAK_1(j - init_ + 1, :) = S(:, 1);\n";
         oss << "\t\t\tAK_2(j - init_ + 1, :) = S(:, 2);\n";
@@ -487,7 +472,7 @@ public:
         oss << "figure(2)\nfor i = 0:N_steps\n";
         oss << "\ttitle(['DFN flow (mhfem); step NO = ', num2str(i)]);\n";
         oss << "\tH5name = [];\n";
-        oss << "\tif (i == 0); H5name = [currentPath, '/ParticlePositionResult/ParticlePositionInit.h5']; else; H5name = [currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(ceil(double(i) / double(SizeOfDataBlock)), '%010d'), '.h5']; end;\n";
+        oss << "\tif (i == 0); H5name = [currentPath, '/ParticlePositionResult/ParticlePositionInit3D.h5']; else; H5name = [currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(ceil(double(i) / double(SizeOfDataBlock)), '%010d'), '3D.h5']; end;\n";
         oss << "\tS = h5read(H5name, ['/Step_', num2str(i, '%010d')]);\n";
         oss << "\tMatrx3D_pso = S(:, [1 2 3]);\n";
         oss << "\tp_s = scatter3(Matrx3D_pso(:, 1), Matrx3D_pso(:, 2), Matrx3D_pso(:, 3), 'k', 'o', 'filled'); clear Matrx3D_pso\n";
