@@ -20,7 +20,7 @@ struct PredicateNumOfReachedOutletParticles
 {
     __host__ __device__ bool operator()(const cuDFNsys::Particle<T> &x) const
     {
-        return x.IfReachOutletPlane;
+        return (x.ParticleID == -1 ? true : false);
     };
 };
 }; // namespace cuDFNsys

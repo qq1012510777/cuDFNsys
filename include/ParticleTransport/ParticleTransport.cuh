@@ -110,6 +110,9 @@ public:
             Tem_p = h5g.ReadDataset<uint>(matfile, "N", "SizeOfDataBlock");
             this->SizeOfDataBlock = Tem_p[0];
 
+            Tem_p = h5g.ReadDataset<uint>(matfile, "N", "NumParticles");
+            this->NumParticles = Tem_p[0];
+
             string Particle_mode = h5g.ReadDatasetString(matfile, "N", "Particle_mode");
             string Injection_mode = h5g.ReadDatasetString(matfile, "N", "Injection_mode");
 
@@ -122,19 +125,19 @@ public:
             vector<T> LastStepParticle =
                 h5g.ReadDataset<T>(file_block_last, "N",
                                    datasetname_last);
-            this->NumParticles = LastStepParticle.size() / 2;
-            this->ParticlePlumes.resize(this->NumParticles);
+            uint NumParDyna = LastStepParticle.size() / 2;
+            this->ParticlePlumes.resize(NumParDyna);
 
             vector<T> Ifreached =
                 h5g.ReadDataset<T>(file_block_last, "N",
-                                   "IfReachedAndElementFracTag_" + cuDFNsys::ToStringWithWidth(ExistingNumsteps, 10));
+                                   "ParticleIDAndElementTag_" + cuDFNsys::ToStringWithWidth(ExistingNumsteps, 10));
 
-            for (uint i = 0; i < this->NumParticles; i++)
+            for (uint i = 0; i < NumParDyna; i++)
             {
-                this->ParticlePlumes[i].Position2D.x = LastStepParticle[i /*this->NumParticles * 3*/];
-                this->ParticlePlumes[i].Position2D.y = LastStepParticle[i + this->NumParticles * 1];
-                this->ParticlePlumes[i].ElementID = Ifreached[i + this->NumParticles];
-                this->ParticlePlumes[i].IfReachOutletPlane = (Ifreached[i] == 0 ? false : true);
+                this->ParticlePlumes[i].Position2D.x = LastStepParticle[i];
+                this->ParticlePlumes[i].Position2D.y = LastStepParticle[i + NumParDyna];
+                this->ParticlePlumes[i].ElementID = Ifreached[i + NumParDyna];
+                this->ParticlePlumes[i].ParticleID = Ifreached[i];
                 // cout << this->ParticlePlumes[i].Position2D.x << ", ";
                 // cout << this->ParticlePlumes[i].Position2D.y << ", ";
                 // cout << this->ParticlePlumes[i].ElementID << ", ";
@@ -154,10 +157,10 @@ public:
         }
         else
         {
-
+            cout << 1 << endl;
             this->InitilizeParticles(NumOfParticles_ii,
                                      mesh, fem, Injection_mode_ii);
-
+            cout << 2 << endl;
             this->OutputParticleInfoStepByStep(0,
                                                delta_T_ii,
                                                Dispersion_local_ii,
@@ -165,6 +168,7 @@ public:
                                                Injection_mode_ii,
                                                Fracs, mesh);
             //cout << NumTimeStep << ", " << delta_T_ii << ", " << Dispersion_local << " ______ \n";
+            cout << 3 << endl;
             this->ParticleMovement(seed, 1, NumTimeStep, delta_T_ii,
                                    Dispersion_local_ii,
                                    Particle_mode_ii,
@@ -186,7 +190,6 @@ public:
                           const cuDFNsys::MHFEM<T> &fem,
                           T outletcoordinate)
     {
-
         thrust::device_vector<cuDFNsys::Particle<T>> ParticlePlumes_DEV = this->ParticlePlumes;
         thrust::device_vector<cuDFNsys::Fracture<T>> Fracsvec_DEV = Fracs;
         thrust::device_vector<cuDFNsys::EdgeToEle> EdgesSharedEle_vec_dev = this->EdgesSharedEle;
@@ -208,9 +211,11 @@ public:
         cuDFNsys::EleCoor<T> *Coordinate2D_Vec_dev_ptr = thrust::raw_pointer_cast(Coordinate2D_Vec_dev.data());
         //cuDFNsys::NeighborEle *NeighborEleOfOneEle_dev_ptr = thrust::raw_pointer_cast(NeighborEleOfOneEle_dev.data());
 
+        uint NumPart_dynamic = this->ParticlePlumes.size();
+
         for (uint i = init_NO_STEP; i <= NumTimeStep + init_NO_STEP; ++i)
         {
-            thrust::host_vector<uint> Particle_runtime_error(this->ParticlePlumes.size(), 0);
+            thrust::host_vector<uint> Particle_runtime_error(NumPart_dynamic, 0);
             thrust::device_vector<uint> Particle_runtime_error_dev = Particle_runtime_error;
             uint *Particle_runtime_error_dev_pnt = thrust::raw_pointer_cast(Particle_runtime_error_dev.data());
 
@@ -219,22 +224,22 @@ public:
 
             cout << "The Step " << i << endl;
             double istart_b = cuDFNsys::CPUSecond();
-            ParticleMovementOneTimeStepGPUKernel<T><<<this->NumParticles / 256 + 1, 256>>>((unsigned long)t + (unsigned long)(i * 100),
-                                                                                           delta_T_,
-                                                                                           Dispersion_local,
-                                                                                           P_DEV,
-                                                                                           Frac_DEV,
-                                                                                           EdgesSharedEle_DEV,
-                                                                                           Coordinate2D_Vec_dev_ptr,
-                                                                                           //NeighborEleOfOneEle_dev_ptr,
-                                                                                           EleToFracID_ptr,
-                                                                                           velocity_ptr,
-                                                                                           this->Dir,
-                                                                                           outletcoordinate,
-                                                                                           NumParticles,
-                                                                                           mesh.Element3D.size(),
-                                                                                           i,
-                                                                                           Particle_runtime_error_dev_pnt);
+            ParticleMovementOneTimeStepGPUKernel<T><<<NumPart_dynamic / 256 + 1, 256>>>((unsigned long)t + (unsigned long)(i * 100),
+                                                                                        delta_T_,
+                                                                                        Dispersion_local,
+                                                                                        P_DEV,
+                                                                                        Frac_DEV,
+                                                                                        EdgesSharedEle_DEV,
+                                                                                        Coordinate2D_Vec_dev_ptr,
+                                                                                        //NeighborEleOfOneEle_dev_ptr,
+                                                                                        EleToFracID_ptr,
+                                                                                        velocity_ptr,
+                                                                                        this->Dir,
+                                                                                        outletcoordinate,
+                                                                                        NumPart_dynamic,
+                                                                                        mesh.Element3D.size(),
+                                                                                        i,
+                                                                                        Particle_runtime_error_dev_pnt);
             cudaDeviceSynchronize();
             Particle_runtime_error = Particle_runtime_error_dev;
 
@@ -245,13 +250,27 @@ public:
                 throw cuDFNsys::ExceptionsPause("Error happens when particle is moving!\n");
 
             this->ParticlePlumes = ParticlePlumes_DEV;
+
             double istart = cuDFNsys::CPUSecond();
 
-            int NumReachedParticle = thrust::count_if(this->ParticlePlumes.begin(),
-                                                      this->ParticlePlumes.end(),
-                                                      cuDFNsys::PredicateNumOfReachedOutletParticles<T>());
+            // int NumReachedParticle = thrust::count_if(this->ParticlePlumes.begin(),
+            //                                           this->ParticlePlumes.end(),
+            //                                           cuDFNsys::PredicateNumOfReachedOutletParticles<T>());
+
+            this->ParticlePlumes.erase(thrust::remove_if(this->ParticlePlumes.begin(), this->ParticlePlumes.end(),
+                                                         cuDFNsys::PredicateNumOfReachedOutletParticles<T>()),
+                                       this->ParticlePlumes.end());
+
+            this->ParticlePlumes.shrink_to_fit();
+
+            ParticlePlumes_DEV = this->ParticlePlumes;
+
+            NumPart_dynamic = this->ParticlePlumes.size();
+
             double ielaps = cuDFNsys::CPUSecond() - istart;
-            cout << NumReachedParticle << "/" << this->ParticlePlumes.size() << " reached outlet plane, running time: " << ielaps_b << "; counting time: " << ielaps << "s\n";
+
+            cout << this->NumParticles - NumPart_dynamic << "/" << this->NumParticles << " reached outlet plane, running time: " << ielaps_b << "; counting time: " << ielaps << "s\n";
+
             this->OutputParticleInfoStepByStep(i,
                                                delta_T_,
                                                Dispersion_local,
@@ -259,7 +278,7 @@ public:
                                                Injection_mode,
                                                Fracs, mesh);
 
-            if (NumReachedParticle == this->ParticlePlumes.size() && Particle_mode == "Particle_tracking")
+            if (NumPart_dynamic == 0 && Particle_mode == "Particle_tracking")
             {
                 cout << "\e[1;32mAll particles reached outlet plane!\e[0m\n";
                 break;
@@ -309,6 +328,9 @@ public:
 
             ouy[0] = {BlockNOPresent};
             h5g.AddDataset(h5dispersioninfo, "N", "BlockNOPresent", ouy, dim_scalar);
+
+            ouy[0] = {(uint)NumParticles};
+            h5g.AddDataset(h5dispersioninfo, "N", "NumParticles", ouy, dim_scalar);
         }
 
         uint Step[1] = {StepNO};
@@ -317,15 +339,17 @@ public:
         else
             h5g.AddDataset(h5dispersioninfo, "N", "NumOfSteps", Step, dim_scalar);
 
+        uint NumParDyna = this->ParticlePlumes.size();
+
         T *particle_position_3D;
-        particle_position_3D = new T[this->NumParticles * 2];
+        particle_position_3D = new T[NumParDyna * 2];
         if (particle_position_3D == NULL)
         {
             string AS = "Alloc error in ParticleTransport::OutputParticleInfoStepByStep\n";
             throw cuDFNsys::ExceptionsPause(AS);
         }
 
-        for (size_t i = 0; i < this->NumParticles; ++i)
+        for (size_t i = 0; i < NumParDyna; ++i)
         {
             cuDFNsys::Vector3<T> tmpPos = cuDFNsys::MakeVector3(this->ParticlePlumes[i].Position2D.x,
                                                                 this->ParticlePlumes[i].Position2D.y,
@@ -334,34 +358,23 @@ public:
             uint elementID = this->ParticlePlumes[i].ElementID; // from 1
             uint FracID = mesh.ElementFracTag[elementID - 1];   // from 0
 
-            // T Rotate2DTo3D[3][3];
-            // Fracs[FracID].RoationMatrix(Rotate2DTo3D, 23);
-            // tmpPos = cuDFNsys::ProductSquare3Vector3<T>(Rotate2DTo3D, tmpPos);
-            // tmpPos = cuDFNsys::MakeVector3(tmpPos.x + Fracs[FracID].Center.x,
-            //                                tmpPos.y + Fracs[FracID].Center.y,
-            //                                tmpPos.z + Fracs[FracID].Center.z);
-            // particle_position_3D[i] = tmpPos.x;
-            // particle_position_3D[i + this->NumParticles] = tmpPos.y;
-            // particle_position_3D[i + this->NumParticles * 2] = tmpPos.z;
-            //particle_position_3D[i + this->NumParticles * 3] = (this->ParticlePlumes[i].IfReachOutletPlane == false ? 0 : 1);
-            //particle_position_3D[i + this->NumParticles * 4] = this->ParticlePlumes[i].ElementID;
-            particle_position_3D[i /*this->NumParticles * 0*/] = this->ParticlePlumes[i].Position2D.x;
-            particle_position_3D[i + this->NumParticles * 1] = this->ParticlePlumes[i].Position2D.y;
+            particle_position_3D[i] = this->ParticlePlumes[i].Position2D.x;
+            particle_position_3D[i + NumParDyna] = this->ParticlePlumes[i].Position2D.y;
         }
 
-        uint2 dim_data = make_uint2(2, this->NumParticles);
-        uint2 dim_datauu = make_uint2(2, this->NumParticles);
-        uint *_IfReaded_and_ElementFracTag_ = new uint[this->NumParticles * 2];
+        uint2 dim_data = make_uint2(2, NumParDyna);
+        uint2 dim_datauu = make_uint2(2, NumParDyna);
+        uint *_IfReaded_and_ElementFracTag_ = new uint[NumParDyna * 2];
         if (_IfReaded_and_ElementFracTag_ == NULL)
         {
             string AS = "Alloc error in ParticleTransport::OutputParticleInfoStepByStep\n";
             throw cuDFNsys::ExceptionsPause(AS);
         }
 
-        for (size_t i = 0; i < this->NumParticles; ++i)
+        for (size_t i = 0; i < NumParDyna; ++i)
         {
-            _IfReaded_and_ElementFracTag_[i] = (this->ParticlePlumes[i].IfReachOutletPlane == false ? 0 : 1);
-            _IfReaded_and_ElementFracTag_[i + this->NumParticles] = this->ParticlePlumes[i].ElementID;
+            _IfReaded_and_ElementFracTag_[i] = this->ParticlePlumes[i].ParticleID;
+            _IfReaded_and_ElementFracTag_[i + NumParDyna] = this->ParticlePlumes[i].ElementID;
         }
 
         if (StepNO == 0)
@@ -371,7 +384,7 @@ public:
             h5g.NewFile(mat_key);
             h5g.AddDataset(mat_key, "N", "Step_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
                            particle_position_3D, dim_data);
-            h5g.AddDataset(mat_key, "N", "IfReachedAndElementFracTag_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
+            h5g.AddDataset(mat_key, "N", "ParticleIDAndElementTag_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
                            _IfReaded_and_ElementFracTag_, dim_datauu);
         }
         else
@@ -393,7 +406,7 @@ public:
 
             h5g.AddDataset(mat_key, "N", "Step_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
                            particle_position_3D, dim_data);
-            h5g.AddDataset(mat_key, "N", "IfReachedAndElementFracTag_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
+            h5g.AddDataset(mat_key, "N", "ParticleIDAndElementTag_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
                            _IfReaded_and_ElementFracTag_, dim_datauu);
         }
         delete[] particle_position_3D;
@@ -422,16 +435,19 @@ public:
         oss << "xlim([-(0.1 * L + L), (0.1 * L + L)])\nylim([ -(0.1 * L + L), (0.1 * L + L) ])\nzlim([ -(0.1 * L + L), (0.1 * L + L) ]);hold on\n\n";
 
         oss << "N_steps = h5read([currentPath, '/ParticlePositionResult/DispersionInfo.h5'], '/NumOfSteps');\n";
-        oss << "S = h5read([currentPath, '/ParticlePositionResult/ParticlePositionInit.h5'], '/Step_0000000000');\n";
-        oss << "N_particles = size(S, 1);\n";
+        // oss << "S = h5read([currentPath, '/ParticlePositionResult/ParticlePositionInit.h5'], '/Step_0000000000');\n";
+        oss << "N_particles = h5read([currentPath, '/ParticlePositionResult/DispersionInfo.h5'], '/NumParticles');\n";
         oss << "clear S;\n";
 
         oss << "BlockNOPresent = h5read([currentPath, '/ParticlePositionResult/DispersionInfo.h5'], '/BlockNOPresent');\n";
         oss << "SizeOfDataBlock = h5read([currentPath, '/ParticlePositionResult/DispersionInfo.h5'], '/SizeOfDataBlock');\n";
 
-        oss << "S = h5read([currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(BlockNOPresent, '%010d'), '.h5'], ['/IfReachedAndElementFracTag_', num2str(N_steps, '%010d')]); \n";
-        oss << "ReachedParticleNO = find(S(:, 1) == 0);\nclear S\n";
-        oss << "newcolors = rand(N_particles - size(ReachedParticleNO, 1), 3);\n";
+        oss << "S = h5read([currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(BlockNOPresent, '%010d'), '.h5'], ['/ParticleIDAndElementTag_', num2str(N_steps, '%010d')]); \n";
+        oss << "ReachedParticleNO = [1:1:N_particles];\n";
+
+        oss << "MatchedValue = S(:, 1) + 1;\nReachedParticleNO(ismember(ReachedParticleNO, MatchedValue')) = []; clear S MatchedValue\n";
+
+        oss << "newcolors = rand(size(ReachedParticleNO, 2), 3);\n";
 
         oss << "delta_t2 = 200;\ninit_ = 0;\nfinal_ = 0;\n";
 
@@ -446,14 +462,20 @@ public:
         oss << "\t\tAK_1 = [];AK_2 = [];AK_3 = [];\n";
         oss << "\t\tfor j = init_:final_\n";
         // oss << "\t\t\tS1 = load([currentPath, '/" << ParticlePosition << "_step_', num2str(j, '%07d'),'.mat']);\n";
-        oss << "\t\t\tH5name = [];\n";
+        oss << "\t\t\tH5name = []; H5name_2D = [];\n";
         oss << "\t\t\tif (j == 0); H5name = [currentPath, '/ParticlePositionResult/ParticlePositionInit3D.h5']; else; H5name = [currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(ceil(double(j) / double(SizeOfDataBlock)), '%010d'), '3D.h5']; end;\n";
+        oss << "\t\t\tif (j == 0); H5name_2D = [currentPath, '/ParticlePositionResult/ParticlePositionInit.h5']; else; H5name_2D = [currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(ceil(double(j) / double(SizeOfDataBlock)), '%010d'), '.h5']; end;\n";
+        
         oss << "\t\t\tS = h5read(H5name, ['/Step_', num2str(j, '%010d')]);\n";
-        oss << "\t\t\tAK_1(j - init_ + 1, :) = S(:, 1);\n";
-        oss << "\t\t\tAK_2(j - init_ + 1, :) = S(:, 2);\n";
-        oss << "\t\t\tAK_3(j - init_ + 1, :) = S(:, 3); clear S\n";
+        oss << "\t\t\tParticleID = h5read(H5name_2D, ['/ParticleIDAndElementTag_', num2str(j, '%010d')]);\n"; // /
+        oss << "\t\t\tMatrx3D_pso = NaN(N_particles, 3);\n";
+        oss << "\t\t\tMatrx3D_pso([ParticleID(:, 1) + 1], :) = S(:, [1 2 3]);\n";
+
+        oss << "\t\t\tAK_1(j - init_ + 1, :) = Matrx3D_pso(:, 1);\n";
+        oss << "\t\t\tAK_2(j - init_ + 1, :) = Matrx3D_pso(:, 2);\n";
+        oss << "\t\t\tAK_3(j - init_ + 1, :) = Matrx3D_pso(:, 3); clear S Matrx3D_pso\n";
         oss << "\t\tend\n";
-        oss << "\t\tAK_1(:, ReachedParticleNO) = [];AK_2(:, ReachedParticleNO) = [];AK_3(:, ReachedParticleNO) = [];\n";
+        oss << "\t\tAK_1 = AK_1(:, ReachedParticleNO);AK_2 = AK_2(:, ReachedParticleNO);AK_3 = AK_3(:, ReachedParticleNO);\n";
         oss << "\t\tcolororder(newcolors)\n";
         oss << "\t\tplot3(AK_1, AK_2, AK_3, 'linewidth', 2); hold on\n";
         oss << "\t\tif (final_ == N_steps)\n";
@@ -471,10 +493,15 @@ public:
         oss << "xlim([-(0.1 * L + L), (0.1 * L + L)])\nylim([ -(0.1 * L + L), (0.1 * L + L) ])\nzlim([ -(0.1 * L + L), (0.1 * L + L) ]);hold on\n\n";
         oss << "figure(2)\nfor i = 0:N_steps\n";
         oss << "\ttitle(['DFN flow (mhfem); step NO = ', num2str(i)]);\n";
-        oss << "\tH5name = [];\n";
+        oss << "\tH5name = []; H5name_2D = [];\n";
         oss << "\tif (i == 0); H5name = [currentPath, '/ParticlePositionResult/ParticlePositionInit3D.h5']; else; H5name = [currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(ceil(double(i) / double(SizeOfDataBlock)), '%010d'), '3D.h5']; end;\n";
+        oss << "\tif (i == 0); H5name_2D = [currentPath, '/ParticlePositionResult/ParticlePositionInit.h5']; else; H5name_2D = [currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(ceil(double(i) / double(SizeOfDataBlock)), '%010d'), '.h5']; end;\n";
+        
         oss << "\tS = h5read(H5name, ['/Step_', num2str(i, '%010d')]);\n";
-        oss << "\tMatrx3D_pso = S(:, [1 2 3]);\n";
+        oss << "\tParticleID = h5read(H5name_2D, ['/ParticleIDAndElementTag_', num2str(i, '%010d')]);\n"; // /
+        oss << "\tMatrx3D_pso = NaN(N_particles, 3);\n";
+        oss << "\tMatrx3D_pso([ParticleID(:, 1) + 1], :) = S(:, [1 2 3]);\n";
+
         oss << "\tp_s = scatter3(Matrx3D_pso(:, 1), Matrx3D_pso(:, 2), Matrx3D_pso(:, 3), 'k', 'o', 'filled'); clear Matrx3D_pso\n";
         oss << "\tif (i == 0); pause; else; pause(0.01); end;\n";
         oss << "\tif (i ~= N_steps); delete(p_s); end\n";
@@ -621,6 +648,7 @@ private:
         this->ParticlePlumes.resize(NumParticles);
 
         uint TmpCountParticle = 0;
+        uint pARTICLEid_T = 0;
         for (size_t i = 0; i < NumParticlesEachEdge.size(); ++i)
         {
             uint EdgeNO = (uint)mesh.InletEdgeNOLen[i].x;     // from 1
@@ -662,11 +690,16 @@ private:
                 position_rr.x = mesh.Coordinate2D[elementID - 1].x[LocalEdgeNO] + Vec2D.x * norm_e * j,
                 position_rr.y = mesh.Coordinate2D[elementID - 1].y[LocalEdgeNO] + Vec2D.y * norm_e * j;
                 tmpPVEC[j - 1].Position2D = position_rr;
+
+                tmpPVEC[j - 1].ParticleID = pARTICLEid_T;
+
+                pARTICLEid_T++;
             }
 
             thrust::copy(tmpPVEC.begin(),
                          tmpPVEC.end(),
                          this->ParticlePlumes.begin() + TmpCountParticle);
+
             TmpCountParticle += NumParticlesEachEdge[i];
         }
     };

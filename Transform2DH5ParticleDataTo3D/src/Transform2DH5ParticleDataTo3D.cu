@@ -22,7 +22,10 @@ int main(int argc, char *argv[])
     {
         _DataType_ L;
         //uint DSIZE;
-
+        uint Nproc = 10;
+        if (argv[1] != NULL)
+            Nproc = atoi(argv[1]);
+        Nproc += 0;
         string FracH5 = "FracturesForParticle.h5";
         string mshfile = "DFN_mesh_1.mat";
 
@@ -46,8 +49,6 @@ int main(int argc, char *argv[])
 
         Tem_p = h5g.ReadDataset<uint>(DispersionInfo_h5, "N", "SizeOfDataBlock");
         uint SizeOfDataBlock = Tem_p[0];
-
-        uint numParticles = 0;
 
         cuDFNsys::MatlabAPI mu;
 
@@ -77,17 +78,20 @@ int main(int argc, char *argv[])
             }
             vector<_DataType_> temp2Dpos = h5g.ReadDataset<_DataType_>(filename, "N", "Step_" + cuDFNsys::ToStringWithWidth(i, 10));
 
-            if (i == 0)
-                numParticles = temp2Dpos.size() / 2;
+            uint numParticles = temp2Dpos.size() / 2;
+            //cout << "numParticles: " << numParticles << endl;
 
-            vector<uint> EleTag = h5g.ReadDataset<uint>(filename, "N", "IfReachedAndElementFracTag_" + cuDFNsys::ToStringWithWidth(i, 10));
+            vector<uint> EleTag = h5g.ReadDataset<uint>(filename, "N", "ParticleIDAndElementTag_" + cuDFNsys::ToStringWithWidth(i, 10));
 
             //for (uint j = 0; j < EleTag.size(); ++j)
             //cout << EleTag[j] << endl;
             //cout << EleTag.size() << ", " << numParticles << endl;
 
             _DataType_ *Position3D = new _DataType_[numParticles * 3];
+
             //cout << 1 << endl;
+
+#pragma omp parallel for schedule(static) num_threads(Nproc)
             for (uint j = 0; j < numParticles; ++j)
             {
                 cuDFNsys::Vector3<_DataType_> Pos = cuDFNsys::MakeVector3(temp2Dpos[j], temp2Dpos[j + numParticles], (_DataType_)0.0);

@@ -4,20 +4,26 @@ close all
 
 currentPath = fileparts(mfilename('fullpath'));
 
-S = load([currentPath, '/ParticlePositionResult/ParticlePosition_step_0000000.mat']);
-N_steps = S.NumOfSteps;
-N_particles = size(S.particle_position_3D_step_0, 1);
+N_steps = h5read([currentPath, '/ParticlePositionResult/DispersionInfo.h5'], ['/NumOfSteps']);
+N_particles = h5read([currentPath, '/ParticlePositionResult/DispersionInfo.h5'], ['/NumParticles']);
+delta_t = h5read([currentPath, '/ParticlePositionResult/DispersionInfo.h5'], ['/Delta_T']);
+BlockNOPresent = h5read([currentPath, '/ParticlePositionResult/DispersionInfo.h5'], '/BlockNOPresent');
+SizeOfDataBlock = h5read([currentPath, '/ParticlePositionResult/DispersionInfo.h5'], '/SizeOfDataBlock');
 
 BT_time = zeros(N_particles, 1) - 1;
 
 clear S;
 
 for i = [N_steps:-1:1]
-    S = load([currentPath, '/ParticlePositionResult/ParticlePosition_step_', num2str(i, '%07d'), '.mat']);
-    eval(['AS = find(S.particle_position_3D_step_', num2str(i), '(:, 4) == 1);']);
-    BT_time(AS, :) = i * 0.01;
-    clear S AS
-    i
+    H5name = [currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(ceil(double(i) / double(SizeOfDataBlock)), '%010d'), '.h5'];
+	S = h5read(H5name, ['/ParticleIDAndElementTag_', num2str(i, '%010d')]);
+	ExistingParticle = S(:, 1) + 1.0;
+    AS = [1:1:N_particles];
+    AS(ismember(AS, ExistingParticle)) = [];
+    BT_time(AS, :) = double(i) * delta_t;
+    
+    clear S AS ExistingParticle
+    disp([num2str(i)]);
 end
 
 BT_time2 = find(BT_time ~= -1);
@@ -36,7 +42,7 @@ loglog(xcdf,yccdf, 'o-r'); hold on
 ylabel('CCDF', 'interpreter', 'latex');
 xlabel('$\Delta t$', 'interpreter', 'latex')
 
-nbines = 50;
+nbines = 30;
 figure(2)
 [Frequency, Data_bin]=hist(BT_time, nbines);
 loglog(Data_bin,Frequency, 'ok'); hold on

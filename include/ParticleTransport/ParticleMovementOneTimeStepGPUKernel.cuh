@@ -63,7 +63,7 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
 
-    if (P_DEV[i].IfReachOutletPlane == true)
+    if (P_DEV[i].ParticleID == -1)
         return;
 
     // velocity vector of the grid
@@ -212,7 +212,7 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
             T *tmp_pnt = &(Pos3D_.x);
             if (abs(tmp_pnt[Dir_flow] - outletcoordinate) < 1e-4)
             {
-                P_DEV[i].IfReachOutletPlane = true; // reaches outlet plane
+                P_DEV[i].ParticleID = -1; // reaches outlet plane
                 return;
             }
             else
@@ -389,7 +389,7 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
         tmp4 = &(IntersectionPnt_3D.x);
         if (abs(tmp4[Dir_flow] - outletcoordinate) < 1e-4)
         {
-            P_DEV[i].IfReachOutletPlane = true;
+            P_DEV[i].ParticleID = -1;
             P_DEV[i].ElementID = EleID;
             P_DEV[i].Position2D = IntersectionOnCrossedEdge;
             return;
@@ -447,7 +447,7 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
             T *tmp3 = &(Test3DIntersectionOnCrossedEdge.x);
             if (abs(tmp3[Dir_flow] - outletcoordinate) < 1e-4)
             {
-                P_DEV[i].IfReachOutletPlane = true;
+                P_DEV[i].ParticleID = -1;
                 P_DEV[i].ElementID = EleID;
                 P_DEV[i].Position2D = IntersectionOnCrossedEdge;
                 return;

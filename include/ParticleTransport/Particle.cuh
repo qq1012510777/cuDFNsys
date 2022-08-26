@@ -21,7 +21,7 @@ struct Particle
     cuDFNsys::Vector2<T> Position2D;
     // element ID
     uint ElementID;
-
-    bool IfReachOutletPlane = false;
+    // particle ID
+    int ParticleID; // ParticleID == -1 means that this particle reaches outlet plane
 };
 }; // namespace cuDFNsys
