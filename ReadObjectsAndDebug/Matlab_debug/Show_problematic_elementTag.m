@@ -2,7 +2,7 @@ clc;
 close all;
 clear all;
 load('MHFEM_1.mat');
-L = 0.5 * 90;
+L = 0.5 * 100;
 cube_frame = [-L, -L, L; -L, L, L; L, L, L; L -L, L; -L, -L, -L; -L, L, -L; L, L, -L; L -L, -L; -L, L, L; -L, L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L, -L; L, -L, -L; L, -L, L; L, -L, L; L, -L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L, -L; -L, L, -L; -L, L, L];
 figure(1); view(3); title('DFN flow (mhfem)'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on
 patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4; 5 6 7 8; 9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on
@@ -74,22 +74,22 @@ for i = 1:size(element_3D, 1)
 
 end
 
-a = find(S.element_Frac_Tag == 12);
-figure(2); view(3);
-patch('Vertices', coordinate_3D, 'Faces', element_3D(a, :), 'FaceVertexCData', pressure_eles(a, :), 'FaceColor', 'flat', 'EdgeAlpha', 0.9, 'facealpha', 0); colorbar; view(3); hold on
-
-c = 1828;
-patch('Vertices', coordinate_3D, 'Faces', element_3D(c, :), 'FaceVertexCData', pressure_eles(c, :), 'FaceColor', 'flat', 'EdgeAlpha', 0.9, 'facealpha', 1, 'edgecolor', 'r', 'linewidth', 2.5); colorbar; view(3); hold on
-
-scatter3(coordinate_3D(351, 1), coordinate_3D(351, 2), coordinate_3D(351, 3), 'o', 'k');
-
-figure(3)
-patch('Vertices', coordinate_3D, 'Faces', element_3D(c, :), 'FaceVertexCData', pressure_eles(c, :), 'FaceColor', 'flat', 'EdgeAlpha', 0.9, 'facealpha', 0, 'edgecolor', 'k', 'linewidth', 1.0); colorbar; view(3); hold on
-
-coordinate = [-2.98168, 10.2286, -41.6272
--2.90953, 10.1941, -41.6421
--2.97118, 10.2421, -41.6369
-
-];
-hold on
-patch('Vertices', coordinate, 'Faces', [1 2 3], 'FaceVertexCData', [1], 'FaceColor', 'flat', 'EdgeAlpha', 0.9, 'facealpha', 0, 'edgecolor', 'r', 'linewidth', 1.0); colorbar; view(3); hold on
+% a = find(S.element_Frac_Tag == 12);
+% figure(2); view(3);
+% patch('Vertices', coordinate_3D, 'Faces', element_3D(a, :), 'FaceVertexCData', pressure_eles(a, :), 'FaceColor', 'flat', 'EdgeAlpha', 0.9, 'facealpha', 0); colorbar; view(3); hold on
+% 
+% c = 1828;
+% patch('Vertices', coordinate_3D, 'Faces', element_3D(c, :), 'FaceVertexCData', pressure_eles(c, :), 'FaceColor', 'flat', 'EdgeAlpha', 0.9, 'facealpha', 1, 'edgecolor', 'r', 'linewidth', 2.5); colorbar; view(3); hold on
+% 
+% scatter3(coordinate_3D(351, 1), coordinate_3D(351, 2), coordinate_3D(351, 3), 'o', 'k');
+% 
+% figure(3)
+% patch('Vertices', coordinate_3D, 'Faces', element_3D(c, :), 'FaceVertexCData', pressure_eles(c, :), 'FaceColor', 'flat', 'EdgeAlpha', 0.9, 'facealpha', 0, 'edgecolor', 'k', 'linewidth', 1.0); colorbar; view(3); hold on
+% 
+% coordinate = [-2.98168, 10.2286, -41.6272
+% -2.90953, 10.1941, -41.6421
+% -2.97118, 10.2421, -41.6369
+% 
+% ];
+% hold on
+% patch('Vertices', coordinate, 'Faces', [1 2 3], 'FaceVertexCData', [1], 'FaceColor', 'flat', 'EdgeAlpha', 0.9, 'facealpha', 0, 'edgecolor', 'r', 'linewidth', 1.0); colorbar; view(3); hold on

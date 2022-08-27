@@ -35,6 +35,12 @@ __global__ void cuDFNsys::IdentifyEleFrac(uint3 *One_entity_one_ele_dev_ptr,
     cuDFNsys::Vector3<T> vert3 = coordinate_3D_dev_ptr[node3 - 1];
 
     //printf("kernel 0, sizeof fracs: %d\n", frac_count);
+
+    uint largestsize = 20;
+    T Distance[20];
+    uint FRACID[20];
+    uint sizeDis = 0;
+
     for (int j = 0; j < frac_count; ++j)
     {
         //printf("kernel 1\n");
@@ -58,6 +64,8 @@ __global__ void cuDFNsys::IdentifyEleFrac(uint3 *One_entity_one_ele_dev_ptr,
         bool belong_to_this_frac = true;
         //printf("kernel 2\n");
 
+        T distye = 0;
+
         for (int k = 0; k < 3; ++k)
         {
             T dis = cuDFNsys::DistancePnt3DPlane<T>(Plane, (*verts_ele[k]));
@@ -65,6 +73,7 @@ __global__ void cuDFNsys::IdentifyEleFrac(uint3 *One_entity_one_ele_dev_ptr,
             // {
             //     printf("k : %d, dis: %.40f\n", k, dis);
             // };
+            distye += dis;
             if (abs(dis) > _tol_)
             {
                 //printf("%f\n", abs(dis));
@@ -99,14 +108,30 @@ __global__ void cuDFNsys::IdentifyEleFrac(uint3 *One_entity_one_ele_dev_ptr,
             }
         }
 
-        if (belong_to_this_frac == true)
+        if (belong_to_this_frac == true) // may belong to this frac!!!
         {
-            Elements_Frac_dev_ptr[i] = j;
+            //Elements_Frac_dev_ptr[i] = j;
             //printf("entity-%d\n", Elements_Frac_dev_ptr[i]);
-            break;
+            // break;
+            Distance[sizeDis] = distye;
+            FRACID[sizeDis] = j;
+            sizeDis++;
+
+            if (sizeDis == largestsize)
+            {
+                printf("Warning: there are too many fractures that are very close to one element\n");
+                return;
+            }
         }
     }
 
+    uint fracid = 0;
+    T smallestDis = (T)1e10;
+    for (uint k = 0; k < sizeDis; ++k)
+        if (Distance[k] < smallestDis)
+            fracid = FRACID[k], smallestDis = Distance[k];
+
+    Elements_Frac_dev_ptr[i] = fracid;
     //printf("after identify %d\n", Elements_Frac_dev_ptr[i]);
 }; // IdentifyEleFrac
 template __global__ void cuDFNsys::IdentifyEleFrac<double>(uint3 *One_entity_one_ele_dev_ptr,

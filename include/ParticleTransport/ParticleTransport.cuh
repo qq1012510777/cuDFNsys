@@ -157,10 +157,10 @@ public:
         }
         else
         {
-            cout << 1 << endl;
+            //cout << 1 << endl;
             this->InitilizeParticles(NumOfParticles_ii,
                                      mesh, fem, Injection_mode_ii);
-            cout << 2 << endl;
+            //cout << 2 << endl;
             this->OutputParticleInfoStepByStep(0,
                                                delta_T_ii,
                                                Dispersion_local_ii,
@@ -168,7 +168,7 @@ public:
                                                Injection_mode_ii,
                                                Fracs, mesh);
             //cout << NumTimeStep << ", " << delta_T_ii << ", " << Dispersion_local << " ______ \n";
-            cout << 3 << endl;
+            //cout << 3 << endl;
             this->ParticleMovement(seed, 1, NumTimeStep, delta_T_ii,
                                    Dispersion_local_ii,
                                    Particle_mode_ii,

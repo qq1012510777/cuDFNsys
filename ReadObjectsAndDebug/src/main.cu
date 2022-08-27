@@ -111,10 +111,10 @@ int main(int argc, char *argv[])
                                                          Frac_verts_host,
                                                          Intersection_map};
             cout << "meshing ..." << endl;
-            // cuDFNsys::Mesh<_DataType_> mesh;
-            // lk.InputMesh("mesh.h5", mesh, &Fracs_percol);
-            cuDFNsys::Mesh<_DataType_> mesh{Frac_verts_host, IntersectionPair_percol,
-                                            &Fracs_percol, minGrid, maxGrid, perco_dir, L};
+            cuDFNsys::Mesh<_DataType_> mesh;
+            lk.InputMesh("mesh.h5", mesh, &Fracs_percol);
+            //cuDFNsys::Mesh<_DataType_> mesh{Frac_verts_host, IntersectionPair_percol,
+            //                                &Fracs_percol, minGrid, maxGrid, perco_dir, L};
             int i = 0;
             mesh.MatlabPlot("DFN_mesh_" + to_string(i + 1) + ".mat",
                             "DFN_mesh_" + to_string(i + 1) + ".m",
@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
             cuDFNsys::OutputObjectData<_DataType_> lk3;
             lk3.OutputFractures("Fractures_II.h5", Frac_verts_host, L);
             lk3.OutputMesh("Mesh.h5", mesh, Fracs_percol);
-            return 0;
+            //return 0;
             cout << "Particle transport ing ...\n";
 
             cuDFNsys::ParticleTransport<_DataType_> p{(unsigned long)t,

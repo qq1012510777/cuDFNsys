@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
         cuDFNsys::Fractures<_DataType_><<<DSIZE / 256 + 1, 256 /*  1, 2*/>>>(Frac_verts_device_ptr,
                                                                              (unsigned long)t,
                                                                              DSIZE, L,
-                                                                             0, ParaSizeDistri, 0, 0.5);
+                                                                             0, ParaSizeDistri, 0, 0.1/*0.5*/);
         cudaDeviceSynchronize();
 
         Frac_verts_host = Frac_verts_device;
@@ -163,7 +163,7 @@ int main(int argc, char *argv[])
                            "MHFEM_" + to_string(i + 1) + ".m",
                            Frac_verts_host, mesh, L);
             //---------------
-
+            return 0;
             cout << "Particle transport ing ...\n";
 
             cuDFNsys::ParticleTransport<_DataType_> p{(unsigned long)t,

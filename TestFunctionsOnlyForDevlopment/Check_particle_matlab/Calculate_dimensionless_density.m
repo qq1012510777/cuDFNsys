@@ -28,7 +28,7 @@ sigma_exponent = [0.1, 0.5];
 min_vec = 1;
 max_vec = 100;
 
-alpha_vec = [1.5];
+alpha_vec = [1.5, 2.0, 2.5];
 
 mean_powerlaw = [];
 E_R_3_powerlaw = [];
