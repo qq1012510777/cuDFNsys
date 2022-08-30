@@ -427,7 +427,7 @@ public:
         oss << "load('" << mat_key << "');\n";
         oss << "L = 0.5 * " << L << ";\n";
         oss << "cube_frame = [-L, -L, L; -L, L, L; L, L, L; L -L, L; -L, -L, -L; -L, L, -L; L, L, -L; L -L, -L; -L, L, L; -L, L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L, -L; L, -L, -L; L, -L, L; L, -L, L; L, -L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L,-L; -L, L, -L; -L,L, L];\n";
-        oss << "figure(1); view(3); title('DFN flow (mhfem)'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
+        oss << "figure(1); view(3); title('DFN flow (mhfem) and particle trajectory'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
         oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
         oss << endl;
         oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, 'FaceVertexCData', pressure_eles, 'FaceColor', 'flat', 'EdgeAlpha', 0.1, 'facealpha', 0.1); colorbar; view(3); hold on\n";
@@ -463,7 +463,7 @@ public:
         oss << "\t\tfor j = init_:final_\n";
         // oss << "\t\t\tS1 = load([currentPath, '/" << ParticlePosition << "_step_', num2str(j, '%07d'),'.mat']);\n";
         oss << "\t\t\tH5name = []; H5name_2D = [];\n";
-        oss << "\t\t\tif (j == 0); H5name = [currentPath, '/ParticlePositionResult/ParticlePositionInit3D.h5']; else; H5name = [currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(ceil(double(j) / double(SizeOfDataBlock)), '%010d'), '3D.h5']; end;\n";
+        oss << "\t\t\tif (j == 0); H5name = [currentPath, '/ParticlePositionResult/ParticlePositionInit_3D.h5']; else; H5name = [currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(ceil(double(j) / double(SizeOfDataBlock)), '%010d'), '_3D.h5']; end;\n";
         oss << "\t\t\tif (j == 0); H5name_2D = [currentPath, '/ParticlePositionResult/ParticlePositionInit.h5']; else; H5name_2D = [currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(ceil(double(j) / double(SizeOfDataBlock)), '%010d'), '.h5']; end;\n";
         
         oss << "\t\t\tS = h5read(H5name, ['/Step_', num2str(j, '%010d')]);\n";
@@ -485,16 +485,16 @@ public:
         oss << "clear AK_1 AK_2 AK_3\n";
         oss << "end\n";
 
-        oss << "figure(2); view(3); title('DFN flow (mhfem)'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
+        oss << "figure(2); view(3); title('DFN flow (mhfem) and particle tracking'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
         oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
         oss << endl;
         oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, 'FaceVertexCData', pressure_eles, 'FaceColor', 'flat', 'EdgeAlpha', 0.2, 'facealpha', 0.9); colorbar; view(3); hold on\n";
         oss << "caxis([" << fem.OutletP << ", " << fem.InletP << "]);\n";
         oss << "xlim([-(0.1 * L + L), (0.1 * L + L)])\nylim([ -(0.1 * L + L), (0.1 * L + L) ])\nzlim([ -(0.1 * L + L), (0.1 * L + L) ]);hold on\n\n";
         oss << "figure(2)\nfor i = 0:N_steps\n";
-        oss << "\ttitle(['DFN flow (mhfem); step NO = ', num2str(i)]);\n";
+        oss << "\ttitle(['DFN flow (mhfem) and particle tracking; step NO = ', num2str(i)]);\n";
         oss << "\tH5name = []; H5name_2D = [];\n";
-        oss << "\tif (i == 0); H5name = [currentPath, '/ParticlePositionResult/ParticlePositionInit3D.h5']; else; H5name = [currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(ceil(double(i) / double(SizeOfDataBlock)), '%010d'), '3D.h5']; end;\n";
+        oss << "\tif (i == 0); H5name = [currentPath, '/ParticlePositionResult/ParticlePositionInit_3D.h5']; else; H5name = [currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(ceil(double(i) / double(SizeOfDataBlock)), '%010d'), '_3D.h5']; end;\n";
         oss << "\tif (i == 0); H5name_2D = [currentPath, '/ParticlePositionResult/ParticlePositionInit.h5']; else; H5name_2D = [currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(ceil(double(i) / double(SizeOfDataBlock)), '%010d'), '.h5']; end;\n";
         
         oss << "\tS = h5read(H5name, ['/Step_', num2str(i, '%010d')]);\n";

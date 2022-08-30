@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
             {
 
                 filename = ParticlePosition + "Init.h5";
-                outfilename = ParticlePosition + "Init3D.h5";
+                outfilename = ParticlePosition + "Init_3D.h5";
                 h5g.NewFile(outfilename);
             }
             else
@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
                            cuDFNsys::ToStringWithWidth((uint)ceil((double)i / ((double)SizeOfDataBlock)), 10) + ".h5";
 
                 outfilename = ParticlePosition + "Block" +
-                              cuDFNsys::ToStringWithWidth((uint)ceil((double)i / ((double)SizeOfDataBlock)), 10) + "3D.h5";
+                              cuDFNsys::ToStringWithWidth((uint)ceil((double)i / ((double)SizeOfDataBlock)), 10) + "_3D.h5";
                 if (i % SizeOfDataBlock == 1)
                     h5g.NewFile(outfilename);
             }

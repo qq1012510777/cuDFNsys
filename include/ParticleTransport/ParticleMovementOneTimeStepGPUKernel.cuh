@@ -57,8 +57,8 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
-    /// P_DEV[i].ElementID = 5082;
-    /// P_DEV[i].Position2D = cuDFNsys::MakeVector2<T>(36.1297500000000013642420526593923568725586, -48.9076700000000030854607757646590471267700);
+    /// P_DEV[i].ElementID = 55170;
+    /// P_DEV[i].Position2D = cuDFNsys::MakeVector2<T>(8.8543401582283571826792467618361115455627, -31.4797793921278419304599083261564373970032);
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
@@ -117,7 +117,7 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
-    // TargPos = cuDFNsys::MakeVector2<T>(36.0460599999999971032593748532235622406006, -48.9981500000000025352164811920374631881714);
+    /// TargPos = cuDFNsys::MakeVector2<T>(8.8611299999999992849097907310351729393005, -31.4815499999999985902832122519612312316895);
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
@@ -131,7 +131,8 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
     //---------------------------------------------
     //---------------------------------------------
 
-    cuDFNsys::Vector2<T> CrossedGlobalEdge[12][2];
+
+    cuDFNsys::Vector2<T> CrossedGlobalEdge[_SizeOfArray_CrossedGlobalEdge_][2];
     int CountCrossedGlobalEdge = 0;
 
     cuDFNsys::Vector2<T> whole_Particle_trajectory[2] = {InitPos, TargPos};
@@ -166,7 +167,7 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
         ///            TargPos3D.z);
         /// }
 
-        if (Loop_time >= _ParTran_MaxLoopTimes || CountCrossedGlobalEdge == 11)
+        if (Loop_time >= _ParTran_MaxLoopTimes || CountCrossedGlobalEdge == _SizeOfArray_CrossedGlobalEdge_ - 1)
         {
             printf("Particle %d, Loop times is too large!\n", i + 1);
             goto Debug100;
@@ -198,7 +199,7 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
         bool IfTargPosOnGridBound = cuDFNsys::IfParticleOnBoundOfElement(TargPos,
                                                                          Vertex_Triangle,
                                                                          edgelocal,
-                                                                         (T)1e-11);
+                                                                         (T)1e-12);
 
         //printf("IfTargPosOnGridBound: %d\n", IfTargPosOnGridBound);
         if (IfTargPosOnGridBound == true)
@@ -226,7 +227,7 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
         ///---------------now, I am sure that the target position is out of the grid very much------------------------
 
         cuDFNsys::Vector2<T> P_trajectory_[2] = {InitPos, TargPos};
-        cuDFNsys::Vector3<T> Result_ = cuDFNsys::IdentifyParticleCrossesWhichEdge(P_trajectory_, Vertex_Triangle, (T)1e-11, CrossedGlobalEdge, CountCrossedGlobalEdge, stepNO, i + 1);
+        cuDFNsys::Vector3<T> Result_ = cuDFNsys::IdentifyParticleCrossesWhichEdge(P_trajectory_, Vertex_Triangle, (T)1e-12, CrossedGlobalEdge, CountCrossedGlobalEdge, stepNO, i + 1);
 
         uint GlobalEdgeNO = 0;
         cuDFNsys::Vector2<T> IntersectionOnCrossedEdge;
@@ -407,7 +408,7 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
         int edgeNO = -1;
         bool ifOnFracBound = cuDFNsys::IfPntLiesOnBound2DConvexPolyReturnEdgeNO<T>(IntersectionOnCrossedEdge,
                                                                                    Frac2Dvertex, Frac_DEV[FracID].NumVertsTruncated,
-                                                                                   (T)1e-11,
+                                                                                   (T)1e-12,
                                                                                    &edgeNO);
         bool IfTargPosInFrac = cuDFNsys::IfPntInside2DConvexPoly<T>(TargPos, Frac2Dvertex, Frac_DEV[EleToFracID_ptr[EleID - 1]].NumVertsTruncated);
 
