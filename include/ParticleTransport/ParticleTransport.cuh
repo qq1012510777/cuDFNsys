@@ -465,7 +465,7 @@ public:
         oss << "\t\t\tH5name = []; H5name_2D = [];\n";
         oss << "\t\t\tif (j == 0); H5name = [currentPath, '/ParticlePositionResult/ParticlePositionInit_3D.h5']; else; H5name = [currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(ceil(double(j) / double(SizeOfDataBlock)), '%010d'), '_3D.h5']; end;\n";
         oss << "\t\t\tif (j == 0); H5name_2D = [currentPath, '/ParticlePositionResult/ParticlePositionInit.h5']; else; H5name_2D = [currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(ceil(double(j) / double(SizeOfDataBlock)), '%010d'), '.h5']; end;\n";
-        
+
         oss << "\t\t\tS = h5read(H5name, ['/Step_', num2str(j, '%010d')]);\n";
         oss << "\t\t\tParticleID = h5read(H5name_2D, ['/ParticleIDAndElementTag_', num2str(j, '%010d')]);\n"; // /
         oss << "\t\t\tMatrx3D_pso = NaN(N_particles, 3);\n";
@@ -496,7 +496,7 @@ public:
         oss << "\tH5name = []; H5name_2D = [];\n";
         oss << "\tif (i == 0); H5name = [currentPath, '/ParticlePositionResult/ParticlePositionInit_3D.h5']; else; H5name = [currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(ceil(double(i) / double(SizeOfDataBlock)), '%010d'), '_3D.h5']; end;\n";
         oss << "\tif (i == 0); H5name_2D = [currentPath, '/ParticlePositionResult/ParticlePositionInit.h5']; else; H5name_2D = [currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(ceil(double(i) / double(SizeOfDataBlock)), '%010d'), '.h5']; end;\n";
-        
+
         oss << "\tS = h5read(H5name, ['/Step_', num2str(i, '%010d')]);\n";
         oss << "\tParticleID = h5read(H5name_2D, ['/ParticleIDAndElementTag_', num2str(i, '%010d')]);\n"; // /
         oss << "\tMatrx3D_pso = NaN(N_particles, 3);\n";
@@ -611,9 +611,13 @@ private:
                 {
 
                     T proportion_ = abs(fem.VelocityNormalScalarSepEdges(EdgeNO - 1, 0)) * length_ / fem.QIn;
+                    //cout << "edgeno: " << EdgeNO << ", " << proportion_ << endl;
                     /// flux-weighted
 
                     NumParticlesEachEdge[i] = (uint)round(proportion_ * NumOfParticles);
+
+                    if (proportion_ < 2e-2)
+                        NumParticlesEachEdge[i] = 0.0;
                 }
                 else if (Injection_mode == "Resident")
                 {
@@ -640,12 +644,17 @@ private:
         else
             throw cuDFNsys::ExceptionsPause("Undefined particle injection mode!\n");
 
-        this->NumParticles = 0;
+        this->NumParticles = thrust::reduce(thrust::host, NumParticlesEachEdge.begin(), NumParticlesEachEdge.end(), 0);
+        T fraction_ = (T)NumOfParticles / (T)this->NumParticles;
+        //cout << this->NumParticles << ", " << fraction_ << endl;
         for (size_t i = 0; i < NumParticlesEachEdge.size(); ++i)
-        {
-            this->NumParticles += NumParticlesEachEdge[i];
-        }
-        this->ParticlePlumes.resize(NumParticles);
+            NumParticlesEachEdge[i] = round(NumParticlesEachEdge[i] * fraction_);
+
+        this->NumParticles = thrust::reduce(thrust::host, NumParticlesEachEdge.begin(), NumParticlesEachEdge.end(), 0);
+        this->ParticlePlumes.resize(this->NumParticles);
+
+        //cout << "this->NumParticles: " << this->NumParticles << " / " << NumOfParticles << endl;
+        //exit(0);
 
         uint TmpCountParticle = 0;
         uint pARTICLEid_T = 0;
