@@ -57,8 +57,8 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
-    /// P_DEV[i].ElementID = 55170;
-    /// P_DEV[i].Position2D = cuDFNsys::MakeVector2<T>(8.8543401582283571826792467618361115455627, -31.4797793921278419304599083261564373970032);
+    // P_DEV[i].ElementID = 11847;
+    // P_DEV[i].Position2D = cuDFNsys::MakeVector2<T>(33.9676100000000005252331902738660573959351, -5.3694499999999996120436662749852985143661);
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
@@ -80,6 +80,12 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
     Vertex_Triangle_ForVelocity[2] = cuDFNsys::MakeVector2(Coordinate2D_Vec_dev_ptr[EleID - 1].x[2], Coordinate2D_Vec_dev_ptr[EleID - 1].y[2]);
 
     cuDFNsys::Vector2<T> Veloc_p = cuDFNsys::ReconstructVelocityGrid<T>(InitPos, Vertex_Triangle_ForVelocity, Veloc_triangle);
+
+    /// the dimension of Veloc_p is 2, and the unit is L^2 * S^-1
+    /// we have to convert it to L * S^-1
+    T conductivity_k = Frac_DEV[FracID].Conductivity;
+    T b_aperture = pow(conductivity_k * 12.0, 1.0 / 3.0);
+    Veloc_p.x /= b_aperture, Veloc_p.y /= b_aperture;
 
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
@@ -117,7 +123,7 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
-    /// TargPos = cuDFNsys::MakeVector2<T>(8.8611299999999992849097907310351729393005, -31.4815499999999985902832122519612312316895);
+    /// TargPos = cuDFNsys::MakeVector2<T>(34.0291899999999998271960066631436347961426, -5.3011900000000000687805368215776979923248);
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
@@ -130,7 +136,6 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
     //---------------------------------------------
     //---------------------------------------------
     //---------------------------------------------
-
 
     cuDFNsys::Vector2<T> CrossedGlobalEdge[_SizeOfArray_CrossedGlobalEdge_][2];
     int CountCrossedGlobalEdge = 0;
@@ -363,14 +368,16 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
         /// ---------------- this happens, particularly for the first step when the molecular diffusion is large--------------
         /// ---------------- this happens, particularly for the first step when the molecular diffusion is large--------------
         cuDFNsys::Vector3<T> IntersectionPnt_3D = cuDFNsys::Roate2DPositionTo3D<T>(IntersectionOnCrossedEdge,
-                                                                                   Frac_DEV[EleToFracID_ptr[P_DEV[i].ElementID - 1]]);
+                                                                                   Frac_DEV[EleToFracID_ptr[EleID - 1]]);
 
         cuDFNsys::Vector3<T> TargetPnt_3D = cuDFNsys::Roate2DPositionTo3D<T>(TargPos,
-                                                                             Frac_DEV[EleToFracID_ptr[P_DEV[i].ElementID - 1]]);
+                                                                             Frac_DEV[EleToFracID_ptr[EleID - 1]]);
         T *tmp4 = &(IntersectionPnt_3D.x);
         if (abs(tmp4[Dir_flow] - ((T)-1.0) * outletcoordinate) < 1e-4)
         {
             tmp4 = &(TargetPnt_3D.x);
+
+            //printf("abs(tmp4[Dir_flow] - ((T)-1.0) * outletcoordinate): %.40f, %.40f, %.40f, %d\n", abs(tmp4[Dir_flow] - ((T)-1.0) * outletcoordinate), tmp4[Dir_flow], ((T)-1.0) * outletcoordinate, EleToFracID_ptr[P_DEV[i].ElementID - 1]);
 
             if (tmp4[Dir_flow] < ((T)-1.0) * outletcoordinate && tmp4[Dir_flow] > outletcoordinate)
             {
@@ -380,6 +387,7 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
             {
                 printf("Warning: the particle %d goes above the model or moves along the inlet plane!\n", i + 1);
                 // delete this particle in the future
+                // goto Debug100;
                 return;
             }
         }

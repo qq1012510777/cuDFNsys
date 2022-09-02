@@ -49,6 +49,7 @@ void cuDFNsys::HDF5API::AddDataset(const string &filename,
     dims[0] = dim.x;
     if (rank_ == 2)
         dims[1] = dim.y;
+
     DataSpace dataspace(rank_, dims);
     delete[] dims;
     dims = NULL;
@@ -123,8 +124,8 @@ void cuDFNsys::HDF5API::AddDatasetsWithOneGroup(const string &filename,
                                                 const vector<T *> data,
                                                 const vector<uint2> &dim)
 {
-    if(groupname == "N")
-    throw ExceptionsPause("You should define group name when you are using HDF5API::AddDatasetsWithOneGroup!\n");
+    if (groupname == "N")
+        throw ExceptionsPause("You should define group name when you are using HDF5API::AddDatasetsWithOneGroup!\n");
 
     H5File file(filename, H5F_ACC_RDWR);
 

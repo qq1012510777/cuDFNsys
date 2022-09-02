@@ -43,8 +43,12 @@ __device__ __host__ void cuDFNsys::Fracture<T>::RoationMatrix(cuDFNsys::Vector1<
     rotate_axis.x = -NormalVec.y, rotate_axis.y = NormalVec.x, rotate_axis.z = 0.00;
 
     cuDFNsys::Vector1<T> norm_axis = sqrt(rotate_axis.x * rotate_axis.x + rotate_axis.y * rotate_axis.y);
+    //printf("rotate_axis: %.40f,  %.40f,  %.40f\n", rotate_axis.x, rotate_axis.y, rotate_axis.z);
     rotate_axis.x /= norm_axis;
     rotate_axis.y /= norm_axis;
+
+    if (NormalVec.x == 0 && NormalVec.y == 0 && NormalVec.z == 1)
+        rotate_axis.x = 0, rotate_axis.y = 0;
 
     int sign_ = 0;
     if (mode == 32)
@@ -54,12 +58,15 @@ __device__ __host__ void cuDFNsys::Fracture<T>::RoationMatrix(cuDFNsys::Vector1<
 
     cuDFNsys::Quaternion<T> Qua;
     Qua = Qua.DescribeRotation(rotate_axis, sign_ * acos(NormalVec.z));
+    //printf("sign_ * acos(NormalVec.z): %.40f\n", sign_ * acos(NormalVec.z));
 
     cuDFNsys::Vector4<T> quater_ = Qua.GetQuaternionNum();
     cuDFNsys::Vector1<T> w = quater_.x,
                          x = quater_.y,
                          y = quater_.z,
                          z = quater_.w;
+    //printf("rotate_axis: %.40f,  %.40f,  %.40f\n", rotate_axis.x, rotate_axis.y, rotate_axis.z);
+
     cuDFNsys::Vector1<T> tmp_R[3][3] = {1 - 2 * y * y - 2 * z * z, 2 * x * y - 2 * w * z, 2 * x * z + 2 * w * y,
                                         2 * x * y + 2 * w * z, 1 - 2 * x * x - 2 * z * z, 2 * y * z - 2 * w * x,
                                         2 * x * z - 2 * w * y, 2 * y * z + 2 * w * x, 1 - 2 * x * x - 2 * y * y};
@@ -85,6 +92,10 @@ __device__ __host__ void cuDFNsys::Fracture<T>::Generate2DVerts(cuDFNsys::Vector
     cuDFNsys::Vector1<T> norm_axis = sqrt(rotate_axis.x * rotate_axis.x + rotate_axis.y * rotate_axis.y);
     rotate_axis.x /= norm_axis;
     rotate_axis.y /= norm_axis;
+
+    if (NormalVec.x == 0 && NormalVec.y == 0 && NormalVec.z == 1)
+        rotate_axis.x = 0, rotate_axis.y = 0;
+
     cuDFNsys::Quaternion<T> Qua;
     Qua = Qua.DescribeRotation(rotate_axis, -1.0 * acos(this->NormalVec.z));
 

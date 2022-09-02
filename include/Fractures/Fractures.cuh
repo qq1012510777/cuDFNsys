@@ -65,4 +65,11 @@ __global__ void Fractures2DLike(cuDFNsys::Fracture<T> *verts,
                                 T minR = 1,
                                 T maxR = 15);
 
+// Four fractures to verify particle tracking
+template <typename T>
+__global__ void FracturesFour(cuDFNsys::Fracture<T> *verts,
+                              unsigned long seed,
+                              int count,
+                              T model_L);
+
 }; // namespace cuDFNsys

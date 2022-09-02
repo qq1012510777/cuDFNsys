@@ -108,6 +108,7 @@ cuDFNsys::Mesh<T>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
         gmsh::option::setNumber("Mesh.Algorithm", 5);
         cout << "\tmesh ing" << endl;
         gmsh::model::mesh::generate(2);
+        /// gmsh::fltk::run();
         cout << "\t\tmeshing finished, running time: " << cuDFNsys::CPUSecond() - istart << " sec\n";
 
         cout << "\t\tGeting coordinates" << endl;
@@ -120,7 +121,6 @@ cuDFNsys::Mesh<T>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
         this->NumberingEdges(L);
         cout << "\t\tFinished! Running time: " << cuDFNsys::CPUSecond() - istart << " sec\n";
 
-        //gmsh::fltk::run();
         gmsh::model::mesh::clear();
         gmsh::clear();
         gmsh::finalize();
@@ -445,15 +445,15 @@ void cuDFNsys::Mesh<T>::GetElements(const thrust::host_vector<cuDFNsys::Fracture
     cout << "\t\t\tGot entity elements" << endl;
     //cout << 1 << endl;
 
-    /*
-        for (size_t i = 0; i < elementEntities_2D.size(); ++i)
-            cout << "this entity: " << elementEntities_2D[i].size() << " elements, the largest ele: " << Largest_ele[i] << endl;
-        */
+    //for (size_t i = 0; i < elementEntities_2D.size(); ++i)
+    //cout << "this entity: " << elementEntities_2D[i].size() << " elements, the largest ele: " << Largest_ele[i] << endl;
+
     thrust::host_vector<uint3> One_entity_one_ele(elementEntities_2D.size());
     //cout << "node:\n";
     for (size_t i = 0; i < One_entity_one_ele.size(); ++i)
     {
         One_entity_one_ele[i] = elementEntities_2D[i][Largest_ele[i] - 1];
+        //cout << One_entity_one_ele[i].x << ", " << One_entity_one_ele[i].y << ", " << One_entity_one_ele[i].z << endl;
     }
 
     thrust::device_vector<uint3> One_entity_one_ele_dev(elementEntities_2D.size());
@@ -505,7 +505,7 @@ void cuDFNsys::Mesh<T>::GetElements(const thrust::host_vector<cuDFNsys::Fracture
     for (int i = 0; i < Elements_Frac_host.size(); ++i)
     {
         int FracIDLocal = Elements_Frac_host[i];
-        //cout << "local ID: " << FracIDLocal << endl;
+        // cout << "local ID: " << FracIDLocal << ", elementEntities_2D.size = " << elementEntities_2D[i].size() << endl;
         this->Element2D[FracIDLocal].insert(this->Element2D[FracIDLocal].end(),
                                             elementEntities_2D[i].begin(),
                                             elementEntities_2D[i].end());

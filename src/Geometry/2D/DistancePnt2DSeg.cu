@@ -10,6 +10,9 @@
 template <typename T>
 __device__ __host__ T cuDFNsys::DistancePnt2DSeg(cuDFNsys::Vector2<T> pnt, cuDFNsys::Vector2<T> *verts)
 {
+    // printf("pnt: %.40f, %.40f\n", pnt.x, pnt.y);
+    // printf("verts[0]: %.40f, %.40f\n", verts[0].x, verts[0].y);
+    // printf("verts[1]: %.40f, %.40f\n", verts[1].x, verts[1].y);
     cuDFNsys::Vector2<T> AB = cuDFNsys::MakeVector2(verts[1].x - verts[0].x, verts[1].y - verts[0].y);
 
     cuDFNsys::Vector2<T> AE = cuDFNsys::MakeVector2(pnt.x - verts[0].x, pnt.y - verts[0].y);
@@ -18,7 +21,7 @@ __device__ __host__ T cuDFNsys::DistancePnt2DSeg(cuDFNsys::Vector2<T> pnt, cuDFN
 
     T AB_BE = AB.x * BE.x + AB.y * BE.y;
     T AB_AE = AB.x * AE.x + AB.y * AE.y;
-
+    /// printf("AB_BE: %.40f, AB_AE: %.40f\n", AB_BE, AB_AE);
     T reqAns = 0;
 
     if (AB_BE > 0)

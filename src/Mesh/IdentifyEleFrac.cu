@@ -16,6 +16,7 @@ __global__ void cuDFNsys::IdentifyEleFrac(uint3 *One_entity_one_ele_dev_ptr,
                                           T _tol_)
 {
     int i = threadIdx.x + blockIdx.x * blockDim.x;
+    //i = 6;
 
     if (i > entity_count - 1)
         return;
@@ -74,12 +75,19 @@ __global__ void cuDFNsys::IdentifyEleFrac(uint3 *One_entity_one_ele_dev_ptr,
             //     printf("k : %d, dis: %.40f\n", k, dis);
             // };
             distye += dis;
+
+            //if (i == 6)
+            //printf("fracid = %d, dis: %.40f\n", j, dis);
+
             if (abs(dis) > _tol_)
             {
                 //printf("%f\n", abs(dis));
                 belong_to_this_frac = false;
                 break;
             }
+
+            //if (i == 6)
+            //printf("closer distance\n");
 
             cuDFNsys::Vector3<T> Pnt_l = cuDFNsys::MakeVector3((*verts_ele[k]).x - (Center_l).x,
                                                                (*verts_ele[k]).y - (Center_l).y,
@@ -88,22 +96,34 @@ __global__ void cuDFNsys::IdentifyEleFrac(uint3 *One_entity_one_ele_dev_ptr,
 
             cuDFNsys::Vector2<T> Pnt_ll = cuDFNsys::MakeVector2(Pnt_l.x, Pnt_l.y);
 
+            // if (i == 6)
+            //     printf("RoationMatrix:\n%.40f, %.40f, %.40f\n%.40f, %.40f, %.40f\n%.40f, %.40f, %.40f\n",
+            //            MAT_3to2[0][0], MAT_3to2[0][1], MAT_3to2[0][2],
+            //            MAT_3to2[1][0], MAT_3to2[1][1], MAT_3to2[1][2],
+            //            MAT_3to2[2][0], MAT_3to2[2][1], MAT_3to2[2][2]);
+
             bool inside_ = cuDFNsys::IfPntInside2DConvexPoly<T>(Pnt_ll, verts_2D__s, 4);
+            //printf("i == %d s\n", i);
             bool on_bound = cuDFNsys::IfPntLiesOnBound2DConvexPoly<T>(Pnt_ll, verts_2D__s, 4, _tol_);
-            //printf("inside %d on_bound %d \n", inside_, on_bound);
+            //printf("i == %d f\n", i);
+            //if (i == 6)
+            // printf("inside %d on_bound %d \n", inside_, on_bound);
             if (inside_ == false && on_bound == false)
             {
                 belong_to_this_frac = false;
 
-                //printf("entity %d, coplane but not inside! the %d point\n", i, k + 1);
-                //printf("\tL_%dpnt(1, :)= [%f %f %f];\n", i, (*verts_ele[0]).x, (*verts_ele[0]).y, (*verts_ele[0]).z);
-                //printf("\tL_%dpnt(2, :)= [%f %f %f];\n", i, (*verts_ele[1]).x, (*verts_ele[1]).y, (*verts_ele[1]).z);
-                //printf("\tL_%dpnt(3, :)= [%f %f %f];\n", i, (*verts_ele[2]).x, (*verts_ele[2]).y, (*verts_ele[2]).z);
+                //if (i == 6)
+                //{
+                //    printf("entity %d, coplane but not inside! the %d point\n", i, k + 1);
+                //    printf("\tL_%dpnt(1, :)= [%.40f %.40f %.40f];\n", i, (*verts_ele[0]).x, (*verts_ele[0]).y, (*verts_ele[0]).z);
+                //    printf("\tL_%dpnt(2, :)= [%.40f %.40f %.40f];\n", i, (*verts_ele[1]).x, (*verts_ele[1]).y, (*verts_ele[1]).z);
+                //    printf("\tL_%dpnt(3, :)= [%.40f %.40f %.40f];\n", i, (*verts_ele[2]).x, (*verts_ele[2]).y, (*verts_ele[2]).z);
                 //
-                //printf("\tL_%dverts(1, :)=[%f %f %f];\n", i, Frac_verts_device_ptr[j].Verts3D[0].x, Frac_verts_device_ptr[j].Verts3D[0].y, Frac_verts_device_ptr[j].Verts3D[0].z);
-                //printf("\tL_%dverts(2, :)=[%f %f %f];\n", i, Frac_verts_device_ptr[j].Verts3D[1].x, Frac_verts_device_ptr[j].Verts3D[1].y, Frac_verts_device_ptr[j].Verts3D[1].z);
-                //printf("\tL_%dverts(3, :)=[%f %f %f];\n", i, Frac_verts_device_ptr[j].Verts3D[2].x, Frac_verts_device_ptr[j].Verts3D[2].y, Frac_verts_device_ptr[j].Verts3D[2].z);
-                //printf("\tL_%dverts(4, :)=[%f %f %f];\n", i, Frac_verts_device_ptr[j].Verts3D[3].x, Frac_verts_device_ptr[j].Verts3D[3].y, Frac_verts_device_ptr[j].Verts3D[3].z);
+                //    printf("\tL_%dverts(1, :)=[%.40f %.40f %.40f];\n", i, Frac_verts_device_ptr[j].Verts3D[0].x, Frac_verts_device_ptr[j].Verts3D[0].y, Frac_verts_device_ptr[j].Verts3D[0].z);
+                //    printf("\tL_%dverts(2, :)=[%.40f %.40f %.40f];\n", i, Frac_verts_device_ptr[j].Verts3D[1].x, Frac_verts_device_ptr[j].Verts3D[1].y, Frac_verts_device_ptr[j].Verts3D[1].z);
+                //    printf("\tL_%dverts(3, :)=[%.40f %.40f %.40f];\n", i, Frac_verts_device_ptr[j].Verts3D[2].x, Frac_verts_device_ptr[j].Verts3D[2].y, Frac_verts_device_ptr[j].Verts3D[2].z);
+                //    printf("\tL_%dverts(4, :)=[%.40f %.40f %.40f];\n", i, Frac_verts_device_ptr[j].Verts3D[3].x, Frac_verts_device_ptr[j].Verts3D[3].y, Frac_verts_device_ptr[j].Verts3D[3].z);
+                //}
                 break;
             }
         }
@@ -115,6 +135,8 @@ __global__ void cuDFNsys::IdentifyEleFrac(uint3 *One_entity_one_ele_dev_ptr,
             // break;
             Distance[sizeDis] = distye;
             FRACID[sizeDis] = j;
+            //printf("entity: %d, num %d, distance: %.40f, fracid: %d\n", i, sizeDis, distye, j);
+
             sizeDis++;
 
             if (sizeDis == largestsize)
@@ -125,7 +147,7 @@ __global__ void cuDFNsys::IdentifyEleFrac(uint3 *One_entity_one_ele_dev_ptr,
         }
     }
 
-    uint fracid = 0;
+    int fracid = -1;
     T smallestDis = (T)1e10;
     for (uint k = 0; k < sizeDis; ++k)
         if (Distance[k] < smallestDis)

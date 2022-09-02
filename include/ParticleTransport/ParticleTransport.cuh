@@ -271,18 +271,17 @@ public:
 
             cout << this->NumParticles - NumPart_dynamic << "/" << this->NumParticles << " reached outlet plane, running time: " << ielaps_b << "; counting time: " << ielaps << "s\n";
 
+            if (NumPart_dynamic == 0 && Particle_mode == "Particle_tracking")
+            {
+                cout << "\e[1;32mAll particles reached outlet plane!\e[0m\n";
+                break;
+            }
             this->OutputParticleInfoStepByStep(i,
                                                delta_T_,
                                                Dispersion_local,
                                                Particle_mode,
                                                Injection_mode,
                                                Fracs, mesh);
-
-            if (NumPart_dynamic == 0 && Particle_mode == "Particle_tracking")
-            {
-                cout << "\e[1;32mAll particles reached outlet plane!\e[0m\n";
-                break;
-            }
 
             cout << "\n";
         }
@@ -406,8 +405,10 @@ public:
 
             h5g.AddDataset(mat_key, "N", "Step_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
                            particle_position_3D, dim_data);
+            //cout << dim_data.x << ", " << dim_data.y << endl;
             h5g.AddDataset(mat_key, "N", "ParticleIDAndElementTag_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
                            _IfReaded_and_ElementFracTag_, dim_datauu);
+            //cout << dim_datauu.x << ", " << dim_datauu.y << endl;
         }
         delete[] particle_position_3D;
         particle_position_3D = NULL;
@@ -491,6 +492,9 @@ public:
         oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, 'FaceVertexCData', pressure_eles, 'FaceColor', 'flat', 'EdgeAlpha', 0.2, 'facealpha', 0.9); colorbar; view(3); hold on\n";
         oss << "caxis([" << fem.OutletP << ", " << fem.InletP << "]);\n";
         oss << "xlim([-(0.1 * L + L), (0.1 * L + L)])\nylim([ -(0.1 * L + L), (0.1 * L + L) ])\nzlim([ -(0.1 * L + L), (0.1 * L + L) ]);hold on\n\n";
+
+        oss << "newcolors = [];\nnewcolors = rand(N_particles, 1);\nnewcolors = newcolors .* 100; % change this for colored particle\n";
+
         oss << "figure(2)\nfor i = 0:N_steps\n";
         oss << "\ttitle(['DFN flow (mhfem) and particle tracking; step NO = ', num2str(i)]);\n";
         oss << "\tH5name = []; H5name_2D = [];\n";
@@ -502,7 +506,7 @@ public:
         oss << "\tMatrx3D_pso = NaN(N_particles, 3);\n";
         oss << "\tMatrx3D_pso([ParticleID(:, 1) + 1], :) = S(:, [1 2 3]);\n";
 
-        oss << "\tp_s = scatter3(Matrx3D_pso(:, 1), Matrx3D_pso(:, 2), Matrx3D_pso(:, 3), 'k', 'o', 'filled'); clear Matrx3D_pso\n";
+        oss << "\tp_s = scatter3(Matrx3D_pso(:, 1), Matrx3D_pso(:, 2), Matrx3D_pso(:, 3), [], newcolors, 'filled'); clear Matrx3D_pso\n";
         oss << "\tif (i == 0); pause; else; pause(0.01); end;\n";
         oss << "\tif (i ~= N_steps); delete(p_s); end\n";
         oss << "end\n";
@@ -601,6 +605,9 @@ private:
     {
         thrust::host_vector<uint> NumParticlesEachEdge(mesh.InletEdgeNOLen.size(), 0);
 
+        //double sum_speed = abs(fem.VelocityNormalScalarSepEdges.sum());
+        //int sizeofinletedge = fem.VelocityNormalScalarSepEdges.size();
+        //cout << "sum_speed: " << sum_speed << ", " << sizeofinletedge << endl;
         if (Injection_mode == "Flux-weighted" || Injection_mode == "Resident")
             for (size_t i = 0; i < mesh.InletEdgeNOLen.size(); ++i)
             {
@@ -616,8 +623,8 @@ private:
 
                     NumParticlesEachEdge[i] = (uint)round(proportion_ * NumOfParticles);
 
-                    if (proportion_ < 2e-2)
-                        NumParticlesEachEdge[i] = 0.0;
+                    //if (abs(fem.VelocityNormalScalarSepEdges(EdgeNO - 1, 0)) / sum_speed < 1.0 / (double)sizeofinletedge)
+                    //NumParticlesEachEdge[i] = 0.0;
                 }
                 else if (Injection_mode == "Resident")
                 {
@@ -647,6 +654,7 @@ private:
         this->NumParticles = thrust::reduce(thrust::host, NumParticlesEachEdge.begin(), NumParticlesEachEdge.end(), 0);
         T fraction_ = (T)NumOfParticles / (T)this->NumParticles;
         //cout << this->NumParticles << ", " << fraction_ << endl;
+
         for (size_t i = 0; i < NumParticlesEachEdge.size(); ++i)
             NumParticlesEachEdge[i] = round(NumParticlesEachEdge[i] * fraction_);
 

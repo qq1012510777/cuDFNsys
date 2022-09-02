@@ -17,7 +17,7 @@ __device__ __host__ bool cuDFNsys::IfPntLiesOnBound2DConvexPoly(cuDFNsys::Vector
         cuDFNsys::Vector2<T> Seg[2] = {verts[i], verts[(i + 1) % N]};
 
         T dist = cuDFNsys::DistancePnt2DSeg<T>(pnt, Seg);
-
+        //printf("dist: %.40f, _tol_: %.40f\n", dist, _tol_);
         if (dist < _tol_)
             return true;
     }
