@@ -427,6 +427,9 @@ public:
         oss << "clc;\nclose all;\nclear all;\ncurrentPath = fileparts(mfilename('fullpath'));\n";
         oss << "load('" << mat_key << "');\n";
         oss << "L = 0.5 * " << L << ";\n";
+        oss << "P_out = " << fem.OutletP << "; P_in = " << fem.InletP << ";\n";
+        oss << "Offset_colorbar_value_for_particle = 100;\n";
+        oss << "If_video = false;\n";
         oss << "cube_frame = [-L, -L, L; -L, L, L; L, L, L; L -L, L; -L, -L, -L; -L, L, -L; L, L, -L; L -L, -L; -L, L, L; -L, L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L, -L; L, -L, -L; L, -L, L; L, -L, L; L, -L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L,-L; -L, L, -L; -L,L, L];\n";
         oss << "figure(1); view(3); title('DFN flow (mhfem) and particle trajectory'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
         oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
@@ -489,11 +492,24 @@ public:
         oss << "figure(2); view(3); title('DFN flow (mhfem) and particle tracking'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
         oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
         oss << endl;
-        oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, 'FaceVertexCData', pressure_eles, 'FaceColor', 'flat', 'EdgeAlpha', 0.2, 'facealpha', 0.9); colorbar; view(3); hold on\n";
-        oss << "caxis([" << fem.OutletP << ", " << fem.InletP << "]);\n";
+        oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, 'FaceVertexCData', pressure_eles, 'FaceColor', 'flat', 'EdgeAlpha', 0.2, 'facealpha', 0.9); view(3); hold on\n";
+        oss << "colormap(jet)\n";
+        oss << "caxis([P_out, P_in + Offset_colorbar_value_for_particle]);\n";
         oss << "xlim([-(0.1 * L + L), (0.1 * L + L)])\nylim([ -(0.1 * L + L), (0.1 * L + L) ])\nzlim([ -(0.1 * L + L), (0.1 * L + L) ]);hold on\n\n";
 
-        oss << "newcolors = [];\nnewcolors = rand(N_particles, 1);\nnewcolors = newcolors .* 100; % change this for colored particle\n";
+        oss << "Cb = colorbar;\n";
+        oss << "Cb.Limits = [P_out, P_in];\n";
+        oss << "Cb.Title.String = 'Hydraulic head';\n";
+
+        oss << "hold on\n";
+
+        oss << "newcolors = [];\nnewcolors = rand(N_particles, 1);\n";
+
+        oss << "if (If_video == true)\n";
+        oss << "\tparticles_video_object = VideoWriter([currentPath, '/moive_particles.avi']);\n";
+        oss << "\tparticles_video_object.FrameRate = 10;\n";
+        oss << "\topen(particles_video_object);\n";
+        oss << "end\n";
 
         oss << "figure(2)\nfor i = 0:N_steps\n";
         oss << "\ttitle(['DFN flow (mhfem) and particle tracking; step NO = ', num2str(i)]);\n";
@@ -506,10 +522,19 @@ public:
         oss << "\tMatrx3D_pso = NaN(N_particles, 3);\n";
         oss << "\tMatrx3D_pso([ParticleID(:, 1) + 1], :) = S(:, [1 2 3]);\n";
 
-        oss << "\tp_s = scatter3(Matrx3D_pso(:, 1), Matrx3D_pso(:, 2), Matrx3D_pso(:, 3), [], newcolors, 'filled'); clear Matrx3D_pso\n";
+        oss << "\tnewcolors = Matrx3D_pso(:, 3) ./ (2 * L) .* Offset_colorbar_value_for_particle / 2 + P_in + Offset_colorbar_value_for_particle / 2;\n";
+        oss << "\tp_s = scatter3(Matrx3D_pso(:, 1), Matrx3D_pso(:, 2), Matrx3D_pso(:, 3), [], newcolors, 'filled'); clear Matrx3D_pso\n\n";
+
+        oss << "\tif(i ~= 0 && If_video == true)\n";
+        oss << "\t\tM=getframe(gcf);\n";
+        oss << "\t\twriteVideo(particles_video_object,M);\n";
+        oss << "\tend\n\n";
+
         oss << "\tif (i == 0); pause; else; pause(0.01); end;\n";
         oss << "\tif (i ~= N_steps); delete(p_s); end\n";
-        oss << "end\n";
+        oss << "end\n\n";
+
+        oss << "if (If_video == true); close(particles_video_object); end\n";
     };
 
 private:
