@@ -775,3 +775,50 @@ template __global__ void cuDFNsys::FracturesFour<float>(cuDFNsys::Fracture<float
                                                         unsigned long seed,
                                                         int count,
                                                         float model_L);
+
+// ====================================================
+// NAME:        FracturesChangeDomainSize
+// DESCRIPTION: Change Domain size
+// AUTHOR:      Tingchang YIN
+// DATE:        13/09/2022
+// ====================================================
+template <typename T>
+__global__ void cuDFNsys::FracturesChangeDomainSize(cuDFNsys::Fracture<T> *verts,
+                                                    int count,
+                                                    T model_L)
+{
+    int i = threadIdx.x + blockIdx.x * blockDim.x;
+
+    if (i > count - 1)
+        return;
+
+    verts[i].NumVertsTruncated = 4;
+    for (int j = 0; j < 4; ++j)
+        verts[i].Verts3DTruncated[j].x = verts[i].Verts3D[j].x,
+        verts[i].Verts3DTruncated[j].y = verts[i].Verts3D[j].y,
+        verts[i].Verts3DTruncated[j].z = verts[i].Verts3D[j].z;
+
+    bool gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 0, 1);
+    verts[i].ConnectModelSurf[0] = gh;
+
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 0, -1);
+    verts[i].ConnectModelSurf[1] = gh;
+
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 1, 1);
+    verts[i].ConnectModelSurf[2] = gh;
+
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 1, -1);
+    verts[i].ConnectModelSurf[3] = gh;
+
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 2, 1);
+    verts[i].ConnectModelSurf[4] = gh;
+
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 2, -1);
+    verts[i].ConnectModelSurf[5] = gh;
+}; // FracturesChangeDomainSize
+template __global__ void cuDFNsys::FracturesChangeDomainSize<double>(cuDFNsys::Fracture<double> *verts,
+                                                                     int count,
+                                                                     double model_L);
+template __global__ void cuDFNsys::FracturesChangeDomainSize<float>(cuDFNsys::Fracture<float> *verts,
+                                                                    int count,
+                                                                    float model_L);

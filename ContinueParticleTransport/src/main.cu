@@ -122,7 +122,12 @@ int main(int argc, char *argv[])
 
             cout << "MHFEM ing ..." << endl;
 
-            cuDFNsys::MHFEM<_DataType_> fem{mesh, Frac_verts_host, 100, 20, perco_dir, L};
+            _DataType_ P_in = 100, P_out = 20;
+
+            if (argv[5] != NULL && argv[6] != NULL)
+                P_in = atof(argv[5]), P_out = atof(argv[6]);
+
+            cuDFNsys::MHFEM<_DataType_> fem{mesh, Frac_verts_host, P_in, P_out, perco_dir, L};
             cout << "Fluxes: " << fem.QIn << ", ";
             cout << fem.QOut << ", Permeability: ";
             cout << fem.Permeability << endl;

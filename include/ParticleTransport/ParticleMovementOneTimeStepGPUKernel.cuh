@@ -57,7 +57,7 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
-    // P_DEV[i].ElementID = 11847;
+    // zP_DEV[i].ElementID = 11847;
     // P_DEV[i].Position2D = cuDFNsys::MakeVector2<T>(33.9676100000000005252331902738660573959351, -5.3694499999999996120436662749852985143661);
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
@@ -715,12 +715,14 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
                 //printf("angle_ppp[%d]: %.40f\n", yr, angle_ppp[yr]);
                 T ang_degree = angle_ppp[yr] * 180.0 / M_PI;
 
-                if (ang_degree > 1e-1 && yr < 1)
+                T error_td = 0.3;
+
+                if (ang_degree > error_td && yr < 1)
                 {
                     angle_ = (T)2.0 * M_PI - angle_;
                     continue;
                 }
-                else if (ang_degree > 1e-1 && yr == 1)
+                else if (ang_degree > error_td && yr == 1)
                 {
                     printf("warning: I cannot correctly rotate the remainning trajectory when particle goes through a fracture trace! angle_ppp: %.40f, %.40f\n",
                            angle_ppp[0] * 180.0f / M_PI, angle_ppp[1] * 180.0f / M_PI);

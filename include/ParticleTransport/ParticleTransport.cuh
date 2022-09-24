@@ -428,7 +428,7 @@ public:
         oss << "load('" << mat_key << "');\n";
         oss << "L = 0.5 * " << L << ";\n";
         oss << "P_out = " << fem.OutletP << "; P_in = " << fem.InletP << ";\n";
-        oss << "Offset_colorbar_value_for_particle = 100;\n";
+        oss << "Offset_colorbar_value_for_particle = " << L << ";\n";
         oss << "If_video = false;\n";
         oss << "cube_frame = [-L, -L, L; -L, L, L; L, L, L; L -L, L; -L, -L, -L; -L, L, -L; L, L, -L; L -L, -L; -L, L, L; -L, L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L, -L; L, -L, -L; L, -L, L; L, -L, L; L, -L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L,-L; -L, L, -L; -L,L, L];\n";
         oss << "figure(1); view(3); title('DFN flow (mhfem) and particle trajectory'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";

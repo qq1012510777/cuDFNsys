@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
         //-----------
         if (Percolation_cluster.size() > 0)
         {
-
+            cuDFNsys::OutputObjectData<_DataType_> lk3;
             double istart_1 = cuDFNsys::CPUSecond();
             std::vector<size_t> Fracs_percol;
             cuDFNsys::GetAllPercolatingFractures GetPer{Percolation_cluster,
@@ -113,12 +113,14 @@ int main(int argc, char *argv[])
             cout << "meshing ..." << endl;
             cuDFNsys::Mesh<_DataType_> mesh;
             lk.InputMesh("mesh.h5", mesh, &Fracs_percol);
-            //cuDFNsys::Mesh<_DataType_> mesh{Frac_verts_host, IntersectionPair_percol,
-            //                                &Fracs_percol, minGrid, maxGrid, perco_dir, L};
+            // cuDFNsys::Mesh<_DataType_> mesh{Frac_verts_host, IntersectionPair_percol,
+            // &Fracs_percol, minGrid, maxGrid, perco_dir, L};
             int i = 0;
             mesh.MatlabPlot("DFN_mesh_" + to_string(i + 1) + ".mat",
                             "DFN_mesh_" + to_string(i + 1) + ".m",
                             Frac_verts_host, L, true, true);
+            //lk3.OutputMesh("Mesh.h5", mesh, Fracs_percol);
+            
 
             cout << "MHFEM ing ..." << endl;
 
@@ -139,9 +141,9 @@ int main(int argc, char *argv[])
                            "MHFEM_" + to_string(i + 1) + ".m",
                            Frac_verts_host, mesh, L);
             //---------------
-            cuDFNsys::OutputObjectData<_DataType_> lk3;
+
             lk3.OutputFractures("Fractures_II.h5", Frac_verts_host, L);
-            lk3.OutputMesh("Mesh.h5", mesh, Fracs_percol);
+
             //return 0;
             cout << "Particle transport ing ...\n";
 
