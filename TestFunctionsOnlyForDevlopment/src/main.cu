@@ -89,11 +89,11 @@ int main(int argc, char *argv[])
                                                                    Frac_verts_host, perco_dir,
                                                                    Percolation_cluster};
         cout << "DFN I finished" << endl;
-        cuDFNsys::MatlabPlotDFN<_DataType_> As{"DFN_I.mat", "DFN_I.m",
+        cuDFNsys::MatlabPlotDFN<_DataType_> As{"DFN_I.h5", "DFN_I.m",
                                                Frac_verts_host, Intersection_map, ListClusters,
                                                Percolation_cluster, false, true, true, true,
                                                L, perco_dir};
-        return 0;
+
         cuDFNsys::OutputObjectData<_DataType_> lk;
         lk.OutputFractures("Fractures.h5", Frac_verts_host, L);
 
@@ -112,10 +112,11 @@ int main(int argc, char *argv[])
                                                                     Frac_verts_host, perco_dir,
                                                                     Percolation_cluster};
         cout << "DFN II finished" << endl;
-        cuDFNsys::MatlabPlotDFN<_DataType_> As2{"DFN_II.mat", "DFN_II.m",
+        cuDFNsys::MatlabPlotDFN<_DataType_> As2{"DFN_II.h5", "DFN_II.m",
                                                 Frac_verts_host, Intersection_map, ListClusters,
                                                 Percolation_cluster, true, true, true, true,
                                                 L, perco_dir};
+        //return 0;
         Frac_verts_device.clear();
         Frac_verts_device.shrink_to_fit();
 
@@ -141,7 +142,7 @@ int main(int argc, char *argv[])
                                             &Fracs_percol, minGrid, maxGrid, perco_dir, L};
             lk.OutputMesh("mesh.h5", mesh, Fracs_percol);
             int i = 0;
-            mesh.MatlabPlot("DFN_mesh_" + to_string(i + 1) + ".mat",
+            mesh.MatlabPlot("DFN_mesh_" + to_string(i + 1) + ".h5",
                             "DFN_mesh_" + to_string(i + 1) + ".m",
                             Frac_verts_host, L, true, true);
 
@@ -160,7 +161,7 @@ int main(int argc, char *argv[])
             cout << "Running time of the meshing and flow simulation: ";
             cout << ielaps_1 << " sec\n";
             //---------------------
-            fem.MatlabPlot("MHFEM_" + to_string(i + 1) + ".mat",
+            fem.MatlabPlot("MHFEM_" + to_string(i + 1) + ".h5",
                            "MHFEM_" + to_string(i + 1) + ".m",
                            Frac_verts_host, mesh, L);
             //---------------
@@ -174,7 +175,7 @@ int main(int argc, char *argv[])
                                                       (_DataType_)atof(argv[12]), // molecular diffusion
                                                       Frac_verts_host, mesh, fem, (uint)perco_dir, -0.5f * L,
                                                       "Particle_tracking", "Flux-weighted"};
-            p.MatlabPlot("MHFEM_" + to_string(i + 1) + ".mat", "particle.m", mesh, fem, L);
+            p.MatlabPlot("MHFEM_" + to_string(i + 1) + ".h5", "particle.m", mesh, fem, L);
         }
         //cudaDeviceReset();
         double ielaps = cuDFNsys::CPUSecond() - istart;

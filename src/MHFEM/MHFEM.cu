@@ -48,7 +48,11 @@ void cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
                                     const cuDFNsys::Mesh<T> &mesh,
                                     const T &L)
 {
-    cuDFNsys::MatlabAPI M1;
+    //cuDFNsys::MatlabAPI M1;
+
+    cuDFNsys::HDF5API h5gg;
+
+    h5gg.NewFile(mat_key);
 
     size_t node_num = mesh.Coordinate3D.size();
 
@@ -67,8 +71,11 @@ void cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
         ptr_coordinates_3D[i + node_num] = mesh.Coordinate3D[i].y;
         ptr_coordinates_3D[i + node_num * 2] = mesh.Coordinate3D[i].z;
     }
-    M1.WriteMat(mat_key, "w", node_num * 3,
-                node_num, 3, ptr_coordinates_3D, "coordinate_3D");
+    // M1.WriteMat(mat_key, "w", node_num * 3,
+    //             node_num, 3, ptr_coordinates_3D, "coordinate_3D");
+    uint2 dim_f = make_uint2(3, node_num);
+    h5gg.AddDataset(mat_key, "N", "coordinate_3D", ptr_coordinates_3D, dim_f);
+
 
     delete[] ptr_coordinates_3D;
     ptr_coordinates_3D = NULL;
@@ -88,8 +95,10 @@ void cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
         ptr_element_3D[i + ele_num] = mesh.Element3D[i].y;
         ptr_element_3D[i + ele_num * 2] = mesh.Element3D[i].z;
     }
-    M1.WriteMat(mat_key, "u", ele_num * 3,
-                ele_num, 3, ptr_element_3D, "element_3D");
+    // M1.WriteMat(mat_key, "u", ele_num * 3,
+    //             ele_num, 3, ptr_element_3D, "element_3D");
+    dim_f = make_uint2(3, ele_num);
+    h5gg.AddDataset(mat_key, "N", "element_3D", ptr_element_3D, dim_f);
 
     delete[] ptr_element_3D;
     ptr_element_3D = NULL;
@@ -106,9 +115,11 @@ void cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
               this->PressureEles.data() + ele_num,
               pressure_ELEs);
 
-    M1.WriteMat(mat_key, "u", ele_num,
-                ele_num, 1, pressure_ELEs,
-                "pressure_eles");
+    // M1.WriteMat(mat_key, "u", ele_num,
+    //             ele_num, 1, pressure_ELEs,
+    //             "pressure_eles");
+    dim_f = make_uint2(1, ele_num);
+    h5gg.AddDataset(mat_key, "N", "pressure_eles", pressure_ELEs, dim_f);
 
     delete[] pressure_ELEs;
     pressure_ELEs = NULL;
@@ -166,17 +177,26 @@ void cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
         velocity_center_grid[i + 2 * mesh.Element3D.size()] = velocity_p_3D.z;
     };
 
-    M1.WriteMat(mat_key, "u", mesh.Element3D.size() * 3,
-                mesh.Element3D.size(), 3, velocity_center_grid,
-                "velocity_center_grid");
+    // M1.WriteMat(mat_key, "u", mesh.Element3D.size() * 3,
+    //             mesh.Element3D.size(), 3, velocity_center_grid,
+    //             "velocity_center_grid");
+    dim_f = make_uint2(3, mesh.Element3D.size());
+    h5gg.AddDataset(mat_key, "N", "velocity_center_grid", velocity_center_grid, dim_f);
+
     delete[] velocity_center_grid;
     velocity_center_grid = NULL;
 
     //-----------------
     std::ofstream oss(command_key, ios::out);
     oss << "clc;\nclose all;\nclear all;\n";
-    oss << "load('" << mat_key << "');\n";
+    //oss << "load('" << mat_key << "');\n";
     oss << "L = 0.5 * " << L << ";\n";
+    oss << "currentPath = fileparts(mfilename('fullpath'));\n";
+    oss << "coordinate_3D = h5read([currentPath, '/" << mat_key << "'], '/coordinate_3D');\n";
+    oss << "element_3D = h5read([currentPath, '/" << mat_key << "'], '/element_3D');\n";
+    oss << "velocity_center_grid = h5read([currentPath, '/" << mat_key << "'], '/velocity_center_grid');\n";
+    oss << "pressure_eles = h5read([currentPath, '/" << mat_key << "'], '/pressure_eles');\n";
+
     oss << "cube_frame = [-L, -L, L; -L, L, L; L, L, L; L -L, L; -L, -L, -L; -L, L, -L; L, L, -L; L -L, -L; -L, L, L; -L, L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L, -L; L, -L, -L; L, -L, L; L, -L, L; L, -L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L,-L; -L, L, -L; -L,L, L];\n";
     oss << "figure(1); view(3); title('DFN flow (mhfem)'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
     oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";

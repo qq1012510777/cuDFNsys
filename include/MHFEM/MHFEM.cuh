@@ -10,6 +10,7 @@
 #pragma once
 #include "../DataTypeSelector/DataTypeSelector.cuh"
 #include "../GlobalDef/GlobalDef.cuh"
+#include "../HDF5API/HDF5API.cuh"
 #include "../Mesh/Mesh.cuh"
 #include "AssembleOnGPUKernel.cuh"
 #include "Eigen/Dense"

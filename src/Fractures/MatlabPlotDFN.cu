@@ -21,7 +21,10 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
                                           T L,
                                           int dir)
 {
-    cuDFNsys::MatlabAPI M1;
+    //cuDFNsys::MatlabAPI M1;
+    cuDFNsys::HDF5API h5gg;
+
+    h5gg.NewFile(mat_key);
 
     int NUM_Frac = Frac_verts_host.size();
     int sum_NUM_verts = 4 * NUM_Frac;
@@ -43,9 +46,12 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
         }
     }
 
-    M1.WriteMat(mat_key, "w", NUM_Frac, NUM_Frac, 1, Frac_NUM_verts, "Frac_NUM_verts");
+    uint2 dim_f = make_uint2(1, NUM_Frac);
+    h5gg.AddDataset(mat_key, "N", "Frac_NUM_verts", Frac_NUM_verts, dim_f);
+    //M1.WriteMat(mat_key, "w", NUM_Frac, NUM_Frac, 1, Frac_NUM_verts, "Frac_NUM_verts");
     delete[] Frac_NUM_verts;
     Frac_NUM_verts = NULL;
+
     //-----------------
     T *R_ = new T[NUM_Frac];
     if (R_ == NULL)
@@ -57,11 +63,14 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
     for (int i = 0; i < NUM_Frac; ++i)
         R_[i] = Frac_verts_host[i].Radius;
 
-    M1.WriteMat(mat_key, "u", NUM_Frac, NUM_Frac, 1,
-                R_, "R");
+    //dim_f = make_uint2(1, NUM_Frac);
+    h5gg.AddDataset(mat_key, "N", "R", R_, dim_f);
+    // M1.WriteMat(mat_key, "u", NUM_Frac, NUM_Frac, 1,
+    //             R_, "R");
     delete[] R_;
     R_ = NULL;
     //----------------------
+
     T *verts = new T[sum_NUM_verts * 3];
     if (verts == NULL)
     {
@@ -96,8 +105,10 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
         }
     }
 
-    M1.WriteMat(mat_key, "u", sum_NUM_verts * 3, sum_NUM_verts, 3,
-                verts, "verts");
+    dim_f = make_uint2(3, sum_NUM_verts);
+    h5gg.AddDataset(mat_key, "N", "verts", verts, dim_f);
+    //M1.WriteMat(mat_key, "u", sum_NUM_verts * 3, sum_NUM_verts, 3,
+    //            verts, "verts");
     delete[] verts;
     verts = NULL;
 
@@ -127,8 +138,10 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
             tmp_jj++;
         }
 
-        M1.WriteMat(mat_key, "u", NUM_intersections * 6, NUM_intersections, 6,
-                    Intersections_, "intersections");
+        dim_f = make_uint2(6, NUM_intersections);
+        h5gg.AddDataset(mat_key, "N", "intersections", Intersections_, dim_f);
+        //M1.WriteMat(mat_key, "u", NUM_intersections * 6, NUM_intersections, 6,
+        // Intersections_, "intersections");
 
         delete[] Intersections_;
         Intersections_ = NULL;
@@ -159,7 +172,9 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
                 tmpff++;
             }
 
-        M1.WriteMat(mat_key, "u", ListClusters.size() * Max_cluster_size, ListClusters.size(), Max_cluster_size, clustersList, "ListClusters");
+        //M1.WriteMat(mat_key, "u", ListClusters.size() * Max_cluster_size, ListClusters.size(), Max_cluster_size, clustersList, "ListClusters");
+        dim_f = make_uint2(Max_cluster_size, ListClusters.size());
+        h5gg.AddDataset(mat_key, "N", "ListClusters", clustersList, dim_f);
 
         delete[] clustersList;
         clustersList = NULL;
@@ -175,7 +190,10 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
         for (size_t i = 0; i < Percolation_cluster.size(); ++i)
             percolationcluster[i] = Percolation_cluster[i] + 1;
 
-        M1.WriteMat(mat_key, "u", Percolation_cluster.size(), Percolation_cluster.size(), 1, percolationcluster, "PercolationClusters");
+        //M1.WriteMat(mat_key, "u", Percolation_cluster.size(),
+        // Percolation_cluster.size(), 1, percolationcluster, "PercolationClusters");
+        dim_f = make_uint2(1, Percolation_cluster.size());
+        h5gg.AddDataset(mat_key, "N", "PercolationClusters", percolationcluster, dim_f);
 
         delete[] percolationcluster;
         percolationcluster = NULL;
@@ -194,8 +212,13 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
         {
             orientation[i] = Frac_verts_host[i].Phi();
             orientation[i + NUM_Frac] = Frac_verts_host[i].Theta();
+            //cout << orientation[i] << ", " << orientation[i + NUM_Frac] << endl;
         }
-        M1.WriteMat(mat_key, "u", NUM_Frac * 2, NUM_Frac, 2, orientation, "Polar_Orientation");
+        // M1.WriteMat(mat_key, "u", NUM_Frac * 2, NUM_Frac, 2, orientation, "Polar_Orientation");
+
+        dim_f = make_uint2(2, NUM_Frac);
+        h5gg.AddDataset(mat_key, "N", "Polar_Orientation", orientation, dim_f);
+
         delete[] orientation;
         orientation = NULL;
     };
@@ -203,11 +226,15 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
     //----------------------------------------------
     std::ofstream oss(command_key, ios::out);
     oss << "clc;\nclose all;\nclear all;\n";
-    oss << "load('" << mat_key << "');\n";
+    oss << "currentPath = fileparts(mfilename('fullpath'));\n";
+    // oss << "load('" << mat_key << "');\n";
     oss << "L = 0.5 * " << L << ";\n";
     oss << "cube_frame = [-L, -L, L; -L, L, L; L, L, L; L -L, L; -L, -L, -L; -L, L, -L; L, L, -L; L -L, -L; -L, L, L; -L, L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L, -L; L, -L, -L; L, -L, L; L, -L, L; L, -L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L,-L; -L, L, -L; -L,L, L];\n";
     oss << "figure(1); view(3); title('Discete fracture network'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
     oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
+
+    oss << "Frac_NUM_verts = h5read([currentPath, '/" << mat_key << "'], '/Frac_NUM_verts');\n";
+    oss << "verts = h5read([currentPath, '/" << mat_key << "'], '/verts');\n";
 
     oss << "\nMAX_num_fracs = max(Frac_NUM_verts);\n";
     oss << "NUM_fracs = size(Frac_NUM_verts, 1);\n";
@@ -224,7 +251,8 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
 
     if (If_show_intersection == true)
     {
-        oss << "\nintersections_verts = [intersections(:, [1 2 3]); intersections(:, [4 5 6])];\n";
+        oss << "\nintersections = h5read([currentPath, '/" << mat_key << "'], '/intersections');\n";
+        oss << "intersections_verts = [intersections(:, [1 2 3]); intersections(:, [4 5 6])];\n";
         oss << "intersections_structures = [[1:size(intersections, 1)]', [1:size(intersections, 1)]' + size(intersections, 1)];\n";
         oss << "patch('Vertices', intersections_verts, 'Faces', intersections_structures, 'FaceVertexCData', ones(size(intersections_verts, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0, 'linewidth', 3, 'edgecolor', 'r'); view(3); colorbar; hold on;\n";
     }
@@ -233,7 +261,9 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
 
     if (If_show_cluster == true)
     {
-        oss << "\nfigure(2); title('DFN highlighting clusters'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); view(3); axis([-1.1 * L,  1.1 * L, -1.1 * L, 1.1 * L, -1.1 * L, 1.1 * L]); hold on\n";
+        oss << "\nListClusters = h5read([currentPath, '/" << mat_key << "'], '/ListClusters');\n";
+        oss << "PercolationClusters = h5read([currentPath, '/" << mat_key << "'], '/PercolationClusters');\n";
+        oss << "figure(2); title('DFN highlighting clusters'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); view(3); axis([-1.1 * L,  1.1 * L, -1.1 * L, 1.1 * L, -1.1 * L, 1.1 * L]); hold on\n";
         //oss << "ListClusters(ListClusters==-1) = NaN;\n";
         oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
         oss << "colorValue = zeros(size(element, 1), 1);\n";
@@ -252,6 +282,7 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
     if (If_show_orientation == true)
     {
         oss << "\nfigure(3);\n";
+        oss << "Polar_Orientation = h5read([currentPath, '/" << mat_key << "'], '/Polar_Orientation');\n";
         oss << "polarscatter(Polar_Orientation(:, 1), Polar_Orientation(:, 2), 's', 'filled'); rlim([0 0.5*pi]);\n";
         oss << "rticks([pi / 12, 2 * pi / 12, 3 * pi / 12, 4 * pi / 12, 5 * pi / 12, 6 * pi / 12 ]);\n";
         oss << "title(['Fractures', '''',' orientations']); hold on\n";
@@ -260,6 +291,7 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
     }
 
     oss << "\n\n\n%if R values have a lognormal distribution, uncommect the following-------\n";
+    oss << "%% R = h5read([currentPath, '/" << mat_key << "'], '/R');\n";
     oss << "%% figure(4);\n";
     oss << "%% nbins = 20;\n";
     oss << "%% histfit(R, nbins, 'lognormal');\n";

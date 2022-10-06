@@ -15,6 +15,7 @@
 #include "../Geometry/Geometry.cuh"
 #include "../GlobalDef/GlobalDef.cuh"
 #include "../MatlabAPI/MatlabAPI.cuh"
+#include "../HDF5API/HDF5API.cuh"
 #include "EleCoor.cuh"
 #include "EleEdgeAttri.cuh"
 #include "GetLocalCoordiates.cuh"

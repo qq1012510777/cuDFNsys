@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
         //    Nproc = atoi(argv[1]);
 
         string FracH5 = "FracturesForParticle.h5";
-        string mshfile = "DFN_mesh_1.mat";
+        string mshfile = "DFN_mesh_1.h5";
 
         thrust::host_vector<cuDFNsys::Fracture<_DataType_>> Frac_verts_host;
 
@@ -93,14 +93,11 @@ int main(int argc, char *argv[])
         Tem_p = h5g.ReadDataset<uint>(DispersionInfo_h5, "N", "SizeOfDataBlock");
         uint SizeOfDataBlock = Tem_p[0];
 
-        cuDFNsys::MatlabAPI mu;
-
-        Eigen::MatrixXd ElementFracTag;
-        mu.ReadMat(mshfile, "element_Frac_Tag", ElementFracTag);
+        vector<uint> ElementFracTag = Tem_p.ReadDataset(mshfile, "N", "element_Frac_Tag");
 
         thrust::host_vector<uint> ElementFracTag_cuda(ElementFracTag.size());
         for (uint i = 0; i < ElementFracTag.size(); ++i)
-            ElementFracTag_cuda[i] = ElementFracTag(i, 0);
+            ElementFracTag_cuda[i] = ElementFracTag[i];
         thrust::device_vector<uint> ElementFracTag_cuda_dev = ElementFracTag_cuda;
         uint *ElementFracTag_cuda_devptr = thrust::raw_pointer_cast(ElementFracTag_cuda_dev.data());
 

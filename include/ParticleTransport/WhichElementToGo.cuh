@@ -23,6 +23,7 @@ __host__ __device__ void WhichElementToGo(uint currentEleID,
                                           uint *EleID_vec,
                                           uint *LocalEdgeNo_vec,
                                           uint *EleToFracID_ptr,
+                                          cuDFNsys::Fracture<T> *Frac_DEV,
                                           cuDFNsys::EleCoor<T> *Coordinate2D_Vec_dev_ptr,
                                           T *velocity_ptr,
                                           T rand_0_1,
@@ -48,8 +49,9 @@ __host__ __device__ void WhichElementToGo(uint currentEleID,
         /// if (currentEleID == 13510)
         ///     printf("%d, ", EleID);
 
-        uint LocalEdgeNO__ = LocalEdgeNo_vec[i]; // 0, 1 or 2
-        //uint FracID = EleToFracID_ptr[EleID - 1];                               // from 0
+        uint LocalEdgeNO__ = LocalEdgeNo_vec[i];  // 0, 1 or 2
+        uint FracID = EleToFracID_ptr[EleID - 1]; // from 0
+
         uint3 EdgeNO = make_uint3(EleID * 3 - 3, EleID * 3 - 2, EleID * 3 - 1); // from 0
 
         cuDFNsys::Vector2<T> CenterThisTriangle = cuDFNsys::MakeVector2((T)1.0f / (T)3.0f * (Coordinate2D_Vec_dev_ptr[EleID - 1].x[0] + Coordinate2D_Vec_dev_ptr[EleID - 1].x[1] + Coordinate2D_Vec_dev_ptr[EleID - 1].x[2]),
@@ -75,7 +77,11 @@ __host__ __device__ void WhichElementToGo(uint currentEleID,
             Vertex_Triangle_ForVelocity[2] = cuDFNsys::MakeVector2(Coordinate2D_Vec_dev_ptr[EleID - 1].x[2], Coordinate2D_Vec_dev_ptr[EleID - 1].y[2]);
 
             cuDFNsys::Vector2<T> Veloc_p = cuDFNsys::ReconstructVelocityGrid<T>(CenterThisTriangle, Vertex_Triangle_ForVelocity, Veloc_triangle);
-            // printf("velocity center: %f, %f;\n", Veloc_p.x, Veloc_p.y);
+            T conductivity_k = Frac_DEV[FracID].Conductivity;
+            T b_aperture = pow(conductivity_k * 12.0, 1.0 / 3.0);
+            Veloc_p.x /= b_aperture, Veloc_p.y /= b_aperture;
+
+            // printf("velocity (LT^{-1}) center: %.40f, %.40f;\n", Veloc_p.x, Veloc_p.y);
 
             T norm_veloc = sqrt(Veloc_p.x * Veloc_p.x + Veloc_p.y * Veloc_p.y);
 
@@ -98,13 +104,18 @@ __host__ __device__ void WhichElementToGo(uint currentEleID,
         ifAllsharedEdgeVelocityPositive = true;
         return;
     }
-
+    //printf("element velocity weight 0: ");
+    //for (uint i = 0; i < NumSharedEle - 1; ++i)
+    //    printf("%.40f, ", veloc_vec[i]);
+    //printf("\n");
     for (uint i = 0; i < NumSharedEle - 1; ++i)
     {
         veloc_vec[i] /= TotalVeloc;
         if (i > 0)
             veloc_vec[i] += veloc_vec[i - 1];
     }
+
+    //printf("element velocity weight 1: ");
     //for (uint i = 0; i < NumSharedEle - 1; ++i)
     //    printf("%.40f, ", veloc_vec[i]);
     //printf("\n");
@@ -133,10 +144,10 @@ __host__ __device__ void WhichElementToGo(uint currentEleID,
             veloc_vec[i] = 1.0 / (NumSharedEle - 1) + (i > 0 ? veloc_vec[i - 1] : 0);
     }
 
-    // printf("element velocity weight: ");
-    // for (uint i = 0; i < NumSharedEle - 1; ++i)
-    //     printf("%f, ", veloc_vec[i]);
-    // printf("\n\n");
+    //printf("element velocity weight 2: ");
+    //for (uint i = 0; i < NumSharedEle - 1; ++i)
+    //   printf("%.40f, ", veloc_vec[i]);
+    //printf("\n\n");
 
     for (uint i = 0; i < NumSharedEle - 1; ++i)
         if (rand_0_1 < veloc_vec[i])
@@ -153,6 +164,7 @@ template __host__ __device__ void WhichElementToGo<double>(uint currentEleID,
                                                            uint *EleID_vec,
                                                            uint *LocalEdgeNo_vec,
                                                            uint *EleToFracID_ptr,
+                                                           cuDFNsys::Fracture<double> *Frac_DEV,
                                                            cuDFNsys::EleCoor<double> *Coordinate2D_Vec_dev_ptr,
                                                            double *velocity_ptr,
                                                            double rand_0_1,
@@ -166,6 +178,7 @@ template __host__ __device__ void WhichElementToGo<float>(uint currentEleID,
                                                           uint *EleID_vec,
                                                           uint *LocalEdgeNo_vec,
                                                           uint *EleToFracID_ptr,
+                                                          cuDFNsys::Fracture<float> *Frac_DEV,
                                                           cuDFNsys::EleCoor<float> *Coordinate2D_Vec_dev_ptr,
                                                           float *velocity_ptr,
                                                           float rand_0_1,

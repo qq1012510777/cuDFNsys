@@ -12,6 +12,7 @@
 #include "../DataTypeSelector/DataTypeSelector.cuh"
 #include "../GlobalDef/GlobalDef.cuh"
 #include "../MatlabAPI/MatlabAPI.cuh"
+#include "../HDF5API/HDF5API.cuh"
 #include "Fracture.cuh"
 #include <algorithm>
 #include <cstring>
