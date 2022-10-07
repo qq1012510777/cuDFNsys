@@ -11,8 +11,8 @@
 #pragma once
 #include "../DataTypeSelector/DataTypeSelector.cuh"
 #include "../GlobalDef/GlobalDef.cuh"
-#include "../MatlabAPI/MatlabAPI.cuh"
 #include "../HDF5API/HDF5API.cuh"
+#include "../MatlabAPI/MatlabAPI.cuh"
 #include "Fracture.cuh"
 #include <algorithm>
 #include <cstring>
@@ -39,6 +39,8 @@ public:
                   bool If_show_cluster,
                   bool If_show_orientation,
                   T L,
-                  int dir);
+                  int dir,
+                  bool if_python_visualization = false,
+                  string PythonName_Without_suffix = "DFN_py");
 };
 }; // namespace cuDFNsys

@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
         cuDFNsys::MatlabPlotDFN<_DataType_> As{"DFN_I.h5", "DFN_I.m",
                                                Frac_verts_host, Intersection_map, ListClusters,
                                                Percolation_cluster, false, true, true, true,
-                                               L, perco_dir};
+                                               L, perco_dir, true, "DFN_I"};
 
         cuDFNsys::OutputObjectData<_DataType_> lk;
         lk.OutputFractures("Fractures.h5", Frac_verts_host, L);
@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
         cuDFNsys::MatlabPlotDFN<_DataType_> As2{"DFN_II.h5", "DFN_II.m",
                                                 Frac_verts_host, Intersection_map, ListClusters,
                                                 Percolation_cluster, true, true, true, true,
-                                                L, perco_dir};
+                                                L, perco_dir, true, "DFN_II"};
         //return 0;
         Frac_verts_device.clear();
         Frac_verts_device.shrink_to_fit();

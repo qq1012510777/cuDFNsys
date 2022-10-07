@@ -19,7 +19,9 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
                                           bool If_show_cluster,
                                           bool If_show_orientation,
                                           T L,
-                                          int dir)
+                                          int dir,
+                                          bool if_python_visualization,
+                                          string PythonName_Without_suffix)
 {
     //cuDFNsys::MatlabAPI M1;
     cuDFNsys::HDF5API h5gg;
@@ -51,6 +53,11 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
     //M1.WriteMat(mat_key, "w", NUM_Frac, NUM_Frac, 1, Frac_NUM_verts, "Frac_NUM_verts");
     delete[] Frac_NUM_verts;
     Frac_NUM_verts = NULL;
+
+    // ----------
+    dim_f = make_uint2(1, 1);
+    T modelsize[1] = {L};
+    h5gg.AddDataset(mat_key, "N", "L_m", modelsize, dim_f);
 
     //-----------------
     T *R_ = new T[NUM_Frac];
@@ -222,6 +229,105 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
         delete[] orientation;
         orientation = NULL;
     };
+    //------------------------------------------------
+    if (if_python_visualization)
+    {
+        std::ofstream oss(PythonName_Without_suffix + ".py", ios::out);
+        oss << "import h5py\n";
+        oss << "import numpy as np\n";
+        oss << "from mayavi import mlab as ML\n";
+        oss << "\n";
+        oss << "f = h5py.File('" << mat_key << "')\n";
+
+        oss << "\n";
+        oss << "verts = np.array(f['verts'][:])\n";
+        oss << "Frac_NUM_verts = np.array(f['Frac_NUM_verts'][:])\n";
+        oss << "verts = np.array(f['verts'][:])\n";
+        oss << "L_m = f['L_m'][0]\n";
+        if (If_show_cluster)
+        {
+            oss << "ListClusters = np.array(f['ListClusters'][:])\nnp.delete(ListClusters, 0, axis=0)\n";
+            oss << "PercolationClusters = np.array(f['PercolationClusters'][:])\n";
+        }
+        if (If_show_orientation)
+            oss << "Polar_Orientation = np.array(f['Polar_Orientation'][:])\n";
+        oss << endl;
+        if (If_show_intersection)
+        {
+            oss << "\nintersections = np.array(f['intersections'][:])\n";
+            oss << "NumIntersections = intersections.shape[1]\n";
+            oss << "Intersection =  np.concatenate((np.transpose(intersections[[0, 1, 2], :]), np.transpose(intersections[[3, 4, 5], :])), axis=0)\n";
+            oss << "Connection_ = list()\n";
+            oss << "Connection_ = [(Connection_ + [i, i + NumIntersections]) for i in range(NumIntersections)]\n";
+            oss << "src = ML.pipeline.scalar_scatter(Intersection[:, 0], Intersection[:, 1], Intersection[:, 2])\n";
+            oss << "src.mlab_source.dataset.lines = Connection_\n";
+            oss << "src.update()\n";
+            oss << "lines = ML.pipeline.stripper(src)\n";
+            oss << "ML.pipeline.surface(lines, color=(1, 0, 0), line_width=5, opacity=1)\n\n";
+        }
+
+        oss << "f.close()\n";
+        oss << "\n";
+        oss << "NUM_Fracs = Frac_NUM_verts.shape[1]\n";
+        oss << "\n";
+        oss << "poo = 0\n";
+        oss << "structure_ = list()\n";
+        if (If_show_cluster)
+            oss << "scalar_t = np.zeros([verts.shape[1]])\n";
+
+        oss << "for i in range(NUM_Fracs):\n";
+        oss << "\tNumVerticesSingleFrac = int(Frac_NUM_verts[0, i])\n";
+        if (If_show_cluster)
+        {
+            oss << "\tpos = np.where(ListClusters == i + 1)\n";
+            oss << "\tpos_t = int(pos[1])\n";
+            oss << "\tif (pos_t + 1 != int(PercolationClusters[0])):\n";
+            oss << "\t\tscalar_t[[s for s in range(poo, poo + NumVerticesSingleFrac)]] = pos_t\n";
+            oss << "\telse:\n";
+            oss << "\t\tscalar_t[[s for s in range(poo, poo + NumVerticesSingleFrac)]] = 1.5 * int(ListClusters.shape[1])\n";
+        }
+        oss << "\tfor j in range(NumVerticesSingleFrac - 2):\n";
+        oss << "\t\tstructure_ = structure_ + [[poo, poo + (j + 1) % NumVerticesSingleFrac, poo + (j + 2) % NumVerticesSingleFrac]]\n";
+        oss << "\tpoo += NumVerticesSingleFrac\n";
+        oss << "\n";
+        oss << "ML.triangular_mesh(verts[0, :], verts[1, :], verts[2, :], structure_, scalars=verts[2, :], opacity=1)\n";
+        oss << "ML.outline(extent=[-0.5 * L_m, 0.5 * L_m] * 3)\n";
+        oss << "ML.axes()\n";
+        oss << "ML.colorbar(orientation='vertical')\n";
+        oss << "ML.xlabel('x (m)')\n";
+        oss << "ML.ylabel('y (m)')\n";
+        oss << "ML.zlabel('z (m)')\n";
+        oss << "ML.show()\n\n";
+
+        if (If_show_cluster)
+        {
+            oss << "ML.triangular_mesh(verts[0, :], verts[1, :], verts[2, :], structure_, scalars=scalar_t, opacity=1)\n";
+            oss << "ML.outline(extent=[-0.5 * L_m, 0.5 * L_m] * 3)\n";
+            oss << "ML.axes()\n";
+            oss << "ML.colorbar(orientation='vertical')\n";
+            oss << "ML.xlabel('x (m)')\n";
+            oss << "ML.ylabel('y (m)')\n";
+            oss << "ML.zlabel('z (m)')\n";
+            oss << "ML.show()\n";
+        }
+
+        if (If_show_orientation)
+        {
+            oss << "\nimport matplotlib.pyplot as plt\n";
+            oss << "fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})\n";
+            oss << "ax.plot(Polar_Orientation[0, :], Polar_Orientation[1, :], 'ko')\n";
+            oss << "ax.set_xticks([0, 1.5708, 3.1416, 4.7124])\n";
+            oss << "ax.set_xticklabels([r'0', r\"$0.5\\pi$\", r\"$\\pi$\", r\"$1.5\\pi$\"])\n";
+            oss << "ax.set_rmax(1.5708)\n";
+            oss << "ax.set_rticks([0.5236, 1.0472, 1.5708])\n";
+            oss << "ax.set_yticklabels([r\"$0.25\\pi$\", r\"$0.75\\pi$\", r\"$\\pi$\"])\n";
+            oss << "ax.set_rlabel_position(10)\n";
+            oss << "ax.grid(True)\n";
+            oss << "ax.set_title(\"Orientations\", va='bottom')\n";
+            oss << "plt.show()\n";
+        }
+        oss.close();
+    }
 
     //----------------------------------------------
     std::ofstream oss(command_key, ios::out);
@@ -312,7 +418,9 @@ template cuDFNsys::MatlabPlotDFN<double>::MatlabPlotDFN(string mat_key,         
                                                         bool If_show_cluster,
                                                         bool If_show_orientation,
                                                         double L,
-                                                        int dir);
+                                                        int dir,
+                                                        bool if_python_visualization,
+                                                        string PythonName_Without_suffix);
 template cuDFNsys::MatlabPlotDFN<float>::MatlabPlotDFN(string mat_key,                                                                                             // mat file name
                                                        string command_key,                                                                                         // m file name
                                                        thrust::host_vector<cuDFNsys::Fracture<float>> Frac_verts_host,                                             // Vector of Fracture
@@ -324,4 +432,6 @@ template cuDFNsys::MatlabPlotDFN<float>::MatlabPlotDFN(string mat_key,          
                                                        bool If_show_cluster,
                                                        bool If_show_orientation,
                                                        float L,
-                                                       int dir);
+                                                       int dir,
+                                                       bool if_python_visualization,
+                                                       string PythonName_Without_suffix);
