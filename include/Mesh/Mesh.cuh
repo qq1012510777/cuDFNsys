@@ -14,8 +14,8 @@
 #include "../Fractures/Fracture.cuh"
 #include "../Geometry/Geometry.cuh"
 #include "../GlobalDef/GlobalDef.cuh"
-#include "../MatlabAPI/MatlabAPI.cuh"
 #include "../HDF5API/HDF5API.cuh"
+#include "../MatlabAPI/MatlabAPI.cuh"
 #include "EleCoor.cuh"
 #include "EleEdgeAttri.cuh"
 #include "GetLocalCoordiates.cuh"
@@ -72,7 +72,7 @@ public:
 public:
     // constructor
     Mesh(){};
-    
+
     // constructor
     Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
          const std::vector<pair<int, int>> &IntersectionPair_percol,
@@ -88,7 +88,9 @@ public:
                     thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
                     const T &L,
                     const bool &if_check_2D_coordinates,
-                    const bool &if_check_edge_Numbering);
+                    const bool &if_check_edge_Numbering,
+                    bool if_python_visualization = false,
+                    string PythonName_Without_suffix = "DFN_py");
 
 private:
     // get coordinates of mesh

@@ -179,7 +179,9 @@ void cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
                                    thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
                                    const T &L,
                                    const bool &if_check_2D_coordinates,
-                                   const bool &if_check_edge_Numbering)
+                                   const bool &if_check_edge_Numbering,
+                                   bool if_python_visualization,
+                                   string PythonName_Without_suffix)
 {
     //cuDFNsys::MatlabAPI M1;
 
@@ -206,6 +208,10 @@ void cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
 
     uint2 dim_f = make_uint2(3, node_num);
     h5gg.AddDataset(mat_key, "N", "coordinate_3D", ptr_coordinates_3D, dim_f);
+
+    dim_f = make_uint2(1, 1);
+    T yu[1] = {L};
+    h5gg.AddDataset(mat_key, "N", "L_m", yu, dim_f);
 
     // M1.WriteMat(mat_key, "w", node_num * 3,
     //             node_num, 3, ptr_coordinates_3D, "coordinate_3D");
@@ -283,7 +289,6 @@ void cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
         dim_f = make_uint2(6, frac_tag_num);
         h5gg.AddDataset(mat_key, "N", "coordinate_2D", verts2D, dim_f);
 
-
         delete[] verts2D;
         verts2D = NULL;
 
@@ -354,6 +359,70 @@ void cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
         edge_attri = NULL;
     }
 
+    if (if_python_visualization)
+    {
+        std::ofstream oss(PythonName_Without_suffix + ".py", ios::out);
+        oss << "import h5py\n";
+        oss << "import numpy as np\n";
+        oss << "from mayavi import mlab as ML\n";
+        oss << "f = h5py.File('" << mat_key << "')\n";
+        oss << "coordinate_3D = np.array(f['coordinate_3D'][:])\n";
+        oss << "element_3D = np.array(f['element_3D'][:])\n";
+        if (if_check_edge_Numbering == true)
+            oss << "edge_attri = np.transpose(np.array(f['edge_attri'][:]))\n";
+        oss << "L_m = f['L_m'][:][0]\n";
+        oss << "f.close()\n";
+        oss << "ML.triangular_mesh(coordinate_3D[0, :], coordinate_3D[1, :], coordinate_3D[2, :], np.transpose(element_3D - 1), scalars=coordinate_3D[2, :], opacity=0.8)\n";
+        oss << "ML.triangular_mesh(coordinate_3D[0, :], coordinate_3D[1, :], coordinate_3D[2, :], np.transpose(element_3D-1), representation='wireframe', color=(0, 0, 0), line_width=1.0)\n";
+        oss << "ML.outline(extent=[-0.5 * L_m, 0.5 * L_m] * 3)\n";
+        oss << "ML.axes()\n";
+        oss << "ML.colorbar(orientation='vertical')\n";
+        oss << "ML.xlabel('x (m)')\n";
+        oss << "ML.ylabel('y (m)')\n";
+        oss << "ML.zlabel('z (m)')\n";
+        oss << "ML.show()\n";
+        if (if_check_edge_Numbering == true)
+        {
+            oss << "kk = np.zeros([edge_attri.shape[0] * 3, 3], dtype=int)\n";
+            oss << "kk[[list(range(0, kk.shape[0], 3))], :] = np.concatenate((edge_attri[:, [0, 1]], edge_attri[:, [3]]), axis=1)\n";
+            oss << "kk[[list(range(1, kk.shape[0], 3))], :] = np.concatenate((edge_attri[:, [1, 2]], edge_attri[:, [4]]), axis=1)\n";
+            oss << "kk[[list(range(2, kk.shape[0], 3))], :] = np.concatenate((edge_attri[:, [2, 0]], edge_attri[:, [5]]), axis=1)\n";
+            oss << "inlet_loc = np.where(kk[:, 2] == 0)\n";
+            oss << "outlet_loc = np.where(kk[:, 2] == 1)\n";
+            oss << "neumann_loc = np.where(kk[:, 2] == 2)\n";
+            oss << "interior_loc = np.where(kk[:, 2] == 3)\n";
+            oss << "ML.triangular_mesh(coordinate_3D[0, :], coordinate_3D[1, :], coordinate_3D[2, :], np.transpose(element_3D - 1), representation='wireframe', color=(0, 0, 0), line_width=1.0)\n";
+            oss << "ML.outline(extent=[-0.5 * L_m, 0.5 * L_m] * 3)\n";
+            oss << "ML.axes()\n";
+            oss << "ML.colorbar(orientation='vertical')\n";
+            oss << "ML.xlabel('x (m)')\n";
+            oss << "ML.ylabel('y (m)')\n";
+            oss << "ML.zlabel('z (m)')\n";
+            oss << "src1 = ML.pipeline.scalar_scatter(coordinate_3D[0, :], coordinate_3D[1, :], coordinate_3D[2, :])\n";
+            oss << "src1.mlab_source.dataset.lines = (kk[inlet_loc, 0:2][0] - 1).tolist()\n";
+            oss << "src1.update()\n";
+            oss << "lines = ML.pipeline.stripper(src1)\n";
+            oss << "ML.pipeline.surface(lines, color=(1, 0, 0), line_width=1.2, opacity=1)\n";
+            oss << "src2 = ML.pipeline.scalar_scatter(coordinate_3D[0, :], coordinate_3D[1, :], coordinate_3D[2, :])\n";
+            oss << "src2.mlab_source.dataset.lines = (kk[outlet_loc, 0:2][0] - 1).tolist()\n";
+            oss << "src2.update()\n";
+            oss << "lines = ML.pipeline.stripper(src2)\n";
+            oss << "ML.pipeline.surface(lines, color=(1, 0, 0), line_width=1.2, opacity=1)\n";
+            oss << "src3 = ML.pipeline.scalar_scatter(coordinate_3D[0, :], coordinate_3D[1, :], coordinate_3D[2, :])\n";
+            oss << "src3.mlab_source.dataset.lines = (kk[neumann_loc, 0:2][0] - 1).tolist()\n";
+            oss << "src3.update()\n";
+            oss << "lines = ML.pipeline.stripper(src3)\n";
+            oss << "ML.pipeline.surface(lines, color=(0, 0, 1), line_width=1.2, opacity=1)\n";
+            oss << "src4 = ML.pipeline.scalar_scatter(coordinate_3D[0, :], coordinate_3D[1, :], coordinate_3D[2, :])\n";
+            oss << "src4.mlab_source.dataset.lines = (kk[interior_loc, 0:2][0] - 1).tolist()\n";
+            oss << "src4.update()\n";
+            oss << "lines = ML.pipeline.stripper(src4)\n";
+            oss << "ML.pipeline.surface(lines, color=(0, 1, 0), line_width=1.2, opacity=1)\n";
+            oss << "ML.show()\n";
+        }
+
+        oss.close();
+    }
     //---------------------------------------------------------
     std::ofstream oss(command_key, ios::out);
     oss << "clc;\nclose all;\nclear all;\n";
@@ -424,13 +493,17 @@ template void cuDFNsys::Mesh<double>::MatlabPlot(const string &mat_key,
                                                  thrust::host_vector<cuDFNsys::Fracture<double>> Fracs,
                                                  const double &L,
                                                  const bool &if_check_2D_coordinates,
-                                                 const bool &if_check_edge_Numbering);
+                                                 const bool &if_check_edge_Numbering,
+                                                 bool if_python_visualization,
+                                                 string PythonName_Without_suffix);
 template void cuDFNsys::Mesh<float>::MatlabPlot(const string &mat_key,
                                                 const string &command_key,
                                                 thrust::host_vector<cuDFNsys::Fracture<float>> Fracs,
                                                 const float &L,
                                                 const bool &if_check_2D_coordinates,
-                                                const bool &if_check_edge_Numbering);
+                                                const bool &if_check_edge_Numbering,
+                                                bool if_python_visualization,
+                                                string PythonName_Without_suffix);
 
 // ====================================================
 // NAME:        GetCoordinates

@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
             int i = 0;
             mesh.MatlabPlot("DFN_mesh_" + to_string(i + 1) + ".h5",
                             "DFN_mesh_" + to_string(i + 1) + ".m",
-                            Frac_verts_host, L, true, true);
+                            Frac_verts_host, L, true, true, true, "DFN_mesh_" + to_string(i + 1));
 
             cout << "MHFEM ing ..." << endl;
 
