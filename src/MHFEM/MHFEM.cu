@@ -46,7 +46,9 @@ void cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
                                     const string &command_key,
                                     thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
                                     const cuDFNsys::Mesh<T> &mesh,
-                                    const T &L)
+                                    const T &L,
+                                    bool if_python_visualization,
+                                    string PythonName_Without_suffix)
 {
     //cuDFNsys::MatlabAPI M1;
 
@@ -76,9 +78,17 @@ void cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
     uint2 dim_f = make_uint2(3, node_num);
     h5gg.AddDataset(mat_key, "N", "coordinate_3D", ptr_coordinates_3D, dim_f);
 
-
     delete[] ptr_coordinates_3D;
     ptr_coordinates_3D = NULL;
+
+    dim_f = make_uint2(1, 1);
+    T yu[1] = {L};
+    h5gg.AddDataset(mat_key, "N", "L_m", yu, dim_f);
+
+    yu[0] = this->InletP;
+    h5gg.AddDataset(mat_key, "N", "InletP", yu, dim_f);
+    yu[0] = this->OutletP;
+    h5gg.AddDataset(mat_key, "N", "OutletP", yu, dim_f);
 
     //---------------------
     size_t ele_num = mesh.Element3D.size();
@@ -186,71 +196,121 @@ void cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
     delete[] velocity_center_grid;
     velocity_center_grid = NULL;
 
+    //-------------------
+    if (if_python_visualization)
+    {
+        std::ofstream oss(PythonName_Without_suffix + ".py", ios::out);
+        oss << "import h5py\n";
+        oss << "import numpy as np\n";
+        oss << "from mayavi import mlab as ML\n";
+
+        oss << "f = h5py.File('" << mat_key << "')\n";
+        oss << "coordinate_3D = np.array(f['coordinate_3D'][:])\n";
+        oss << "element_3D = np.array(f['element_3D'][:], dtype=int)\n";
+        oss << "InletP = np.array(f['InletP'][:])\n";
+        oss << "OutletP = np.array(f['OutletP'][:])\n";
+        oss << "L_m = f['L_m'][:][0]\n";
+        oss << "pressure_eles = np.array(f['pressure_eles'][:])\n";
+        oss << "velocity_center_grid = np.array(f['velocity_center_grid'][:])\n";
+        oss << "f.close()\n";
+        oss << "mesh = ML.triangular_mesh(coordinate_3D[0, :], coordinate_3D[1, :], coordinate_3D[2, :], np.transpose(element_3D-1), representation='wireframe', color=(0, 0, 0), line_width=1.0)\n";
+
+        oss << "mesh.mlab_source.dataset.cell_data.scalars = np.transpose(pressure_eles)\n";
+        oss << "mesh.mlab_source.dataset.cell_data.scalars.name = 'Cell data'\n";
+        oss << "mesh.mlab_source.update()\n";
+        oss << "mesh.parent.update()\n";
+        oss << "mesh2 = ML.pipeline.set_active_attribute(mesh, cell_scalars='Cell data')\n";
+        oss << "s2 = ML.pipeline.surface(mesh2, colormap='rainbow', opacity=0.8)\n";
+        oss << "ML.outline(extent=[-0.5 * L_m, 0.5 * L_m] * 3)\n";
+        oss << "ML.axes()\n";
+        oss << "s2.module_manager.scalar_lut_manager.data_range = np.array([OutletP[0], InletP[0]])\n";
+        oss << "ML.colorbar(object=s2, orientation='vertical')\n";
+        oss << "ML.xlabel('x (m)')\n";
+        oss << "ML.ylabel('y (m)')\n";
+        oss << "ML.zlabel('z (m)')\n";
+
+        oss << "CenterELE = np.zeros([3, element_3D.shape[1]])\n";
+        oss << "CenterELE[0, :] = 1.0 / 3.0 * (coordinate_3D[0, element_3D[0, :]-1] + coordinate_3D[0, element_3D[1, :]-1] + coordinate_3D[0, element_3D[2, :]-1])\n";
+        oss << "CenterELE[1, :] = 1.0 / 3.0 * (coordinate_3D[1, element_3D[0, :]-1] + coordinate_3D[1, element_3D[1, :]-1] + coordinate_3D[1, element_3D[2, :]-1])\n";
+        oss << "CenterELE[2, :] = 1.0 / 3.0 * (coordinate_3D[2, element_3D[0, :]-1] + coordinate_3D[2, element_3D[1, :]-1] + coordinate_3D[2, element_3D[2, :]-1])\n";
+        oss << "ML.quiver3d(CenterELE[0, :], CenterELE[1, :], CenterELE[2, :], velocity_center_grid[0, :], velocity_center_grid[1, :], velocity_center_grid[2, :])\n";
+
+        oss << "ML.show()\n";
+        oss.close();
+    }
+
     //-----------------
-    std::ofstream oss(command_key, ios::out);
-    oss << "clc;\nclose all;\nclear all;\n";
-    //oss << "load('" << mat_key << "');\n";
-    oss << "L = 0.5 * " << L << ";\n";
-    oss << "currentPath = fileparts(mfilename('fullpath'));\n";
-    oss << "coordinate_3D = h5read([currentPath, '/" << mat_key << "'], '/coordinate_3D');\n";
-    oss << "element_3D = h5read([currentPath, '/" << mat_key << "'], '/element_3D');\n";
-    oss << "velocity_center_grid = h5read([currentPath, '/" << mat_key << "'], '/velocity_center_grid');\n";
-    oss << "pressure_eles = h5read([currentPath, '/" << mat_key << "'], '/pressure_eles');\n";
+    if (command_key != "N")
+    {
+        std::ofstream oss(command_key, ios::out);
+        oss << "clc;\nclose all;\nclear all;\n";
+        //oss << "load('" << mat_key << "');\n";
+        oss << "L = 0.5 * " << L << ";\n";
+        oss << "currentPath = fileparts(mfilename('fullpath'));\n";
+        oss << "coordinate_3D = h5read([currentPath, '/" << mat_key << "'], '/coordinate_3D');\n";
+        oss << "element_3D = h5read([currentPath, '/" << mat_key << "'], '/element_3D');\n";
+        oss << "velocity_center_grid = h5read([currentPath, '/" << mat_key << "'], '/velocity_center_grid');\n";
+        oss << "pressure_eles = h5read([currentPath, '/" << mat_key << "'], '/pressure_eles');\n";
 
-    oss << "cube_frame = [-L, -L, L; -L, L, L; L, L, L; L -L, L; -L, -L, -L; -L, L, -L; L, L, -L; L -L, -L; -L, L, L; -L, L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L, -L; L, -L, -L; L, -L, L; L, -L, L; L, -L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L,-L; -L, L, -L; -L,L, L];\n";
-    oss << "figure(1); view(3); title('DFN flow (mhfem)'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
-    oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
-    oss << endl;
-    oss << "xlim([-1.1*L, 1.1*L]);\n";
-    oss << "ylim([-1.1*L, 1.1*L]);\n";
-    oss << "zlim([-1.1*L, 1.1*L]);\nhold on\n";
-    //oss << "centers_ele = zeros(size(element_3D, 1), 3);\n";
-    //oss << "centers_ele(:, 1) = 0.5 * (coordinate_3D(element_3D(:, 1), 1) + coordinate_3D(element_3D(:, 2), 1) + coordinate_3D(element_3D(:, 3), 1));\n";
-    //oss << "centers_ele(:, 2) = 0.5 * (coordinate_3D(element_3D(:, 1), 2) + coordinate_3D(element_3D(:, 2), 2) + coordinate_3D(element_3D(:, 3), 2));\n";
-    //oss << "centers_ele(:, 3) = 0.5 * (coordinate_3D(element_3D(:, 1), 3) + coordinate_3D(element_3D(:, 2), 3) + coordinate_3D(element_3D(:, 3), 3));\n";
-    //oss << endl;
+        oss << "cube_frame = [-L, -L, L; -L, L, L; L, L, L; L -L, L; -L, -L, -L; -L, L, -L; L, L, -L; L -L, -L; -L, L, L; -L, L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L, -L; L, -L, -L; L, -L, L; L, -L, L; L, -L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L,-L; -L, L, -L; -L,L, L];\n";
+        oss << "figure(1); view(3); title('DFN flow (mhfem)'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
+        oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
+        oss << endl;
+        oss << "xlim([-1.1*L, 1.1*L]);\n";
+        oss << "ylim([-1.1*L, 1.1*L]);\n";
+        oss << "zlim([-1.1*L, 1.1*L]);\nhold on\n";
+        //oss << "centers_ele = zeros(size(element_3D, 1), 3);\n";
+        //oss << "centers_ele(:, 1) = 0.5 * (coordinate_3D(element_3D(:, 1), 1) + coordinate_3D(element_3D(:, 2), 1) + coordinate_3D(element_3D(:, 3), 1));\n";
+        //oss << "centers_ele(:, 2) = 0.5 * (coordinate_3D(element_3D(:, 1), 2) + coordinate_3D(element_3D(:, 2), 2) + coordinate_3D(element_3D(:, 3), 2));\n";
+        //oss << "centers_ele(:, 3) = 0.5 * (coordinate_3D(element_3D(:, 1), 3) + coordinate_3D(element_3D(:, 2), 3) + coordinate_3D(element_3D(:, 3), 3));\n";
+        //oss << endl;
 
-    //oss << "center_s_edge = zeros(size(shared_edge_NO, 1), 3);\n";
-    //oss << "center_s_edge(:, 1) = 0.5 * (coordinate_3D(shared_edge_NO(:, 1), 1) + coordinate_3D(shared_edge_NO(:, 2), 1));\n";
-    //oss << "center_s_edge(:, 2) = 0.5 * (coordinate_3D(shared_edge_NO(:, 1), 2) + coordinate_3D(shared_edge_NO(:, 2), 2));\n";
-    //oss << "center_s_edge(:, 3) = 0.5 * (coordinate_3D(shared_edge_NO(:, 1), 3) + coordinate_3D(shared_edge_NO(:, 2), 3));\n";
+        //oss << "center_s_edge = zeros(size(shared_edge_NO, 1), 3);\n";
+        //oss << "center_s_edge(:, 1) = 0.5 * (coordinate_3D(shared_edge_NO(:, 1), 1) + coordinate_3D(shared_edge_NO(:, 2), 1));\n";
+        //oss << "center_s_edge(:, 2) = 0.5 * (coordinate_3D(shared_edge_NO(:, 1), 2) + coordinate_3D(shared_edge_NO(:, 2), 2));\n";
+        //oss << "center_s_edge(:, 3) = 0.5 * (coordinate_3D(shared_edge_NO(:, 1), 3) + coordinate_3D(shared_edge_NO(:, 2), 3));\n";
 
-    //oss << "tool_ = [centers_ele; center_s_edge];\n";
-    //oss << "pressure_vert = griddata(tool_(:, 1), tool_(:, 2), tool_(:, 3), [pressure_eles; pressure_shared_edge], coordinate_3D(:, 1), coordinate_3D(:, 2), coordinate_3D(:, 3), 'nearest');\n";
-    oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, 'FaceVertexCData', pressure_eles, 'FaceColor', 'flat', 'EdgeAlpha', 0.9, 'facealpha', 1); colorbar; view(3); hold on\n";
-    oss << "caxis([" << this->OutletP << ", " << this->InletP << "]);\n\n";
+        //oss << "tool_ = [centers_ele; center_s_edge];\n";
+        //oss << "pressure_vert = griddata(tool_(:, 1), tool_(:, 2), tool_(:, 3), [pressure_eles; pressure_shared_edge], coordinate_3D(:, 1), coordinate_3D(:, 2), coordinate_3D(:, 3), 'nearest');\n";
+        oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, 'FaceVertexCData', pressure_eles, 'FaceColor', 'flat', 'EdgeAlpha', 0.9, 'facealpha', 1); colorbar; view(3); hold on\n";
+        oss << "caxis([" << this->OutletP << ", " << this->InletP << "]);\n\n";
 
-    //oss << "element_3D_re = zeros(size(element_3D, 1) * 3, 3);\n";
-    //oss << "element_3D_re([1:3:end], :) = element_3D;\n";
-    //oss << "element_3D_re([2:3:end], :) = element_3D(:, [2 3 1]);\n";
-    //oss << "element_3D_re([3:3:end], :) = element_3D(:, [3 1 2]);\n\n";
-    //
-    //oss << "Tri_plane_normal = cross([coordinate_3D(element_3D_re(:, 2), :) - coordinate_3D(element_3D_re(:, 1), :)], [coordinate_3D(element_3D_re(:, 3), :) - coordinate_3D(element_3D_re(:, 2), :)]);\n";
-    //oss << "Outward_normal = cross([coordinate_3D(element_3D_re(:, 2), :) - coordinate_3D(element_3D_re(:, 1), :)], Tri_plane_normal);\n";
-    //oss << "Outward_normal = Outward_normal ./ norm(Outward_normal);\n";
-    //oss << "Outward_normal = Outward_normal .* normal_velocity;\n";
-    //
-    //oss << "center_sep_edge = 0.5 * [coordinate_3D(element_3D_re(:, 2), :) + coordinate_3D(element_3D_re(:, 1), :)];\n";
-    //
-    //oss << "quiver3(center_sep_edge(:, 1),center_sep_edge(:, 2),center_sep_edge(:, 3), Outward_normal(:, 1),Outward_normal(:, 2),Outward_normal(:, 3), 4, 'LineWidth', 1.5, 'color', 'r');\n";
+        //oss << "element_3D_re = zeros(size(element_3D, 1) * 3, 3);\n";
+        //oss << "element_3D_re([1:3:end], :) = element_3D;\n";
+        //oss << "element_3D_re([2:3:end], :) = element_3D(:, [2 3 1]);\n";
+        //oss << "element_3D_re([3:3:end], :) = element_3D(:, [3 1 2]);\n\n";
+        //
+        //oss << "Tri_plane_normal = cross([coordinate_3D(element_3D_re(:, 2), :) - coordinate_3D(element_3D_re(:, 1), :)], [coordinate_3D(element_3D_re(:, 3), :) - coordinate_3D(element_3D_re(:, 2), :)]);\n";
+        //oss << "Outward_normal = cross([coordinate_3D(element_3D_re(:, 2), :) - coordinate_3D(element_3D_re(:, 1), :)], Tri_plane_normal);\n";
+        //oss << "Outward_normal = Outward_normal ./ norm(Outward_normal);\n";
+        //oss << "Outward_normal = Outward_normal .* normal_velocity;\n";
+        //
+        //oss << "center_sep_edge = 0.5 * [coordinate_3D(element_3D_re(:, 2), :) + coordinate_3D(element_3D_re(:, 1), :)];\n";
+        //
+        //oss << "quiver3(center_sep_edge(:, 1),center_sep_edge(:, 2),center_sep_edge(:, 3), Outward_normal(:, 1),Outward_normal(:, 2),Outward_normal(:, 3), 4, 'LineWidth', 1.5, 'color', 'r');\n";
 
-    oss << "CenterELE = zeros(size(element_3D, 1), 3);\n";
-    oss << "CenterELE(:, 1) = 1/3 * (coordinate_3D(element_3D(:, 1), 1) + coordinate_3D(element_3D(:, 2), 1) + coordinate_3D(element_3D(:, 3), 1));\n";
-    oss << "CenterELE(:, 2) = 1/3 * (coordinate_3D(element_3D(:, 1), 2) + coordinate_3D(element_3D(:, 2), 2) + coordinate_3D(element_3D(:, 3), 2));\n";
-    oss << "CenterELE(:, 3) = 1/3 * (coordinate_3D(element_3D(:, 1), 3) + coordinate_3D(element_3D(:, 2), 3) + coordinate_3D(element_3D(:, 3), 3));\n";
-    oss << "quiver3(CenterELE(:, 1), CenterELE(:, 2), CenterELE(:, 3), velocity_center_grid(:, 1),velocity_center_grid(:, 2),velocity_center_grid(:, 3), 4, 'LineWidth', 1.5, 'color', 'r');\n";
-    oss.close();
+        oss << "CenterELE = zeros(size(element_3D, 1), 3);\n";
+        oss << "CenterELE(:, 1) = 1/3 * (coordinate_3D(element_3D(:, 1), 1) + coordinate_3D(element_3D(:, 2), 1) + coordinate_3D(element_3D(:, 3), 1));\n";
+        oss << "CenterELE(:, 2) = 1/3 * (coordinate_3D(element_3D(:, 1), 2) + coordinate_3D(element_3D(:, 2), 2) + coordinate_3D(element_3D(:, 3), 2));\n";
+        oss << "CenterELE(:, 3) = 1/3 * (coordinate_3D(element_3D(:, 1), 3) + coordinate_3D(element_3D(:, 2), 3) + coordinate_3D(element_3D(:, 3), 3));\n";
+        oss << "quiver3(CenterELE(:, 1), CenterELE(:, 2), CenterELE(:, 3), velocity_center_grid(:, 1),velocity_center_grid(:, 2),velocity_center_grid(:, 3), 4, 'LineWidth', 1.5, 'color', 'r');\n";
+        oss.close();
+    }
 }; // MHFEM
 template void cuDFNsys::MHFEM<double>::MatlabPlot(const string &mat_key,
                                                   const string &command_key,
                                                   thrust::host_vector<cuDFNsys::Fracture<double>> Fracs,
                                                   const cuDFNsys::Mesh<double> &mesh,
-                                                  const double &L);
+                                                  const double &L,
+                                                  bool if_python_visualization,
+                                                  string PythonName_Without_suffix);
 template void cuDFNsys::MHFEM<float>::MatlabPlot(const string &mat_key,
                                                  const string &command_key,
                                                  thrust::host_vector<cuDFNsys::Fracture<float>> Fracs,
                                                  const cuDFNsys::Mesh<float> &mesh,
-                                                 const float &L);
+                                                 const float &L,
+                                                 bool if_python_visualization,
+                                                 string PythonName_Without_suffix);
 
 // ====================================================
 // NAME:        Implementation

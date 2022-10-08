@@ -330,82 +330,85 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
     }
 
     //----------------------------------------------
-    std::ofstream oss(command_key, ios::out);
-    oss << "clc;\nclose all;\nclear all;\n";
-    oss << "currentPath = fileparts(mfilename('fullpath'));\n";
-    // oss << "load('" << mat_key << "');\n";
-    oss << "L = 0.5 * " << L << ";\n";
-    oss << "cube_frame = [-L, -L, L; -L, L, L; L, L, L; L -L, L; -L, -L, -L; -L, L, -L; L, L, -L; L -L, -L; -L, L, L; -L, L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L, -L; L, -L, -L; L, -L, L; L, -L, L; L, -L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L,-L; -L, L, -L; -L,L, L];\n";
-    oss << "figure(1); view(3); title('Discete fracture network'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
-    oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
-
-    oss << "Frac_NUM_verts = h5read([currentPath, '/" << mat_key << "'], '/Frac_NUM_verts');\n";
-    oss << "verts = h5read([currentPath, '/" << mat_key << "'], '/verts');\n";
-
-    oss << "\nMAX_num_fracs = max(Frac_NUM_verts);\n";
-    oss << "NUM_fracs = size(Frac_NUM_verts, 1);\n";
-    oss << "element = NaN(NUM_fracs, MAX_num_fracs);\n\n";
-
-    oss << "tmpcc = 1;\n";
-    oss << "for i = 1:NUM_fracs\n";
-    oss << "\ttmpkk = Frac_NUM_verts(i);\n";
-    oss << "\tfor j = 1:tmpkk\n";
-    oss << "\t\telement(i, j) = tmpcc; tmpcc = tmpcc + 1;\n";
-    oss << "\tend\n";
-    oss << "end\n\n";
-    oss << "patch('Vertices', verts, 'Faces', element, 'FaceVertexCData', verts(:, 3), 'FaceColor', 'interp', 'EdgeAlpha', 0.9, 'facealpha', 1); view(3); colorbar; hold on;\n";
-
-    if (If_show_intersection == true)
+    if (command_key != "N")
     {
-        oss << "\nintersections = h5read([currentPath, '/" << mat_key << "'], '/intersections');\n";
-        oss << "intersections_verts = [intersections(:, [1 2 3]); intersections(:, [4 5 6])];\n";
-        oss << "intersections_structures = [[1:size(intersections, 1)]', [1:size(intersections, 1)]' + size(intersections, 1)];\n";
-        oss << "patch('Vertices', intersections_verts, 'Faces', intersections_structures, 'FaceVertexCData', ones(size(intersections_verts, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0, 'linewidth', 3, 'edgecolor', 'r'); view(3); colorbar; hold on;\n";
-    }
-
-    oss << "axis([-1.1 * L,  1.1 * L, -1.1 * L, 1.1 * L, -1.1 * L, 1.1 * L]);\n";
-
-    if (If_show_cluster == true)
-    {
-        oss << "\nListClusters = h5read([currentPath, '/" << mat_key << "'], '/ListClusters');\n";
-        oss << "PercolationClusters = h5read([currentPath, '/" << mat_key << "'], '/PercolationClusters');\n";
-        oss << "figure(2); title('DFN highlighting clusters'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); view(3); axis([-1.1 * L,  1.1 * L, -1.1 * L, 1.1 * L, -1.1 * L, 1.1 * L]); hold on\n";
-        //oss << "ListClusters(ListClusters==-1) = NaN;\n";
+        std::ofstream oss(command_key, ios::out);
+        oss << "clc;\nclose all;\nclear all;\n";
+        oss << "currentPath = fileparts(mfilename('fullpath'));\n";
+        // oss << "load('" << mat_key << "');\n";
+        oss << "L = 0.5 * " << L << ";\n";
+        oss << "cube_frame = [-L, -L, L; -L, L, L; L, L, L; L -L, L; -L, -L, -L; -L, L, -L; L, L, -L; L -L, -L; -L, L, L; -L, L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L, -L; L, -L, -L; L, -L, L; L, -L, L; L, -L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L,-L; -L, L, -L; -L,L, L];\n";
+        oss << "figure(1); view(3); title('Discete fracture network'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
         oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
-        oss << "colorValue = zeros(size(element, 1), 1);\n";
-        oss << "for i = 1:size(ListClusters, 1)\n";
-        oss << "\tKK = ListClusters(i, :); KK(KK == -1) = [];\n";
-        oss << "\tif(ismember(PercolationClusters, i))\n";
-        oss << "\t\tcolorValue(KK) = 1.2;\n";
-        oss << "\telse\n";
-        oss << "\t\tcolorValue(KK) = rand;\n";
+
+        oss << "Frac_NUM_verts = h5read([currentPath, '/" << mat_key << "'], '/Frac_NUM_verts');\n";
+        oss << "verts = h5read([currentPath, '/" << mat_key << "'], '/verts');\n";
+
+        oss << "\nMAX_num_fracs = max(Frac_NUM_verts);\n";
+        oss << "NUM_fracs = size(Frac_NUM_verts, 1);\n";
+        oss << "element = NaN(NUM_fracs, MAX_num_fracs);\n\n";
+
+        oss << "tmpcc = 1;\n";
+        oss << "for i = 1:NUM_fracs\n";
+        oss << "\ttmpkk = Frac_NUM_verts(i);\n";
+        oss << "\tfor j = 1:tmpkk\n";
+        oss << "\t\telement(i, j) = tmpcc; tmpcc = tmpcc + 1;\n";
         oss << "\tend\n";
-        oss << "end\n";
-        oss << "patch('Vertices', verts, 'Faces', element, 'FaceVertexCData', colorValue, 'FaceColor', 'flat', 'EdgeAlpha', 0.9, 'facealpha', 1); view(3); colorbar; hold on;\n";
-        oss << "colorbar;\n";
+        oss << "end\n\n";
+        oss << "patch('Vertices', verts, 'Faces', element, 'FaceVertexCData', verts(:, 3), 'FaceColor', 'interp', 'EdgeAlpha', 0.9, 'facealpha', 1); view(3); colorbar; hold on;\n";
+
+        if (If_show_intersection == true)
+        {
+            oss << "\nintersections = h5read([currentPath, '/" << mat_key << "'], '/intersections');\n";
+            oss << "intersections_verts = [intersections(:, [1 2 3]); intersections(:, [4 5 6])];\n";
+            oss << "intersections_structures = [[1:size(intersections, 1)]', [1:size(intersections, 1)]' + size(intersections, 1)];\n";
+            oss << "patch('Vertices', intersections_verts, 'Faces', intersections_structures, 'FaceVertexCData', ones(size(intersections_verts, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0, 'linewidth', 3, 'edgecolor', 'r'); view(3); colorbar; hold on;\n";
+        }
+
+        oss << "axis([-1.1 * L,  1.1 * L, -1.1 * L, 1.1 * L, -1.1 * L, 1.1 * L]);\n";
+
+        if (If_show_cluster == true)
+        {
+            oss << "\nListClusters = h5read([currentPath, '/" << mat_key << "'], '/ListClusters');\n";
+            oss << "PercolationClusters = h5read([currentPath, '/" << mat_key << "'], '/PercolationClusters');\n";
+            oss << "figure(2); title('DFN highlighting clusters'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); view(3); axis([-1.1 * L,  1.1 * L, -1.1 * L, 1.1 * L, -1.1 * L, 1.1 * L]); hold on\n";
+            //oss << "ListClusters(ListClusters==-1) = NaN;\n";
+            oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
+            oss << "colorValue = zeros(size(element, 1), 1);\n";
+            oss << "for i = 1:size(ListClusters, 1)\n";
+            oss << "\tKK = ListClusters(i, :); KK(KK == -1) = [];\n";
+            oss << "\tif(ismember(PercolationClusters, i))\n";
+            oss << "\t\tcolorValue(KK) = 1.2;\n";
+            oss << "\telse\n";
+            oss << "\t\tcolorValue(KK) = rand;\n";
+            oss << "\tend\n";
+            oss << "end\n";
+            oss << "patch('Vertices', verts, 'Faces', element, 'FaceVertexCData', colorValue, 'FaceColor', 'flat', 'EdgeAlpha', 0.9, 'facealpha', 1); view(3); colorbar; hold on;\n";
+            oss << "colorbar;\n";
+        }
+
+        if (If_show_orientation == true)
+        {
+            oss << "\nfigure(3);\n";
+            oss << "Polar_Orientation = h5read([currentPath, '/" << mat_key << "'], '/Polar_Orientation');\n";
+            oss << "polarscatter(Polar_Orientation(:, 1), Polar_Orientation(:, 2), 's', 'filled'); rlim([0 0.5*pi]);\n";
+            oss << "rticks([pi / 12, 2 * pi / 12, 3 * pi / 12, 4 * pi / 12, 5 * pi / 12, 6 * pi / 12 ]);\n";
+            oss << "title(['Fractures', '''',' orientations']); hold on\n";
+            //oss << "set(gca,'thetaticklabel',[]);\n";
+            oss << "set(gca,'rticklabel',[]);";
+        }
+
+        oss << "\n\n\n%if R values have a lognormal distribution, uncommect the following-------\n";
+        oss << "%% R = h5read([currentPath, '/" << mat_key << "'], '/R');\n";
+        oss << "%% figure(4);\n";
+        oss << "%% nbins = 20;\n";
+        oss << "%% histfit(R, nbins, 'lognormal');\n";
+        oss << "%% pd=fitdist(R,'lognormal')\n";
+        oss << "%% Ex = exp(pd.mu + pd.sigma^2*0.5)\n";
+        oss << "%% Dx = exp(2*pd.mu+pd.sigma^2)*(exp(pd.sigma^2)-1)\n";
+
+        oss.close();
     }
-
-    if (If_show_orientation == true)
-    {
-        oss << "\nfigure(3);\n";
-        oss << "Polar_Orientation = h5read([currentPath, '/" << mat_key << "'], '/Polar_Orientation');\n";
-        oss << "polarscatter(Polar_Orientation(:, 1), Polar_Orientation(:, 2), 's', 'filled'); rlim([0 0.5*pi]);\n";
-        oss << "rticks([pi / 12, 2 * pi / 12, 3 * pi / 12, 4 * pi / 12, 5 * pi / 12, 6 * pi / 12 ]);\n";
-        oss << "title(['Fractures', '''',' orientations']); hold on\n";
-        //oss << "set(gca,'thetaticklabel',[]);\n";
-        oss << "set(gca,'rticklabel',[]);";
-    }
-
-    oss << "\n\n\n%if R values have a lognormal distribution, uncommect the following-------\n";
-    oss << "%% R = h5read([currentPath, '/" << mat_key << "'], '/R');\n";
-    oss << "%% figure(4);\n";
-    oss << "%% nbins = 20;\n";
-    oss << "%% histfit(R, nbins, 'lognormal');\n";
-    oss << "%% pd=fitdist(R,'lognormal')\n";
-    oss << "%% Ex = exp(pd.mu + pd.sigma^2*0.5)\n";
-    oss << "%% Dx = exp(2*pd.mu+pd.sigma^2)*(exp(pd.sigma^2)-1)\n";
-
-    oss.close();
 };                                                                                                                                                                    // MatlabPlotDFN
 template cuDFNsys::MatlabPlotDFN<double>::MatlabPlotDFN(string mat_key,                                                                                               // mat file name
                                                         string command_key,                                                                                           // m file name

@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
         Tem_p = h5g.ReadDataset<uint>(DispersionInfo_h5, "N", "SizeOfDataBlock");
         uint SizeOfDataBlock = Tem_p[0];
 
-        vector<uint> ElementFracTag = Tem_p.ReadDataset(mshfile, "N", "element_Frac_Tag");
+        vector<uint> ElementFracTag = h5g.ReadDataset<uint>(mshfile, "N", "element_Frac_Tag");
 
         thrust::host_vector<uint> ElementFracTag_cuda(ElementFracTag.size());
         for (uint i = 0; i < ElementFracTag.size(); ++i)

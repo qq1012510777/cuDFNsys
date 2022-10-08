@@ -422,70 +422,110 @@ void cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
         }
 
         oss.close();
+
+        if (if_check_2D_coordinates)
+        {
+            std::ofstream oss("CHECK_2D_fac_" + PythonName_Without_suffix + ".py", ios::out);
+            oss << "import numpy as np\n";
+            oss << "import matplotlib.pyplot as plt\n";
+            oss << "import h5py\n";
+            oss << "f = h5py.File('DFN_mesh_1.h5')\n";
+            oss << "element_Frac_Tag  = np.array(f['element_Frac_Tag'][:])\n";
+            oss << "coordinate_2D = np.array(f['coordinate_2D'][:])\n";
+            oss << "fracs_2D = np.array(f['fracs_2D'][:])\n";
+            oss << "NumFracs = int((fracs_2D.shape[1]) / 4)\n";
+            oss << "print('Number of fracures is', NumFracs)\n";
+            oss << "f.close()\n";
+            oss << "\n";
+            oss << "NumFrac_show = input('How many fractures and the associating meshes you want to visualize?\n')\n";
+            oss << "NumFrac_show = int(NumFrac_show)\n";
+            oss << "if (NumFrac_show > NumFracs):\n";
+            oss << "    NumFrac_show = NumFracs;\n";
+            oss << "    print('Sorry, the maximum number is', NumFracs)\n";
+            oss << "\n";
+            oss << "for i in range(NumFrac_show):\n";
+            oss << "    a = np.where(element_Frac_Tag == i + 1)\n";
+            oss << "    vertsLocal = coordinate_2D[:, a[1]]\n";
+            oss << "    vertsLocal = np.concatenate((vertsLocal[[0, 1], :], vertsLocal[[2, 3], :], vertsLocal[[4, 5], :]), axis=1)\n";
+            oss << "    NUM_ele_local = int(vertsLocal.shape[1] / 3)\n";
+            oss << "    element_local = np.transpose(np.array([range(0, NUM_ele_local, 1)]))\n";
+            oss << "    element_local = np.concatenate((element_local, element_local + NUM_ele_local, element_local + 2 * NUM_ele_local), axis=1)\n";
+            oss << "    plt.triplot(vertsLocal[0, :], vertsLocal[1, :], element_local, 'g-')\n";
+            oss << "    tmy = [i * 4 + j for j in range(4)]\n";
+            oss << "    tmy = tmy + [tmy[0]]\n";
+            oss << "    plt.plot(fracs_2D[0, tmy], fracs_2D[1, tmy], 'k-')\n";
+            oss << "    plt.title('Frac NO. ' + str(i + 1))\n";
+            oss << "    plt.show()\n";
+
+            oss.close();
+        }
     }
     //---------------------------------------------------------
-    std::ofstream oss(command_key, ios::out);
-    oss << "clc;\nclose all;\nclear all;\n";
-    //oss << "load('" << mat_key << "');\n";
-    oss << "currentPath = fileparts(mfilename('fullpath'));\n";
-    oss << "coordinate_3D = h5read([currentPath, '/" << mat_key << "'], '/coordinate_3D');\n";
-    oss << "element_3D = h5read([currentPath, '/" << mat_key << "'], '/element_3D');\n";
-    oss << "L = 0.5 * " << L << ";\n";
-    oss << "cube_frame = [-L, -L, L; -L, L, L; L, L, L; L -L, L; -L, -L, -L; -L, L, -L; L, L, -L; L -L, -L; -L, L, L; -L, L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L, -L; L, -L, -L; L, -L, L; L, -L, L; L, -L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L,-L; -L, L, -L; -L,L, L];\n";
-    oss << "figure(1); view(3); title('DFN mesh'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
-    oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
-    oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, 'FaceVertexCData', coordinate_3D(:, 3), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 1); hold on\n";
-
-    oss << "axis([-1.1 * L,  1.1 * L, -1.1 * L, 1.1 * L, -1.1 * L, 1.1 * L]);\n\n";
-
-    if (if_check_edge_Numbering == true)
+    if (command_key != "N")
     {
-        oss << "edge_attri = h5read([currentPath, '/" << mat_key << "'], '/edge_attri');\n";
-        oss << "figure(2); view(3); title('check edge numbering'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
+        std::ofstream oss(command_key, ios::out);
+        oss << "clc;\nclose all;\nclear all;\n";
+        //oss << "load('" << mat_key << "');\n";
+        oss << "currentPath = fileparts(mfilename('fullpath'));\n";
+        oss << "coordinate_3D = h5read([currentPath, '/" << mat_key << "'], '/coordinate_3D');\n";
+        oss << "element_3D = h5read([currentPath, '/" << mat_key << "'], '/element_3D');\n";
+        oss << "L = 0.5 * " << L << ";\n";
+        oss << "cube_frame = [-L, -L, L; -L, L, L; L, L, L; L -L, L; -L, -L, -L; -L, L, -L; L, L, -L; L -L, -L; -L, L, L; -L, L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L, -L; L, -L, -L; L, -L, L; L, -L, L; L, -L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L,-L; -L, L, -L; -L,L, L];\n";
+        oss << "figure(1); view(3); title('DFN mesh'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
         oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
-        oss << "kk = zeros(size(edge_attri, 1) * 3, 3);kk([1:3:end], :) = [edge_attri(:, [1, 2]), edge_attri(:, 4)];kk([2:3:end], :) = [edge_attri(:, [2, 3]), edge_attri(:, 5)];kk([3:3:end], :) = [edge_attri(:, [3, 1]), edge_attri(:, 6)];\n\n";
+        oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, 'FaceVertexCData', coordinate_3D(:, 3), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 1); hold on\n";
 
-        oss << "\ninlet_loc = find(kk(:, 3)==0);\n";
-        oss << "patch('Vertices', coordinate_3D, 'Faces', kk(inlet_loc, [1, 2]), 'FaceVertexCData', zeros(size(coordinate_3D, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0, 'edgecolor', 'b'); hold on\n";
-        oss << "outlet_loc = find(kk(:, 3)==1);\n";
-        oss << "patch('Vertices', coordinate_3D, 'Faces', kk(outlet_loc, [1, 2]), 'FaceVertexCData', zeros(size(coordinate_3D, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0, 'edgecolor', 'b'); hold on\n";
-        oss << "neumann_loc = find(kk(:, 3)==2);\n";
-        oss << "patch('Vertices', coordinate_3D, 'Faces', kk(neumann_loc, [1, 2]), 'FaceVertexCData', zeros(size(coordinate_3D, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0, 'edgecolor', 'r'); hold on\n";
-        oss << "interior_loc = find(kk(:, 3)==3);\n";
-        oss << "patch('Vertices', coordinate_3D, 'Faces', kk(interior_loc, [1, 2]), 'FaceVertexCData', zeros(size(coordinate_3D, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0, 'edgecolor', 'k'); hold on\n";
-    }
-    oss.close();
+        oss << "axis([-1.1 * L,  1.1 * L, -1.1 * L, 1.1 * L, -1.1 * L, 1.1 * L]);\n\n";
 
-    if (if_check_2D_coordinates == true)
-    {
-        std::ofstream oss_e("CHECK_2D_fac_" + command_key, ios::out);
-        oss_e << "clc;\nclose all;\nclear all;\n";
-        //oss_e << "load('" << mat_key << "');\n";
-        oss_e << "currentPath = fileparts(mfilename('fullpath'));\n";
-        oss_e << "element_Frac_Tag = h5read([currentPath, '/" << mat_key << "'], '/element_Frac_Tag');\n";
-        oss_e << "fracs_2D = h5read([currentPath, '/" << mat_key << "'], '/fracs_2D');\n";
-        oss_e << "coordinate_2D = h5read([currentPath, '/" << mat_key << "'], '/coordinate_2D');\n";
-        oss_e << "num_frac = " << this->Element2D.size() << ";\n\n";
+        if (if_check_edge_Numbering == true)
+        {
+            oss << "edge_attri = h5read([currentPath, '/" << mat_key << "'], '/edge_attri');\n";
+            oss << "figure(2); view(3); title('check edge numbering'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
+            oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
+            oss << "kk = zeros(size(edge_attri, 1) * 3, 3);kk([1:3:end], :) = [edge_attri(:, [1, 2]), edge_attri(:, 4)];kk([2:3:end], :) = [edge_attri(:, [2, 3]), edge_attri(:, 5)];kk([3:3:end], :) = [edge_attri(:, [3, 1]), edge_attri(:, 6)];\n\n";
 
-        oss_e << "tmp_cc = 1;\n";
-        oss_e << "disp(['num_frac = ', num2str(num_frac), ';']);\n";
-        oss_e << "pause(1.5);\n";
+            oss << "\ninlet_loc = find(kk(:, 3)==0);\n";
+            oss << "patch('Vertices', coordinate_3D, 'Faces', kk(inlet_loc, [1, 2]), 'FaceVertexCData', zeros(size(coordinate_3D, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0, 'edgecolor', 'b'); hold on\n";
+            oss << "outlet_loc = find(kk(:, 3)==1);\n";
+            oss << "patch('Vertices', coordinate_3D, 'Faces', kk(outlet_loc, [1, 2]), 'FaceVertexCData', zeros(size(coordinate_3D, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0, 'edgecolor', 'b'); hold on\n";
+            oss << "neumann_loc = find(kk(:, 3)==2);\n";
+            oss << "patch('Vertices', coordinate_3D, 'Faces', kk(neumann_loc, [1, 2]), 'FaceVertexCData', zeros(size(coordinate_3D, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0, 'edgecolor', 'r'); hold on\n";
+            oss << "interior_loc = find(kk(:, 3)==3);\n";
+            oss << "patch('Vertices', coordinate_3D, 'Faces', kk(interior_loc, [1, 2]), 'FaceVertexCData', zeros(size(coordinate_3D, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0, 'edgecolor', 'k'); hold on\n";
+        }
+        oss.close();
 
-        oss_e << "for i = 1:num_frac\n";
-        oss_e << "\ta = find(element_Frac_Tag == i);\n";
-        oss_e << "\tfigure(1); view(2);\n";
-        oss_e << "\tvertsLocal = coordinate_2D([a], :);\n";
-        oss_e << "\tvertsLocal = [vertsLocal(:, [1 2]); vertsLocal(:, [3 4]); vertsLocal(:, [5 6])];\n";
-        oss_e << "\tNUM_ele_local = size(vertsLocal, 1) / 3;\n";
-        oss_e << "\telement_local = [[1:NUM_ele_local]', [1:NUM_ele_local]' + NUM_ele_local, [1:NUM_ele_local]' + 2 * NUM_ele_local];\n";
-        oss_e << "\tpatch('Vertices', vertsLocal, 'Faces', element_local, 'FaceVertexCData', zeros(size(vertsLocal, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0, 'edgecolor', 'k'); hold on\n";
-        oss_e << "\tpatch('Vertices', fracs_2D, 'Faces', [1 2 3 4] + (i - 1) * 4, 'FaceVertexCData', zeros(size(fracs_2D, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0, 'edgecolor', 'r'); hold on\n";
+        if (if_check_2D_coordinates == true)
+        {
+            std::ofstream oss_e("CHECK_2D_fac_" + command_key, ios::out);
+            oss_e << "clc;\nclose all;\nclear all;\n";
+            //oss_e << "load('" << mat_key << "');\n";
+            oss_e << "currentPath = fileparts(mfilename('fullpath'));\n";
+            oss_e << "element_Frac_Tag = h5read([currentPath, '/" << mat_key << "'], '/element_Frac_Tag');\n";
+            oss_e << "fracs_2D = h5read([currentPath, '/" << mat_key << "'], '/fracs_2D');\n";
+            oss_e << "coordinate_2D = h5read([currentPath, '/" << mat_key << "'], '/coordinate_2D');\n";
+            oss_e << "num_frac = " << this->Element2D.size() << ";\n\n";
 
-        oss_e << "\tdisp(i);\n";
-        oss_e << "\tpause();\n";
-        oss_e << "\tclose 1\n";
-        oss_e << "end\n";
-        oss_e.close();
+            oss_e << "tmp_cc = 1;\n";
+            oss_e << "disp(['num_frac = ', num2str(num_frac), ';']);\n";
+            oss_e << "pause(1.5);\n";
+
+            oss_e << "for i = 1:num_frac\n";
+            oss_e << "\ta = find(element_Frac_Tag == i);\n";
+            oss_e << "\tfigure(1); view(2);\n";
+            oss_e << "\tvertsLocal = coordinate_2D([a], :);\n";
+            oss_e << "\tvertsLocal = [vertsLocal(:, [1 2]); vertsLocal(:, [3 4]); vertsLocal(:, [5 6])];\n";
+            oss_e << "\tNUM_ele_local = size(vertsLocal, 1) / 3;\n";
+            oss_e << "\telement_local = [[1:NUM_ele_local]', [1:NUM_ele_local]' + NUM_ele_local, [1:NUM_ele_local]' + 2 * NUM_ele_local];\n";
+            oss_e << "\tpatch('Vertices', vertsLocal, 'Faces', element_local, 'FaceVertexCData', zeros(size(vertsLocal, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0, 'edgecolor', 'k'); hold on\n";
+            oss_e << "\tpatch('Vertices', fracs_2D, 'Faces', [1 2 3 4] + (i - 1) * 4, 'FaceVertexCData', zeros(size(fracs_2D, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0, 'edgecolor', 'r'); hold on\n";
+
+            oss_e << "\tdisp(i);\n";
+            oss_e << "\tpause();\n";
+            oss_e << "\tclose 1\n";
+            oss_e << "end\n";
+            oss_e.close();
+        }
     }
 }; // MatlabPlot
 template void cuDFNsys::Mesh<double>::MatlabPlot(const string &mat_key,

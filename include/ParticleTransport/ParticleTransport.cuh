@@ -421,120 +421,202 @@ public:
                     const string &command_key,
                     const cuDFNsys::Mesh<T> &mesh,
                     const cuDFNsys::MHFEM<T> &fem,
-                    const T &L)
+                    const T &L,
+                    bool if_python_visualization = false,
+                    string PythonName_Without_suffix = "ParticleMovement")
     {
-        std::ofstream oss(command_key, ios::out);
-        oss << "clc;\nclose all;\nclear all;\ncurrentPath = fileparts(mfilename('fullpath'));\n";
-        oss << "load('" << mat_key << "');\n";
-        oss << "L = 0.5 * " << L << ";\n";
-        oss << "P_out = " << fem.OutletP << "; P_in = " << fem.InletP << ";\n";
-        oss << "Offset_colorbar_value_for_particle = " << L << ";\n";
-        oss << "If_video = false;\n";
-        oss << "cube_frame = [-L, -L, L; -L, L, L; L, L, L; L -L, L; -L, -L, -L; -L, L, -L; L, L, -L; L -L, -L; -L, L, L; -L, L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L, -L; L, -L, -L; L, -L, L; L, -L, L; L, -L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L,-L; -L, L, -L; -L,L, L];\n";
-        oss << "figure(1); view(3); title('DFN flow (mhfem) and particle trajectory'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
-        oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
-        oss << endl;
-        oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, 'FaceVertexCData', pressure_eles, 'FaceColor', 'flat', 'EdgeAlpha', 0.1, 'facealpha', 0.1); colorbar; view(3); hold on\n";
-        oss << "caxis([" << fem.OutletP << ", " << fem.InletP << "]);\n";
-        oss << "xlim([-(0.1 * L + L), (0.1 * L + L)])\nylim([ -(0.1 * L + L), (0.1 * L + L) ])\nzlim([ -(0.1 * L + L), (0.1 * L + L) ]);hold on\n\n";
+        if(if_python_visualization)
+        {
+            std::ofstream oss(PythonName_Without_suffix + ".py", ios::out);
+            oss << "import h5py\n";
+            oss << "import numpy as np\n";
+            oss << "from mayavi import mlab as ML\n";
+            oss << "import math\n";
+            oss << "import gc            \n";
+            oss << "f = h5py.File('MHFEM_1.h5')\n";
+            oss << "coordinate_3D = np.array(f['coordinate_3D'][:])\n";
+            oss << "element_3D = np.array(f['element_3D'][:], dtype=int)\n";
+            oss << "InletP = np.array(f['InletP'][:])\n";
+            oss << "OutletP = np.array(f['OutletP'][:])\n";
+            oss << "L_m = f['L_m'][:][0]\n";
+            oss << "pressure_eles = np.array(f['pressure_eles'][:])\n";
+            oss << "f.close()           \n";
+            oss << "mesh = ML.triangular_mesh(coordinate_3D[0, :], coordinate_3D[1, :], coordinate_3D[2, :], np.transpose(element_3D - 1), representation='wireframe', color=(0, 0, 0), line_width=1.0)\n";
+            oss << "mesh.mlab_source.dataset.cell_data.scalars = np.transpose(pressure_eles)\n";
+            oss << "mesh.mlab_source.dataset.cell_data.scalars.name = 'Cell data'\n";
+            oss << "mesh.mlab_source.update()\n";
+            oss << "mesh.parent.update()\n";
+            oss << "mesh2 = ML.pipeline.set_active_attribute(mesh, cell_scalars='Cell data')\n";
+            oss << "s2 = ML.pipeline.surface(mesh2, colormap='rainbow', opacity=1)\n";
+            oss << "ML.outline(extent=[-0.5 * L_m, 0.5 * L_m] * 3)\n";
+            oss << "ML.axes()\n";
+            oss << "s2.module_manager.scalar_lut_manager.data_range = np.array([OutletP[0], InletP[0]])\n";
+            oss << "ML.colorbar(object=s2, orientation='vertical')\n";
+            oss << "ML.xlabel('x (m)')\n";
+            oss << "ML.ylabel('y (m)')\n";
+            oss << "ML.zlabel('z (m)')           \n";
+            oss << "f_2 = h5py.File('./ParticlePositionResult/DispersionInfo.h5')\n";
+            oss << "N_steps = int(np.array(f_2['NumOfSteps'][0]))            \n";
+            oss << "N_particles = int(np.array(f_2['NumParticles'][0]))\n";
+            oss << "BlockNOPresent = int(np.array(f_2['BlockNOPresent'][0]))\n";
+            oss << "SizeOfDataBlock = int(np.array(f_2['SizeOfDataBlock'][0]))\n";
+            oss << "f_2.close()            \n";
+            oss << "H5name = \"./ParticlePositionResult/ParticlePositionInit_3D.h5\"\n";
+            oss << "H5name_2D = \"./ParticlePositionResult/ParticlePositionInit.h5\"\n";
+            oss << "f2 = h5py.File(H5name)\n";
+            oss << "f3 = h5py.File(H5name_2D)\n";
+            oss << "S = np.array(f2[\"Step_\" + str(0).zfill(10)][:])\n";
+            oss << "ParticleID = np.array(f3[\"ParticleIDAndElementTag_\" + str(0).zfill(10)][:])\n";
+            oss << "Matrx3D_pso = np.zeros([3, N_particles])\n";
+            oss << "Matrx3D_pso[:] = np.nan\n";
+            oss << "Matrx3D_pso[:, ParticleID[0, :]] = S[:, :]\n";
+            oss << "SK = ML.points3d(Matrx3D_pso[0, :], Matrx3D_pso[1, :], Matrx3D_pso[2, :], scale_factor=0.7)\n";
+            oss << "f2.close()\n";
+            oss << "f3.close()\n";
+            oss << "@ML.animate(delay=10)\n";
+            oss << "def anim(N_steps):\n";
+            oss << "    fe = ML.gcf() \n";
+            oss << "    for i in range(1, N_steps + 1):\n";
+            oss << "        print('step', i, '/', N_steps)          \n";
+            oss << "        H5name = \"./ParticlePositionResult/ParticlePositionBlock\" + str(math.ceil(float(i) / float(SizeOfDataBlock))).zfill(10) + \"_3D.h5\"\n";
+            oss << "        H5name_2D = \"./ParticlePositionResult/ParticlePositionBlock\" + str(math.ceil(float(i) / float(SizeOfDataBlock))).zfill(10) + \".h5\"\n";
+            oss << "        f4 = h5py.File(H5name)\n";
+            oss << "        f5 = h5py.File(H5name_2D)\n";
+            oss << "        S = np.array(f4[\"Step_\" + str(i).zfill(10)][:])\n";
+            oss << "        ParticleID = np.array(f5[\"ParticleIDAndElementTag_\" + str(i).zfill(10)][:])\n";
+            oss << "        Matrx3D_pso = np.zeros([3, N_particles])\n";
+            oss << "        Matrx3D_pso[:] = np.nan\n";
+            oss << "        Matrx3D_pso[:, ParticleID[0, :]] = S[:, :]\n";
+            oss << "        SK.mlab_source.set(x=Matrx3D_pso[0, :], y=Matrx3D_pso[1, :], z=Matrx3D_pso[2, :])\n";
+            oss << "        f4.close()\n";
+            oss << "        f5.close()\n";
+            oss << "        yield\n";
+            oss << "        gc.collect(generation=1)\n";
+            oss << "anim(N_steps)\n";
+            oss << "ML.show()\n";
+            oss.close();
+        }
 
-        oss << "N_steps = h5read([currentPath, '/ParticlePositionResult/DispersionInfo.h5'], '/NumOfSteps');\n";
-        // oss << "S = h5read([currentPath, '/ParticlePositionResult/ParticlePositionInit.h5'], '/Step_0000000000');\n";
-        oss << "N_particles = h5read([currentPath, '/ParticlePositionResult/DispersionInfo.h5'], '/NumParticles');\n";
-        oss << "clear S;\n";
+        if (command_key != "N")
+        {
+            std::ofstream oss(command_key, ios::out);
+            oss << "clc;\nclose all;\nclear all;\ncurrentPath = fileparts(mfilename('fullpath'));\n";
+            //oss << "load('" << mat_key << "');\n";
+            //oss << "currentPath = fileparts(mfilename('fullpath'));\n";
+            oss << "coordinate_3D = h5read([currentPath, '/" << mat_key << "'], '/coordinate_3D');\n";
+            oss << "element_3D = h5read([currentPath, '/" << mat_key << "'], '/element_3D');\n";
+            oss << "pressure_eles = h5read([currentPath, '/" << mat_key << "'], '/pressure_eles');\n";
 
-        oss << "BlockNOPresent = h5read([currentPath, '/ParticlePositionResult/DispersionInfo.h5'], '/BlockNOPresent');\n";
-        oss << "SizeOfDataBlock = h5read([currentPath, '/ParticlePositionResult/DispersionInfo.h5'], '/SizeOfDataBlock');\n";
+            oss << "L = 0.5 * " << L << ";\n";
+            oss << "P_out = " << fem.OutletP << "; P_in = " << fem.InletP << ";\n";
+            oss << "Offset_colorbar_value_for_particle = " << L << ";\n";
+            oss << "If_video = false;\n";
+            oss << "cube_frame = [-L, -L, L; -L, L, L; L, L, L; L -L, L; -L, -L, -L; -L, L, -L; L, L, -L; L -L, -L; -L, L, L; -L, L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L, -L; L, -L, -L; L, -L, L; L, -L, L; L, -L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L,-L; -L, L, -L; -L,L, L];\n";
+            oss << "figure(1); view(3); title('DFN flow (mhfem) and particle trajectory'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
+            oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
+            oss << endl;
+            oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, 'FaceVertexCData', pressure_eles, 'FaceColor', 'flat', 'EdgeAlpha', 0.1, 'facealpha', 0.1); colorbar; view(3); hold on\n";
+            oss << "caxis([" << fem.OutletP << ", " << fem.InletP << "]);\n";
+            oss << "xlim([-(0.1 * L + L), (0.1 * L + L)])\nylim([ -(0.1 * L + L), (0.1 * L + L) ])\nzlim([ -(0.1 * L + L), (0.1 * L + L) ]);hold on\n\n";
 
-        oss << "S = h5read([currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(BlockNOPresent, '%010d'), '.h5'], ['/ParticleIDAndElementTag_', num2str(N_steps, '%010d')]); \n";
-        oss << "ReachedParticleNO = [1:1:N_particles];\n";
+            oss << "N_steps = h5read([currentPath, '/ParticlePositionResult/DispersionInfo.h5'], '/NumOfSteps');\n";
+            // oss << "S = h5read([currentPath, '/ParticlePositionResult/ParticlePositionInit.h5'], '/Step_0000000000');\n";
+            oss << "N_particles = h5read([currentPath, '/ParticlePositionResult/DispersionInfo.h5'], '/NumParticles');\n";
+            oss << "clear S;\n";
 
-        oss << "MatchedValue = S(:, 1) + 1;\nReachedParticleNO(ismember(ReachedParticleNO, MatchedValue')) = []; clear S MatchedValue\n";
+            oss << "BlockNOPresent = h5read([currentPath, '/ParticlePositionResult/DispersionInfo.h5'], '/BlockNOPresent');\n";
+            oss << "SizeOfDataBlock = h5read([currentPath, '/ParticlePositionResult/DispersionInfo.h5'], '/SizeOfDataBlock');\n";
 
-        oss << "newcolors = rand(size(ReachedParticleNO, 2), 3);\n";
+            oss << "S = h5read([currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(BlockNOPresent, '%010d'), '.h5'], ['/ParticleIDAndElementTag_', num2str(N_steps, '%010d')]); \n";
+            oss << "ReachedParticleNO = [1:1:N_particles];\n";
 
-        oss << "delta_t2 = 200;\ninit_ = 0;\nfinal_ = 0;\n";
+            oss << "MatchedValue = S(:, 1) + 1;\nReachedParticleNO(ismember(ReachedParticleNO, MatchedValue')) = []; clear S MatchedValue\n";
 
-        oss << "show_trajector_whole = false;\n";
-        oss << "if (show_trajector_whole == true)\n";
-        oss << "\tfor i = 0 : ceil(N_steps / delta_t2)\n";
-        oss << "\t\tinit_ = final_; final_ = init_ + delta_t2;\n";
-        oss << "\t\tif (final_ > N_steps)\n";
-        oss << "\t\t\tfinal_ = N_steps;\n";
-        oss << "\t\tend\n";
-        oss << "\t\tfinal_\n";
-        oss << "\t\tAK_1 = [];AK_2 = [];AK_3 = [];\n";
-        oss << "\t\tfor j = init_:final_\n";
-        // oss << "\t\t\tS1 = load([currentPath, '/" << ParticlePosition << "_step_', num2str(j, '%07d'),'.mat']);\n";
-        oss << "\t\t\tH5name = []; H5name_2D = [];\n";
-        oss << "\t\t\tif (j == 0); H5name = [currentPath, '/ParticlePositionResult/ParticlePositionInit_3D.h5']; else; H5name = [currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(ceil(double(j) / double(SizeOfDataBlock)), '%010d'), '_3D.h5']; end;\n";
-        oss << "\t\t\tif (j == 0); H5name_2D = [currentPath, '/ParticlePositionResult/ParticlePositionInit.h5']; else; H5name_2D = [currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(ceil(double(j) / double(SizeOfDataBlock)), '%010d'), '.h5']; end;\n";
+            oss << "newcolors = rand(size(ReachedParticleNO, 2), 3);\n";
 
-        oss << "\t\t\tS = h5read(H5name, ['/Step_', num2str(j, '%010d')]);\n";
-        oss << "\t\t\tParticleID = h5read(H5name_2D, ['/ParticleIDAndElementTag_', num2str(j, '%010d')]);\n"; // /
-        oss << "\t\t\tMatrx3D_pso = NaN(N_particles, 3);\n";
-        oss << "\t\t\tMatrx3D_pso([ParticleID(:, 1) + 1], :) = S(:, [1 2 3]);\n";
+            oss << "delta_t2 = 200;\ninit_ = 0;\nfinal_ = 0;\n";
 
-        oss << "\t\t\tAK_1(j - init_ + 1, :) = Matrx3D_pso(:, 1);\n";
-        oss << "\t\t\tAK_2(j - init_ + 1, :) = Matrx3D_pso(:, 2);\n";
-        oss << "\t\t\tAK_3(j - init_ + 1, :) = Matrx3D_pso(:, 3); clear S Matrx3D_pso\n";
-        oss << "\t\tend\n";
-        oss << "\t\tAK_1 = AK_1(:, ReachedParticleNO);AK_2 = AK_2(:, ReachedParticleNO);AK_3 = AK_3(:, ReachedParticleNO);\n";
-        oss << "\t\tcolororder(newcolors)\n";
-        oss << "\t\tplot3(AK_1, AK_2, AK_3, 'linewidth', 2); hold on\n";
-        oss << "\t\tif (final_ == N_steps)\n";
-        oss << "\t\t\tbreak\n";
-        oss << "\t\tend\n";
-        oss << "\tend\n\n";
-        oss << "clear AK_1 AK_2 AK_3\n";
-        oss << "end\n";
+            oss << "show_trajector_whole = false;\n";
+            oss << "if (show_trajector_whole == true)\n";
+            oss << "\tfor i = 0 : ceil(N_steps / delta_t2)\n";
+            oss << "\t\tinit_ = final_; final_ = init_ + delta_t2;\n";
+            oss << "\t\tif (final_ > N_steps)\n";
+            oss << "\t\t\tfinal_ = N_steps;\n";
+            oss << "\t\tend\n";
+            oss << "\t\tfinal_\n";
+            oss << "\t\tAK_1 = [];AK_2 = [];AK_3 = [];\n";
+            oss << "\t\tfor j = init_:final_\n";
+            // oss << "\t\t\tS1 = load([currentPath, '/" << ParticlePosition << "_step_', num2str(j, '%07d'),'.mat']);\n";
+            oss << "\t\t\tH5name = []; H5name_2D = [];\n";
+            oss << "\t\t\tif (j == 0); H5name = [currentPath, '/ParticlePositionResult/ParticlePositionInit_3D.h5']; else; H5name = [currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(ceil(double(j) / double(SizeOfDataBlock)), '%010d'), '_3D.h5']; end;\n";
+            oss << "\t\t\tif (j == 0); H5name_2D = [currentPath, '/ParticlePositionResult/ParticlePositionInit.h5']; else; H5name_2D = [currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(ceil(double(j) / double(SizeOfDataBlock)), '%010d'), '.h5']; end;\n";
 
-        oss << "figure(2); view(3); title('DFN flow (mhfem) and particle tracking'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
-        oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
-        oss << endl;
-        oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, 'FaceVertexCData', pressure_eles, 'FaceColor', 'flat', 'EdgeAlpha', 0.2, 'facealpha', 0.9); view(3); hold on\n";
-        oss << "colormap(jet)\n";
-        oss << "caxis([P_out, P_in + Offset_colorbar_value_for_particle]);\n";
-        oss << "xlim([-(0.1 * L + L), (0.1 * L + L)])\nylim([ -(0.1 * L + L), (0.1 * L + L) ])\nzlim([ -(0.1 * L + L), (0.1 * L + L) ]);hold on\n\n";
+            oss << "\t\t\tS = h5read(H5name, ['/Step_', num2str(j, '%010d')]);\n";
+            oss << "\t\t\tParticleID = h5read(H5name_2D, ['/ParticleIDAndElementTag_', num2str(j, '%010d')]);\n"; // /
+            oss << "\t\t\tMatrx3D_pso = NaN(N_particles, 3);\n";
+            oss << "\t\t\tMatrx3D_pso([ParticleID(:, 1) + 1], :) = S(:, [1 2 3]);\n";
 
-        oss << "Cb = colorbar;\n";
-        oss << "Cb.Limits = [P_out, P_in];\n";
-        oss << "Cb.Title.String = 'Hydraulic head';\n";
+            oss << "\t\t\tAK_1(j - init_ + 1, :) = Matrx3D_pso(:, 1);\n";
+            oss << "\t\t\tAK_2(j - init_ + 1, :) = Matrx3D_pso(:, 2);\n";
+            oss << "\t\t\tAK_3(j - init_ + 1, :) = Matrx3D_pso(:, 3); clear S Matrx3D_pso\n";
+            oss << "\t\tend\n";
+            oss << "\t\tAK_1 = AK_1(:, ReachedParticleNO);AK_2 = AK_2(:, ReachedParticleNO);AK_3 = AK_3(:, ReachedParticleNO);\n";
+            oss << "\t\tcolororder(newcolors)\n";
+            oss << "\t\tplot3(AK_1, AK_2, AK_3, 'linewidth', 2); hold on\n";
+            oss << "\t\tif (final_ == N_steps)\n";
+            oss << "\t\t\tbreak\n";
+            oss << "\t\tend\n";
+            oss << "\tend\n\n";
+            oss << "clear AK_1 AK_2 AK_3\n";
+            oss << "end\n";
 
-        oss << "hold on\n";
+            oss << "figure(2); view(3); title('DFN flow (mhfem) and particle tracking'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
+            oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
+            oss << endl;
+            oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, 'FaceVertexCData', pressure_eles, 'FaceColor', 'flat', 'EdgeAlpha', 0.2, 'facealpha', 0.9); view(3); hold on\n";
+            oss << "colormap(jet)\n";
+            oss << "caxis([P_out, P_in + Offset_colorbar_value_for_particle]);\n";
+            oss << "xlim([-(0.1 * L + L), (0.1 * L + L)])\nylim([ -(0.1 * L + L), (0.1 * L + L) ])\nzlim([ -(0.1 * L + L), (0.1 * L + L) ]);hold on\n\n";
 
-        oss << "newcolors = [];\nnewcolors = rand(N_particles, 1);\n";
+            oss << "Cb = colorbar;\n";
+            oss << "Cb.Limits = [P_out, P_in];\n";
+            oss << "Cb.Title.String = 'Hydraulic head';\n";
 
-        oss << "if (If_video == true)\n";
-        oss << "\tparticles_video_object = VideoWriter([currentPath, '/moive_particles.avi']);\n";
-        oss << "\tparticles_video_object.FrameRate = 10;\n";
-        oss << "\topen(particles_video_object);\n";
-        oss << "end\n";
+            oss << "hold on\n";
 
-        oss << "figure(2)\nfor i = 0:N_steps\n";
-        oss << "\ttitle(['DFN flow (mhfem) and particle tracking; step NO = ', num2str(i)]);\n";
-        oss << "\tH5name = []; H5name_2D = [];\n";
-        oss << "\tif (i == 0); H5name = [currentPath, '/ParticlePositionResult/ParticlePositionInit_3D.h5']; else; H5name = [currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(ceil(double(i) / double(SizeOfDataBlock)), '%010d'), '_3D.h5']; end;\n";
-        oss << "\tif (i == 0); H5name_2D = [currentPath, '/ParticlePositionResult/ParticlePositionInit.h5']; else; H5name_2D = [currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(ceil(double(i) / double(SizeOfDataBlock)), '%010d'), '.h5']; end;\n";
+            oss << "newcolors = [];\nnewcolors = rand(N_particles, 1);\n";
 
-        oss << "\tS = h5read(H5name, ['/Step_', num2str(i, '%010d')]);\n";
-        oss << "\tParticleID = h5read(H5name_2D, ['/ParticleIDAndElementTag_', num2str(i, '%010d')]);\n"; // /
-        oss << "\tMatrx3D_pso = NaN(N_particles, 3);\n";
-        oss << "\tMatrx3D_pso([ParticleID(:, 1) + 1], :) = S(:, [1 2 3]);\n";
+            oss << "if (If_video == true)\n";
+            oss << "\tparticles_video_object = VideoWriter([currentPath, '/moive_particles.avi']);\n";
+            oss << "\tparticles_video_object.FrameRate = 10;\n";
+            oss << "\topen(particles_video_object);\n";
+            oss << "end\n";
 
-        oss << "\tnewcolors = Matrx3D_pso(:, 3) ./ (2 * L) .* Offset_colorbar_value_for_particle / 2 + P_in + Offset_colorbar_value_for_particle / 2;\n";
-        oss << "\tp_s = scatter3(Matrx3D_pso(:, 1), Matrx3D_pso(:, 2), Matrx3D_pso(:, 3), [], newcolors, 'filled'); clear Matrx3D_pso\n\n";
+            oss << "figure(2)\nfor i = 0:N_steps\n";
+            oss << "\ttitle(['DFN flow (mhfem) and particle tracking; step NO = ', num2str(i)]);\n";
+            oss << "\tH5name = []; H5name_2D = [];\n";
+            oss << "\tif (i == 0); H5name = [currentPath, '/ParticlePositionResult/ParticlePositionInit_3D.h5']; else; H5name = [currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(ceil(double(i) / double(SizeOfDataBlock)), '%010d'), '_3D.h5']; end;\n";
+            oss << "\tif (i == 0); H5name_2D = [currentPath, '/ParticlePositionResult/ParticlePositionInit.h5']; else; H5name_2D = [currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(ceil(double(i) / double(SizeOfDataBlock)), '%010d'), '.h5']; end;\n";
 
-        oss << "\tif(i ~= 0 && If_video == true)\n";
-        oss << "\t\tM=getframe(gcf);\n";
-        oss << "\t\twriteVideo(particles_video_object,M);\n";
-        oss << "\tend\n\n";
+            oss << "\tS = h5read(H5name, ['/Step_', num2str(i, '%010d')]);\n";
+            oss << "\tParticleID = h5read(H5name_2D, ['/ParticleIDAndElementTag_', num2str(i, '%010d')]);\n"; // /
+            oss << "\tMatrx3D_pso = NaN(N_particles, 3);\n";
+            oss << "\tMatrx3D_pso([ParticleID(:, 1) + 1], :) = S(:, [1 2 3]);\n";
 
-        oss << "\tif (i == 0); pause; else; pause(0.01); end;\n";
-        oss << "\tif (i ~= N_steps); delete(p_s); end\n";
-        oss << "end\n\n";
+            oss << "\tnewcolors = Matrx3D_pso(:, 3) ./ (2 * L) .* Offset_colorbar_value_for_particle / 2 + P_in + Offset_colorbar_value_for_particle / 2;\n";
+            oss << "\tp_s = scatter3(Matrx3D_pso(:, 1), Matrx3D_pso(:, 2), Matrx3D_pso(:, 3), [], newcolors, 'filled'); clear Matrx3D_pso\n\n";
 
-        oss << "if (If_video == true); close(particles_video_object); end\n";
+            oss << "\tif(i ~= 0 && If_video == true)\n";
+            oss << "\t\tM=getframe(gcf);\n";
+            oss << "\t\twriteVideo(particles_video_object,M);\n";
+            oss << "\tend\n\n";
+
+            oss << "\tif (i == 0); pause; else; pause(0.01); end;\n";
+            oss << "\tif (i ~= N_steps); delete(p_s); end\n";
+            oss << "end\n\n";
+
+            oss << "if (If_video == true); close(particles_video_object); end\n";
+        }
     };
 
 private:

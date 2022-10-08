@@ -54,7 +54,9 @@ public:
                     const string &command_key,
                     thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
                     const cuDFNsys::Mesh<T> &mesh,
-                    const T &L);
+                    const T &L,
+                    bool if_python_visualization = false,
+                    string PythonName_Without_suffix = "DFN_mhfem_py");
 
 private:
     void Implementation(const cuDFNsys::Mesh<T> &mesh,

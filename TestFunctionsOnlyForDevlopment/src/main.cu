@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
                                                                    Frac_verts_host, perco_dir,
                                                                    Percolation_cluster};
         cout << "DFN I finished" << endl;
-        cuDFNsys::MatlabPlotDFN<_DataType_> As{"DFN_I.h5", "DFN_I.m",
+        cuDFNsys::MatlabPlotDFN<_DataType_> As{"DFN_I.h5", "N",
                                                Frac_verts_host, Intersection_map, ListClusters,
                                                Percolation_cluster, false, true, true, true,
                                                L, perco_dir, true, "DFN_I"};
@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
                                                                     Frac_verts_host, perco_dir,
                                                                     Percolation_cluster};
         cout << "DFN II finished" << endl;
-        cuDFNsys::MatlabPlotDFN<_DataType_> As2{"DFN_II.h5", "DFN_II.m",
+        cuDFNsys::MatlabPlotDFN<_DataType_> As2{"DFN_II.h5", "N",
                                                 Frac_verts_host, Intersection_map, ListClusters,
                                                 Percolation_cluster, true, true, true, true,
                                                 L, perco_dir, true, "DFN_II"};
@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
             lk.OutputMesh("mesh.h5", mesh, Fracs_percol);
             int i = 0;
             mesh.MatlabPlot("DFN_mesh_" + to_string(i + 1) + ".h5",
-                            "DFN_mesh_" + to_string(i + 1) + ".m",
+                            "N",
                             Frac_verts_host, L, true, true, true, "DFN_mesh_" + to_string(i + 1));
 
             cout << "MHFEM ing ..." << endl;
@@ -162,8 +162,8 @@ int main(int argc, char *argv[])
             cout << ielaps_1 << " sec\n";
             //---------------------
             fem.MatlabPlot("MHFEM_" + to_string(i + 1) + ".h5",
-                           "MHFEM_" + to_string(i + 1) + ".m",
-                           Frac_verts_host, mesh, L);
+                           "N",
+                           Frac_verts_host, mesh, L, true, "MHFEM_" + to_string(i + 1));
             //---------------
             return 0;
             cout << "Particle transport ing ...\n";

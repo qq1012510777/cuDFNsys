@@ -90,7 +90,7 @@ public:
                     const bool &if_check_2D_coordinates,
                     const bool &if_check_edge_Numbering,
                     bool if_python_visualization = false,
-                    string PythonName_Without_suffix = "DFN_py");
+                    string PythonName_Without_suffix = "DFN_mesh_py");
 
 private:
     // get coordinates of mesh
