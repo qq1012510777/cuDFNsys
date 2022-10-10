@@ -1,6 +1,6 @@
 # cuDFNsys
 
-The _cuDFNsys_ is an open-source C++ library for DFN simulation, based on CUDA. It is also able to simulate static flow in DFN, based on mixed hybrid finite element method.
+The _cuDFNsys_ is an open-source C++/CUDA library for DFN simulation, based on CUDA. It is also able to simulate static flow in DFN, based on mixed hybrid finite element method.
 
 # Authors
 
