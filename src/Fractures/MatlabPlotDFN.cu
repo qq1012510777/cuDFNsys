@@ -255,7 +255,7 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
         if (If_show_intersection)
         {
             oss << "\nintersections = np.array(f['intersections'][:])\n";
-            oss << "NumIntersections = intersections.shape[1]\n";
+            oss << "NumIntersections = intersections.shape[1] if intersections.shape[0] != 1 else 1\n";
             oss << "Intersection =  np.concatenate((np.transpose(intersections[[0, 1, 2], :]), np.transpose(intersections[[3, 4, 5], :])), axis=0)\n";
             oss << "Connection_ = list()\n";
             oss << "Connection_ = [(Connection_ + [i, i + NumIntersections]) for i in range(NumIntersections)]\n";

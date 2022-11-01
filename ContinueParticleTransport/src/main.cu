@@ -111,6 +111,10 @@ int main(int argc, char *argv[])
                                                          Frac_verts_host,
                                                          Intersection_map};
             cout << "meshing ..." << endl;
+
+            cuDFNsys::OutputObjectData<_DataType_> lkew;
+            lkew.OutputFractures("FracturesII.h5", Frac_verts_host, L);
+
             cuDFNsys::Mesh<_DataType_> mesh;
 
             lk.InputMesh("mesh.h5", mesh, &Fracs_percol);

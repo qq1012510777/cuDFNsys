@@ -95,11 +95,11 @@ int main(int argc, char *argv[])
         Frac_verts_host = Frac_verts_device;
 
         std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<_DataType_>, cuDFNsys::Vector3<_DataType_>>> Intersection_map;
-        cout << "Frac_verts_host.size(): " << Frac_verts_host.size() << endl;
-        cout << Frac_verts_host[0].Verts3D[0].x << ", " << Frac_verts_host[0].Verts3D[0].y << ", " << Frac_verts_host[0].Verts3D[0].z << endl;
-        cout << Frac_verts_host[0].Verts3D[1].x << ", " << Frac_verts_host[0].Verts3D[1].y << ", " << Frac_verts_host[1].Verts3D[0].z << endl;
-        cout << Frac_verts_host[0].Verts3D[2].x << ", " << Frac_verts_host[0].Verts3D[2].y << ", " << Frac_verts_host[2].Verts3D[0].z << endl;
-        cout << Frac_verts_host[0].Verts3D[3].x << ", " << Frac_verts_host[0].Verts3D[3].y << ", " << Frac_verts_host[3].Verts3D[0].z << endl;
+        // cout << "Frac_verts_host.size(): " << Frac_verts_host.size() << endl;
+        // cout << Frac_verts_host[0].Verts3D[0].x << ", " << Frac_verts_host[0].Verts3D[0].y << ", " << Frac_verts_host[0].Verts3D[0].z << endl;
+        // cout << Frac_verts_host[0].Verts3D[1].x << ", " << Frac_verts_host[0].Verts3D[1].y << ", " << Frac_verts_host[1].Verts3D[0].z << endl;
+        // cout << Frac_verts_host[0].Verts3D[2].x << ", " << Frac_verts_host[0].Verts3D[2].y << ", " << Frac_verts_host[2].Verts3D[0].z << endl;
+        // cout << Frac_verts_host[0].Verts3D[3].x << ", " << Frac_verts_host[0].Verts3D[3].y << ", " << Frac_verts_host[3].Verts3D[0].z << endl;
 
         cout << "identifying intersections with complete fractures" << endl;
         cuDFNsys::IdentifyIntersection<_DataType_> identifyInters{Frac_verts_host.size(),
@@ -118,7 +118,9 @@ int main(int argc, char *argv[])
         cuDFNsys::MatlabPlotDFN<_DataType_> As{"DFN_I.h5", "DFN_I.m",
                                                Frac_verts_host, Intersection_map, ListClusters,
                                                Percolation_cluster, false, true, true, true,
-                                               L, perco_dir};
+                                               L, perco_dir, true, "DFN_I"};
+        cuDFNsys::OutputObjectData<_DataType_> lk;
+        lk.OutputFractures("Fractures.h5", Frac_verts_host, L);
         //
         Intersection_map.clear();
         ListClusters.clear();
@@ -137,7 +139,7 @@ int main(int argc, char *argv[])
         cuDFNsys::MatlabPlotDFN<_DataType_> As2{"DFN_II.h5", "DFN_II.m",
                                                 Frac_verts_host, Intersection_map, ListClusters,
                                                 Percolation_cluster, true, true, true, true,
-                                                L, perco_dir};
+                                                L, perco_dir, true, "DFN_II"};
         Frac_verts_device.clear();
         Frac_verts_device.shrink_to_fit();
         //-----------
@@ -161,6 +163,7 @@ int main(int argc, char *argv[])
             cuDFNsys::Mesh<_DataType_> mesh{Frac_verts_host, IntersectionPair_percol,
                                             &Fracs_percol, minGrid, maxGrid, perco_dir, L};
 
+            lk.OutputMesh("mesh.h5", mesh, Fracs_percol);
             cout << "MHFEM ing ..." << endl;
 
             cuDFNsys::MHFEM<_DataType_> fem{mesh, Frac_verts_host, 100, 20, perco_dir, L};
@@ -177,11 +180,11 @@ int main(int argc, char *argv[])
             //---------------------
             int i = 0;
             mesh.MatlabPlot("DFN_mesh_" + to_string(i + 1) + ".h5",
-                            "DFN_mesh_" + to_string(i + 1) + ".m",
-                            Frac_verts_host, L, true, true);
+                            "N",
+                            Frac_verts_host, L, true, true, true, "DFN_mesh_" + to_string(i + 1));
             fem.MatlabPlot("MHFEM_" + to_string(i + 1) + ".h5",
                            "MHFEM_" + to_string(i + 1) + ".m",
-                           Frac_verts_host, mesh, L);
+                           Frac_verts_host, mesh, L, true, "MHFEM_" + to_string(i + 1));
             //---------------
         }
         //cudaDeviceReset();

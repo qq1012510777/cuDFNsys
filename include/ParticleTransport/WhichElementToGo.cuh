@@ -106,8 +106,24 @@ __host__ __device__ void WhichElementToGo(uint currentEleID,
     }
     //printf("element velocity weight 0: ");
     //for (uint i = 0; i < NumSharedEle - 1; ++i)
-    //    printf("%.40f, ", veloc_vec[i]);
+    //    printf("%.40f, ", veloc_vec[i] / TotalVeloc);
     //printf("\n");
+
+    // 2022-10-27 added the condition
+    T velocity_error = (T)0.05;
+    T aty = 0;
+    for (uint i = 0; i < NumSharedEle - 1; ++i)
+    {
+        T avs = veloc_vec[i] / TotalVeloc;
+
+        if (avs < velocity_error)
+        {          
+            aty += veloc_vec[i];
+            veloc_vec[i] = 0;
+        }
+    }
+    TotalVeloc -= aty;
+
     for (uint i = 0; i < NumSharedEle - 1; ++i)
     {
         veloc_vec[i] /= TotalVeloc;
@@ -120,17 +136,19 @@ __host__ __device__ void WhichElementToGo(uint currentEleID,
     //    printf("%.40f, ", veloc_vec[i]);
     //printf("\n");
 
-    if (Dispersion_local == 0)
-    {
-        T velocity_error = (T)0.05;
-        for (uint i = 0; i < NumSharedEle - 2; ++i)
-        {
-            if (veloc_vec[i] - (i == 0 ? 0 : veloc_vec[i - 1]) < velocity_error)
-                veloc_vec[i] = (i == 0 ? 0 : veloc_vec[i - 1]);
-            if (veloc_vec[i] > 1.0 - velocity_error)
-                veloc_vec[i] = 1.0;
-        }
-    };
+    // 2022-10-27 commented
+    /// if (Dispersion_local == 0)
+    /// {
+    ///     T velocity_error = (T)0.05;
+    ///     for (uint i = 0; i < NumSharedEle - 2; ++i)
+    ///     {
+    ///         if (veloc_vec[i] - (i == 0 ? 0 : veloc_vec[i - 1]) < velocity_error)
+    ///             veloc_vec[i] = (i == 0 ? 0 : veloc_vec[i - 1]);
+    ///         if (veloc_vec[i] > 1.0 - velocity_error)
+    ///             veloc_vec[i] = 1.0;
+    ///     }
+    /// };
+
     //if (currentEleID == 13510)
     //{
     //for (uint i = 0; i < NumSharedEle - 1; ++i)

@@ -117,8 +117,8 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
     TargPos.x = InitPos.x + Veloc_p.x * delta_T_ + (T)1.0f * z1 * sqrt((T)2.0f * Dispersion_local * delta_T_);
     TargPos.y = InitPos.y + Veloc_p.y * delta_T_ + (T)1.0f * z2 * sqrt((T)2.0f * Dispersion_local * delta_T_);
 
-    TargPos.x = round(TargPos.x * 1e5) / 1e5;
-    TargPos.y = round(TargPos.y * 1e5) / 1e5;
+    // TargPos.x = round(TargPos.x * 1e5) / 1e5;
+    // TargPos.y = round(TargPos.y * 1e5) / 1e5;
 
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
