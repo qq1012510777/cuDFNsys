@@ -85,7 +85,7 @@ public:
                       string Particle_mode_ii = "Particle_tracking",
                       string Injection_mode_ii = "Flux-weighted")
     {
-        cuDFNsys::MatlabAPI M1;
+        //cuDFNsys::MatlabAPI M1;
 
         this->Dir = Dir_flow;
 

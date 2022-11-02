@@ -3,6 +3,7 @@
 //
 // PURPOSE:           Plot DFN with m and mat file
 //                    m is command file; mat is data file
+//                    updated: this function can also output py and h5 file
 //
 // FUNCTIONS/OBJECTS: MatlabPlotDFN
 //
@@ -12,7 +13,7 @@
 #include "../DataTypeSelector/DataTypeSelector.cuh"
 #include "../GlobalDef/GlobalDef.cuh"
 #include "../HDF5API/HDF5API.cuh"
-#include "../MatlabAPI/MatlabAPI.cuh"
+//#include "../MatlabAPI/MatlabAPI.cuh"
 #include "Fracture.cuh"
 #include <algorithm>
 #include <cstring>
