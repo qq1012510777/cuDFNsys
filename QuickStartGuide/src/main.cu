@@ -293,15 +293,16 @@ int main(int argc, char *argv[])
                          mesh,                  // mesh result
                          fem,                   // mhfem object
                          L,                     // domain size
-                         true,
-                         "ParticlesMovement");
+                         true,                  // Visualize it with python
+                         "ParticlesMovement");  // the name of python script without suffix
 
-            // note that right now data in the output file () is not 3D
+            // note that right now data in the output file (QuickStartGuide/ParticlePositionResult/*.h5) is not 3D
             // you have to transform 2D data to 3D
             // which can be done by run the executable file 'Transform2DH5ParticleDataTo3D'
             // then, the ParticlesMovement.m can be implemented in matlab
             // or ParticlesMovement.py can be run
             // The 'compileCode.sh' will compile the 'Transform2DH5ParticleDataTo3D' code and run it after data (particle positions) output
+            // you actually just run 'compileCode.sh' with the arguments recommended in Readme.md
 
             ielaps = cuDFNsys::CPUSecond() - istart;
             cout << "Running time of particle tracking: " << ielaps << " sec\n";
