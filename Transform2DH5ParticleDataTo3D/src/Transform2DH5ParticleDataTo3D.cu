@@ -81,7 +81,11 @@ int main(int argc, char *argv[])
         //    Nproc = atoi(argv[1]);
 
         string FracH5 = "FracturesForParticle.h5";
-        string mshfile = "DFN_mesh_1.h5";
+
+        if (argv[1] == NULL)
+            throw cuDFNsys::ExceptionsPause("Please give the name of mesh file (.h5)!");
+
+        string mshfile = argv[1];
 
         thrust::host_vector<cuDFNsys::Fracture<_DataType_>> Frac_verts_host;
 
