@@ -75,15 +75,17 @@ Right now, I provide a quickstart guide to explain how can one do simulation wit
 
 To compile and run QuickStartGuide example, run compileCode.sh in the directory-'QuickStartGuide'.
 
-For example: bash compileCode.sh 1000 500 1e5 0
+For example, run the command with your shell: bash compileCode.sh 1000 500 1e5 0
 
-Number of particles: 1000
+Explanation of the four arguments:
 
-Number of time steps: 500
+* Number of particles: 1000
 
-Delta t: 1e5
+* Number of time steps: 500
 
-Diffusion (local): 0
+* Delta t: 1e5
+
+* Diffusion (local): 0
 
 # Directories
 
