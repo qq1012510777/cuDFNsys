@@ -2,6 +2,10 @@
 
 The _cuDFNsys_ is an open-source C++/CUDA library (under GPL license) for DFN generations, based on CUDA. It is also able to simulate static flow and particle transport in DFN, based on mixed hybrid finite element method and particle tracking algorithm.
 
+_cuDFNsys_ does not support GUI and can only run on Ubuntu. _cuDFNsys_ is not friendly to users who do not familiar with Linux, C++ and CMake.
+
+_cuDFNsys_ right now can only generate one group of fractures, because I am studying percolation in DFNs and some quantities in percolation theory is easier to calculate with only one fracture group. Geometrical attributes of fractures follow certain distributions. In reality, multiple fracture famlies might be observed.
+
 # Authors
 
 * Tingchang YIN, Westlake University & Zhejiang University, China, yintingchang@foxmail.com

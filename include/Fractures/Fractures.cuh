@@ -51,6 +51,23 @@ __global__ void Fractures(cuDFNsys::Fracture<T> *verts,
                           cuDFNsys::Vector1<T> kappa,
                           cuDFNsys::Vector1<T> conductivity_powerlaw_exponent);
 
+// Generate some fractures in a DFN
+template <typename T>
+class FracturesCPU
+{
+public:
+    // constructor
+    FracturesCPU(thrust::host_vector<cuDFNsys::Fracture<T>> &verts,
+                 unsigned long seed,
+                 int count,
+                 T model_L,
+                 uint ModeSizeDistri,                 // 0 = power law; 1 = lognormal; 2 = uniform; 3 = monosize
+                 cuDFNsys::Vector4<T> ParaSizeDistri, // when mode = 1, ;
+                 T kappa,
+                 T conductivity_powerlaw_exponent,
+                 uint Nproc = 10);
+};
+
 // benchmark fracture generator: two vertical crossed fractures
 template <typename T>
 __global__ void FracturesCrossedVertical(cuDFNsys::Fracture<T> *verts,

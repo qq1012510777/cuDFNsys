@@ -44,7 +44,7 @@ public:
     // constructor CPU
     IdentifyIntersection(thrust::host_vector<cuDFNsys::Fracture<T>> verts,
                          const bool &if_trucncated,
-                         std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<T>, cuDFNsys::Vector3<T>>> &Intersection_map);
+                         std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<T>, cuDFNsys::Vector3<T>>> &Intersection_map, uint Nproc = 10);
     // constructor GPU
     IdentifyIntersection(const size_t &Fracsize,
                          cuDFNsys::Fracture<T> *Frac_verts_device_ptr,
