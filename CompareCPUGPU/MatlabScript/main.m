@@ -66,3 +66,7 @@ s4 = plot([1:1:EndLoopStep]' .* DensityIncreament, GPU_sum_DFN_gen_time, 'b-o');
 legend([s3 s4], 'CPU', 'GPU');
 xlabel('NF')
 ylabel('t (s)')
+
+% ---------------------MHFEM triplets count time
+pathYer = '/home/tingchangyin/cuDFNsys/CompareCPUGPU/CPU_check_MHFEM_Triplet_Nproc_10';
+filename_qq = [pathYsd, '/MHFEM_Triplet_countTime.h5'];

@@ -26,8 +26,19 @@ set (CUDFNSYS_ROOT $ENV{HOME}/cuDFNsys)
 
 set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin) ## bin is the EXECUTABLE_OUTPUT_PATH
 
-set (SRC_LIST ${PROJECT_SOURCE_DIR}/src/main_CPU_check_DFNgen.cu)
-# set (SRC_LIST ${PROJECT_SOURCE_DIR}/src/main_GPU_check_DFNgen.cu)
+set (cufile_name )
+
+if (CUFILE STREQUAL 1)
+    set (cufile_name main_CPU_check_DFNgen.cu)
+elseif(CUFILE STREQUAL 2)
+    set (cufile_name main_GPU_check_DFNgen.cu)
+elseif(CUFILE STREQUAL 3)
+    set (cufile_name main_CPU_check_MHFEM_Triplet.cu)
+elseif(CUFILE STREQUAL 4)
+    set (cufile_name main_GPU_check_MHFEM_Triplet.cu)
+endif()
+
+set (SRC_LIST ${PROJECT_SOURCE_DIR}/src/${cufile_name})
 
 include_directories(${CUDFNSYS_ROOT}/include)
 

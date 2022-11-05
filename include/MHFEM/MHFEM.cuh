@@ -56,6 +56,7 @@ public:
     Eigen::MatrixXd VelocityNormalScalarSepEdges;
     T InletP = 100;
     T OutletP = 20;
+    double TripletTime = 0;
 
 private:
     int Dir = 2;
@@ -66,7 +67,9 @@ public:
           const T &inlet_p_,
           const T &outlet_p_,
           const int &dir_,
-          const T &L);
+          const T &L,
+          bool if_CPU = false,
+          int Nproc = 10);
 
     void MatlabPlot(const string &mat_key,
                     const string &command_key,
@@ -78,13 +81,21 @@ public:
 
 private:
     void Implementation(const cuDFNsys::Mesh<T> &mesh,
-                        const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs);
+                        const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
+                        bool if_CPU = false,
+                        int Nproc = 10);
 
 private:
     pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> AssembleOnGPU(const cuDFNsys::Mesh<T> &mesh,
                                                                                  const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
                                                                                  T P_in,
                                                                                  T P_out);
+
+    pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> AssembleOnCPU(const cuDFNsys::Mesh<T> &mesh,
+                                                                                 const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
+                                                                                 T P_in,
+                                                                                 T P_out,
+                                                                                 int Nproc = 10);
 };
 
 }; // namespace cuDFNsys
