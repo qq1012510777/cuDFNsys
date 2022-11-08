@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this program, please cite it as below."
+authors:
+  - family-names: Yin
+    given-names: Tingchang
+    orcid: https://orcid.org/0000-0002-3079-7976
+title: "cuDFNsys"
+version: 0.0.0
+doi: 
+date-released: 2022-11-08

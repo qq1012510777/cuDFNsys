@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
 
             string hdfilename = filename + "/" + "MHFEM_Triplet_countTime.h5";
 
-            for (size_t k = 1; k <= 10; ++k)
+            for (size_t k = 1; k <= 20; k++)
             {
                 if (k == 1)
                 {
@@ -160,8 +160,8 @@ int main(int argc, char *argv[])
                                    "MonteCarloTimes", &MonteCarloTimes, make_uint2(1, 1));
                 }
 
-                _DataType_ minGrid = 5.5 - k * 0.5;
-                _DataType_ maxGrid = 11 - k * 1.0;
+                _DataType_ minGrid = 21 - k * 1.0;
+                _DataType_ maxGrid = minGrid + 1;
 
                 hd5.AddDataset(hdfilename, "Step_" + cuDFNsys::ToStringWithWidth(k, 5),
                                "minGrid", &minGrid, make_uint2(1, 1));
@@ -175,12 +175,12 @@ int main(int argc, char *argv[])
 
                 for (uint op = 0; op < MonteCarloTimes; ++op)
                 {
-                    cout << "meshing ..." << k << "/" << op << endl;
+                    cout << "meshing ..." << k << "/" << op + 1 << endl;
 
                     cuDFNsys::Mesh<_DataType_> mesh{Frac_verts_host, IntersectionPair_percol,
                                                     &Fracs_percol, minGrid, maxGrid, perco_dir, L};
 
-                    cout << "MHFEM ing ..." << k << "/" << op << endl;
+                    cout << "MHFEM ing ..." << k << "/" << op + 1 << endl;
 
                     cuDFNsys::MHFEM<_DataType_> fem{mesh, Frac_verts_host, 100, 20, perco_dir, L, true, Nproc};
                     cout << "Fluxes: " << fem.QIn << ", ";

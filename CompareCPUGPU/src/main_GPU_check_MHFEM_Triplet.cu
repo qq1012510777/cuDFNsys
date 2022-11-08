@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
 
             string hdfilename = filename + "/" + "MHFEM_Triplet_countTime.h5";
 
-            for (size_t k = 1; k <= 10; ++k)
+            for (size_t k = 1; k <= 20; k++)
             {
                 if (k == 1)
                 {
@@ -160,8 +160,8 @@ int main(int argc, char *argv[])
                                    "MonteCarloTimes", &MonteCarloTimes, make_uint2(1, 1));
                 }
 
-                _DataType_ minGrid = 5.5 - k * 0.5;
-                _DataType_ maxGrid = 11 - k * 1.0;
+                _DataType_ minGrid = 21 - k * 1.0;
+                _DataType_ maxGrid = minGrid + 1;
 
                 hd5.AddDataset(hdfilename, "Step_" + cuDFNsys::ToStringWithWidth(k, 5),
                                "minGrid", &minGrid, make_uint2(1, 1));
@@ -200,8 +200,9 @@ int main(int argc, char *argv[])
                 hd5.AddDataset(hdfilename, "Step_" + cuDFNsys::ToStringWithWidth(k, 5),
                                "Q_in", Q_in.data(), Dims);
                 hd5.AddDataset(hdfilename, "Step_" + cuDFNsys::ToStringWithWidth(k, 5),
+                               "Q_out", Q_out.data(), Dims);
+                hd5.AddDataset(hdfilename, "Step_" + cuDFNsys::ToStringWithWidth(k, 5),
                                "NUMeles", NUMeles.data(), Dims);
-                
             }
         }
         //cudaDeviceReset();
