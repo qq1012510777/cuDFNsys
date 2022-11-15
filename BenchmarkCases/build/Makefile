@@ -1257,6 +1257,33 @@ home/tingchangyin/cuDFNsys/src/OutputObjectData/OutputObjectData.cu.s:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/OutputObjectData/OutputObjectData.cu.s
 .PHONY : home/tingchangyin/cuDFNsys/src/OutputObjectData/OutputObjectData.cu.s
 
+home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.o: home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.o
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.o
+
+# target to build an object file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.o
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.o
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.i: home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.i
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.i
+
+# target to preprocess a source file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.i
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.i
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.s: home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.s
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.s
+
+# target to generate assembly for a file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.s
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.s
+
 home/tingchangyin/cuDFNsys/src/Quaternion/Quaternion.o: home/tingchangyin/cuDFNsys/src/Quaternion/Quaternion.cu.o
 
 .PHONY : home/tingchangyin/cuDFNsys/src/Quaternion/Quaternion.o
@@ -1527,6 +1554,9 @@ help:
 	@echo "... home/tingchangyin/cuDFNsys/src/OutputObjectData/OutputObjectData.o"
 	@echo "... home/tingchangyin/cuDFNsys/src/OutputObjectData/OutputObjectData.i"
 	@echo "... home/tingchangyin/cuDFNsys/src/OutputObjectData/OutputObjectData.s"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.o"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.i"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.s"
 	@echo "... home/tingchangyin/cuDFNsys/src/Quaternion/Quaternion.o"
 	@echo "... home/tingchangyin/cuDFNsys/src/Quaternion/Quaternion.i"
 	@echo "... home/tingchangyin/cuDFNsys/src/Quaternion/Quaternion.s"

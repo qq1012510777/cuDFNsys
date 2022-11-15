@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
         cudaDeviceSynchronize();
 
         Frac_verts_host = Frac_verts_device;
-        
+
         //cout << "conductivity: " << Frac_verts_host[0].Conductivity << endl;
 
         cout << "identifying intersections with complete fractures" << endl;
@@ -170,8 +170,7 @@ int main(int argc, char *argv[])
 
             cout << "Particle transport ing ...\n";
 
-            cuDFNsys::ParticleTransport<_DataType_> p{(unsigned long)t,
-                                                      atoi(argv[1]),              // number of particle
+            cuDFNsys::ParticleTransport<_DataType_> p{atoi(argv[1]),             // number of particle
                                                       atoi(argv[2]),             // number of time steps
                                                       (_DataType_)atof(argv[3]), // delta T
                                                       (_DataType_)atof(argv[4]), // molecular diffusion

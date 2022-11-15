@@ -16,28 +16,29 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.    *
 *****************************************************************************/
 
-///////////////////////////////////////////////////////////////////
-// NAME:              AngleBetweenTwoNeighboringTriangles.cuh
-//
-// PURPOSE:           return the angle between two neighboring triangles
-//
-// FUNCTIONS/OBJECTS: AngleBetweenTwoNeighboringTriangles
-//
-// AUTHOR:            Tingchang YIN
-///////////////////////////////////////////////////////////////////
-#pragma once
-#include "../DataTypeSelector/DataTypeSelector.cuh"
-#include "../GlobalDef/GlobalDef.cuh"
-#include "../MatrixManipulation/MatrixManipulation.cuh"
+#include "ParticleTransport/IfParticlePositionNearOneVertexOfElement.cuh"
 
-namespace cuDFNsys
-{
+// ====================================================
+// NAME:        IfParticlePositionNearOneVertexOfElement
+// DESCRIPTION: If the particle is near a vertex of element
+// AUTHOR:      Tingchang YIN
+// DATE:        15/11/2022
+// ====================================================
 template <typename T>
-__host__ __device__ T AngleBetweenTwoNeighboringTriangles(const cuDFNsys::Vector3<T> preEle[3],
-                                                          const cuDFNsys::Vector3<T> nextEle[3],
-                                                          const uint &localEdgeNo_preEle,
-                                                          const uint &localEdgeNo_nextEle /*,
-                                                          cuDFNsys::Vector3<T> &d1,
-                                                          cuDFNsys::Vector3<T> &d2*/
-);
-}; // namespace cuDFNsys
+__device__ __host__ bool cuDFNsys::IfParticlePositionNearOneVertexOfElement(cuDFNsys::Vector2<T> Position_p, cuDFNsys::Vector2<T> Tri[3], T _TOL_p)
+{
+    for (uint i = 0; i < 3; ++i)
+    {
+        cuDFNsys::Vector2<T> V;
+        V.x = Position_p.x - Tri[i].x;
+        V.y = Position_p.y - Tri[i].y;
+
+        T norm_ = sqrt(V.x * V.x + V.y * V.y);
+
+        if (norm_ < _TOL_p)
+            return true;
+    }
+    return false;
+};
+template __device__ __host__ bool cuDFNsys::IfParticlePositionNearOneVertexOfElement<double>(cuDFNsys::Vector2<double> Position_p, cuDFNsys::Vector2<double> Tri[3], double _TOL_p);
+template __device__ __host__ bool cuDFNsys::IfParticlePositionNearOneVertexOfElement<float>(cuDFNsys::Vector2<float> Position_p, cuDFNsys::Vector2<float> Tri[3], float _TOL_p);

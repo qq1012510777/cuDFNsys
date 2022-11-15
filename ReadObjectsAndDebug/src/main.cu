@@ -138,7 +138,6 @@ int main(int argc, char *argv[])
                             "DFN_mesh_" + to_string(i + 1) + ".m",
                             Frac_verts_host, L, true, true);
             //lk3.OutputMesh("Mesh.h5", mesh, Fracs_percol);
-            
 
             cout << "MHFEM ing ..." << endl;
 
@@ -165,8 +164,7 @@ int main(int argc, char *argv[])
             //return 0;
             cout << "Particle transport ing ...\n";
 
-            cuDFNsys::ParticleTransport<_DataType_> p{(unsigned long)t,
-                                                      atoi(argv[1]),             // number of particle
+            cuDFNsys::ParticleTransport<_DataType_> p{atoi(argv[1]),             // number of particle
                                                       atoi(argv[2]),             // number of time steps
                                                       (_DataType_)atof(argv[3]), // delta T
                                                       (_DataType_)atof(argv[4]), // molecular diffusion

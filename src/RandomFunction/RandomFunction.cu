@@ -352,3 +352,18 @@ __device__ __host__ T cuDFNsys::R8PolyValueHorner(int m, T c[], T x)
 };
 template __device__ __host__ double cuDFNsys::R8PolyValueHorner(int m, double c[], double x);
 template __device__ __host__ float cuDFNsys::R8PolyValueHorner(int m, float c[], float x);
+
+// ====================================================
+// NAME:        RandomStandardNormal
+// DESCRIPTION: from variable following uniform distribution of (0, 1)
+//              to value following standard normal distribution
+// AUTHOR:      Tingchang YIN
+// DATE:        10/11/2022
+// ====================================================
+template <typename T>
+__device__ __host__ T cuDFNsys::RandomStandardNormal(T rand_0_1_1, T rand_0_1_2)
+{
+    return sqrt(-2.0 * log(rand_0_1_1)) * cos(2.0 * M_PI * rand_0_1_2);
+}; // RandomStandardNormal
+template __device__ __host__ double cuDFNsys::RandomStandardNormal(double rand_0_1_1, double rand_0_1_2);
+template __device__ __host__ float cuDFNsys::RandomStandardNormal(float rand_0_1_1, float rand_0_1_2);

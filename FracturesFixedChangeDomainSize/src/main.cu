@@ -173,8 +173,7 @@ int main(int argc, char *argv[])
 
             sk.OutputFractures("FracturesForParticle.h5", Frac_verts_host, L);
 
-            cuDFNsys::ParticleTransport<_DataType_> p{(unsigned long)t,
-                                                      atoi(argv[4]), // number of time step
+            cuDFNsys::ParticleTransport<_DataType_> p{atoi(argv[4]), // number of time step
                                                       Frac_verts_host, mesh, fem, (uint)perco_dir, -0.5f * L,
                                                       atoi(argv[5]), // num of particle
                                                       atof(argv[6]), // delta_T_ii

@@ -1365,32 +1365,32 @@ home/tingchangyin/cuDFNsys/src/Warmup/Warmup.cu.s:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/Warmup/Warmup.cu.s
 .PHONY : home/tingchangyin/cuDFNsys/src/Warmup/Warmup.cu.s
 
-src/main_GPU_check_DFNgen.o: src/main_GPU_check_DFNgen.cu.o
+src/main_GPU_check_PT.o: src/main_GPU_check_PT.cu.o
 
-.PHONY : src/main_GPU_check_DFNgen.o
+.PHONY : src/main_GPU_check_PT.o
 
 # target to build an object file
-src/main_GPU_check_DFNgen.cu.o:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/main_GPU_check_DFNgen.cu.o
-.PHONY : src/main_GPU_check_DFNgen.cu.o
+src/main_GPU_check_PT.cu.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/main_GPU_check_PT.cu.o
+.PHONY : src/main_GPU_check_PT.cu.o
 
-src/main_GPU_check_DFNgen.i: src/main_GPU_check_DFNgen.cu.i
+src/main_GPU_check_PT.i: src/main_GPU_check_PT.cu.i
 
-.PHONY : src/main_GPU_check_DFNgen.i
+.PHONY : src/main_GPU_check_PT.i
 
 # target to preprocess a source file
-src/main_GPU_check_DFNgen.cu.i:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/main_GPU_check_DFNgen.cu.i
-.PHONY : src/main_GPU_check_DFNgen.cu.i
+src/main_GPU_check_PT.cu.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/main_GPU_check_PT.cu.i
+.PHONY : src/main_GPU_check_PT.cu.i
 
-src/main_GPU_check_DFNgen.s: src/main_GPU_check_DFNgen.cu.s
+src/main_GPU_check_PT.s: src/main_GPU_check_PT.cu.s
 
-.PHONY : src/main_GPU_check_DFNgen.s
+.PHONY : src/main_GPU_check_PT.s
 
 # target to generate assembly for a file
-src/main_GPU_check_DFNgen.cu.s:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/main_GPU_check_DFNgen.cu.s
-.PHONY : src/main_GPU_check_DFNgen.cu.s
+src/main_GPU_check_PT.cu.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/main_GPU_check_PT.cu.s
+.PHONY : src/main_GPU_check_PT.cu.s
 
 # Help Target
 help:
@@ -1539,9 +1539,9 @@ help:
 	@echo "... home/tingchangyin/cuDFNsys/src/Warmup/Warmup.o"
 	@echo "... home/tingchangyin/cuDFNsys/src/Warmup/Warmup.i"
 	@echo "... home/tingchangyin/cuDFNsys/src/Warmup/Warmup.s"
-	@echo "... src/main_GPU_check_DFNgen.o"
-	@echo "... src/main_GPU_check_DFNgen.i"
-	@echo "... src/main_GPU_check_DFNgen.s"
+	@echo "... src/main_GPU_check_PT.o"
+	@echo "... src/main_GPU_check_PT.i"
+	@echo "... src/main_GPU_check_PT.s"
 .PHONY : help
 
 

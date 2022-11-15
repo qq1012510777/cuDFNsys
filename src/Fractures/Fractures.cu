@@ -202,7 +202,7 @@ cuDFNsys::FracturesCPU<T>::FracturesCPU(thrust::host_vector<cuDFNsys::Fracture<T
 {
     srand(seed);
 
-#pragma omp parallel for schedule(static) num_threads(Nproc)
+    #pragma omp parallel for schedule(static) num_threads(Nproc)
     for (int i = 0; i < count; ++i)
     {
         T R_ = 0;

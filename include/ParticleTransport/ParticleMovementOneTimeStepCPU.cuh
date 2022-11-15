@@ -17,12 +17,12 @@
 *****************************************************************************/
 
 ///////////////////////////////////////////////////////////////////
-// NAME:              ParticleMovementOneTimeStepGPUKernel.cuh
+// NAME:              ParticleMovementOneTimeStepCPU.cuh
 //
-// PURPOSE:           GPU kernel function to move particles
+// PURPOSE:           CPU function to move particles
 //                    in one time step
 //
-// FUNCTIONS/OBJECTS: ParticleMovementOneTimeStepGPUKernel
+// FUNCTIONS/OBJECTS: ParticleMovementOneTimeStepCPU
 //
 // AUTHOR:            Tingchang YIN
 ///////////////////////////////////////////////////////////////////
@@ -50,20 +50,21 @@
 namespace cuDFNsys
 {
 template <typename T>
-__global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
-                                                     T delta_T_,
-                                                     T Dispersion_local,
-                                                     cuDFNsys::Particle<T> *P_DEV,
-                                                     cuDFNsys::Fracture<T> *Frac_DEV,
-                                                     cuDFNsys::EdgeToEle *EdgesSharedEle_DEV,
-                                                     cuDFNsys::EleCoor<T> *Coordinate2D_Vec_dev_ptr,
-                                                     //cuDFNsys::NeighborEle *NeighborEleOfOneEle_dev_ptr,
-                                                     uint *EleToFracID_ptr,
-                                                     T *velocity_ptr,
-                                                     uint Dir_flow,
-                                                     T outletcoordinate,
-                                                     int count,
-                                                     int numElements,
-                                                     uint stepNO,
-                                                     uint *Particle_runtime_error_dev_pnt);
+void ParticleMovementOneTimeStepCPU(unsigned long seed,
+                                    T delta_T_,
+                                    T Dispersion_local,
+                                    cuDFNsys::Particle<T> *P_DEV,
+                                    cuDFNsys::Fracture<T> *Frac_DEV,
+                                    cuDFNsys::EdgeToEle *EdgesSharedEle_DEV,
+                                    cuDFNsys::EleCoor<T> *Coordinate2D_Vec_dev_ptr,
+                                    //cuDFNsys::NeighborEle *NeighborEleOfOneEle_dev_ptr,
+                                    uint *EleToFracID_ptr,
+                                    T *velocity_ptr,
+                                    uint Dir_flow,
+                                    T outletcoordinate,
+                                    int count,
+                                    int numElements,
+                                    uint stepNO,
+                                    uint *Particle_runtime_error_dev_pnt,
+                                    int Nproc = 10);
 }; // namespace cuDFNsys

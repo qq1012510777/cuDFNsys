@@ -68,4 +68,8 @@ __device__ __host__ T StandardNormalCDFInv(T p);
 // a stable algorithm to calculate polynomial with 8th degrees
 template <typename T>
 __device__ __host__ T R8PolyValueHorner(int m, T c[], T x);
+
+// from variable following uniform distribution of (0, 1) to value following standard normal distribution
+template <typename T>
+__device__ __host__ T RandomStandardNormal(T rand_0_1_1, T rand_0_1_2);
 }; // namespace cuDFNsys
