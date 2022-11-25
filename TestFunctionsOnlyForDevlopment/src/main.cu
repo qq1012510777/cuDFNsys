@@ -144,16 +144,24 @@ int main(int argc, char *argv[])
 
             double istart_1 = cuDFNsys::CPUSecond();
             std::vector<size_t> Fracs_percol;
+
             cuDFNsys::GetAllPercolatingFractures GetPer{Percolation_cluster,
                                                         ListClusters,
                                                         Fracs_percol};
             std::vector<pair<int, int>> IntersectionPair_percol;
+            int NUMprior = Fracs_percol.size();
+
+            bool ifRemoveDeadEnds = (atoi(argv[13]) == 0 ? false : true);
 
             cuDFNsys::RemoveDeadEndFrac<_DataType_> RDEF{Fracs_percol,
                                                          IntersectionPair_percol,
                                                          (size_t)perco_dir,
                                                          Frac_verts_host,
-                                                         Intersection_map};
+                                                         Intersection_map, ifRemoveDeadEnds};
+
+            if (ifRemoveDeadEnds)
+                cout << "remove " << NUMprior - Frac_verts_host.size() << " fractures\n";
+
             cout << "meshing ..." << endl;
 
             cuDFNsys::Mesh<_DataType_> mesh{Frac_verts_host, IntersectionPair_percol,
@@ -180,7 +188,7 @@ int main(int argc, char *argv[])
             cout << ielaps_1 << " sec\n";
             //---------------------
             fem.MatlabPlot("MHFEM_" + to_string(i + 1) + ".h5",
-                           "N",
+                           "MHFEM_" + to_string(i + 1) + ".m",
                            Frac_verts_host, mesh, L, true, "MHFEM_" + to_string(i + 1));
             //---------------
             return 0;

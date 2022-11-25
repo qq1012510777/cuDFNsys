@@ -17,10 +17,10 @@
 *****************************************************************************/
 
 // ====================================================
-// NAME:        Percolation
-// DESCRIPTION: My percolation program.
+// NAME:        CompareWithAndWithoutDeadEnds
+// DESCRIPTION: Compare permeability With And Without DeadEnds
 // AUTHOR:      Tingchang YIN
-// DATE:        27/04/2022
+// DATE:        23/11/2022
 // ====================================================
 
 #include "cuDFNsys.cuh"
@@ -78,16 +78,6 @@ int main(int argc, char *argv[])
     }
     else
         cout << "\n\n********** cuDFNsys uses default gamma constant; b = gamma * R ^ beta**********\n\n";
-
-    bool IfRemoveDeadEnds = true;
-
-    if (argv[21] != NULL)
-    {
-        IfRemoveDeadEnds = false;
-        cout << "\n\n********** cuDFNsys does not remove dead ends **********\n\n";
-    }
-    else
-        cout << "\n\n********** cuDFNsys removes dead ends **********\n\n";
 
     _DataType_ P33_total_A[1] = {0};
     _DataType_ P33_connected_A[1] = {0};
@@ -261,10 +251,13 @@ int main(int argc, char *argv[])
 
             //Connections.clear();
             //Connections.shrink_to_fit();
+            thrust::host_vector<cuDFNsys::Fracture<_DataType_>> Frac_verts_host_back_up = Frac_verts_host;
 
             //-------------------------
+            bool IfRemoveDeadEnds = false;
             if (IfFlowModel == 1)
             {
+
                 if (Percolation_cluster.size() > 0)
                 {
                     double iStart_mesh = cuDFNsys::CPUSecond();
@@ -286,7 +279,7 @@ int main(int argc, char *argv[])
                     if (IfRemoveDeadEnds)
                         NumFractureRemoved[0] = NUMFrac_perco_prior_remove - Frac_verts_host.size();
 
-                    if (!IfRemoveDeadEnds)
+                    if (!IfRemoveDeadEnds) // do not remove
                     {
                         if (NUMFrac_perco_prior_remove != Frac_verts_host.size())
                         {
@@ -294,7 +287,7 @@ int main(int argc, char *argv[])
                         }
                     }
 
-                    cout << "\tMeshing ..." << endl;
+                    cout << "\tMeshing ... with Dead-ends ..." << endl;
                     //cudaDeviceReset();
                     cuDFNsys::Mesh<_DataType_> mesh{Frac_verts_host, IntersectionPair_percol,
                                                     &Fracs_percol, minGrid, maxGrid, perco_dir, L};
@@ -321,9 +314,8 @@ int main(int argc, char *argv[])
                     //---------------------
                 }
             }
-            cudaDeviceReset();
-            cout << "\tOutputing data...\n";
-            string groupname = "group_" + cuDFNsys::ToStringWithWidth(i + 1, 3);
+            cout << "\tOutputing data... with dead-ends ...\n";
+            string groupname = "group_" + cuDFNsys::ToStringWithWidth(i + 1, 3) + "_withDeadEnds";
             vector<string> datasetname = {
                 "P33_total",
                 "P33_connected_z",
@@ -366,6 +358,105 @@ int main(int argc, char *argv[])
 
             if (IfRemoveDeadEnds)
                 h5out.AddDataset(filename, groupname, "NumFractureRemoved", NumFractureRemoved, dim_e);
+
+            data_input.clear();
+            data_input.shrink_to_fit();
+
+            //-------------------------- remove dead ends
+            //-------------------------- remove dead ends
+            //-------------------------- remove dead ends
+            Frac_verts_host.clear();
+            Frac_verts_host.shrink_to_fit();
+
+            Frac_verts_host = Frac_verts_host_back_up;
+
+            Frac_verts_host_back_up.clear();
+            Frac_verts_host_back_up.shrink_to_fit();
+
+            IfRemoveDeadEnds = true;
+            if (IfFlowModel == 1)
+            {
+
+                if (Percolation_cluster.size() > 0)
+                {
+                    double iStart_mesh = cuDFNsys::CPUSecond();
+                    std::vector<size_t> Fracs_percol;
+                    cuDFNsys::GetAllPercolatingFractures GetPer{Percolation_cluster,
+                                                                ListClusters,
+                                                                Fracs_percol};
+
+                    std::vector<pair<int, int>> IntersectionPair_percol;
+
+                    int NUMFrac_perco_prior_remove = Fracs_percol.size();
+
+                    cuDFNsys::RemoveDeadEndFrac<_DataType_> RDEF{Fracs_percol,
+                                                                 IntersectionPair_percol,
+                                                                 (size_t)perco_dir,
+                                                                 Frac_verts_host,
+                                                                 Intersection_map,
+                                                                 IfRemoveDeadEnds};
+                    if (IfRemoveDeadEnds)
+                        NumFractureRemoved[0] = NUMFrac_perco_prior_remove - Frac_verts_host.size();
+
+                    if (!IfRemoveDeadEnds) // do not remove
+                    {
+                        if (NUMFrac_perco_prior_remove != Frac_verts_host.size())
+                        {
+                            throw cuDFNsys::ExceptionsPause("The fractures in percolating clusters should not be removed!");
+                        }
+                    }
+
+                    cout << "\tMeshing ... rm Dead-ends ..." << endl;
+                    //cudaDeviceReset();
+                    cuDFNsys::Mesh<_DataType_> mesh{Frac_verts_host, IntersectionPair_percol,
+                                                    &Fracs_percol, minGrid, maxGrid, perco_dir, L};
+
+                    double iElaps_mesh = cuDFNsys::CPUSecond() - iStart_mesh;
+                    cout << "\tMesh finished. Running time: " << iElaps_mesh << " sec\n";
+
+                    cout << "\tMHFEM ing ..." << endl;
+                    double iStart_mhfem = cuDFNsys::CPUSecond();
+                    cuDFNsys::MHFEM<_DataType_> fem{mesh, Frac_verts_host, InletP, OutletP, perco_dir, L};
+
+                    //cout << "\tFluxes: " << fem.Q_in << ", " << fem.Q_out << ", Permeability: " << fem.Permeability << endl;
+                    if (fem.QError > 1 || isnan(fem.Permeability) == 1)
+                    {
+                        string AS = "Found large error or isnan, the error: " + to_string(fem.QError) + ", the permeability: " + to_string(fem.Permeability);
+                        throw cuDFNsys::ExceptionsIgnore(AS);
+                    }
+
+                    Permeability_A[0] = fem.Permeability;
+                    Q_error_A[0] = fem.QError;
+
+                    double iElaps_mhfem = cuDFNsys::CPUSecond() - iStart_mhfem;
+                    cout << "\tMHFEM finished. Running time: " << iElaps_mhfem << " sec\n";
+                    //---------------------
+                }
+            }
+            cout << "\tOutputing data... rm dead-ends ...\n";
+            groupname = "group_" + cuDFNsys::ToStringWithWidth(i + 1, 3) + "_rmDeadEnds";
+            vector<_DataType_ *> data_inputII = {P33_total_A,
+                                                 P33_connected_A,
+                                                 Ratio_of_P33_A,
+                                                 P33_largest_cluster_A,
+                                                 P32_total_A,
+                                                 P32_connected_A,
+                                                 Ratio_of_P32_A,
+                                                 P32_largest_cluster_A,
+                                                 P30_A,
+                                                 P30_connected_A,
+                                                 Ratio_of_P30_A,
+                                                 P30_largest_cluster_A,
+                                                 Percolation_probability_A,
+                                                 n_I_A,
+                                                 Permeability_A,
+                                                 Q_error_A};
+            h5out.AddDatasetsWithOneGroup(filename, groupname,
+                                          datasetname, data_inputII, dim_ss);
+
+            //----------------------------
+            //----------------------------
+            //----------------------------
 
             _DataType_ i_p[1] = {(_DataType_)i + 1};
             if (i == 0)

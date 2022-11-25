@@ -135,13 +135,19 @@ int main(int argc, char *argv[])
             cuDFNsys::GetAllPercolatingFractures GetPer{Percolation_cluster,
                                                         ListClusters,
                                                         Fracs_percol};
+
             std::vector<pair<int, int>> IntersectionPair_percol;
+
+            bool ifremovedeadends = true;
+
+            if (atof(argv[4]) == 0)
+                ifremovedeadends = false;
 
             cuDFNsys::RemoveDeadEndFrac<_DataType_> RDEF{Fracs_percol,
                                                          IntersectionPair_percol,
                                                          (size_t)perco_dir,
                                                          Frac_verts_host,
-                                                         Intersection_map};
+                                                         Intersection_map, ifremovedeadends};
             cout << "meshing ..." << endl;
             cuDFNsys::Mesh<_DataType_> mesh{Frac_verts_host, IntersectionPair_percol,
                                             &Fracs_percol, minGrid, maxGrid, perco_dir, L};
@@ -173,11 +179,13 @@ int main(int argc, char *argv[])
 
             sk.OutputFractures("FracturesForParticle.h5", Frac_verts_host, L);
 
-            cuDFNsys::ParticleTransport<_DataType_> p{atoi(argv[4]), // number of time step
+            return 0;
+
+            cuDFNsys::ParticleTransport<_DataType_> p{atoi(argv[5]), // number of time step
                                                       Frac_verts_host, mesh, fem, (uint)perco_dir, -0.5f * L,
-                                                      atoi(argv[5]), // num of particle
-                                                      atof(argv[6]), // delta_T_ii
-                                                      atof(argv[7]),
+                                                      atoi(argv[6]), // num of particle
+                                                      atof(argv[7]), // delta_T_ii
+                                                      atof(argv[8]),
                                                       "Particle_tracking",
                                                       "Flux-weighted"};
             p.MatlabPlot("MHFEM_" + to_string(i + 1) + ".h5", "particle.m", mesh, fem, L);

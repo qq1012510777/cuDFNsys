@@ -30,147 +30,200 @@ cuDFNsys::RemoveDeadEndFrac<T>::RemoveDeadEndFrac(std::vector<size_t> &One_clust
                                                   std::vector<pair<int, int>> &Intersection_pair,
                                                   const size_t &dir,
                                                   thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
-                                                  std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<T>, cuDFNsys::Vector3<T>>> Intersection_map)
+                                                  std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<T>, cuDFNsys::Vector3<T>>> Intersection_map,
+                                                  bool IfRemoveDeadEnds)
 {
-    size_t inlet_id = dir * 2, outlet_id = dir * 2 + 1;
-
-    size_t frac_max = *std::max_element(One_cluster.begin(), One_cluster.end());
-
-    Eigen::SparseMatrix<double> adjacent_matrix(frac_max + 3, frac_max + 3);
-    adjacent_matrix.reserve(VectorXi::Constant(frac_max + 3, 5));
-
-    for (size_t i = 0; i < One_cluster.size(); ++i)
+    if (IfRemoveDeadEnds)
     {
-        size_t FracTag = One_cluster[i];
+        size_t inlet_id = dir * 2, outlet_id = dir * 2 + 1;
 
-        if (Fracs[FracTag].ConnectModelSurf[inlet_id])
+        size_t frac_max = *std::max_element(One_cluster.begin(), One_cluster.end());
+
+        Eigen::SparseMatrix<double> adjacent_matrix(frac_max + 3, frac_max + 3);
+        adjacent_matrix.reserve(VectorXi::Constant(frac_max + 3, 5));
+
+        for (size_t i = 0; i < One_cluster.size(); ++i)
         {
-            adjacent_matrix.insert(FracTag, frac_max + 1) = 2;
-            adjacent_matrix.insert(frac_max + 1, FracTag) = 2; // the second-last
-        }
+            size_t FracTag = One_cluster[i];
 
-        if (Fracs[FracTag].ConnectModelSurf[outlet_id])
-        {
-            adjacent_matrix.insert(FracTag, frac_max + 2) = 2;
-            adjacent_matrix.insert(frac_max + 2, FracTag) = 2; // the last one
-        }
-    }
-
-    std::sort(One_cluster.begin(), One_cluster.end(), std::greater<size_t>());
-
-    for (size_t i = 0; i < One_cluster.size() - 1; ++i)
-    {
-        size_t FracTag_1 = One_cluster[i];
-
-        for (size_t j = i + 1; j < One_cluster.size(); ++j)
-        {
-            size_t FracTag_2 = One_cluster[j];
-
-            //-------
-
-            auto ity = Intersection_map.find(std::make_pair(FracTag_1, FracTag_2));
-
-            if (ity != Intersection_map.end())
+            if (Fracs[FracTag].ConnectModelSurf[inlet_id])
             {
-                adjacent_matrix.insert(FracTag_2, FracTag_1) = 2;
-                adjacent_matrix.insert(FracTag_1, FracTag_2) = 2;
+                adjacent_matrix.insert(FracTag, frac_max + 1) = 2;
+                adjacent_matrix.insert(frac_max + 1, FracTag) = 2; // the second-last
+            }
+
+            if (Fracs[FracTag].ConnectModelSurf[outlet_id])
+            {
+                adjacent_matrix.insert(FracTag, frac_max + 2) = 2;
+                adjacent_matrix.insert(frac_max + 2, FracTag) = 2; // the last one
             }
         }
-    }
 
-    adjacent_matrix.makeCompressed();
-    bool tees = true;
+        std::sort(One_cluster.begin(), One_cluster.end(), std::greater<size_t>());
 
-    vector<bool> if_deleted(frac_max + 1, false);
+        for (size_t i = 0; i < One_cluster.size() - 1; ++i)
+        {
+            size_t FracTag_1 = One_cluster[i];
 
-    //int Non_zeros = adjacent_matrix.nonZeros();
+            for (size_t j = i + 1; j < One_cluster.size(); ++j)
+            {
+                size_t FracTag_2 = One_cluster[j];
 
-    while (tees == true)
-    {
+                //-------
+
+                auto ity = Intersection_map.find(std::make_pair(FracTag_1, FracTag_2));
+
+                if (ity != Intersection_map.end())
+                {
+                    adjacent_matrix.insert(FracTag_2, FracTag_1) = 2;
+                    adjacent_matrix.insert(FracTag_1, FracTag_2) = 2;
+                }
+            }
+        }
+
+        adjacent_matrix.makeCompressed();
+        bool tees = true;
+
+        vector<bool> if_deleted(frac_max + 1, false);
+
+        //int Non_zeros = adjacent_matrix.nonZeros();
+
+        while (tees == true)
+        {
+            for (size_t i = 0; i <= frac_max; ++i)
+            {
+                SparseVector<double> sub_mat = adjacent_matrix.innerVector(i);
+
+                if (sub_mat.nonZeros() == 1 && if_deleted[i] == false) // only connect to one frac
+                {
+                    //cout << "found i = " << i << endl;
+                    std::vector<size_t>::iterator itr = std::find(One_cluster.begin(), One_cluster.end(), i);
+                    //cout << "itr: " << *itr << endl;
+                    size_t local_index = std::distance(One_cluster.begin(), itr);
+
+                    //cout << "local_index: " << local_index << "; one_cluster size: " << One_cluster.size() << endl;
+
+                    One_cluster.erase(One_cluster.begin() + local_index);
+                    //cout << "remove frac: " << i << endl;
+
+                    if_deleted[i] = true;
+
+                    adjacent_matrix.row(i) *= 0;
+                    adjacent_matrix.col(i) *= 0;
+
+                    adjacent_matrix.prune(0.01);
+
+                    //cout << "Non_zeros 1: " << Non_zeros << ", Non_zeros 2: " << adjacent_matrix.nonZeros() << endl;
+                    //Non_zeros = adjacent_matrix.nonZeros();
+                    break;
+                }
+
+                if (i == frac_max)
+                    tees = false;
+            }
+        }
+
+        int DSIZE = One_cluster.size();
+
+        Intersection_pair.reserve(DSIZE * floor((DSIZE - 1) / 2) + (DSIZE - 1) % 2 * DSIZE * 0.5);
+
         for (size_t i = 0; i <= frac_max; ++i)
         {
             SparseVector<double> sub_mat = adjacent_matrix.innerVector(i);
+            if (sub_mat.nonZeros() > 0)
+                for (SparseVector<double>::InnerIterator it(sub_mat); it; ++it)
+                    if (it.row() < i)
+                        Intersection_pair.push_back(std::make_pair(i, it.row()));
+                    else if (it.row() >= frac_max + 1)
+                        break;
+        }
 
-            if (sub_mat.nonZeros() == 1 && if_deleted[i] == false) // only connect to one frac
-            {
-                //cout << "found i = " << i << endl;
-                std::vector<size_t>::iterator itr = std::find(One_cluster.begin(), One_cluster.end(), i);
-                //cout << "itr: " << *itr << endl;
-                size_t local_index = std::distance(One_cluster.begin(), itr);
+        Intersection_pair.shrink_to_fit();
 
-                //cout << "local_index: " << local_index << "; one_cluster size: " << One_cluster.size() << endl;
+        //  delete deadend fractures in host_vector of cuDFNsys::ractures
+        //  thrust::host_vector<cuDFNsys::Fracture> &Fracs
+        std::map<int, int> Map_ID1_to_ID2;
+        thrust::host_vector<cuDFNsys::Fracture<T>> FracsII(DSIZE);
+        for (size_t i = 0; i < DSIZE; ++i)
+        {
+            FracsII[i] = Fracs[One_cluster[i]];
+            Map_ID1_to_ID2.insert(std::make_pair(One_cluster[i], i));
+        }
+        Fracs.clear();
+        Fracs.resize(DSIZE);
+        Fracs = FracsII;
+        Fracs.shrink_to_fit();
+        One_cluster.shrink_to_fit();
 
-                One_cluster.erase(One_cluster.begin() + local_index);
-                //cout << "remove frac: " << i << endl;
+        // std::vector<size_t> &One_cluster,
+        // std::vector<pair<int, int>> &Intersection_pair
 
-                if_deleted[i] = true;
+        for (size_t i = 0; i < One_cluster.size(); ++i)
+            One_cluster[i] = Map_ID1_to_ID2[One_cluster[i]];
 
-                adjacent_matrix.row(i) *= 0;
-                adjacent_matrix.col(i) *= 0;
-
-                adjacent_matrix.prune(0.01);
-
-                //cout << "Non_zeros 1: " << Non_zeros << ", Non_zeros 2: " << adjacent_matrix.nonZeros() << endl;
-                //Non_zeros = adjacent_matrix.nonZeros();
-                break;
-            }
-
-            if (i == frac_max)
-                tees = false;
+        for (size_t i = 0; i < Intersection_pair.size(); ++i)
+        {
+            Intersection_pair[i].first = Map_ID1_to_ID2[Intersection_pair[i].first];
+            Intersection_pair[i].second = Map_ID1_to_ID2[Intersection_pair[i].second];
         }
     }
-
-    int DSIZE = One_cluster.size();
-
-    Intersection_pair.reserve(DSIZE * floor((DSIZE - 1) / 2) + (DSIZE - 1) % 2 * DSIZE * 0.5);
-
-    for (size_t i = 0; i <= frac_max; ++i)
+    else
     {
-        SparseVector<double> sub_mat = adjacent_matrix.innerVector(i);
-        if (sub_mat.nonZeros() > 0)
-            for (SparseVector<double>::InnerIterator it(sub_mat); it; ++it)
-                if (it.row() < i)
-                    Intersection_pair.push_back(std::make_pair(i, it.row()));
-                else if (it.row() >= frac_max + 1)
-                    break;
-    }
+        std::map<int, int> Map_ID1_to_ID2;
+        for (int i = 0; i < One_cluster.size(); ++i)
+            Map_ID1_to_ID2.insert(std::make_pair(One_cluster[i], i));
 
-    Intersection_pair.shrink_to_fit();
+        thrust::host_vector<cuDFNsys::Fracture<T>> FracsII(One_cluster.size());
 
-    //  delete deadend fractures in host_vector of cuDFNsys::ractures
-    //  thrust::host_vector<cuDFNsys::Fracture> &Fracs
-    std::map<int, int> Map_ID1_to_ID2;
-    thrust::host_vector<cuDFNsys::Fracture<T>> FracsII(DSIZE);
-    for (size_t i = 0; i < DSIZE; ++i)
-    {
-        FracsII[i] = Fracs[One_cluster[i]];
-        Map_ID1_to_ID2.insert(std::make_pair(One_cluster[i], i));
-    }
-    Fracs.clear();
-    Fracs.resize(DSIZE);
-    Fracs = FracsII;
-    Fracs.shrink_to_fit();
-    One_cluster.shrink_to_fit();
+        for (int i = 0; i < One_cluster.size(); ++i)
+            FracsII[i] = Fracs[One_cluster[i]];
 
-    // std::vector<size_t> &One_cluster,
-    // std::vector<pair<int, int>> &Intersection_pair
+        Fracs = FracsII;
+        Fracs.shrink_to_fit();
 
-    for (size_t i = 0; i < One_cluster.size(); ++i)
-        One_cluster[i] = Map_ID1_to_ID2[One_cluster[i]];
+        int DSIZE = One_cluster.size();
+        
+        std::sort(One_cluster.begin(), One_cluster.end(), std::greater<size_t>());
 
-    for (size_t i = 0; i < Intersection_pair.size(); ++i)
-    {
-        Intersection_pair[i].first = Map_ID1_to_ID2[Intersection_pair[i].first];
-        Intersection_pair[i].second = Map_ID1_to_ID2[Intersection_pair[i].second];
+        Intersection_pair.reserve(DSIZE * floor((DSIZE - 1) / 2) + (DSIZE - 1) % 2 * DSIZE * 0.5);
+        for (size_t i = 0; i < One_cluster.size() - 1; ++i)
+        {
+            size_t FracTag_1 = One_cluster[i];
+
+            for (size_t j = i + 1; j < One_cluster.size(); ++j)
+            {
+                size_t FracTag_2 = One_cluster[j];
+
+                //-------
+
+                auto ity = Intersection_map.find(std::make_pair(FracTag_1, FracTag_2));
+
+                if (ity != Intersection_map.end())
+                    Intersection_pair.push_back(std::make_pair(int(FracTag_1), int(FracTag_2)));
+            }
+        }
+        Intersection_pair.shrink_to_fit();
+
+        for (int i = 0; i < One_cluster.size(); ++i)
+            One_cluster[i] = Map_ID1_to_ID2[One_cluster[i]];
+        One_cluster.shrink_to_fit();
+
+        std::sort(One_cluster.begin(), One_cluster.end(), std::greater<size_t>());
+
+        for (size_t i = 0; i < Intersection_pair.size(); ++i)
+        {
+            Intersection_pair[i].first = Map_ID1_to_ID2[Intersection_pair[i].first];
+            Intersection_pair[i].second = Map_ID1_to_ID2[Intersection_pair[i].second];
+        }
     }
 }; // RemoveDeadEndFrac
 template cuDFNsys::RemoveDeadEndFrac<double>::RemoveDeadEndFrac(std::vector<size_t> &One_cluster,
                                                                 std::vector<pair<int, int>> &Intersection_pair,
                                                                 const size_t &dir,
                                                                 thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs,
-                                                                std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<double>, cuDFNsys::Vector3<double>>> Intersection_map);
+                                                                std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<double>, cuDFNsys::Vector3<double>>> Intersection_map, bool IfRemoveDeadEnds);
 template cuDFNsys::RemoveDeadEndFrac<float>::RemoveDeadEndFrac(std::vector<size_t> &One_cluster,
                                                                std::vector<pair<int, int>> &Intersection_pair,
                                                                const size_t &dir,
                                                                thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs,
-                                                               std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<float>, cuDFNsys::Vector3<float>>> Intersection_map);
+                                                               std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<float>, cuDFNsys::Vector3<float>>> Intersection_map, bool IfRemoveDeadEnds);

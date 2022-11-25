@@ -134,8 +134,18 @@ int main(int argc, char *argv[])
             lkew.OutputFractures("FracturesII.h5", Frac_verts_host, L);
 
             cuDFNsys::Mesh<_DataType_> mesh;
-
-            lk.InputMesh("mesh.h5", mesh, &Fracs_percol);
+            try
+            {
+                lk.InputMesh("mesh.h5", mesh, &Fracs_percol);
+            }
+            catch (...)
+            {
+                cout << "mesh ing ...\n";
+                cuDFNsys::Mesh<_DataType_> mesh2{Frac_verts_host, IntersectionPair_percol,
+                                                 &Fracs_percol, 2, 3, perco_dir, L};
+                lkew.OutputMesh("mesh.h5", mesh2, Fracs_percol);
+                lk.InputMesh("mesh.h5", mesh, &Fracs_percol);
+            }
 
             int i = 0;
             mesh.MatlabPlot("DFN_mesh_" + to_string(i + 1) + ".h5",
@@ -165,6 +175,7 @@ int main(int argc, char *argv[])
                            "N",
                            Frac_verts_host, mesh, L, true, "MHFEM_" + to_string(i + 1));
             //---------------
+            return 0;
             cout << "Particle transport ing ...\n";
 
             cuDFNsys::OutputObjectData<_DataType_> lk;

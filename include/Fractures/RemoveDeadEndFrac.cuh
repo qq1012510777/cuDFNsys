@@ -47,6 +47,7 @@ public:
                       std::vector<pair<int, int>> &Intersection_pair,
                       const size_t &dir,
                       thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
-                      std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<T>, cuDFNsys::Vector3<T>>> Intersection_map);
+                      std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<T>, cuDFNsys::Vector3<T>>> Intersection_map,
+                      bool IfRemoveDeadEnds = true);
 };
 }; // namespace cuDFNsys
