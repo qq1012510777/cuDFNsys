@@ -4,6 +4,8 @@ authors:
   - family-names: Yin
     given-names: Tingchang
     orcid: https://orcid.org/0000-0002-3079-7976
+  - family-names: Galindo-Torres
+    given-names: Sergio Andres
 title: "cuDFNsys"
 version: 0.0.0
 doi: 
