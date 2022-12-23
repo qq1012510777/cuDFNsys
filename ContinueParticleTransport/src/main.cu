@@ -123,11 +123,13 @@ int main(int argc, char *argv[])
                                                         Fracs_percol};
             std::vector<pair<int, int>> IntersectionPair_percol;
 
+            bool ifRemoveDeadends = (atoi(argv[5]) == 0 ? false : true);
+
             cuDFNsys::RemoveDeadEndFrac<_DataType_> RDEF{Fracs_percol,
                                                          IntersectionPair_percol,
                                                          (size_t)perco_dir,
                                                          Frac_verts_host,
-                                                         Intersection_map};
+                                                         Intersection_map, ifRemoveDeadends};
             cout << "meshing ..." << endl;
 
             cuDFNsys::OutputObjectData<_DataType_> lkew;
@@ -142,22 +144,22 @@ int main(int argc, char *argv[])
             {
                 cout << "mesh ing ...\n";
                 cuDFNsys::Mesh<_DataType_> mesh2{Frac_verts_host, IntersectionPair_percol,
-                                                 &Fracs_percol, 2, 3, perco_dir, L};
+                                                 &Fracs_percol, 1, 10, perco_dir, L};
                 lkew.OutputMesh("mesh.h5", mesh2, Fracs_percol);
                 lk.InputMesh("mesh.h5", mesh, &Fracs_percol);
             }
 
             int i = 0;
             mesh.MatlabPlot("DFN_mesh_" + to_string(i + 1) + ".h5",
-                            "N",
+                            "DFN_mesh_" + to_string(i + 1) + ".m",
                             Frac_verts_host, L, true, true, true, "DFN_mesh_" + to_string(i + 1));
 
             cout << "MHFEM ing ..." << endl;
 
             _DataType_ P_in = 100, P_out = 20;
 
-            if (argv[5] != NULL && argv[6] != NULL)
-                P_in = atof(argv[5]), P_out = atof(argv[6]);
+            if (argv[6] != NULL && argv[7] != NULL)
+                P_in = atof(argv[6]), P_out = atof(argv[7]);
 
             cuDFNsys::MHFEM<_DataType_> fem{mesh, Frac_verts_host, P_in, P_out, perco_dir, L};
             cout << "Fluxes: " << fem.QIn << ", ";
@@ -172,10 +174,10 @@ int main(int argc, char *argv[])
             cout << ielaps_1 << " sec\n";
             //---------------------
             fem.MatlabPlot("MHFEM_" + to_string(i + 1) + ".h5",
-                           "N",
+                           "MHFEM_" + to_string(i + 1) + ".m",
                            Frac_verts_host, mesh, L, true, "MHFEM_" + to_string(i + 1));
             //---------------
-            return 0;
+            // return 0;
             cout << "Particle transport ing ...\n";
 
             cuDFNsys::OutputObjectData<_DataType_> lk;

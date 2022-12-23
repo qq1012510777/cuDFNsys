@@ -169,21 +169,25 @@ cuDFNsys::RemoveDeadEndFrac<T>::RemoveDeadEndFrac(std::vector<size_t> &One_clust
     }
     else
     {
-        std::map<int, int> Map_ID1_to_ID2;
-        for (int i = 0; i < One_cluster.size(); ++i)
-            Map_ID1_to_ID2.insert(std::make_pair(One_cluster[i], i));
-
+        std::sort(One_cluster.begin(), One_cluster.end(), std::greater<size_t>());
         thrust::host_vector<cuDFNsys::Fracture<T>> FracsII(One_cluster.size());
+        std::map<int, int> Map_ID1_to_ID2;
 
         for (int i = 0; i < One_cluster.size(); ++i)
+        {
+            Map_ID1_to_ID2.insert(std::make_pair(One_cluster[i], i));
             FracsII[i] = Fracs[One_cluster[i]];
+        }
 
+        Fracs.clear();
+        Fracs.resize(FracsII.size());
         Fracs = FracsII;
         Fracs.shrink_to_fit();
 
+        FracsII.clear();
+        FracsII.shrink_to_fit();
+
         int DSIZE = One_cluster.size();
-        
-        std::sort(One_cluster.begin(), One_cluster.end(), std::greater<size_t>());
 
         Intersection_pair.reserve(DSIZE * floor((DSIZE - 1) / 2) + (DSIZE - 1) % 2 * DSIZE * 0.5);
         for (size_t i = 0; i < One_cluster.size() - 1; ++i)
@@ -199,16 +203,23 @@ cuDFNsys::RemoveDeadEndFrac<T>::RemoveDeadEndFrac(std::vector<size_t> &One_clust
                 auto ity = Intersection_map.find(std::make_pair(FracTag_1, FracTag_2));
 
                 if (ity != Intersection_map.end())
+                {
                     Intersection_pair.push_back(std::make_pair(int(FracTag_1), int(FracTag_2)));
+                    // cout << FracTag_1 << ", " << FracTag_2 << endl;
+                }
             }
         }
         Intersection_pair.shrink_to_fit();
 
         for (int i = 0; i < One_cluster.size(); ++i)
+        {
             One_cluster[i] = Map_ID1_to_ID2[One_cluster[i]];
+            //cout << One_cluster[i] << ", ";
+        }
+        //cout << endl;
         One_cluster.shrink_to_fit();
 
-        std::sort(One_cluster.begin(), One_cluster.end(), std::greater<size_t>());
+        // std::sort(One_cluster.begin(), One_cluster.end(), std::greater<size_t>());
 
         for (size_t i = 0; i < Intersection_pair.size(); ++i)
         {

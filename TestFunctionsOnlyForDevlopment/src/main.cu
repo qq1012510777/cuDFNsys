@@ -88,7 +88,9 @@ int main(int argc, char *argv[])
         cuDFNsys::Fractures<_DataType_><<<DSIZE / 256 + 1, 256 /*  1, 2*/>>>(Frac_verts_device_ptr,
                                                                              (unsigned long)t,
                                                                              DSIZE, L,
-                                                                             0, ParaSizeDistri, 0, 0.95 /*0.01/*0.1/*0.5*/);
+                                                                             0, ParaSizeDistri, 0,
+                                                                             (_DataType_)atof(argv[9]),
+                                                                             (_DataType_)atof(argv[10]));
         cudaDeviceSynchronize();
 
         Frac_verts_host = Frac_verts_device;
@@ -151,7 +153,7 @@ int main(int argc, char *argv[])
             std::vector<pair<int, int>> IntersectionPair_percol;
             int NUMprior = Fracs_percol.size();
 
-            bool ifRemoveDeadEnds = (atoi(argv[13]) == 0 ? false : true);
+            bool ifRemoveDeadEnds = (atoi(argv[11]) == 0 ? false : true);
 
             cuDFNsys::RemoveDeadEndFrac<_DataType_> RDEF{Fracs_percol,
                                                          IntersectionPair_percol,
@@ -169,7 +171,7 @@ int main(int argc, char *argv[])
             lk.OutputMesh("mesh.h5", mesh, Fracs_percol);
             int i = 0;
             mesh.MatlabPlot("DFN_mesh_" + to_string(i + 1) + ".h5",
-                            "N",
+                            "DFN_mesh_" + to_string(i + 1) + ".m",
                             Frac_verts_host, L, true, true, true, "DFN_mesh_" + to_string(i + 1));
 
             cout << "MHFEM ing ..." << endl;
@@ -191,13 +193,13 @@ int main(int argc, char *argv[])
                            "MHFEM_" + to_string(i + 1) + ".m",
                            Frac_verts_host, mesh, L, true, "MHFEM_" + to_string(i + 1));
             //---------------
-            return 0;
-            cout << "Particle transport ing ...\n";
 
-            cuDFNsys::ParticleTransport<_DataType_> p{atoi(argv[9]),              // number of particle
-                                                      atoi(argv[10]),             // number of time steps
-                                                      (_DataType_)atof(argv[11]), // delta T
-                                                      (_DataType_)atof(argv[12]), // molecular diffusion
+            cout << "Particle transport ing ...\n";
+            return 0;
+            cuDFNsys::ParticleTransport<_DataType_> p{atoi(argv[12]),             // number of particle
+                                                      atoi(argv[13]),             // number of time steps
+                                                      (_DataType_)atof(argv[14]), // delta T
+                                                      (_DataType_)atof(argv[15]), // molecular diffusion
                                                       Frac_verts_host, mesh, fem, (uint)perco_dir, -0.5f * L,
                                                       "Particle_tracking", "Flux-weighted"};
             p.MatlabPlot("MHFEM_" + to_string(i + 1) + ".h5", "particle.m", mesh, fem, L);

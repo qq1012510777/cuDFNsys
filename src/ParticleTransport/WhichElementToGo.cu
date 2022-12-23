@@ -119,19 +119,18 @@ __host__ __device__ void cuDFNsys::WhichElementToGo(uint currentEleID,
     //printf("\n");
 
     // 2022-10-27 added the condition
-    T velocity_error = (T)0.05;
-    T aty = 0;
-    for (uint i = 0; i < NumSharedEle - 1; ++i)
-    {
-        T avs = veloc_vec[i] / TotalVeloc;
-
-        if (avs < velocity_error)
-        {
-            aty += veloc_vec[i];
-            veloc_vec[i] = 0;
-        }
-    }
-    TotalVeloc -= aty;
+    /// T velocity_error = 0.0;//(T)0.05;
+    /// T aty = 0;
+    /// for (uint i = 0; i < NumSharedEle - 1; ++i)
+    /// {
+    ///     T avs = veloc_vec[i] / TotalVeloc;
+    ///     if (avs < velocity_error)
+    ///     {
+    ///         aty += veloc_vec[i];
+    ///         veloc_vec[i] = 0;
+    ///     }
+    /// }
+    /// TotalVeloc -= aty;
 
     for (uint i = 0; i < NumSharedEle - 1; ++i)
     {
