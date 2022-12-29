@@ -39,10 +39,10 @@ cmake_force:
 SHELL = /bin/sh
 
 # The CMake executable.
-CMAKE_COMMAND = /usr/bin/cmake
+CMAKE_COMMAND = /usr/local/bin/cmake
 
 # The command to remove a file.
-RM = /usr/bin/cmake -E remove -f
+RM = /usr/local/bin/cmake -E remove -f
 
 # Escaping for special characters.
 EQUALS = =
@@ -59,7 +59,7 @@ CMAKE_BINARY_DIR = /home/tingchangyin/cuDFNsys/BenchmarkCases/build
 # Special rule for the target rebuild_cache
 rebuild_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	/usr/bin/cmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	/usr/local/bin/cmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : rebuild_cache
 
 # Special rule for the target rebuild_cache
@@ -70,7 +70,7 @@ rebuild_cache/fast: rebuild_cache
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
-	/usr/bin/ccmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	/usr/local/bin/ccmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -1284,6 +1284,303 @@ home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTrian
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.s
 .PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.s
 
+home/tingchangyin/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.o: home/tingchangyin/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.o
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.o
+
+# target to build an object file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.o
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.o
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.i: home/tingchangyin/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.i
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.i
+
+# target to preprocess a source file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.i
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.i
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.s: home/tingchangyin/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.s
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.s
+
+# target to generate assembly for a file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.s
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.s
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.o: home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.o
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.o
+
+# target to build an object file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.o
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.o
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.i: home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.i
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.i
+
+# target to preprocess a source file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.i
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.i
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.s: home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.s
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.s
+
+# target to generate assembly for a file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.s
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.s
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.o: home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.o
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.o
+
+# target to build an object file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.o
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.o
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.i: home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.i
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.i
+
+# target to preprocess a source file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.i
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.i
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.s: home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.s
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.s
+
+# target to generate assembly for a file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.s
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.s
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.o: home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.o
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.o
+
+# target to build an object file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.o
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.o
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.i: home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.i
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.i
+
+# target to preprocess a source file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.i
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.i
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.s: home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.s
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.s
+
+# target to generate assembly for a file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.s
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.s
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.o: home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.o
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.o
+
+# target to build an object file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.o
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.o
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.i: home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.i
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.i
+
+# target to preprocess a source file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.i
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.i
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.s: home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.s
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.s
+
+# target to generate assembly for a file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.s
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.s
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.o: home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.o
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.o
+
+# target to build an object file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.o
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.o
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.i: home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.i
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.i
+
+# target to preprocess a source file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.i
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.i
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.s: home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.s
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.s
+
+# target to generate assembly for a file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.s
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.s
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleReflection.o: home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.o
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleReflection.o
+
+# target to build an object file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.o
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.o
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleReflection.i: home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.i
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleReflection.i
+
+# target to preprocess a source file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.i
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.i
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleReflection.s: home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.s
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleReflection.s
+
+# target to generate assembly for a file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.s
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.s
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleTransport.o: home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.o
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleTransport.o
+
+# target to build an object file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.o
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.o
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleTransport.i: home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.i
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleTransport.i
+
+# target to preprocess a source file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.i
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.i
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleTransport.s: home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.s
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleTransport.s
+
+# target to generate assembly for a file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.s
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.s
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.o: home/tingchangyin/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.o
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.o
+
+# target to build an object file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.o
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.o
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.i: home/tingchangyin/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.i
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.i
+
+# target to preprocess a source file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.i
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.i
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.s: home/tingchangyin/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.s
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.s
+
+# target to generate assembly for a file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.s
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.s
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.o: home/tingchangyin/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.o
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.o
+
+# target to build an object file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.o
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.o
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.i: home/tingchangyin/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.i
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.i
+
+# target to preprocess a source file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.i
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.i
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.s: home/tingchangyin/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.s
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.s
+
+# target to generate assembly for a file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.s
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.s
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/WhichElementToGo.o: home/tingchangyin/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.o
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/WhichElementToGo.o
+
+# target to build an object file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.o
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.o
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/WhichElementToGo.i: home/tingchangyin/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.i
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/WhichElementToGo.i
+
+# target to preprocess a source file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.i
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.i
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/WhichElementToGo.s: home/tingchangyin/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.s
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/WhichElementToGo.s
+
+# target to generate assembly for a file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.s
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.s
+
 home/tingchangyin/cuDFNsys/src/Quaternion/Quaternion.o: home/tingchangyin/cuDFNsys/src/Quaternion/Quaternion.cu.o
 
 .PHONY : home/tingchangyin/cuDFNsys/src/Quaternion/Quaternion.o
@@ -1557,6 +1854,39 @@ help:
 	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.o"
 	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.i"
 	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.s"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.o"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.i"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.s"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.o"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.i"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.s"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.o"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.i"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.s"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.o"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.i"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.s"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.o"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.i"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.s"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.o"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.i"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.s"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleReflection.o"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleReflection.i"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleReflection.s"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleTransport.o"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleTransport.i"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleTransport.s"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.o"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.i"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.s"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.o"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.i"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.s"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/WhichElementToGo.o"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/WhichElementToGo.i"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/WhichElementToGo.s"
 	@echo "... home/tingchangyin/cuDFNsys/src/Quaternion/Quaternion.o"
 	@echo "... home/tingchangyin/cuDFNsys/src/Quaternion/Quaternion.i"
 	@echo "... home/tingchangyin/cuDFNsys/src/Quaternion/Quaternion.s"

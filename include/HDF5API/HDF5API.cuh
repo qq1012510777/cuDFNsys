@@ -71,8 +71,8 @@ public:
     // read dataset in a h5; the function returns a vector that is column major
     template <class T>
     vector<T> ReadDataset(const string &filename,
-                               const string &groupname,
-                               const string &datasetname);
+                          const string &groupname,
+                          const string &datasetname);
     //check if a h5 exits?
     bool IfH5FileExist(const string &filename);
     // add string data

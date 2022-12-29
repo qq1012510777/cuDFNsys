@@ -137,5 +137,6 @@ private:
                             const string &Injection_mode);
 
     void IdentifyNeighborElements(cuDFNsys::Mesh<T> mesh);
+
 };
 }; // namespace cuDFNsys

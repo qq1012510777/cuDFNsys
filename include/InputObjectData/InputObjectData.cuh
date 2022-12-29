@@ -31,6 +31,7 @@
 #include "../GlobalDef/GlobalDef.cuh"
 #include "../HDF5API/HDF5API.cuh"
 #include "../Mesh/Mesh.cuh"
+#include "../MHFEM/MHFEM.cuh"
 
 namespace cuDFNsys
 {
@@ -51,5 +52,9 @@ public:
     void InputMesh(const string &filename,
                    cuDFNsys::Mesh<T> &mesh,
                    std::vector<size_t> *Fracs_percol);
+
+    // input mhfem data
+    void InputMHFEM(const string &filename,
+                    cuDFNsys::MHFEM<T> &MHFEM);
 };
 }; // namespace cuDFNsys

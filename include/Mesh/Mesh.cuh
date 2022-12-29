@@ -40,8 +40,10 @@
 #include "IdentifyEleFrac.cuh"
 #include "UMapEdge.cuh"
 #include "gmsh.h"
+#include <algorithm>
 #include <cstring>
 #include <fstream>
+#include <set>
 #include <sstream>
 #include <unordered_map>
 
@@ -114,14 +116,14 @@ private:
     // get coordinates of mesh
     void GetCoordinates();
     // get elements of mesh
-    void GetElements(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs_s);
+    void GetElements(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs_s, const std::vector<std::vector<std::pair<int, int>>> &outmap);
     // numbering edges of elements
     void NumberingEdges(const T L);
 
 private:
     // get elements in each 3D surface entity
     void GetEntitiesElements(thrust::host_vector<thrust::host_vector<uint3>> &elementEntities_2D,
-                             thrust::host_vector<uint> &Largest_ele);
+                             thrust::host_vector<uint> &Largest_ele, const std::vector<std::vector<std::pair<int, int>>> &outmap);
     // generate sparse matrix to check edge attributes
     UMapEdge SparseMatEdgeAttri(uint i, bool if_change_ori);
     // get element ID

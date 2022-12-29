@@ -96,6 +96,10 @@ cuDFNsys::Mesh<T>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
 
         istart = cuDFNsys::CPUSecond();
 
+        // gmsh::fltk::run();
+
+        std::vector<std::vector<std::pair<int, int>>> outmap;
+
         if (NUM_frac > 1)
         {
             double istart1 = cuDFNsys::CPUSecond();
@@ -113,10 +117,39 @@ cuDFNsys::Mesh<T>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
 
             double istart2 = cuDFNsys::CPUSecond();
             std::vector<std::pair<int, int>> out;
-            std::vector<std::vector<std::pair<int, int>>> outmap;
             gmsh::model::occ::fragment(object_entity, tool_entity, out, outmap);
             gmsh::model::occ::synchronize();
             cout << "\t\tfragmented entities, running time: " << cuDFNsys::CPUSecond() - istart2 << " sec\n";
+
+            // cout << "outDimTags\n";
+            // for (size_t i = 0; i < out.size(); ++i)
+            //     cout << out[i].first << ",  " << out[i].second << endl;
+            // cout << "\n NUM_frac, size = " << NUM_frac << "\n";
+            // cout << "\noutDimTagsMap, size = " << outmap.size() << "\n";
+            // for (size_t i = 0; i < outmap.size(); ++i)
+            // {
+            //     for (size_t j = 0; j < outmap[i].size(); ++j)
+            //         cout << outmap[i][j].first << ",  " << outmap[i][j].second << "; ";
+            //     cout << endl;
+            // }
+
+            std::set<gmsh::vectorpair> set_map;
+            pair<std::set<gmsh::vectorpair>::iterator, bool> kkit;
+
+            for (size_t i = 0; i < outmap.size(); ++i)
+                kkit = set_map.insert(outmap[i]);
+            outmap.clear();
+            outmap.assign(set_map.begin(), set_map.end());
+
+            // cout << "\nafter erase, outDimTagsMap, size = " << outmap.size() << "\n";
+            // for (size_t i = 0; i < outmap.size(); ++i)
+            // {
+            //     for (size_t j = 0; j < outmap[i].size(); ++j)
+            //         cout << outmap[i][j].first << ",  " << outmap[i][j].second << "; ";
+            //     cout << endl;
+            // }
+
+            // gmsh::fltk::run();
         };
 
         istart = cuDFNsys::CPUSecond();
@@ -132,7 +165,7 @@ cuDFNsys::Mesh<T>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
         cout << "\t\tGeting coordinates" << endl;
         this->GetCoordinates();
         cout << "\t\tGeting elements" << endl;
-        this->GetElements(Fracs_ss);
+        this->GetElements(Fracs_ss, outmap);
         //cudaDeviceReset();
         cout << "\t\tNumbering edges\n";
         istart = cuDFNsys::CPUSecond();
@@ -594,12 +627,12 @@ template void cuDFNsys::Mesh<float>::GetCoordinates();
 // DATE:        08/04/2022
 // ====================================================
 template <typename T>
-void cuDFNsys::Mesh<T>::GetElements(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs_s)
+void cuDFNsys::Mesh<T>::GetElements(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs_s, const std::vector<std::vector<std::pair<int, int>>> &outmap)
 {
     thrust::host_vector<thrust::host_vector<uint3>> elementEntities_2D;
     thrust::host_vector<uint> Largest_ele;
 
-    this->GetEntitiesElements(elementEntities_2D, Largest_ele);
+    this->GetEntitiesElements(elementEntities_2D, Largest_ele, outmap);
     cout << "\t\t\tGot entity elements" << endl;
     //cout << 1 << endl;
 
@@ -721,8 +754,8 @@ void cuDFNsys::Mesh<T>::GetElements(const thrust::host_vector<cuDFNsys::Fracture
     this->Element3D = element_3D_dev;
     this->Coordinate2D = coordinate_2D_dev;
 }; // GetElements
-template void cuDFNsys::Mesh<double>::GetElements(const thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs_s);
-template void cuDFNsys::Mesh<float>::GetElements(const thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs_s);
+template void cuDFNsys::Mesh<double>::GetElements(const thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs_s, const std::vector<std::vector<std::pair<int, int>>> &outmap);
+template void cuDFNsys::Mesh<float>::GetElements(const thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs_s, const std::vector<std::vector<std::pair<int, int>>> &outmap);
 
 // ====================================================
 // NAME:        NumberingEdges
@@ -878,16 +911,14 @@ template void cuDFNsys::Mesh<float>::NumberingEdges(const float L);
 // ====================================================
 template <typename T>
 void cuDFNsys::Mesh<T>::GetEntitiesElements(thrust::host_vector<thrust::host_vector<uint3>> &elementEntities_2D,
-                                            thrust::host_vector<uint> &Largest_ele)
+                                            thrust::host_vector<uint> &Largest_ele, const std::vector<std::vector<std::pair<int, int>>> &outmap)
 {
+    /*
     gmsh::vectorpair dimTags;
     gmsh::model::occ::getEntities(dimTags, 2);
-
     elementEntities_2D.resize(dimTags.size());
     Largest_ele.resize(dimTags.size());
-
     vector<size_t> Zero_element_entityNO;
-
     for (size_t i = 0; i < dimTags.size(); ++i)
     {
         Largest_ele[i] = 0;
@@ -904,6 +935,62 @@ void cuDFNsys::Mesh<T>::GetEntitiesElements(thrust::host_vector<thrust::host_vec
             int node1 = (size_t)elemNodeTags[0][j];
             int node2 = (size_t)elemNodeTags[0][j + 1];
             int node3 = (size_t)elemNodeTags[0][j + 2];
+
+            bool skinny_if = cuDFNsys::If3DTriangleSkinny<T>(this->Coordinate3D[node1 - 1],
+                                                             this->Coordinate3D[node2 - 1],
+                                                             this->Coordinate3D[node3 - 1],
+                                                             _TOL_If3DTriangleSkinny);
+
+            if (skinny_if == false)
+            {
+                elementEntities_2D[i].push_back(make_uint3(node1, node2, node3));
+                //cout << "YY " << area << "; node " << RowVector3d(node1, node2, node3) << endl;
+
+                T area = cuDFNsys::Triangle3DArea<T>(this->Coordinate3D[node1 - 1],
+                                                     this->Coordinate3D[node2 - 1],
+                                                     this->Coordinate3D[node3 - 1]);
+                if (area > area_ll)
+                {
+                    area_ll = area;
+                    Largest_ele[i] = elementEntities_2D[i].size();
+                }
+            }
+        }
+        elementEntities_2D[i].shrink_to_fit();
+
+        if (elementEntities_2D[i].size() < 1)
+        {
+            Zero_element_entityNO.push_back(i);
+            //string AS = "Error! One entity has zero element!\n";
+            //throw Error_throw_ignore(AS);
+        }
+    };*/
+
+    elementEntities_2D.resize(outmap.size());
+    Largest_ele.resize(outmap.size());
+    vector<size_t> Zero_element_entityNO;
+    for (size_t i = 0; i < outmap.size(); ++i)
+    {
+        Largest_ele[i] = 0;
+        T area_ll = 0;
+
+        std::vector<std::size_t> elemNodeTags;
+        for (size_t j = 0; j < outmap[i].size(); ++j)
+        {
+            std::vector<int> elemTypes;
+            std::vector<std::vector<std::size_t>> elemTags, elemNodeTags_hh;
+            gmsh::model::mesh::getElements(elemTypes, elemTags, elemNodeTags_hh, 2, outmap[i][j].second);
+
+            elemNodeTags.insert(elemNodeTags.end(), elemNodeTags_hh[0].begin(), elemNodeTags_hh[0].end());
+        }
+        size_t NUM_ele = elemNodeTags.size() / 3;
+
+        elementEntities_2D[i].reserve(NUM_ele);
+        for (size_t j = 0; j < NUM_ele * 3; j += 3)
+        {
+            int node1 = (size_t)elemNodeTags[j];
+            int node2 = (size_t)elemNodeTags[j + 1];
+            int node3 = (size_t)elemNodeTags[j + 2];
 
             bool skinny_if = cuDFNsys::If3DTriangleSkinny<T>(this->Coordinate3D[node1 - 1],
                                                              this->Coordinate3D[node2 - 1],
@@ -961,9 +1048,9 @@ void cuDFNsys::Mesh<T>::GetEntitiesElements(thrust::host_vector<thrust::host_vec
     }
 }; // GetEntitiesElements
 template void cuDFNsys::Mesh<double>::GetEntitiesElements(thrust::host_vector<thrust::host_vector<uint3>> &elementEntities_2D,
-                                                          thrust::host_vector<uint> &Largest_ele);
+                                                          thrust::host_vector<uint> &Largest_ele, const std::vector<std::vector<std::pair<int, int>>> &outmap);
 template void cuDFNsys::Mesh<float>::GetEntitiesElements(thrust::host_vector<thrust::host_vector<uint3>> &elementEntities_2D,
-                                                         thrust::host_vector<uint> &Largest_ele);
+                                                         thrust::host_vector<uint> &Largest_ele, const std::vector<std::vector<std::pair<int, int>>> &outmap);
 
 // ====================================================
 // NAME:        SparseMatEdgeAttri

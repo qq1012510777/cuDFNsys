@@ -532,3 +532,78 @@ template void cuDFNsys::InputObjectData<double>::InputMesh(const string &filenam
 template void cuDFNsys::InputObjectData<float>::InputMesh(const string &filename,
                                                           cuDFNsys::Mesh<float> &mesh,
                                                           std::vector<size_t> *Fracs_percol);
+
+// ====================================================
+// NAME:        InputMHFEM
+// DESCRIPTION: InputMHFEM
+// AUTHOR:      Tingchang YIN
+// DATE:        29/12/2022
+// ====================================================
+template <typename T>
+void cuDFNsys::InputObjectData<T>::InputMHFEM(const string &filename,
+                                              cuDFNsys::MHFEM<T> &MHFEM)
+{
+    //
+    try
+    {
+        H5::Exception::dontPrint();
+        H5File file1(filename, H5F_ACC_RDONLY);
+        file1.close();
+    }
+    catch (...)
+    {
+        string AS = "File '" + filename + "' does not exist!\n";
+        throw ExceptionsPause(AS);
+    };
+
+    HDF5API h5g;
+
+    vector<T> value_ = h5g.ReadDataset<T>(filename, "N", "QIn");
+    MHFEM.QIn = value_[0];
+
+    value_ = h5g.ReadDataset<T>(filename, "N", "QIn");
+    MHFEM.QIn = value_[0];
+
+    value_ = h5g.ReadDataset<T>(filename, "N", "QOut");
+    MHFEM.QOut = value_[0];
+
+    value_ = h5g.ReadDataset<T>(filename, "N", "InletLength");
+    MHFEM.InletLength = value_[0];
+
+    value_ = h5g.ReadDataset<T>(filename, "N", "OutletLength");
+    MHFEM.OutletLength = value_[0];
+
+    value_ = h5g.ReadDataset<T>(filename, "N", "QError");
+    MHFEM.QError = value_[0];
+
+    value_ = h5g.ReadDataset<T>(filename, "N", "Permeability");
+    MHFEM.Permeability = value_[0];
+
+    value_ = h5g.ReadDataset<T>(filename, "N", "InletP");
+    MHFEM.InletP = value_[0];
+
+    value_ = h5g.ReadDataset<T>(filename, "N", "OutletP");
+    MHFEM.OutletP = value_[0];
+
+    vector<double> value_2 = h5g.ReadDataset<double>(filename, "N", "TripletTime");
+    MHFEM.TripletTime = value_2[0];
+
+    vector<int> value_3 = h5g.ReadDataset<int>(filename, "N", "Dir");
+    MHFEM.Dir = value_3[0];
+
+    value_2 = h5g.ReadDataset<double>(filename, "N", "PressureInteriorEdge");
+    MHFEM.PressureInteriorEdge = Eigen::Map<Eigen::MatrixXd>(value_2.data(),
+                                                             value_2.size(), 1);
+
+    value_2 = h5g.ReadDataset<double>(filename, "N", "PressureEles");
+    MHFEM.PressureEles = Eigen::Map<Eigen::MatrixXd>(value_2.data(),
+                                                     value_2.size(), 1);
+
+    value_2 = h5g.ReadDataset<double>(filename, "N", "VelocityNormalScalarSepEdges");
+    MHFEM.VelocityNormalScalarSepEdges = Eigen::Map<Eigen::MatrixXd>(value_2.data(),
+                                                                     value_2.size(), 1);
+}; // InputMHFEM
+template void cuDFNsys::InputObjectData<double>::InputMHFEM(const string &filename,
+                                                            cuDFNsys::MHFEM<double> &MHFEM);
+template void cuDFNsys::InputObjectData<float>::InputMHFEM(const string &filename,
+                                                           cuDFNsys::MHFEM<float> &MHFEM);

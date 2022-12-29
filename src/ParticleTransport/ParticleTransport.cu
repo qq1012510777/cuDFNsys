@@ -42,7 +42,40 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(const int &NumOfParticles,
     IfRecordTime = record_time;
     this->Dir = Dir_flow;
 
-    this->IdentifyEdgesSharedEle(mesh);
+    string filename_EdgesSharedEle = "EdgesSharedEle.h5";
+
+    std::ifstream fileer(filename_EdgesSharedEle);
+    bool pwqsc = fileer.good();
+
+    if (!pwqsc)
+        this->IdentifyEdgesSharedEle(mesh);
+    else
+    {
+        cout << "Loading " << filename_EdgesSharedEle << " ...\n";
+        cuDFNsys::HDF5API h5gdd;
+        vector<uint> data_EdgesSharedEle = h5gdd.ReadDataset<uint>(filename_EdgesSharedEle, "N", "data");
+
+        uint NUMoo = 1 + _NumOfSharedEleAtMost * 2;
+
+        uint rows__s = data_EdgesSharedEle.size() / NUMoo;
+
+        this->EdgesSharedEle.resize(rows__s);
+
+        for (uint i = 0; i < rows__s; ++i)
+        {
+            EdgesSharedEle[i].NumSharedEle = data_EdgesSharedEle[i * NUMoo];
+            for (uint j = 0; j < _NumOfSharedEleAtMost; ++j)
+            {
+                EdgesSharedEle[i].EleID[j] = data_EdgesSharedEle[i * NUMoo + j + 1];
+
+                EdgesSharedEle[i].LocalEdgeNO[j] = data_EdgesSharedEle[i * NUMoo + j + 1 + _NumOfSharedEleAtMost];
+            }
+        }
+        // cout << this->EdgesSharedEle[rows__s - 1].NumSharedEle;
+        // cout << ", " << this->EdgesSharedEle[rows__s - 1].EleID[0] << ", " << this->EdgesSharedEle[rows__s - 1].EleID[1];
+        // cout << ", " << this->EdgesSharedEle[rows__s - 1].LocalEdgeNO[0] << ", " << this->EdgesSharedEle[rows__s - 1].LocalEdgeNO[1] << endl;
+        // cout << "Finish loading " << filename_EdgesSharedEle << " ...\n";
+    }
 
     //this->IdentifyNeighborElements(mesh);
 
@@ -114,7 +147,41 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(const int &NumTimeStep,
 
     this->Dir = Dir_flow;
 
-    this->IdentifyEdgesSharedEle(mesh);
+    string filename_EdgesSharedEle = "EdgesSharedEle.h5";
+
+    std::ifstream fileer(filename_EdgesSharedEle);
+    bool pwqsc = fileer.good();
+
+    if (!pwqsc)
+        this->IdentifyEdgesSharedEle(mesh);
+    else
+    {
+        cout << "Loading " << filename_EdgesSharedEle << " ...\n";
+        cuDFNsys::HDF5API h5gdd;
+        vector<uint> data_EdgesSharedEle = h5gdd.ReadDataset<uint>(filename_EdgesSharedEle, "N", "data");
+
+        uint NUMoo = 1 + _NumOfSharedEleAtMost * 2;
+
+        uint rows__s = data_EdgesSharedEle.size() / NUMoo;
+
+        this->EdgesSharedEle.resize(rows__s);
+
+        for (uint i = 0; i < rows__s; ++i)
+        {
+            EdgesSharedEle[i].NumSharedEle = data_EdgesSharedEle[i * NUMoo];
+            for (uint j = 0; j < _NumOfSharedEleAtMost; ++j)
+            {
+                EdgesSharedEle[i].EleID[j] = data_EdgesSharedEle[i * NUMoo + j + 1];
+
+                EdgesSharedEle[i].LocalEdgeNO[j] = data_EdgesSharedEle[i * NUMoo + j + 1 + _NumOfSharedEleAtMost];
+            }
+        }
+        // cout << "Finish loading " << filename_EdgesSharedEle << " ...\n";
+        // cout << this->EdgesSharedEle[rows__s - 1].NumSharedEle;
+        // cout << ", " << this->EdgesSharedEle[rows__s - 1].EleID[0] << ", " << this->EdgesSharedEle[rows__s - 1].EleID[1];
+        // cout << ", " << this->EdgesSharedEle[rows__s - 1].LocalEdgeNO[0] << ", " << this->EdgesSharedEle[rows__s - 1].LocalEdgeNO[1] << endl;
+    }
+
     string matfile = DispersionInfo + ".h5";
     //this->IdentifyNeighborElements(mesh);
 
@@ -157,6 +224,7 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(const int &NumTimeStep,
             h5g.ReadDataset<T>(file_block_last, "N",
                                "ParticleIDAndElementTag_" + cuDFNsys::ToStringWithWidth(ExistingNumsteps, 10));
 
+        cout << "Loading particles' positions at the last step\n";
         for (uint i = 0; i < NumParDyna; i++)
         {
             this->ParticlePlumes[i].Position2D.x = LastStepParticle[i];
@@ -168,6 +236,7 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(const int &NumTimeStep,
             // cout << this->ParticlePlumes[i].ElementID << ", ";
             // cout << this->ParticlePlumes[i].IfReachOutletPlane << endl;
         }
+        // cout << "Finish loading particles' positions at the last step\n";
 
         vector<T> Tem_ps = h5g.ReadDataset<T>(matfile, "N", "Delta_T");
         T delta_T_ = Tem_ps[0];
@@ -1049,6 +1118,32 @@ void cuDFNsys::ParticleTransport<T>::IdentifyEdgesSharedEle(cuDFNsys::Mesh<T> me
         //     }
         // }
     }
+
+    // output a h5 file
+    cuDFNsys::HDF5API h5g;
+    string filename_ = "EdgesSharedEle.h5";
+
+    h5g.NewFile(filename_);
+
+    vector<uint> data_EdgesSharedEle(EdgesSharedEle.size() * (1 + _NumOfSharedEleAtMost + _NumOfSharedEleAtMost));
+
+    uint NUMoo = (1 + _NumOfSharedEleAtMost + _NumOfSharedEleAtMost);
+
+    for (uint i = 0; i < EdgesSharedEle.size(); ++i)
+    {
+        data_EdgesSharedEle[i * NUMoo] = EdgesSharedEle[i].NumSharedEle;
+        for (uint j = 0; j < _NumOfSharedEleAtMost; ++j)
+        {
+            data_EdgesSharedEle[i * NUMoo + j + 1] = EdgesSharedEle[i].EleID[j];
+            data_EdgesSharedEle[i * NUMoo + j + 1 + _NumOfSharedEleAtMost] =
+                EdgesSharedEle[i].LocalEdgeNO[j];
+        }
+    }
+
+    uint2 dim_u = make_uint2(EdgesSharedEle.size(), NUMoo);
+
+    h5g.AddDataset(filename_, "N", "data", data_EdgesSharedEle.data(), dim_u);
+
 }; // IdentifyEdgesSharedEle
 template void cuDFNsys::ParticleTransport<double>::IdentifyEdgesSharedEle(cuDFNsys::Mesh<double> mesh);
 template void cuDFNsys::ParticleTransport<float>::IdentifyEdgesSharedEle(cuDFNsys::Mesh<float> mesh);

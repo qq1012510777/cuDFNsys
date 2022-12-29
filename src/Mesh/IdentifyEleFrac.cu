@@ -159,8 +159,8 @@ __global__ void cuDFNsys::IdentifyEleFrac(uint3 *One_entity_one_ele_dev_ptr,
 
             if (sizeDis == largestsize)
             {
-                printf("Warning: there are too many fractures that are very close to one element\n");
-                return;
+                printf("\n\nWarning: there are too many fractures that are very close to one element\n\n\n");
+                break;
             }
         }
     }

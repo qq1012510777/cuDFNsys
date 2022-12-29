@@ -50,8 +50,8 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
-    // P_DEV[i].ElementID = 58;
-    // P_DEV[i].Position2D = cuDFNsys::MakeVector2<T>(0.0384900179459735022891031519520765868947, 7.4999999999997521982209036650601774454117);
+    // P_DEV[i].ElementID = 299056;
+    // P_DEV[i].Position2D = cuDFNsys::MakeVector2<T>(-17.7082565600333410316125082317739725112915, -14.8086857817680890292422191123478114604950);
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
@@ -116,7 +116,7 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
-    /// TargPos = cuDFNsys::MakeVector2<T>(-0.0000000000000002988010365393214962104196, 7.4999999999997521982209036650601774454117);
+    // TargPos = cuDFNsys::MakeVector2<T>(-17.6961099947134314902541518677026033401489, -14.7938483452697386866248052683658897876740);
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
@@ -144,6 +144,15 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
         /// ////// debug: turn trajectory to 3D --------------------
         /// if (1)
         /// {
+        ///     cuDFNsys::Vector2<T> Vertex_Triangle_PPP[3];
+        ///     Vertex_Triangle_PPP[0] = cuDFNsys::MakeVector2(Coordinate2D_Vec_dev_ptr[EleID - 1].x[0], Coordinate2D_Vec_dev_ptr[EleID - 1].y[0]);
+        ///     Vertex_Triangle_PPP[1] = cuDFNsys::MakeVector2(Coordinate2D_Vec_dev_ptr[EleID - 1].x[1], Coordinate2D_Vec_dev_ptr[EleID - 1].y[1]);
+        ///     Vertex_Triangle_PPP[2] = cuDFNsys::MakeVector2(Coordinate2D_Vec_dev_ptr[EleID - 1].x[2], Coordinate2D_Vec_dev_ptr[EleID - 1].y[2]);
+        ///     printf("Now, element ID: %d, 2D coordinates:\n\t%.40f, %.40f\n\t%.40f, %.40f\n\t%.40f, %.40f\n\n",
+        ///            EleID,
+        ///            Vertex_Triangle_PPP[0].x, Vertex_Triangle_PPP[0].y,
+        ///            Vertex_Triangle_PPP[1].x, Vertex_Triangle_PPP[1].y,
+        ///            Vertex_Triangle_PPP[2].x, Vertex_Triangle_PPP[2].y);
         ///     cuDFNsys::Vector3<T> InitiPos3D = cuDFNsys::MakeVector3(InitPos.x, InitPos.y, (T)0.0);
         ///     cuDFNsys::Vector3<T> TargPos3D = cuDFNsys::MakeVector3(TargPos.x, TargPos.y, (T)0.0);
         ///     T RK_1[3][3];

@@ -357,3 +357,69 @@ template void cuDFNsys::OutputObjectData<double>::OutputMesh(const string &filen
 template void cuDFNsys::OutputObjectData<float>::OutputMesh(const string &filename_,
                                                             cuDFNsys::Mesh<float> mesh,
                                                             const std::vector<size_t> &Fracs_percol);
+
+// ====================================================
+// NAME:        OutputMHFEM
+// DESCRIPTION: OutputMHFEM h5 file
+// AUTHOR:      Tingchang YIN
+// DATE:        27/12/2022
+// ====================================================
+template <typename T>
+void cuDFNsys::OutputObjectData<T>::OutputMHFEM(const string &filename_,
+                                                cuDFNsys::MHFEM<T> mhfem)
+{
+    //
+    cuDFNsys::HDF5API h5_;
+    h5_.NewFile(filename_);
+
+    uint2 dim_e = make_uint2(1, 1);
+    T Value[1] = {mhfem.QIn};
+    h5_.AddDataset(filename_, "N", "QIn", Value, dim_e);
+
+    Value[1] = {mhfem.QOut};
+    h5_.AddDataset(filename_, "N", "QOut", Value, dim_e);
+
+    Value[1] = {mhfem.InletLength};
+    h5_.AddDataset(filename_, "N", "InletLength", Value, dim_e);
+
+    Value[1] = {mhfem.OutletLength};
+    h5_.AddDataset(filename_, "N", "OutletLength", Value, dim_e);
+
+    Value[1] = {mhfem.QError};
+    h5_.AddDataset(filename_, "N", "QError", Value, dim_e);
+
+    Value[1] = {mhfem.Permeability};
+    h5_.AddDataset(filename_, "N", "Permeability", Value, dim_e);
+
+    Value[1] = {mhfem.InletP};
+    h5_.AddDataset(filename_, "N", "InletP", Value, dim_e);
+
+    Value[1] = {mhfem.OutletP};
+    h5_.AddDataset(filename_, "N", "OutletP", Value, dim_e);
+
+    double Value2[1] = {mhfem.TripletTime};
+    h5_.AddDataset(filename_, "N", "TripletTime", Value2, dim_e);
+
+    int Value3[1] = {mhfem.Dir};
+    h5_.AddDataset(filename_, "N", "Dir", Value3, dim_e);
+
+    vector<double> PressureInteriorEdge_(mhfem.PressureInteriorEdge.data(),
+                                         mhfem.PressureInteriorEdge.data() + mhfem.PressureInteriorEdge.rows());
+    uint2 dim_r = make_uint2(1, PressureInteriorEdge_.size());
+    h5_.AddDataset(filename_, "N", "PressureInteriorEdge", PressureInteriorEdge_.data(), dim_r);
+
+    vector<double> PressureEles_(mhfem.PressureEles.data(),
+                                 mhfem.PressureEles.data() + mhfem.PressureEles.rows());
+    dim_r = make_uint2(1, PressureEles_.size());
+    h5_.AddDataset(filename_, "N", "PressureEles", PressureEles_.data(), dim_r);
+
+    vector<double> VelocityNormalScalarSepEdges_(mhfem.VelocityNormalScalarSepEdges.data(),
+                                                 mhfem.VelocityNormalScalarSepEdges.data() + mhfem.VelocityNormalScalarSepEdges.rows());
+    dim_r = make_uint2(1, VelocityNormalScalarSepEdges_.size());
+    h5_.AddDataset(filename_, "N", "VelocityNormalScalarSepEdges", VelocityNormalScalarSepEdges_.data(), dim_r);
+
+}; // OutputMHFEM
+template void cuDFNsys::OutputObjectData<double>::OutputMHFEM(const string &filename_,
+                                                              cuDFNsys::MHFEM<double> mhfem);
+template void cuDFNsys::OutputObjectData<float>::OutputMHFEM(const string &filename_,
+                                                             cuDFNsys::MHFEM<float> mhfem);

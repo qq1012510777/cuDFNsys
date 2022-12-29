@@ -6,6 +6,6 @@ cd ../bin
 rm -rf main
 cd ..
 cd build 
-cmake ..
+cmake .. # -DCMAKE_CUDA_ARCHITECTURES=60
 make
 cd ..

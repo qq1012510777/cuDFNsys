@@ -161,7 +161,20 @@ int main(int argc, char *argv[])
             if (argv[6] != NULL && argv[7] != NULL)
                 P_in = atof(argv[6]), P_out = atof(argv[7]);
 
-            cuDFNsys::MHFEM<_DataType_> fem{mesh, Frac_verts_host, P_in, P_out, perco_dir, L};
+            cuDFNsys::MHFEM<_DataType_> fem;
+            try
+            {
+                cout << "Loading mhfem ...\n";
+                lk.InputMHFEM("mhfem.h5", fem);
+            }
+            catch (...)
+            {
+                cuDFNsys::MHFEM<_DataType_> fem2{mesh, Frac_verts_host, P_in, P_out, perco_dir, L};
+
+                lkew.OutputMHFEM("mhfem.h5", fem2);
+                fem = fem2;
+            };
+
             cout << "Fluxes: " << fem.QIn << ", ";
             cout << fem.QOut << ", Permeability: ";
             cout << fem.Permeability << endl;
@@ -178,11 +191,19 @@ int main(int argc, char *argv[])
                            Frac_verts_host, mesh, L, true, "MHFEM_" + to_string(i + 1));
             //---------------
             // return 0;
-            cout << "Particle transport ing ...\n";
 
-            cuDFNsys::OutputObjectData<_DataType_> lk;
-            lk.OutputFractures("FracturesForParticle.h5", Frac_verts_host, L);
+            string Filename_FracturesForParticle = "FracturesForParticle.h5";
 
+            std::ifstream file(Filename_FracturesForParticle);
+            bool pwqs = file.good();
+
+            if (!pwqs)
+            {
+                cout << "Writting " << Filename_FracturesForParticle << endl;
+                cuDFNsys::OutputObjectData<_DataType_> lk;
+                lk.OutputFractures(Filename_FracturesForParticle, Frac_verts_host, L);
+            }
+            cout << "Particle transport ing ......\n";
             cuDFNsys::ParticleTransport<_DataType_> p{atoi(argv[1]), // number of time step
                                                       Frac_verts_host, mesh, fem, (uint)perco_dir, -0.5f * L,
                                                       atoi(argv[2]), // num of particle

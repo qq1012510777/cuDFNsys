@@ -88,9 +88,11 @@ int main(int argc, char *argv[])
         cuDFNsys::Fractures<_DataType_><<<DSIZE / 256 + 1, 256 /*  1, 2*/>>>(Frac_verts_device_ptr,
                                                                              (unsigned long)t,
                                                                              DSIZE, L,
-                                                                             0, ParaSizeDistri, 0,
+                                                                             0,
+                                                                             ParaSizeDistri,
                                                                              (_DataType_)atof(argv[9]),
-                                                                             (_DataType_)atof(argv[10]));
+                                                                             (_DataType_)atof(argv[10]),
+                                                                             (_DataType_)atof(argv[11]));
         cudaDeviceSynchronize();
 
         Frac_verts_host = Frac_verts_device;
@@ -153,7 +155,7 @@ int main(int argc, char *argv[])
             std::vector<pair<int, int>> IntersectionPair_percol;
             int NUMprior = Fracs_percol.size();
 
-            bool ifRemoveDeadEnds = (atoi(argv[11]) == 0 ? false : true);
+            bool ifRemoveDeadEnds = (atoi(argv[12]) == 0 ? false : true);
 
             cuDFNsys::RemoveDeadEndFrac<_DataType_> RDEF{Fracs_percol,
                                                          IntersectionPair_percol,
@@ -176,11 +178,23 @@ int main(int argc, char *argv[])
 
             cout << "MHFEM ing ..." << endl;
 
-            cuDFNsys::MHFEM<_DataType_> fem{mesh, Frac_verts_host, 100, 20, perco_dir, L};
+            cuDFNsys::MHFEM<_DataType_> fem;
+            try
+            {
+                cout << "Loading mhfem ...\n";
+                lk.InputMHFEM("mhfem.h5", fem);
+            }
+            catch (...)
+            {
+                cuDFNsys::MHFEM<_DataType_> fem2{mesh, Frac_verts_host, 100, 20, perco_dir, L};
+                lkew.OutputMHFEM("mhfem.h5", fem2);
+                fem = fem2;
+            };
 
             cout << "Fluxes: " << fem.QIn << ", ";
             cout << fem.QOut << ", Permeability: ";
             cout << fem.Permeability << endl;
+            cout << "Error between the inlet and outlet fluxes: " << abs(fem.QIn - fem.QOut) / ((fem.QOut + fem.QIn) * 0.5) * 100.0 << "%%\n";
             if (fem.QError > 1 || isnan(fem.Permeability) == 1)
             {
                 cout << "\e[1;32mFound large error or isnan, the error: " << fem.QError << ", the permeability: " << fem.Permeability << "\e[0m\n";
@@ -196,10 +210,10 @@ int main(int argc, char *argv[])
 
             cout << "Particle transport ing ...\n";
             return 0;
-            cuDFNsys::ParticleTransport<_DataType_> p{atoi(argv[12]),             // number of particle
-                                                      atoi(argv[13]),             // number of time steps
-                                                      (_DataType_)atof(argv[14]), // delta T
-                                                      (_DataType_)atof(argv[15]), // molecular diffusion
+            cuDFNsys::ParticleTransport<_DataType_> p{atoi(argv[13]),             // number of particle
+                                                      atoi(argv[14]),             // number of time steps
+                                                      (_DataType_)atof(argv[15]), // delta T
+                                                      (_DataType_)atof(argv[16]), // molecular diffusion
                                                       Frac_verts_host, mesh, fem, (uint)perco_dir, -0.5f * L,
                                                       "Particle_tracking", "Flux-weighted"};
             p.MatlabPlot("MHFEM_" + to_string(i + 1) + ".h5", "particle.m", mesh, fem, L);

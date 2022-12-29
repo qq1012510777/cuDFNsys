@@ -58,10 +58,12 @@ public:
     T OutletP = 20;
     double TripletTime = 0;
 
-private:
+public:
     int Dir = 2;
 
 public:
+    MHFEM(){};
+
     MHFEM(const cuDFNsys::Mesh<T> &mesh,
           const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
           const T &inlet_p_,

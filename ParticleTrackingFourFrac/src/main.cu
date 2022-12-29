@@ -173,7 +173,7 @@ int main(int argc, char *argv[])
                            Frac_verts_host, mesh, L, true, "MHFEM_" + to_string(i + 1));
             //---------------
             lk.OutputFractures("FracturesForParticle.h5", Frac_verts_host, L);
-            //return 0;
+            return 0;
             cout << "Particle transport ing ...\n";
 
             cuDFNsys::ParticleTransport<_DataType_> p{atoi(argv[1]),             // number of particle

@@ -64,4 +64,3 @@ __device__ const uint _SizeOfArray_CrossedGlobalEdge_ = 30;
 const uint _NumOfSharedEleAtMost = 4;
 const uint _NumOfNeighborEleAtMost = 80;
 const uint _ParTran_MaxLoopTimes = 30;
-

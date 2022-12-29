@@ -30,6 +30,7 @@
 #include "../Fractures/Fracture.cuh"
 #include "../GlobalDef/GlobalDef.cuh"
 #include "../HDF5API/HDF5API.cuh"
+#include "../MHFEM/MHFEM.cuh"
 #include "../Mesh/Mesh.cuh"
 
 namespace cuDFNsys
@@ -51,5 +52,9 @@ public:
     void OutputMesh(const string &filename_,
                     cuDFNsys::Mesh<T> mesh,
                     const std::vector<size_t> &Fracs_percol);
+
+    // output MHFEM in H5
+    void OutputMHFEM(const string &filename_,
+                     cuDFNsys::MHFEM<T> mhfem);
 };
 }; // namespace cuDFNsys
