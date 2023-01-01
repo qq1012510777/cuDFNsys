@@ -376,25 +376,25 @@ void cuDFNsys::OutputObjectData<T>::OutputMHFEM(const string &filename_,
     T Value[1] = {mhfem.QIn};
     h5_.AddDataset(filename_, "N", "QIn", Value, dim_e);
 
-    Value[1] = {mhfem.QOut};
+    Value[0] = mhfem.QOut;
     h5_.AddDataset(filename_, "N", "QOut", Value, dim_e);
 
-    Value[1] = {mhfem.InletLength};
+    Value[0] = mhfem.InletLength;
     h5_.AddDataset(filename_, "N", "InletLength", Value, dim_e);
 
-    Value[1] = {mhfem.OutletLength};
+    Value[0] = mhfem.OutletLength;
     h5_.AddDataset(filename_, "N", "OutletLength", Value, dim_e);
 
-    Value[1] = {mhfem.QError};
+    Value[0] = mhfem.QError;
     h5_.AddDataset(filename_, "N", "QError", Value, dim_e);
 
-    Value[1] = {mhfem.Permeability};
+    Value[0] = mhfem.Permeability;
     h5_.AddDataset(filename_, "N", "Permeability", Value, dim_e);
 
-    Value[1] = {mhfem.InletP};
+    Value[0] = mhfem.InletP;
     h5_.AddDataset(filename_, "N", "InletP", Value, dim_e);
 
-    Value[1] = {mhfem.OutletP};
+    Value[0] = mhfem.OutletP;
     h5_.AddDataset(filename_, "N", "OutletP", Value, dim_e);
 
     double Value2[1] = {mhfem.TripletTime};

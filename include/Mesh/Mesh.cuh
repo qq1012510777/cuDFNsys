@@ -118,7 +118,7 @@ private:
     // get elements of mesh
     void GetElements(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs_s, const std::vector<std::vector<std::pair<int, int>>> &outmap);
     // numbering edges of elements
-    void NumberingEdges(const T L);
+    void NumberingEdges(const T L/*, const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs*/);
 
 private:
     // get elements in each 3D surface entity

@@ -176,6 +176,7 @@ __host__ __device__ void cuDFNsys::WhichElementToGo(uint currentEleID,
     //printf("\n\n");
 
     for (uint i = 0; i < NumSharedEle - 1; ++i)
+    {
         if (rand_0_1 < veloc_vec[i])
         {
             NextElementID = eleID_vec[i];
@@ -183,6 +184,23 @@ __host__ __device__ void cuDFNsys::WhichElementToGo(uint currentEleID,
             IndexInLocal = IndexTrans_vec[i];
             break;
         }
+
+        if (abs(rand_0_1 - 1.0) < 1e-5 && abs(veloc_vec[i] - 1.0) < 1e-5)
+        {
+            NextElementID = eleID_vec[i];
+            NextFracID = EleToFracID_ptr[NextElementID - 1];
+            IndexInLocal = IndexTrans_vec[i];
+            break;
+        }
+    }
+
+    if ((NextElementID == -1 || NextFracID == -1 || IndexInLocal == -1))
+    {
+        printf("Rand_0_1 is %.40f, element velocity weight 1:\n", rand_0_1);
+        for (uint i = 0; i < NumSharedEle - 1; ++i)
+            printf("i = %d:   %.40f, ", i, veloc_vec[i]);
+        printf("\n");
+    }
 }; // WhichElementToGo
 template __host__ __device__ void cuDFNsys::WhichElementToGo<double>(uint currentEleID,
                                                                      uint NumSharedEle,

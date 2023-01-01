@@ -179,15 +179,17 @@ int main(int argc, char *argv[])
             cout << "MHFEM ing ..." << endl;
 
             cuDFNsys::MHFEM<_DataType_> fem;
+
+            cuDFNsys::InputObjectData<_DataType_> lkd;
             try
             {
                 cout << "Loading mhfem ...\n";
-                lk.InputMHFEM("mhfem.h5", fem);
+                lkd.InputMHFEM("mhfem.h5", fem);
             }
             catch (...)
             {
                 cuDFNsys::MHFEM<_DataType_> fem2{mesh, Frac_verts_host, 100, 20, perco_dir, L};
-                lkew.OutputMHFEM("mhfem.h5", fem2);
+                lk.OutputMHFEM("mhfem.h5", fem2);
                 fem = fem2;
             };
 

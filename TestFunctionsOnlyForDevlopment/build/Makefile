@@ -39,10 +39,10 @@ cmake_force:
 SHELL = /bin/sh
 
 # The CMake executable.
-CMAKE_COMMAND = /usr/bin/cmake
+CMAKE_COMMAND = /usr/local/bin/cmake
 
 # The command to remove a file.
-RM = /usr/bin/cmake -E remove -f
+RM = /usr/local/bin/cmake -E remove -f
 
 # Escaping for special characters.
 EQUALS = =
@@ -59,7 +59,7 @@ CMAKE_BINARY_DIR = /home/tingchangyin/cuDFNsys/TestFunctionsOnlyForDevlopment/bu
 # Special rule for the target rebuild_cache
 rebuild_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	/usr/bin/cmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	/usr/local/bin/cmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : rebuild_cache
 
 # Special rule for the target rebuild_cache
@@ -70,7 +70,7 @@ rebuild_cache/fast: rebuild_cache
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
-	/usr/bin/ccmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	/usr/local/bin/ccmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -987,32 +987,32 @@ home/tingchangyin/cuDFNsys/src/HDF5API/HDF5API.cu.s:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/HDF5API/HDF5API.cu.s
 .PHONY : home/tingchangyin/cuDFNsys/src/HDF5API/HDF5API.cu.s
 
-home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.o: home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.cu.o
+home/tingchangyin/cuDFNsys/src/InputObjectData/InputObjectData.o: home/tingchangyin/cuDFNsys/src/InputObjectData/InputObjectData.cu.o
 
-.PHONY : home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.o
+.PHONY : home/tingchangyin/cuDFNsys/src/InputObjectData/InputObjectData.o
 
 # target to build an object file
-home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.cu.o:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.cu.o
-.PHONY : home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.cu.o
+home/tingchangyin/cuDFNsys/src/InputObjectData/InputObjectData.cu.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/InputObjectData/InputObjectData.cu.o
+.PHONY : home/tingchangyin/cuDFNsys/src/InputObjectData/InputObjectData.cu.o
 
-home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.i: home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.cu.i
+home/tingchangyin/cuDFNsys/src/InputObjectData/InputObjectData.i: home/tingchangyin/cuDFNsys/src/InputObjectData/InputObjectData.cu.i
 
-.PHONY : home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.i
+.PHONY : home/tingchangyin/cuDFNsys/src/InputObjectData/InputObjectData.i
 
 # target to preprocess a source file
-home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.cu.i:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.cu.i
-.PHONY : home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.cu.i
+home/tingchangyin/cuDFNsys/src/InputObjectData/InputObjectData.cu.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/InputObjectData/InputObjectData.cu.i
+.PHONY : home/tingchangyin/cuDFNsys/src/InputObjectData/InputObjectData.cu.i
 
-home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.s: home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.cu.s
+home/tingchangyin/cuDFNsys/src/InputObjectData/InputObjectData.s: home/tingchangyin/cuDFNsys/src/InputObjectData/InputObjectData.cu.s
 
-.PHONY : home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.s
+.PHONY : home/tingchangyin/cuDFNsys/src/InputObjectData/InputObjectData.s
 
 # target to generate assembly for a file
-home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.cu.s:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.cu.s
-.PHONY : home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.cu.s
+home/tingchangyin/cuDFNsys/src/InputObjectData/InputObjectData.cu.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/home/tingchangyin/cuDFNsys/src/InputObjectData/InputObjectData.cu.s
+.PHONY : home/tingchangyin/cuDFNsys/src/InputObjectData/InputObjectData.cu.s
 
 home/tingchangyin/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.o: home/tingchangyin/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.cu.o
 
@@ -1821,9 +1821,9 @@ help:
 	@echo "... home/tingchangyin/cuDFNsys/src/HDF5API/HDF5API.o"
 	@echo "... home/tingchangyin/cuDFNsys/src/HDF5API/HDF5API.i"
 	@echo "... home/tingchangyin/cuDFNsys/src/HDF5API/HDF5API.s"
-	@echo "... home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.o"
-	@echo "... home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.i"
-	@echo "... home/tingchangyin/cuDFNsys/src/InputFractures/InputFractures.s"
+	@echo "... home/tingchangyin/cuDFNsys/src/InputObjectData/InputObjectData.o"
+	@echo "... home/tingchangyin/cuDFNsys/src/InputObjectData/InputObjectData.i"
+	@echo "... home/tingchangyin/cuDFNsys/src/InputObjectData/InputObjectData.s"
 	@echo "... home/tingchangyin/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.o"
 	@echo "... home/tingchangyin/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.i"
 	@echo "... home/tingchangyin/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.s"

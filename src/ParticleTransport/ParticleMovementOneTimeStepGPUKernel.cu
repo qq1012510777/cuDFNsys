@@ -50,8 +50,8 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
-    // P_DEV[i].ElementID = 299056;
-    // P_DEV[i].Position2D = cuDFNsys::MakeVector2<T>(-17.7082565600333410316125082317739725112915, -14.8086857817680890292422191123478114604950);
+    /// P_DEV[i].ElementID = 70071;
+    /// P_DEV[i].Position2D = cuDFNsys::MakeVector2<T>(12.1733307638365850777972809737548232078552, -4.1527971044043150428137778362724930047989);
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
@@ -116,7 +116,7 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
-    // TargPos = cuDFNsys::MakeVector2<T>(-17.6961099947134314902541518677026033401489, -14.7938483452697386866248052683658897876740);
+    /// TargPos = cuDFNsys::MakeVector2<T>(12.1877201264580001804915809771046042442322, -4.1652721843080131591818826564121991395950);
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
@@ -637,6 +637,11 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
                 else if (p == NumOfElesSharedEdge - 1)
                 {
                     printf("warning: I did not find the neighboring element which is on the same plane of previous element!\n");
+
+                    for (uint ep = 0; ep < NumOfElesSharedEdge; ++ep)
+                        printf("Edge global ID: %d, shared element ID: %d, local edgeNO: %d, fracID: %d\n", GlobalEdgeNO,
+                               EdgesSharedEle_DEV[GlobalEdgeNO].EleID[ep], EdgesSharedEle_DEV[GlobalEdgeNO].LocalEdgeNO[ep],
+                               EleToFracID_ptr[EdgesSharedEle_DEV[GlobalEdgeNO].EleID[ep] - 1]);
                     goto Debug100;
                 };
             }
@@ -693,12 +698,13 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
             designed_element_ppp[1] = designed_element[localedgeno_ppp];
             designed_element_ppp[2] = designed_element[(localedgeno_ppp + 1) % 3];
 
-            cuDFNsys::Vector3<T> new_Target3D;
+            cuDFNsys::Vector3<T> new_Target3D, Target3D_new_record[2];
             //printf("angle_: %.40f\n", angle_);
             T angle_ppp[2];
             for (uint yr = 0; yr < 2; ++yr)
             {
                 new_Target3D = cuDFNsys::RotationRemainningTrajectoryBetweenTwo3DTriangles<T>(designed_element_ppp, angle_);
+                Target3D_new_record[yr] = new_Target3D;
                 // printf("new_Target3D: %.40f, %.40f, %.40f\n", new_Target3D.x, new_Target3D.y, new_Target3D.z);
                 //------------test--------
                 //cuDFNsys::Vector3<T> d3, d4;
@@ -722,11 +728,52 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
 
                 if (ang_degree > error_td && yr < 1)
                 {
+                    if (ang_degree < (T)2.0)
+                    {
+                        // using projection method
+                        // cuDFNsys::DistancePnt3DPlane(cuDFNsys::Vector3<T> Plane[3], cuDFNsys::Vector3<T> pnt)
+
+                        T distance_ppo = cuDFNsys::DistancePnt3DPlane<T>(next_element, new_Target3D);
+                        //printf("Distance between the new_Target3D and the plane of the next_element: %.40f, i = %d\n", distance_ppo, yr);
+                        if (distance_ppo < 0.1)
+                            break;
+                    }
+
                     angle_ = (T)2.0 * M_PI - angle_;
                     continue;
                 }
                 else if (ang_degree > error_td && yr == 1)
                 {
+
+                    if (ang_degree < (T)2.0)
+                    {
+                        // using projection method
+                        // cuDFNsys::DistancePnt3DPlane(cuDFNsys::Vector3<T> Plane[3], cuDFNsys::Vector3<T> pnt)
+
+                        T distance_ppo = cuDFNsys::DistancePnt3DPlane<T>(next_element, new_Target3D);
+                        //printf("Distance between the new_Target3D and the plane of the next_element: %.40f, i = %d\n", distance_ppo, yr);
+
+                        if (distance_ppo < 0.1)
+                            break;
+                    }
+
+                    if (angle_ppp[0] * 180.0 / M_PI < 90.0 || angle_ppp[1] * 180.0 / M_PI < 90.0)
+                    {
+                        int yud = 0;
+                        if (angle_ppp[0] * 180.0 / M_PI < 90.0)
+                            yud = 0;
+                        else
+                            yud = 1;
+
+                        T distance_ppo = cuDFNsys::DistancePnt3DPlane<T>(next_element, Target3D_new_record[yud]);
+
+                        if (distance_ppo < 0.1)
+                        {
+                            new_Target3D = Target3D_new_record[yud];
+                            break;
+                        }
+                    }
+
                     printf("warning: I cannot correctly rotate the remainning trajectory when particle goes through a fracture trace! angle_ppp: %.40f, %.40f\n",
                            angle_ppp[0] * 180.0f / M_PI, angle_ppp[1] * 180.0f / M_PI);
                     goto Debug100;

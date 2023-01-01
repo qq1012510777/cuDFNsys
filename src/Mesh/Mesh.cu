@@ -119,6 +119,7 @@ cuDFNsys::Mesh<T>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
             std::vector<std::pair<int, int>> out;
             gmsh::model::occ::fragment(object_entity, tool_entity, out, outmap);
             gmsh::model::occ::synchronize();
+            gmsh::write("exod.brep");
             cout << "\t\tfragmented entities, running time: " << cuDFNsys::CPUSecond() - istart2 << " sec\n";
 
             // cout << "outDimTags\n";
@@ -156,11 +157,13 @@ cuDFNsys::Mesh<T>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
         gmsh::option::setNumber("Mesh.MeshSizeMin", min_ele_edge);
         gmsh::option::setNumber("Mesh.MeshSizeMax", max_ele_edge);
 
-        gmsh::option::setNumber("Mesh.Algorithm", 5);
+        gmsh::option::setNumber("Mesh.Algorithm", 1);
         cout << "\tmesh ing" << endl;
         gmsh::model::mesh::generate(2);
         /// gmsh::fltk::run();
         cout << "\t\tmeshing finished, running time: " << cuDFNsys::CPUSecond() - istart << " sec\n";
+
+        gmsh::write("exod.msh");
 
         cout << "\t\tGeting coordinates" << endl;
         this->GetCoordinates();
@@ -169,7 +172,7 @@ cuDFNsys::Mesh<T>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
         //cudaDeviceReset();
         cout << "\t\tNumbering edges\n";
         istart = cuDFNsys::CPUSecond();
-        this->NumberingEdges(L);
+        this->NumberingEdges(L/*, Fracs*/);
         cout << "\t\tFinished! Running time: " << cuDFNsys::CPUSecond() - istart << " sec\n";
 
         gmsh::model::mesh::clear();
@@ -764,7 +767,7 @@ template void cuDFNsys::Mesh<float>::GetElements(const thrust::host_vector<cuDFN
 // DATE:        08/04/2022
 // ====================================================
 template <typename T>
-void cuDFNsys::Mesh<T>::NumberingEdges(const T L)
+void cuDFNsys::Mesh<T>::NumberingEdges(const T L/*, const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs*/)
 {
     uint NUM_ele = this->Element3D.size();
     uint NUM_node = this->Coordinate3D.size();
@@ -789,7 +792,7 @@ void cuDFNsys::Mesh<T>::NumberingEdges(const T L)
     //SparseMatrix<float> shared_edge_len(NUM_node, NUM_node);
     //shared_edge_len.reserve(VectorXi::Constant(NUM_node, 4));
     //double istart = 0;
-
+    //int element_count = -1;
     for (size_t i = 0; i < this->Element2D.size(); ++i)
     {
         bool if_change_ori = false;
@@ -806,8 +809,21 @@ void cuDFNsys::Mesh<T>::NumberingEdges(const T L)
         //cout << "i: " << i << " gen Matrix " << cuDFNsys::CPUSecond() - istart << " sec\n";
 
         //istart = cuDFNsys::CPUSecond();
+
+        /// get 2D coordinates of the fracture at present
+        /// get 2D coordinates of the fracture at present
+        /// get 2D coordinates of the fracture at present
+        //size_t FracID__ = this->ElementFracTag[element_count + 1];
+        // cuDFNsys::Vector2<T> verts2DDD[Fracs[FracID__].NumVertsTruncated];
+        // cuDFNsys::Fracture<T> FL = Fracs[FracID__];
+        // FL.Generate2DVerts(verts2DDD, FL.NumVertsTruncated, true);
+        // cuDFNsys::Vector1<T> tmp_R_1[3][3];
+        // FL.RoationMatrix(tmp_R_1, 32);
+
         for (size_t j = 0; j < this->Element2D[i].size(); ++j)
         {
+            // element_count++;
+
             size_t tmp_ele_NO = this->GetElementID(i, j);
 
             uint element_list_e[3] = {this->Element2D[i][j].x,
@@ -884,6 +900,104 @@ void cuDFNsys::Mesh<T>::NumberingEdges(const T L)
                     {
                         this->EdgeAttri[tmp_ele_NO].e[k] = 2;
                         this->EdgeAttri[tmp_ele_NO].no[k] = Sep_NO;
+
+                        // determine if two nodes are inside the fracture or not,
+                        // if inside, then the edge must be problematic: it is not a neumman edge!!!
+
+                        //if (element_count + 1 == 254555)
+                        //{
+                        //    // if (element_count != 0)
+                        //    // exit(0);
+                        //
+                        //    cuDFNsys::Vector3<T> coord_1_s = cuDFNsys::MakeVector3(this->Coordinate3D[node1 - 1].x /*- FL.Center.x*/,
+                        //                                                           this->Coordinate3D[node1 - 1].y /*- FL.Center.y*/,
+                        //                                                           this->Coordinate3D[node1 - 1].z /*- FL.Center.z*/);
+                        //    cuDFNsys::Vector3<T> coord_2_s = cuDFNsys::MakeVector3(this->Coordinate3D[node2 - 1].x /*- FL.Center.x*/,
+                        //                                                           this->Coordinate3D[node2 - 1].y /*- FL.Center.y*/,
+                        //                                                           this->Coordinate3D[node2 - 1].z /*- FL.Center.z*/);
+                        //
+                        //    // coord_1_s = cuDFNsys::ProductSquare3Vector3<T>(tmp_R_1, coord_1_s);
+                        //    // coord_2_s = cuDFNsys::ProductSquare3Vector3<T>(tmp_R_1, coord_2_s);
+                        //    // cuDFNsys::Vector2<T> coord_1_k = cuDFNsys::MakeVector2(coord_1_s.x, coord_1_s.y);
+                        //    // cuDFNsys::Vector2<T> coord_2_k = cuDFNsys::MakeVector2(coord_2_s.x, coord_2_s.y);
+                        //    // bool pls_1 = cuDFNsys::IfPntInside2DConvexPoly<T>(coord_1_k, verts2DDD, FL.NumVertsTruncated);
+                        //    // bool pls_2 = cuDFNsys::IfPntInside2DConvexPoly<T>(coord_2_k, verts2DDD, FL.NumVertsTruncated);
+                        //
+                        //    for (int uuo = 0; uuo < Fracs[FracID__].NumVertsTruncated; ++uuo)
+                        //    {
+                        //        bool pls_1 = false, pls_2 = false;
+                        //
+                        //        cuDFNsys::Vector3<T> end_1 = Fracs[FracID__].Verts3DTruncated[uuo];
+                        //        cuDFNsys::Vector3<T> end_2 = Fracs[FracID__].Verts3DTruncated[(uuo + 1) % Fracs[FracID__].NumVertsTruncated];
+                        //
+                        //        cuDFNsys::Vector3<T> A1, B1, A2, B2;
+                        //
+                        //        A1.x = end_1.x - coord_1_s.x,
+                        //        A1.y = end_1.y - coord_1_s.y,
+                        //        A1.z = end_1.z - coord_1_s.z;
+                        //        B1.x = end_2.x - coord_1_s.x,
+                        //        B1.y = end_2.y - coord_1_s.y,
+                        //        B1.z = end_2.z - coord_1_s.z;
+                        //
+                        //        A2.x = end_1.x - coord_2_s.x,
+                        //        A2.y = end_1.y - coord_2_s.y,
+                        //        A2.z = end_1.z - coord_2_s.z;
+                        //        B2.x = end_2.x - coord_2_s.x,
+                        //        B2.y = end_2.y - coord_2_s.y,
+                        //        B2.z = end_2.z - coord_2_s.z;
+                        //
+                        //        T norm_A1 = sqrt(A1.x * A1.x + A1.y * A1.y + A1.z * A1.z);
+                        //        T norm_A2 = sqrt(A2.x * A2.x + A2.y * A2.y + A2.z * A2.z);
+                        //        T norm_B1 = sqrt(B1.x * B1.x + B1.y * B1.y + B1.z * B1.z);
+                        //        T norm_B2 = sqrt(B2.x * B2.x + B2.y * B2.y + B2.z * B2.z);
+                        //
+                        //        T normError = 1e-5;
+                        //        T degreeError = 0.5;
+                        //
+                        //        if (norm_A1 < normError || norm_B1 < normError)
+                        //            pls_1 = true;
+                        //
+                        //        if (norm_A2 < normError || norm_B2 < normError)
+                        //            pls_2 = true;
+                        //
+                        //        T theta1, theta2;
+                        //        if (norm_A1 > normError && norm_B1 > normError)
+                        //        {
+                        //            theta1 = acos((A1.x * B1.x + A1.y * B1.y + A1.z * B1.z) / (norm_A1 * norm_B1)) * 180.0 / M_PI;
+                        //            if (abs(theta1 - 180.0) < degreeError)
+                        //                pls_1 = true;
+                        //        }
+                        //
+                        //        if (norm_A2 > normError && norm_B2 > normError)
+                        //        {
+                        //            theta2 = acos((A2.x * B2.x + A2.y * B2.y + A2.z * B2.z) / (norm_A2 * norm_B2)) * 180.0 / M_PI;
+                        //            if (abs(theta2 - 180.0) < degreeError)
+                        //                pls_2 = true;
+                        //        }
+                        //
+                        //        cout << "Edge node: [" << end_1.x << ", " << end_1.y << ", " << end_1.z << "], [";
+                        //        cout << end_2.x << ", " << end_2.y << ", " << end_2.z << "\n";
+                        //        cout << "Iden: " << pls_1 << ", " << pls_2 << "; ";
+                        //        cout << "norm_A1: " << norm_A1 << ", ";
+                        //        cout << "norm_A2: " << norm_A2 << ", ";
+                        //        cout << "norm_B1: " << norm_B1 << ", ";
+                        //        cout << "norm_B2: " << norm_B2 << ", ";
+                        //        cout << "theta1: " << theta1 << ", ";
+                        //        cout << "theta2: " << theta2 << "\n";
+                        //        if (pls_1 && pls_2)
+                        //            break;
+                        //
+                        //        if ((!pls_1 || !pls_2) && uuo == Fracs[FracID__].NumVertsTruncated - 1)
+                        //        {
+                        //
+                        //            cout << "\t\tFracid: " << FracID__ << ", boundID: " << uuo << ", Found a problematic neumman edge in element ID: " << element_count + 1 << "; ";
+                        //            cout << "node1: " << this->Coordinate3D[node1 - 1].x << ", ";
+                        //            cout << this->Coordinate3D[node1 - 1].y << ", " << this->Coordinate3D[node1 - 1].z << "; node2: ";
+                        //            cout << this->Coordinate3D[node2 - 1].x << ", " << this->Coordinate3D[node2 - 1].y << ", " << this->Coordinate3D[node2 - 1].z << endl;
+                        //        }
+                        //    }
+                        //}
+
                         Sep_edge_NO_neumann++;
                     }
                 }
@@ -900,8 +1014,8 @@ void cuDFNsys::Mesh<T>::NumberingEdges(const T L)
     NumOutletEdges = Sep_edge_NO_out - 1;
     NumNeumannEdges = Sep_edge_NO_neumann - 1;
 }; // NumberingEdges
-template void cuDFNsys::Mesh<double>::NumberingEdges(const double L);
-template void cuDFNsys::Mesh<float>::NumberingEdges(const float L);
+template void cuDFNsys::Mesh<double>::NumberingEdges(const double L/*, const thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs*/);
+template void cuDFNsys::Mesh<float>::NumberingEdges(const float L/*, const thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs*/);
 
 // ====================================================
 // NAME:        GetEntitiesElements

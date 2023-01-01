@@ -2,11 +2,17 @@ clc;
 clear all
 close all
 
-load('MHFEM_1.mat');
+filepaht = '/home/tingchangyin/cuDFNsys/ContinueParticleTransport';
+
+coordinate_3D = h5read([filepaht, '/MHFEM_1.h5'], '/coordinate_3D');
+element_3D = h5read([filepaht, '/MHFEM_1.h5'], '/element_3D');
+velocity_center_grid = h5read([filepaht, '/MHFEM_1.h5'], '/velocity_center_grid');
+pressure_eles = h5read([filepaht, '/MHFEM_1.h5'], '/pressure_eles');
+
 L = 0.5 * 100;
 cube_frame = [-L, -L, L; -L, L, L; L, L, L; L -L, L; -L, -L, -L; -L, L, -L; L, L, -L; L -L, -L; -L, L, L; -L, L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L, -L; L, -L, -L; L, -L, L; L, -L, L; L, -L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L, -L; -L, L, -L; -L, L, L];
-% figure(1); view(3); title('DFN flow (mhfem)'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on
-% patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4; 5 6 7 8; 9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on
+figure(2); view(3); title('DFN flow (mhfem)'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on
+patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4; 5 6 7 8; 9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on
 %
 % xlim([-1.1 * L, 1.1 * L]);
 % ylim([-1.1 * L, 1.1 * L]);
@@ -24,20 +30,18 @@ CenterELE(:, 3) = 1/3 * (coordinate_3D(element_3D(:, 1), 3) + coordinate_3D(elem
 figure(2);
 view(3)
 Tri = [
-48265
-52002
+70071
     ];
 patch('Vertices', coordinate_3D, 'Faces', element_3D(Tri, :), 'FaceVertexCData', pressure_eles(Tri, :), 'FaceColor', 'flat', 'EdgeAlpha', 0.9, 'facealpha', 0.9); view(3); hold on
 colorbar; hold on
-xlim([37.800 37.809]);
-ylim([-15.1568 -15.15608]);
-zlim([14.280 14.288]);
+xlim([-32.634 -32.62]);
+ylim([-8.596, -8.595]);
+zlim([-20.6278 -20.61]);
 hold on
 
-Trajectory = [	37.8002693876271393946808530017733573913574, -15.1568026486496769678069540532305836677551, 14.2876537276872941362171332002617418766022
-	37.8088966932151464561684406362473964691162, -15.1560986184463946102596310083754360675812, 14.2802897586648143146703660022467374801636
-    ];
-plot3(Trajectory(:, 1), Trajectory(:, 2), Trajectory(:, 3), '*-r', 'linewidth', 2); hold on
+ Trajectory = [		-32.6337047545824816552340053021907806396484, -8.5861513587561102411882529850117862224579, -20.6151017244196701483360811835154891014099
+	-32.6231245057548377985767729114741086959839, -8.5957170543029377540733548812568187713623, -20.6277206458753568085739971138536930084229];
+    plot3(Trajectory(:, 1), Trajectory(:, 2), Trajectory(:, 3), '*-r', 'linewidth', 2); hold on
 
 % plot3(coordinate_3D([7819, 927], 1), coordinate_3D([7819, 927], 2), coordinate_3D([7819, 927], 3), '*-k', 'linewidth', 2); hold on
 
