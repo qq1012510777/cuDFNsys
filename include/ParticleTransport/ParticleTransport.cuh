@@ -57,6 +57,7 @@ public:
     uint BlockNOPresent = 0;
     vector<double> RunTimeEveryStep;
     bool IfRecordTime = false;
+    string RecordMode = "OutputAll";
 
 private:
     string ParticlePosition = "ParticlePositionResult/ParticlePosition";
@@ -74,7 +75,10 @@ public:
                       T outletcoordinate,
                       const string &Particle_mode,
                       const string &Injection_mode,
-                      bool if_cpu = false, int Nproc = 10, bool record_time = false);
+                      bool if_cpu = false,
+                      int Nproc = 10,
+                      bool record_time = false,
+                      string recordMode = "OutputAll");
 
     ParticleTransport(const int &NumTimeStep,
                       thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
@@ -87,6 +91,7 @@ public:
                       T Dispersion_local_ii = 0,
                       string Particle_mode_ii = "Particle_tracking",
                       string Injection_mode_ii = "Flux-weighted",
+                      string recordMode = "OutputAll",
                       bool if_cpu = false, int Nproc = 10, bool record_time = false);
 
     void ParticleMovement(const int &init_NO_STEP,
@@ -137,6 +142,5 @@ private:
                             const string &Injection_mode);
 
     void IdentifyNeighborElements(cuDFNsys::Mesh<T> mesh);
-
 };
 }; // namespace cuDFNsys

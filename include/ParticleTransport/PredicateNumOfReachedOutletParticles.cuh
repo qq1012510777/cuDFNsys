@@ -38,7 +38,7 @@ struct PredicateNumOfReachedOutletParticles
 {
     __host__ __device__ bool operator()(const cuDFNsys::Particle<T> &x) const
     {
-        return (x.ParticleID == -1 ? true : false);
+        return (x.ParticleID < 0 ? true : false);
     };
 };
 }; // namespace cuDFNsys

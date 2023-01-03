@@ -204,13 +204,15 @@ int main(int argc, char *argv[])
                 lk.OutputFractures(Filename_FracturesForParticle, Frac_verts_host, L);
             }
             cout << "Particle transport ing ......\n";
+
             cuDFNsys::ParticleTransport<_DataType_> p{atoi(argv[1]), // number of time step
                                                       Frac_verts_host, mesh, fem, (uint)perco_dir, -0.5f * L,
                                                       atoi(argv[2]), // num of particle
                                                       atof(argv[3]), // delta_T_ii
                                                       atof(argv[4]),
                                                       "Particle_tracking",
-                                                      "Flux-weighted"};
+                                                      "Flux-weighted",
+                                                      "FPTCurve"};
             p.MatlabPlot("MHFEM_" + to_string(i + 1) + ".h5", "ParticlesDFNMatlab.m", mesh, fem, L, true, "ParticlesDFN");
         }
         //cudaDeviceReset();

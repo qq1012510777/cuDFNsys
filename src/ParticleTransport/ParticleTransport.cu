@@ -37,12 +37,17 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(const int &NumOfParticles,
                                                   T outletcoordinate,
                                                   const string &Particle_mode,
                                                   const string &Injection_mode,
-                                                  bool if_cpu, int Nproc, bool record_time)
+                                                  bool if_cpu, int Nproc, bool record_time, string recordMode)
 {
     IfRecordTime = record_time;
     this->Dir = Dir_flow;
 
     string filename_EdgesSharedEle = "EdgesSharedEle.h5";
+
+    if (recordMode != "OutputAll" && recordMode != "FPTCurve")
+        throw cuDFNsys::ExceptionsPause("Undefined Particle information record mode!\n");
+    else
+        this->RecordMode = recordMode;
 
     std::ifstream fileer(filename_EdgesSharedEle);
     bool pwqsc = fileer.good();
@@ -106,7 +111,7 @@ template cuDFNsys::ParticleTransport<double>::ParticleTransport(const int &NumOf
                                                                 double outletcoordinate,
                                                                 const string &Particle_mode,
                                                                 const string &Injection_mode,
-                                                                bool if_cpu, int Nproc, bool record_time);
+                                                                bool if_cpu, int Nproc, bool record_time, string recordMode);
 template cuDFNsys::ParticleTransport<float>::ParticleTransport(const int &NumOfParticles,
                                                                const int &NumTimeStep,
                                                                float delta_T_,
@@ -118,7 +123,7 @@ template cuDFNsys::ParticleTransport<float>::ParticleTransport(const int &NumOfP
                                                                float outletcoordinate,
                                                                const string &Particle_mode,
                                                                const string &Injection_mode,
-                                                               bool if_cpu, int Nproc, bool record_time);
+                                                               bool if_cpu, int Nproc, bool record_time, string recordMode);
 
 // ====================================================
 // NAME:        ParticleTransport
@@ -139,9 +144,14 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(const int &NumTimeStep,
                                                   T Dispersion_local_ii,
                                                   string Particle_mode_ii,
                                                   string Injection_mode_ii,
+                                                  string recordMode,
                                                   bool if_cpu, int Nproc, bool record_time)
 {
     //cuDFNsys::MatlabAPI M1;
+    // if (recordMode != "OutputAll" && recordMode != "FPTCurve")
+    //     throw cuDFNsys::ExceptionsPause("Undefined Particle information record mode!\n");
+    // else
+    //     this->RecordMode = recordMode;
 
     IfRecordTime = record_time;
 
@@ -193,6 +203,7 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(const int &NumTimeStep,
         cout << "\n\e[1;32mContinue to perform particle transport\e[0m\n\n";
 
         cuDFNsys::HDF5API h5g;
+
         vector<uint> Tem_p = h5g.ReadDataset<uint>(matfile, "N", "NumOfSteps");
         uint ExistingNumsteps = Tem_p[0];
 
@@ -208,21 +219,37 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(const int &NumTimeStep,
         string Particle_mode = h5g.ReadDatasetString(matfile, "N", "Particle_mode");
         string Injection_mode = h5g.ReadDatasetString(matfile, "N", "Injection_mode");
 
+        this->RecordMode = h5g.ReadDatasetString(matfile, "N", "RecordMode");
+
+        if (this->RecordMode != "OutputAll" && this->RecordMode != "FPTCurve")
+            throw cuDFNsys::ExceptionsPause("Undefined Particle information record mode!\n");
+
         string file_block_last = this->ParticlePosition + "Block" + cuDFNsys::ToStringWithWidth(this->BlockNOPresent, 10) + ".h5";
         string datasetname_last = "Step_" + cuDFNsys::ToStringWithWidth(ExistingNumsteps, 10);
 
         // cout << file_block_last << endl;
         // cout << datasetname_last << endl;
 
-        vector<T> LastStepParticle =
-            h5g.ReadDataset<T>(file_block_last, "N",
-                               datasetname_last);
+        vector<T> LastStepParticle;
+
+        if (this->RecordMode == "OutputAll")
+            LastStepParticle = h5g.ReadDataset<T>(file_block_last, "N",
+                                                  datasetname_last);
+        else if (this->RecordMode == "FPTCurve")
+            LastStepParticle = h5g.ReadDataset<T>(ParticlePosition + "LastStep.h5", "N",
+                                                  datasetname_last);
+
         uint NumParDyna = LastStepParticle.size() / 2;
         this->ParticlePlumes.resize(NumParDyna);
 
-        vector<T> Ifreached =
-            h5g.ReadDataset<T>(file_block_last, "N",
-                               "ParticleIDAndElementTag_" + cuDFNsys::ToStringWithWidth(ExistingNumsteps, 10));
+        vector<T> Ifreached;
+
+        if (this->RecordMode == "OutputAll")
+            Ifreached = h5g.ReadDataset<T>(file_block_last, "N",
+                                           "ParticleIDAndElementTag_" + cuDFNsys::ToStringWithWidth(ExistingNumsteps, 10));
+        else
+            Ifreached = h5g.ReadDataset<T>(ParticlePosition + "LastStep.h5", "N",
+                                           "ParticleIDAndElementTag_" + cuDFNsys::ToStringWithWidth(ExistingNumsteps, 10));
 
         cout << "Loading particles' positions at the last step\n";
         for (uint i = 0; i < NumParDyna; i++)
@@ -255,6 +282,11 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(const int &NumTimeStep,
     }
     else
     {
+        if (recordMode != "OutputAll" && recordMode != "FPTCurve")
+            throw cuDFNsys::ExceptionsPause("Undefined Particle information record mode!\n");
+        else
+            this->RecordMode = recordMode;
+
         //cout << 1 << endl;
         this->InitilizeParticles(NumOfParticles_ii,
                                  mesh, fem, Injection_mode_ii);
@@ -294,6 +326,7 @@ template cuDFNsys::ParticleTransport<double>::ParticleTransport(const int &NumTi
                                                                 double Dispersion_local_ii,
                                                                 string Particle_mode_ii,
                                                                 string Injection_mode_ii,
+                                                                string recordMode,
                                                                 bool if_cpu, int Nproc, bool record_time);
 template cuDFNsys::ParticleTransport<float>::ParticleTransport(const int &NumTimeStep,
                                                                thrust::host_vector<cuDFNsys::Fracture<float>> Fracs,
@@ -306,6 +339,7 @@ template cuDFNsys::ParticleTransport<float>::ParticleTransport(const int &NumTim
                                                                float Dispersion_local_ii,
                                                                string Particle_mode_ii,
                                                                string Injection_mode_ii,
+                                                               string recordMode,
                                                                bool if_cpu, int Nproc, bool record_time);
 
 // ====================================================
@@ -385,12 +419,65 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(const int &init_NO_STEP,
             RunTimeEveryStep.push_back(ielaps_b);
 
         uint sum = thrust::reduce(Particle_runtime_error.begin(), Particle_runtime_error.end(), (uint)0, thrust::plus<uint>());
+
         if (sum != 0)
+        {
+            if (this->RecordMode == "FPTCurve")
+                this->OutputParticleInfoStepByStep(i - 1, // this step is a failure, so last step should be recorded
+                                                   delta_T_,
+                                                   Dispersion_local,
+                                                   Particle_mode,
+                                                   Injection_mode,
+                                                   Fracs, mesh);
+
             throw cuDFNsys::ExceptionsPause("Error happens when particle is moving!\n");
+        }
 
         this->ParticlePlumes = ParticlePlumes_DEV;
 
         double istart = cuDFNsys::CPUSecond();
+
+        // if RecordMode == "FPTCurve", we have to find which particles have been reached after this step!
+        // if RecordMode == "FPTCurve", we have to find which particles have been reached after this step!
+        // if RecordMode == "FPTCurve", we have to find which particles have been reached after this step!
+        // then we read the H5, and change the record the number of steps in the element
+        if (this->RecordMode == "FPTCurve")
+        {
+            string matkeyd = ParticlePosition + "_WhichStepDoesTheParticleReached.h5";
+
+            cuDFNsys::HDF5API h5gds;
+
+            vector<int> WhichStepDoesTheParticleReached = h5gds.ReadDataset<int>(matkeyd, "N",
+                                                                                 "WhichStepDoesTheParticleReached");
+
+            bool if_changed = false;
+
+            typename thrust::host_vector<cuDFNsys::Particle<T>>::iterator ityus;
+            ityus = this->ParticlePlumes.begin();
+
+            while ((ityus = thrust::find_if(ityus, this->ParticlePlumes.end(), cuDFNsys::PredicateNumOfReachedOutletParticles<T>())) != this->ParticlePlumes.end())
+            {
+                int idx_tq = ityus - this->ParticlePlumes.begin();
+
+                if (this->ParticlePlumes[idx_tq].ParticleID < 0)
+                    if (WhichStepDoesTheParticleReached[abs(this->ParticlePlumes[idx_tq].ParticleID)] == -1)
+                    {
+                        WhichStepDoesTheParticleReached[abs(this->ParticlePlumes[idx_tq].ParticleID)] = i;
+                        //cout << "found particleID " << this->ParticlePlumes[idx_tq].ParticleID << " reached\n";
+                        if (!if_changed)
+                            if_changed = true;
+                    }
+
+                ityus++;
+            }
+
+            if (if_changed)
+            {
+                //cout << "chnage\n";
+                uint2 dimu = make_uint2(1, WhichStepDoesTheParticleReached.size());
+                h5gds.OverWrite<int>(matkeyd, "N", "WhichStepDoesTheParticleReached", WhichStepDoesTheParticleReached.data(), dimu);
+            }
+        }
 
         // int NumReachedParticle = thrust::count_if(this->ParticlePlumes.begin(),
         //                                           this->ParticlePlumes.end(),
@@ -410,18 +497,27 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(const int &init_NO_STEP,
 
         cout << this->NumParticles - NumPart_dynamic << "/" << this->NumParticles << " reached outlet plane, running time: " << ielaps_b << "; counting time: " << ielaps << "s\n";
 
+        if (this->RecordMode == "OutputAll")
+            this->OutputParticleInfoStepByStep(i,
+                                               delta_T_,
+                                               Dispersion_local,
+                                               Particle_mode,
+                                               Injection_mode,
+                                               Fracs, mesh);
+        else if (this->RecordMode == "FPTCurve")
+            if (i == NumTimeStep + init_NO_STEP) // the final step
+                this->OutputParticleInfoStepByStep(i,
+                                                   delta_T_,
+                                                   Dispersion_local,
+                                                   Particle_mode,
+                                                   Injection_mode,
+                                                   Fracs, mesh);
+
         if (NumPart_dynamic == 0 && Particle_mode == "Particle_tracking")
         {
             cout << "\e[1;32mAll particles reached outlet plane!\e[0m\n";
             break;
         }
-        this->OutputParticleInfoStepByStep(i,
-                                           delta_T_,
-                                           Dispersion_local,
-                                           Particle_mode,
-                                           Injection_mode,
-                                           Fracs, mesh);
-
         cout << "\n";
     }
 }; // ParticleMovement
@@ -472,6 +568,8 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovementCPU(const int &init_NO_STEP
     // cuDFNsys::EdgeToEle *EdgesSharedEle_DEV = thrust::raw_pointer_cast(this->EdgesSharedEle.data());
     // cuDFNsys::EleCoor<T> *Coordinate2D_Vec_dev_ptr = thrust::raw_pointer_cast(mesh.Coordinate2D.data());
     // uint *EleToFracID_ptr = thrust::raw_pointer_cast(mesh.ElementFracTag.data());
+    if (this->RecordMode != "OutputAll")
+        throw cuDFNsys::ExceptionsPause("ParticleMovementCPU only support OutputAll mode\n");
 
     thrust::host_vector<T> Velocity_sep_edge;
     Velocity_sep_edge.reserve(fem.VelocityNormalScalarSepEdges.rows());
@@ -610,6 +708,8 @@ void cuDFNsys::ParticleTransport<T>::OutputParticleInfoStepByStep(const uint &St
         h5g.NewFile(h5dispersioninfo);
         h5g.AddDatasetString(h5dispersioninfo, "N", "Particle_mode", Particle_mode);
         h5g.AddDatasetString(h5dispersioninfo, "N", "Injection_mode", Injection_mode);
+        h5g.AddDatasetString(h5dispersioninfo, "N", "RecordMode", this->RecordMode);
+
         T po[1] = {delta_T};
         h5g.AddDataset(h5dispersioninfo, "N", "Delta_T", po, dim_scalar);
         po[0] = {Dispersion_local};
@@ -670,37 +770,70 @@ void cuDFNsys::ParticleTransport<T>::OutputParticleInfoStepByStep(const uint &St
 
     if (StepNO == 0)
     {
+        string mat_key;
+        if (this->RecordMode == "OutputAll")
+        {
+            mat_key = ParticlePosition + "Init.h5";
 
-        string mat_key = ParticlePosition + "Init.h5";
-        h5g.NewFile(mat_key);
-        h5g.AddDataset(mat_key, "N", "Step_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
-                       particle_position_3D, dim_data);
-        h5g.AddDataset(mat_key, "N", "ParticleIDAndElementTag_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
-                       _IfReaded_and_ElementFracTag_, dim_datauu);
+            h5g.NewFile(mat_key);
+            h5g.AddDataset(mat_key, "N", "Step_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
+                           particle_position_3D, dim_data);
+            h5g.AddDataset(mat_key, "N", "ParticleIDAndElementTag_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
+                           _IfReaded_and_ElementFracTag_, dim_datauu);
+        }
+        else if (this->RecordMode == "FPTCurve")
+        {
+            mat_key = ParticlePosition + "LastStep.h5";
+            h5g.NewFile(mat_key);
+            h5g.AddDataset(mat_key, "N", "Step_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
+                           particle_position_3D, dim_data);
+            h5g.AddDataset(mat_key, "N", "ParticleIDAndElementTag_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
+                           _IfReaded_and_ElementFracTag_, dim_datauu);
+
+            uint2 dimf2 = make_uint2(1, this->ParticlePlumes.size());
+            std::vector<int> WhichStepDoesTheParticleReached(this->ParticlePlumes.size(), -1);
+
+            string matkeyd = ParticlePosition + "_WhichStepDoesTheParticleReached.h5";
+            h5g.NewFile(matkeyd);
+            h5g.AddDataset(matkeyd, "N", "WhichStepDoesTheParticleReached", WhichStepDoesTheParticleReached.data(), dimf2);
+        }
     }
     else
     {
-
-        if (StepNO > (this->BlockNOPresent * this->SizeOfDataBlock))
+        if (this->RecordMode == "OutputAll")
         {
-            this->BlockNOPresent++;
-            uint ouy[1] = {this->BlockNOPresent};
+            if (StepNO > (this->BlockNOPresent * this->SizeOfDataBlock))
+            {
+                this->BlockNOPresent++;
+                uint ouy[1] = {this->BlockNOPresent};
 
-            h5g.OverWrite(h5dispersioninfo, "N", "BlockNOPresent", ouy, dim_scalar);
+                h5g.OverWrite(h5dispersioninfo, "N", "BlockNOPresent", ouy, dim_scalar);
 
+                string mat_key = ParticlePosition + "Block" +
+                                 cuDFNsys::ToStringWithWidth(this->BlockNOPresent, 10) + ".h5";
+                h5g.NewFile(mat_key);
+            }
             string mat_key = ParticlePosition + "Block" +
                              cuDFNsys::ToStringWithWidth(this->BlockNOPresent, 10) + ".h5";
-            h5g.NewFile(mat_key);
-        }
-        string mat_key = ParticlePosition + "Block" +
-                         cuDFNsys::ToStringWithWidth(this->BlockNOPresent, 10) + ".h5";
 
-        h5g.AddDataset(mat_key, "N", "Step_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
-                       particle_position_3D, dim_data);
-        //cout << dim_data.x << ", " << dim_data.y << endl;
-        h5g.AddDataset(mat_key, "N", "ParticleIDAndElementTag_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
-                       _IfReaded_and_ElementFracTag_, dim_datauu);
-        //cout << dim_datauu.x << ", " << dim_datauu.y << endl;
+            h5g.AddDataset(mat_key, "N", "Step_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
+                           particle_position_3D, dim_data);
+            //cout << dim_data.x << ", " << dim_data.y << endl;
+            h5g.AddDataset(mat_key, "N", "ParticleIDAndElementTag_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
+                           _IfReaded_and_ElementFracTag_, dim_datauu);
+            //cout << dim_datauu.x << ", " << dim_datauu.y << endl;
+        }
+        else
+        {
+            string mat_key = ParticlePosition + "LastStep.h5";
+            h5g.NewFile(mat_key);
+
+            h5g.AddDataset(mat_key, "N", "Step_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
+                           particle_position_3D, dim_data);
+            //cout << dim_data.x << ", " << dim_data.y << endl;
+            h5g.AddDataset(mat_key, "N", "ParticleIDAndElementTag_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
+                           _IfReaded_and_ElementFracTag_, dim_datauu);
+        }
     }
     delete[] particle_position_3D;
     particle_position_3D = NULL;

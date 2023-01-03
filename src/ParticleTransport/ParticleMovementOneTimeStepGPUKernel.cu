@@ -56,7 +56,7 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
 
-    if (P_DEV[i].ParticleID == -1)
+    if (P_DEV[i].ParticleID < 0)
         return;
 
     // velocity vector of the grid
@@ -220,7 +220,7 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
             T *tmp_pnt = &(Pos3D_.x);
             if (abs(tmp_pnt[Dir_flow] - outletcoordinate) < 1e-4)
             {
-                P_DEV[i].ParticleID = -1; // reaches outlet plane
+                P_DEV[i].ParticleID = -P_DEV[i].ParticleID; // reaches outlet plane
                 return;
             }
             else
@@ -400,7 +400,7 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
         tmp4 = &(IntersectionPnt_3D.x);
         if (abs(tmp4[Dir_flow] - outletcoordinate) < 1e-4)
         {
-            P_DEV[i].ParticleID = -1;
+            P_DEV[i].ParticleID = -P_DEV[i].ParticleID;
             P_DEV[i].ElementID = EleID;
             P_DEV[i].Position2D = IntersectionOnCrossedEdge;
             return;
@@ -458,7 +458,7 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
             T *tmp3 = &(Test3DIntersectionOnCrossedEdge.x);
             if (abs(tmp3[Dir_flow] - outletcoordinate) < 1e-4)
             {
-                P_DEV[i].ParticleID = -1;
+                P_DEV[i].ParticleID = -P_DEV[i].ParticleID;
                 P_DEV[i].ElementID = EleID;
                 P_DEV[i].Position2D = IntersectionOnCrossedEdge;
                 return;
