@@ -119,7 +119,7 @@ cuDFNsys::Mesh<T>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
             std::vector<std::pair<int, int>> out;
             gmsh::model::occ::fragment(object_entity, tool_entity, out, outmap);
             gmsh::model::occ::synchronize();
-            gmsh::write("exod.brep");
+            // gmsh::write("exod.brep");
             cout << "\t\tfragmented entities, running time: " << cuDFNsys::CPUSecond() - istart2 << " sec\n";
 
             // cout << "outDimTags\n";
@@ -163,7 +163,7 @@ cuDFNsys::Mesh<T>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
         /// gmsh::fltk::run();
         cout << "\t\tmeshing finished, running time: " << cuDFNsys::CPUSecond() - istart << " sec\n";
 
-        gmsh::write("exod.msh");
+        //gmsh::write("exod.msh");
 
         cout << "\t\tGeting coordinates" << endl;
         this->GetCoordinates();

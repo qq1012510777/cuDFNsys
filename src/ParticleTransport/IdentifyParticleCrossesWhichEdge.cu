@@ -128,7 +128,7 @@ __host__ __device__ cuDFNsys::Vector3<T> cuDFNsys::IdentifyParticleCrossesWhichE
                                (Vertex_Triangle[i].x - Vertex_Triangle[(i + 1) % 3].x) * (Vertex_Triangle[i].x - Vertex_Triangle[(i + 1) % 3].x));
             T factor_ = norm_edge / norm_trajectory;
 
-            cuDFNsys::Scale2DSegment<T>(P_Trajectory, factor_);
+            //cuDFNsys::Scale2DSegment<T>(P_Trajectory, factor_);
 
             T a1 = P_Trajectory[1].y - P_Trajectory[0].y;
             T b1 = P_Trajectory[0].x - P_Trajectory[1].x;

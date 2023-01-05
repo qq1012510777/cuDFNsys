@@ -90,9 +90,9 @@ int main(int argc, char *argv[])
                                                                              DSIZE, L,
                                                                              0,
                                                                              ParaSizeDistri,
-                                                                             (_DataType_)atof(argv[9]),
-                                                                             (_DataType_)atof(argv[10]),
-                                                                             (_DataType_)atof(argv[11]));
+                                                                             (_DataType_)atof(argv[9]),   // kappa
+                                                                             (_DataType_)atof(argv[10]),  // beta
+                                                                             (_DataType_)atof(argv[11])); // sigma
         cudaDeviceSynchronize();
 
         Frac_verts_host = Frac_verts_device;
