@@ -457,7 +457,13 @@ void cuDFNsys::MHFEM<T>::Implementation(const cuDFNsys::Mesh<T> &mesh,
         this->QIn += veloc_length;
         this->InletLength += len;
         //cout << "len: " << len << ";\tq: " << this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0) << "; sep_EDGE_no: " << sep_EDGE_no + 1 << "\n";
-        //if (this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0) > 0)
+        if (this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0) > 0)
+        {
+            cout << "\t\t*** Warning: One inlet velocity is > 0: " << this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0);
+            cout << ", sep_EDGE_no: " << sep_EDGE_no;
+            cout << ", elementID (from 1): " << ceil((1.0 * sep_EDGE_no + 1.0) / 3.0) << endl;
+        }
+
         //opp += veloc_length;
     }
     //cout << "\n\nout:\n";
@@ -470,6 +476,12 @@ void cuDFNsys::MHFEM<T>::Implementation(const cuDFNsys::Mesh<T> &mesh,
         this->QOut += veloc_length;
         this->OutletLength += len;
         //cout << "len: " << len << ";\tq: " << this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0) << "; sep_EDGE_no: " << sep_EDGE_no + 1 << "\n";
+        if (this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0) < 0)
+        {
+            cout << "\t\t*** Warning: One outlet velocity is < 0: " << this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0);
+            cout << ", sep_EDGE_no: " << sep_EDGE_no;
+            cout << ", elementID (from 1): " << ceil((1.0 * sep_EDGE_no + 1.0) / 3.0) << endl;
+        }
     }
     cout << "\t\tRunning time of post treatments: " << cuDFNsys::CPUSecond() - iStart_fem << "sec\n";
 }; // Implementation
@@ -492,7 +504,6 @@ pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> cuDFNsys::MHFEM<T
                                                                                                  T P_in,
                                                                                                  T P_out)
 {
-    
 
     int NUM_sep_edges = mesh.Element3D.size() * 3,
         NUM_eles = mesh.Element3D.size(),
@@ -556,7 +567,6 @@ pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> cuDFNsys::MHFEM<T
     this->TripletTime = cuDFNsys::CPUSecond() - iStart_fem;
     cout << "\t\tRunning time of GPU triplets: " << this->TripletTime << "sec\n";
 
-
     iStart_fem = cuDFNsys::CPUSecond();
 
     tri_h = tri_dev;
@@ -609,7 +619,6 @@ pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> cuDFNsys::MHFEM<T
                                                                                                  T P_out,
                                                                                                  int Nproc)
 {
-    
 
     int NUM_sep_edges = mesh.Element3D.size() * 3,
         NUM_eles = mesh.Element3D.size(),
@@ -647,7 +656,7 @@ pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> cuDFNsys::MHFEM<T
 
     thrust::host_vector<cuDFNsys::Triplet<T>> tri_h(21 * NUM_eles);
 
-    #pragma omp parallel for schedule(static) num_threads(Nproc)
+#pragma omp parallel for schedule(static) num_threads(Nproc)
     for (int i = 0; i < NUM_eles; ++i)
     {
         int I[3] = {i * 3 + 1, // 2
@@ -743,7 +752,7 @@ pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> cuDFNsys::MHFEM<T
     //------------------------------
     //------------------------------
     this->TripletTime = cuDFNsys::CPUSecond() - iStart_fem;
-    cout << "\t\tRunning time of CPU triplets with Nproc = " << Nproc << ": " << this->TripletTime  << "sec\n";
+    cout << "\t\tRunning time of CPU triplets with Nproc = " << Nproc << ": " << this->TripletTime << "sec\n";
 
     iStart_fem = cuDFNsys::CPUSecond();
 

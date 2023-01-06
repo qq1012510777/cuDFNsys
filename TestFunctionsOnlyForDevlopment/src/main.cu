@@ -85,8 +85,12 @@ int main(int argc, char *argv[])
 
         cout << "generating fractures" << endl;
 
+        srand((unsigned int)time(0));
+        Eigen::MatrixXd Ter = Eigen::MatrixXd::Random(1, 1);
+        //cout << Ter(0, 0) << ", " << (unsigned long)t << endl;
+
         cuDFNsys::Fractures<_DataType_><<<DSIZE / 256 + 1, 256 /*  1, 2*/>>>(Frac_verts_device_ptr,
-                                                                             (unsigned long)t,
+                                                                             (unsigned long)t + (unsigned long)ceil(abs(Ter(0, 0)) * ((unsigned long)t * 1.0)),
                                                                              DSIZE, L,
                                                                              0,
                                                                              ParaSizeDistri,
@@ -111,7 +115,7 @@ int main(int argc, char *argv[])
                                                                    Frac_verts_host, perco_dir,
                                                                    Percolation_cluster};
         cout << "DFN I finished" << endl;
-        cuDFNsys::MatlabPlotDFN<_DataType_> As{"DFN_I.h5", "N",
+        cuDFNsys::MatlabPlotDFN<_DataType_> As{"DFN_I.h5", "DFN_I.m",
                                                Frac_verts_host, Intersection_map, ListClusters,
                                                Percolation_cluster, false, true, true, true,
                                                L, perco_dir, true, "DFN_I"};
@@ -134,7 +138,7 @@ int main(int argc, char *argv[])
                                                                     Frac_verts_host, perco_dir,
                                                                     Percolation_cluster};
         cout << "DFN II finished" << endl;
-        cuDFNsys::MatlabPlotDFN<_DataType_> As2{"DFN_II.h5", "N",
+        cuDFNsys::MatlabPlotDFN<_DataType_> As2{"DFN_II.h5", "DFN_II.m",
                                                 Frac_verts_host, Intersection_map, ListClusters,
                                                 Percolation_cluster, true, true, true, true,
                                                 L, perco_dir, true, "DFN_II"};
@@ -178,25 +182,25 @@ int main(int argc, char *argv[])
 
             cout << "MHFEM ing ..." << endl;
 
-            cuDFNsys::MHFEM<_DataType_> fem;
-
-            cuDFNsys::InputObjectData<_DataType_> lkd;
-            try
-            {
-                cout << "Loading mhfem ...\n";
-                lkd.InputMHFEM("mhfem.h5", fem);
-            }
-            catch (...)
-            {
-                cuDFNsys::MHFEM<_DataType_> fem2{mesh, Frac_verts_host, 100, 20, perco_dir, L};
-                lk.OutputMHFEM("mhfem.h5", fem2);
-                fem = fem2;
-            };
+            cuDFNsys::MHFEM<_DataType_> fem{mesh, Frac_verts_host, 100, 20, perco_dir, L};
+            lk.OutputMHFEM("mhfem.h5", fem);
+            // cuDFNsys::InputObjectData<_DataType_> lkd;
+            // try
+            // {
+            //     cout << "Loading mhfem ...\n";
+            //     lkd.InputMHFEM("mhfem.h5", fem);
+            // }
+            // catch (...)
+            // {
+            //     cuDFNsys::MHFEM<_DataType_> fem2{mesh, Frac_verts_host, 100, 20, perco_dir, L};
+            //     lk.OutputMHFEM("mhfem.h5", fem2);
+            //     fem = fem2;
+            // };
 
             cout << "Fluxes: " << fem.QIn << ", ";
             cout << fem.QOut << ", Permeability: ";
             cout << fem.Permeability << endl;
-            cout << "Error between the inlet and outlet fluxes: " << abs(fem.QIn - fem.QOut) / ((fem.QOut + fem.QIn) * 0.5) * 100.0 << "%%\n";
+            cout << "Error between the inlet and outlet fluxes: " << abs(fem.QIn - fem.QOut) / ((fem.QOut + fem.QIn) * 0.5) * 100.0 << "%\n";
             if (fem.QError > 1 || isnan(fem.Permeability) == 1)
             {
                 cout << "\e[1;32mFound large error or isnan, the error: " << fem.QError << ", the permeability: " << fem.Permeability << "\e[0m\n";

@@ -47,6 +47,9 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
     if (i >= count)
         return;
 
+    //if (i != 89140)
+    //return;
+
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
     /// ----------------------- debug -----------------------
@@ -137,42 +140,42 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
 
     for (uint Loop_time = 1;; Loop_time++)
     {
-        /// printf("\n%%--------------------\n%% The looptime: %d, fracid: %d, elementid: %d\n %%Present trajectory:\n%.40f, %.40f\n%.40f, %.40f,\n\n",
-        ///        Loop_time, FracID, EleID, InitPos.x, InitPos.y, TargPos.x, TargPos.y);
-        /// ////// debug: turn trajectory to 3D --------------------
-        /// ////// debug: turn trajectory to 3D --------------------
-        /// ////// debug: turn trajectory to 3D --------------------
-        /// if (1)
-        /// {
-        ///     cuDFNsys::Vector2<T> Vertex_Triangle_PPP[3];
-        ///     Vertex_Triangle_PPP[0] = cuDFNsys::MakeVector2(Coordinate2D_Vec_dev_ptr[EleID - 1].x[0], Coordinate2D_Vec_dev_ptr[EleID - 1].y[0]);
-        ///     Vertex_Triangle_PPP[1] = cuDFNsys::MakeVector2(Coordinate2D_Vec_dev_ptr[EleID - 1].x[1], Coordinate2D_Vec_dev_ptr[EleID - 1].y[1]);
-        ///     Vertex_Triangle_PPP[2] = cuDFNsys::MakeVector2(Coordinate2D_Vec_dev_ptr[EleID - 1].x[2], Coordinate2D_Vec_dev_ptr[EleID - 1].y[2]);
-        ///     printf("Now, element ID: %d, 2D coordinates:\n\t%.40f, %.40f\n\t%.40f, %.40f\n\t%.40f, %.40f\n\n",
-        ///            EleID,
-        ///            Vertex_Triangle_PPP[0].x, Vertex_Triangle_PPP[0].y,
-        ///            Vertex_Triangle_PPP[1].x, Vertex_Triangle_PPP[1].y,
-        ///            Vertex_Triangle_PPP[2].x, Vertex_Triangle_PPP[2].y);
-        ///     cuDFNsys::Vector3<T> InitiPos3D = cuDFNsys::MakeVector3(InitPos.x, InitPos.y, (T)0.0);
-        ///     cuDFNsys::Vector3<T> TargPos3D = cuDFNsys::MakeVector3(TargPos.x, TargPos.y, (T)0.0);
-        ///     T RK_1[3][3];
-        ///     Frac_DEV[FracID].RoationMatrix(RK_1, 23);
-        ///     InitiPos3D = cuDFNsys::ProductSquare3Vector3<T>(RK_1, InitiPos3D);
-        ///     TargPos3D = cuDFNsys::ProductSquare3Vector3<T>(RK_1, TargPos3D);
-        ///     InitiPos3D.x += Frac_DEV[FracID].Center.x;
-        ///     InitiPos3D.y += Frac_DEV[FracID].Center.y;
-        ///     InitiPos3D.z += Frac_DEV[FracID].Center.z;
-        ///     TargPos3D.x += Frac_DEV[FracID].Center.x;
-        ///     TargPos3D.y += Frac_DEV[FracID].Center.y;
-        ///     TargPos3D.z += Frac_DEV[FracID].Center.z;
-        ///     printf("Trajectory3D:\n\t%.40f, %.40f, %.40f\n\t%.40f, %.40f, %.40f\n",
-        ///            InitiPos3D.x,
-        ///            InitiPos3D.y,
-        ///            InitiPos3D.z,
-        ///            TargPos3D.x,
-        ///            TargPos3D.y,
-        ///            TargPos3D.z);
-        /// }
+        // printf("\n%%--------------------\n%% The looptime: %d, fracid: %d, elementid: %d\n %%Present trajectory:\n%.40f, %.40f\n%.40f, %.40f,\n\n",
+        //        Loop_time, FracID, EleID, InitPos.x, InitPos.y, TargPos.x, TargPos.y);
+        // ////// debug: turn trajectory to 3D --------------------
+        // ////// debug: turn trajectory to 3D --------------------
+        // ////// debug: turn trajectory to 3D --------------------
+        // if (1)
+        // {
+        //     cuDFNsys::Vector2<T> Vertex_Triangle_PPP[3];
+        //     Vertex_Triangle_PPP[0] = cuDFNsys::MakeVector2(Coordinate2D_Vec_dev_ptr[EleID - 1].x[0], Coordinate2D_Vec_dev_ptr[EleID - 1].y[0]);
+        //     Vertex_Triangle_PPP[1] = cuDFNsys::MakeVector2(Coordinate2D_Vec_dev_ptr[EleID - 1].x[1], Coordinate2D_Vec_dev_ptr[EleID - 1].y[1]);
+        //     Vertex_Triangle_PPP[2] = cuDFNsys::MakeVector2(Coordinate2D_Vec_dev_ptr[EleID - 1].x[2], Coordinate2D_Vec_dev_ptr[EleID - 1].y[2]);
+        //     printf("Now, element ID: %d, 2D coordinates:\n\t%.40f, %.40f\n\t%.40f, %.40f\n\t%.40f, %.40f\n\n",
+        //            EleID,
+        //            Vertex_Triangle_PPP[0].x, Vertex_Triangle_PPP[0].y,
+        //            Vertex_Triangle_PPP[1].x, Vertex_Triangle_PPP[1].y,
+        //            Vertex_Triangle_PPP[2].x, Vertex_Triangle_PPP[2].y);
+        //     cuDFNsys::Vector3<T> InitiPos3D = cuDFNsys::MakeVector3(InitPos.x, InitPos.y, (T)0.0);
+        //     cuDFNsys::Vector3<T> TargPos3D = cuDFNsys::MakeVector3(TargPos.x, TargPos.y, (T)0.0);
+        //     T RK_1[3][3];
+        //     Frac_DEV[FracID].RoationMatrix(RK_1, 23);
+        //     InitiPos3D = cuDFNsys::ProductSquare3Vector3<T>(RK_1, InitiPos3D);
+        //     TargPos3D = cuDFNsys::ProductSquare3Vector3<T>(RK_1, TargPos3D);
+        //     InitiPos3D.x += Frac_DEV[FracID].Center.x;
+        //     InitiPos3D.y += Frac_DEV[FracID].Center.y;
+        //     InitiPos3D.z += Frac_DEV[FracID].Center.z;
+        //     TargPos3D.x += Frac_DEV[FracID].Center.x;
+        //     TargPos3D.y += Frac_DEV[FracID].Center.y;
+        //     TargPos3D.z += Frac_DEV[FracID].Center.z;
+        //     printf("Trajectory3D:\n\t%.40f, %.40f, %.40f\n\t%.40f, %.40f, %.40f\n",
+        //            InitiPos3D.x,
+        //            InitiPos3D.y,
+        //            InitiPos3D.z,
+        //            TargPos3D.x,
+        //            TargPos3D.y,
+        //            TargPos3D.z);
+        // }
 
         if (Loop_time >= _ParTran_MaxLoopTimes || CountCrossedGlobalEdge == _SizeOfArray_CrossedGlobalEdge_ - 1)
         {
