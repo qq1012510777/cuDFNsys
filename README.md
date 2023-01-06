@@ -6,6 +6,7 @@ The _cuDFNsys_ does not support GUI and can only run on the Ubuntu. The _cuDFNsy
 
 The _cuDFNsys_ right now can only generate one group of fractures, because I am studying percolation in DFNs and some quantities in percolation theory are easier to calculate with only one fracture group. Geometrical attributes of fractures follow certain distributions. In reality, multiple fracture famlies might be observed.
 
+![](https://github.com/qq1012510777/cuDFNsys/blob/main/moive_particlesII.gif)
 
 # Authors
 
