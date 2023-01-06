@@ -6,6 +6,8 @@ The _cuDFNsys_ does not support GUI and can only run on the Ubuntu. The _cuDFNsy
 
 The _cuDFNsys_ right now can only generate one group of fractures, because I am studying percolation in DFNs and some quantities in percolation theory are easier to calculate with only one fracture group. Geometrical attributes of fractures follow certain distributions. In reality, multiple fracture famlies might be observed.
 
+The _cuDFNsys_ can load fractures from a .h5 file, which could contain multiple families of fractures.
+
 <p align="center">
   <img width="300" src="https://github.com/qq1012510777/cuDFNsys/blob/main/moive_particlesII.gif">
 </p>
@@ -42,7 +44,7 @@ The _cuDFNsys_ should be installed and run on the Ubuntu.
 
 The _cuDFNsys_ relies on several open packages: OpenMP, CUDA, Eigen, Gmsh, UMFPACK and HDF5.
 
-Installations of these libraries could be disturbing, even you are familiar with Linux, CMake, C++ and so on. I cannot write a bash file that help you install all these libraries at one time. You should go to their homepages, and install them one by one. The Gmsh C++ API that the _cuDFNsys_ relies on should support OCC mode, meaning that the occt library is required. _I am very willing to help, but you should be familiar with the Linux, CMake, C++ and so on_.
+The Gmsh C++ API that the _cuDFNsys_ relies on should support OCC mode, meaning that the occt library is required.
 
 * [Installation of CUDA](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html)
 
@@ -81,7 +83,7 @@ After simulation, the _cuDFNsys_ outputs .h5 and .m (and/or .py) files, and you 
 
 The visulization with MATLAB is simple, you just need the license of MATLAB. 
 
-With Python, you need to install the mayavi Python package. Sorry again for the inconvenience, the installation of the mayavi could be difficult, but the mayavi is a very good visualization engine. The Matplotlib package is not good at 3D visualizations, see [Why my 3D plot doesn’t look right at certain viewing angles](https://matplotlib.org/2.2.2/mpl_toolkits/mplot3d/faq.html).
+With Python, you need to install the mayavi Python package. The mayavi is a very good visualization engine. The Matplotlib package is not good at 3D visualizations, see [Why my 3D plot doesn’t look right at certain viewing angles](https://matplotlib.org/2.2.2/mpl_toolkits/mplot3d/faq.html).
 
 # Manual
 Right now, I provide a quickstart guide to explain how can one do simulations with _cuDFNsys_ functions. See QuickStartGuide/src/main.cu.
