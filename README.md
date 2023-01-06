@@ -8,6 +8,10 @@ The _cuDFNsys_ right now can only generate one group of fractures, because I am 
 
 ![](https://github.com/qq1012510777/cuDFNsys/blob/main/moive_particlesII.gif #pic_center)
 
+<p align="center">
+  <img width="460" height="300" src="https://github.com/qq1012510777/cuDFNsys/blob/main/moive_particlesII.gif">
+</p>
+
 # Authors
 
 * Tingchang YIN, Westlake University & Zhejiang University, China, yintingchang@foxmail.com
