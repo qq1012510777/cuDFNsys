@@ -432,10 +432,15 @@ void cuDFNsys::MHFEM<T>::Implementation(const cuDFNsys::Mesh<T> &mesh,
     cout << "\t\tRunning time of matrix multiplication 2: " << cuDFNsys::CPUSecond() - iStart_fem << "sec\n";
 
     //cout << "\tsolving ...\n";
+
     iStart_fem = cuDFNsys::CPUSecond();
     UmfPackLU<Eigen::SparseMatrix<double>> solver;
+    //SparseLU<Eigen::SparseMatrix<double>> solver;
     solver.compute(D);
+    if (solver.info() != Success)
+        throw cuDFNsys::ExceptionsPause("Compute matrix is wrong!\n");
     this->PressureInteriorEdge = solver.solve(r);
+
     //cout << "this->PressureInteriorEdge:\n";
     //cout << this->PressureInteriorEdge << endl;
     cout << "\t\tRunning time of solving matrix: " << cuDFNsys::CPUSecond() - iStart_fem << "sec\n";
@@ -461,7 +466,8 @@ void cuDFNsys::MHFEM<T>::Implementation(const cuDFNsys::Mesh<T> &mesh,
         {
             cout << "\t\t*** Warning: One inlet velocity is > 0: " << this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0);
             cout << ", sep_EDGE_no: " << sep_EDGE_no;
-            cout << ", elementID (from 1): " << ceil((1.0 * sep_EDGE_no + 1.0) / 3.0) << endl;
+            cout << ", elementID (from 1): " << ceil((1.0 * sep_EDGE_no + 1.0) / 3.0);
+            cout << ", element Pressure: " << this->PressureEles(int(ceil((1.0 * sep_EDGE_no + 1.0) / 3.0)), 0) << endl;
         }
 
         //opp += veloc_length;
@@ -480,7 +486,8 @@ void cuDFNsys::MHFEM<T>::Implementation(const cuDFNsys::Mesh<T> &mesh,
         {
             cout << "\t\t*** Warning: One outlet velocity is < 0: " << this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0);
             cout << ", sep_EDGE_no: " << sep_EDGE_no;
-            cout << ", elementID (from 1): " << ceil((1.0 * sep_EDGE_no + 1.0) / 3.0) << endl;
+            cout << ", elementID (from 1): " << ceil((1.0 * sep_EDGE_no + 1.0) / 3.0);
+            cout << ", element Pressure: " << this->PressureEles(int(ceil((1.0 * sep_EDGE_no + 1.0) / 3.0)), 0) << endl;
         }
     }
     cout << "\t\tRunning time of post treatments: " << cuDFNsys::CPUSecond() - iStart_fem << "sec\n";

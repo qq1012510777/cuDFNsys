@@ -69,7 +69,7 @@ __device__ __host__ bool cuDFNsys::IfPntLiesOnBound2DConvexPolyReturnEdgeNO(cuDF
         cuDFNsys::Vector2<T> Seg[2] = {verts[i], verts[(i + 1) % N]};
 
         T dist = cuDFNsys::DistancePnt2DSeg<T>(pnt, Seg);
-
+        // printf("IfPntLiesOnBound2DConvexPolyReturnEdgeNO: dist: %.40f\n", dist);
         if (dist < _tol_)
         {
             *edgeNO = i;

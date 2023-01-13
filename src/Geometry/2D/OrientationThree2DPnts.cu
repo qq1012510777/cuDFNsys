@@ -32,7 +32,7 @@ __device__ __host__ uint cuDFNsys::OrientationThree2DPnts(cuDFNsys::Vector2<T> p
 {
     T val = (q.y - p.y) * (r.x - q.x) -
             (q.x - p.x) * (r.y - q.y);
-
+    //printf("OrientationThree2DPnts val: %.40f\n", val);
     if (abs(val) < _tol_)
         return 0; // collinear
 

@@ -86,7 +86,7 @@ __host__ __device__ cuDFNsys::Vector3<T> cuDFNsys::IdentifyParticleCrossesWhichE
         int o4 = cuDFNsys::OrientationThree2DPnts<T>(p2, q2, q1, _TOL_);
 
         //if (stepNO == 2000)
-        //printf("particleNO: %d, edgeNO: %d, o: %d %d %d %d\n", particleNO, i, o1, o2, o3, o4);
+        //zprintf("edgeIDlocal: %d, o: %d %d %d %d\n", i, o1, o2, o3, o4);
 
         if (o1 == 0 && o2 == 0 && o3 == 0 && o4 == 0)
         {
@@ -122,33 +122,45 @@ __host__ __device__ cuDFNsys::Vector3<T> cuDFNsys::IdentifyParticleCrossesWhichE
         // general case
         if (o1 != o2 && o3 != o4)
         {
-            T norm_trajectory = sqrt((P_Trajectory[0].x - P_Trajectory[1].x) * (P_Trajectory[0].x - P_Trajectory[1].x) +
-                                     (P_Trajectory[0].y - P_Trajectory[1].y) * (P_Trajectory[0].y - P_Trajectory[1].y));
-            T norm_edge = sqrt((Vertex_Triangle[(i + 1) % 3].y - Vertex_Triangle[i].y) * (Vertex_Triangle[(i + 1) % 3].y - Vertex_Triangle[i].y) +
-                               (Vertex_Triangle[i].x - Vertex_Triangle[(i + 1) % 3].x) * (Vertex_Triangle[i].x - Vertex_Triangle[(i + 1) % 3].x));
-            T factor_ = norm_edge / norm_trajectory;
+            // printf("xxxxxxxxxxx\n");
+            // printf("LineSeg1:\n%.40f, %.40f\n%.40f, %.40f\n", P_Trajectory[0].x, P_Trajectory[0].y,
+            //        P_Trajectory[1].x, P_Trajectory[1].y);
+            // printf("LineSeg2:\n%.40f, %.40f\n%.40f, %.40f\n", Vertex_Triangle[i].x, Vertex_Triangle[i].y,
+            //        Vertex_Triangle[(i + 1) % 3].x, Vertex_Triangle[(i + 1) % 3].y);
+
+            // T norm_trajectory = sqrt((P_Trajectory[0].x - P_Trajectory[1].x) * (P_Trajectory[0].x - P_Trajectory[1].x) +
+            //                          (P_Trajectory[0].y - P_Trajectory[1].y) * (P_Trajectory[0].y - P_Trajectory[1].y));
+            // T norm_edge = sqrt((Vertex_Triangle[(i + 1) % 3].y - Vertex_Triangle[i].y) * (Vertex_Triangle[(i + 1) % 3].y - Vertex_Triangle[i].y) +
+            //                    (Vertex_Triangle[i].x - Vertex_Triangle[(i + 1) % 3].x) * (Vertex_Triangle[i].x - Vertex_Triangle[(i + 1) % 3].x));
+            //T factor_ = norm_edge / norm_trajectory;
 
             //cuDFNsys::Scale2DSegment<T>(P_Trajectory, factor_);
 
-            T a1 = P_Trajectory[1].y - P_Trajectory[0].y;
-            T b1 = P_Trajectory[0].x - P_Trajectory[1].x;
-            T c1 = a1 * (P_Trajectory[0].x) + b1 * (P_Trajectory[0].y);
+            // T a1 = P_Trajectory[1].y - P_Trajectory[0].y;
+            // T b1 = P_Trajectory[0].x - P_Trajectory[1].x;
+            // T c1 = a1 * (P_Trajectory[0].x) + b1 * (P_Trajectory[0].y);
+            // // Line CD represented as a2x + b2y = c2
+            // T a2 = Vertex_Triangle[(i + 1) % 3].y - Vertex_Triangle[i].y;
+            // T b2 = Vertex_Triangle[i].x - Vertex_Triangle[(i + 1) % 3].x;
+            // T c2 = a2 * (Vertex_Triangle[i].x) + b2 * (Vertex_Triangle[i].y);
+            // T determinant = a1 * b2 - a2 * b1;
+            // Result.x = (b2 * c1 - b1 * c2) / determinant;
+            // Result.y = (a1 * c2 - a2 * c1) / determinant;
+            // Result.z = (T)i;
+            // printf("IdentifyParticleCrossesWhichEdge---Intersection: %.40f, %.40f\n", Result.x, Result.y);
 
-            // Line CD represented as a2x + b2y = c2
-            T a2 = Vertex_Triangle[(i + 1) % 3].y - Vertex_Triangle[i].y;
-            T b2 = Vertex_Triangle[i].x - Vertex_Triangle[(i + 1) % 3].x;
-            T c2 = a2 * (Vertex_Triangle[i].x) + b2 * (Vertex_Triangle[i].y);
-
-            T determinant = a1 * b2 - a2 * b1;
-
-            Result.x = (b2 * c1 - b1 * c2) / determinant;
-            Result.y = (a1 * c2 - a2 * c1) / determinant;
-
+            T F1 = P_Trajectory[1].x - Vertex_Triangle[(i + 1) % 3].x;
+            T F2 = P_Trajectory[1].y - Vertex_Triangle[(i + 1) % 3].y;
+            T M11 = P_Trajectory[1].x - P_Trajectory[0].x;
+            T M21 = P_Trajectory[1].y - P_Trajectory[0].y;
+            T M12 = Vertex_Triangle[i].x - Vertex_Triangle[(i + 1) % 3].x;
+            T M22 = Vertex_Triangle[i].y - Vertex_Triangle[(i + 1) % 3].y;
+            T deter = M11 * M22 - M12 * M21;
+            T lambda = -(F2 * M12 - F1 * M22) / deter;
+            Result.x = lambda * P_Trajectory[0].x + (1.0 - lambda) * P_Trajectory[1].x;
+            Result.y = lambda * P_Trajectory[0].y + (1.0 - lambda) * P_Trajectory[1].y;
             Result.z = (T)i;
-
-            //if (stepNO == 2000)
-            //printf("~~~particleNO: %d, edgeNO: %d, o: %d %d %d %d\n", particleNO, i, o1, o2, o3, o4);
-
+            // printf("IdentifyParticleCrossesWhichEdge---Intersection: %.40f, %.40f\n", Result.x, Result.y);
             return Result;
         };
     };

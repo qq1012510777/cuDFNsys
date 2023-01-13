@@ -75,17 +75,14 @@ int main(int argc, char *argv[])
     try
     {
         _DataType_ L;
-        //uint DSIZE;
-        //uint Nproc = 10;
-        //if (argv[1] != NULL)
-        //    Nproc = atoi(argv[1]);
 
         string FracH5 = "FracturesForParticle.h5";
+        bool If_FPT = atoi(argv[1]) == 0 ? false : true;
 
-        if (argv[1] == NULL)
+        if (argv[2] == NULL)
             throw cuDFNsys::ExceptionsPause("Please give the name of mesh file (.h5)!");
 
-        string mshfile = argv[1];
+        string mshfile = argv[2];
 
         thrust::host_vector<cuDFNsys::Fracture<_DataType_>> Frac_verts_host;
 
@@ -124,26 +121,34 @@ int main(int argc, char *argv[])
         uint *ElementFracTag_cuda_devptr = thrust::raw_pointer_cast(ElementFracTag_cuda_dev.data());
 
         //cout << ElementFracTag << endl;
-        for (uint i = 0; i <= ExistingNumsteps; ++i)
+
+        for (uint i = (If_FPT == false ? 0 : ExistingNumsteps); i <= ExistingNumsteps; ++i)
         {
             cout << "step " << i << " is outputing ...\n";
-            string filename = " ", outfilename = "";
-            if (i == 0)
-            {
+            string filename = "", outfilename = "";
 
-                filename = ParticlePosition + "Init.h5";
-                outfilename = ParticlePosition + "Init_3D.h5";
-                h5g.NewFile(outfilename);
-            }
+            if (If_FPT == false)
+                if (i == 0)
+                {
+
+                    filename = ParticlePosition + "Init.h5";
+                    outfilename = ParticlePosition + "Init_3D.h5";
+                    h5g.NewFile(outfilename);
+                }
+                else
+                {
+                    filename = ParticlePosition + "Block" +
+                               cuDFNsys::ToStringWithWidth((uint)ceil((double)i / ((double)SizeOfDataBlock)), 10) + ".h5";
+
+                    outfilename = ParticlePosition + "Block" +
+                                  cuDFNsys::ToStringWithWidth((uint)ceil((double)i / ((double)SizeOfDataBlock)), 10) + "_3D.h5";
+                    if (i % SizeOfDataBlock == 1)
+                        h5g.NewFile(outfilename);
+                }
             else
             {
-                filename = ParticlePosition + "Block" +
-                           cuDFNsys::ToStringWithWidth((uint)ceil((double)i / ((double)SizeOfDataBlock)), 10) + ".h5";
-
-                outfilename = ParticlePosition + "Block" +
-                              cuDFNsys::ToStringWithWidth((uint)ceil((double)i / ((double)SizeOfDataBlock)), 10) + "_3D.h5";
-                if (i % SizeOfDataBlock == 1)
-                    h5g.NewFile(outfilename);
+                filename = ParticlePosition + "LastStep.h5", outfilename = ParticlePosition + "LastStep_3D.h5";
+                h5g.NewFile(outfilename);
             }
 
             vector<_DataType_> temp2Dpos = h5g.ReadDataset<_DataType_>(filename, "N", "Step_" + cuDFNsys::ToStringWithWidth(i, 10));
@@ -153,13 +158,13 @@ int main(int argc, char *argv[])
             _DataType_ *temp2DposCUDA_dev_ptr;
             temp2DposCUDA_dev_ptr = thrust::raw_pointer_cast(temp2DposCUDA_dev.data());
             uint numParticles = temp2Dpos.size() / 2;
-            //cout << "numParticles: " << numParticles << endl;
+            // cout << "numParticles: " << numParticles << endl;
 
             vector<uint> EleTag = h5g.ReadDataset<uint>(filename, "N", "ParticleIDAndElementTag_" + cuDFNsys::ToStringWithWidth(i, 10));
             uint *data_y = EleTag.data();
             thrust::host_vector<uint> EleTag_host(data_y + EleTag.size() / 2, data_y + EleTag.size());
-            /// for (uint k = 0; k < EleTag_host.size(); ++k)
-            /// cout << EleTag_host[k] << (k < EleTag_host.size() - 1 ? ", " : "\n");
+            // for (uint k = 0; k < EleTag_host.size(); ++k)
+            // cout << EleTag_host[k] << (k < EleTag_host.size() - 1 ? ", " : "\n");
             thrust::device_vector<uint> EleTag_device = EleTag_host;
             uint *EleTag_device_ptr = thrust::raw_pointer_cast(EleTag_device.data());
 
@@ -201,7 +206,7 @@ int main(int argc, char *argv[])
             //                Position3D[j + 2 * numParticles] = Pos.z;
             //                //cout << Pos.x << ", " << Pos.y << ", " << Pos.z << endl;
             //}
-            //cout << 2 << endl;
+            // cout << 2 << endl;
             uint2 dim_pos = make_uint2(3, numParticles);
 
             h5g.AddDataset(outfilename, "N", "Step_" + cuDFNsys::ToStringWithWidth(i, 10), Position3D.data(),
