@@ -34,6 +34,7 @@
 #include "ParticleMovementOneTimeStepGPUKernel.cuh"
 #include "PredicateNumOfReachedOutletParticles.cuh"
 #include "ToStringWithWidth/ToStringWithWidth.cuh"
+#include "Transform2DTo3DKernel.cuh"
 #include <cmath>
 #include <cstdlib>
 #include <fstream>
@@ -124,6 +125,8 @@ public:
                                       const string &Injection_mode,
                                       thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
                                       cuDFNsys::Mesh<T> mesh);
+    void OutputMSD(const uint &StepNO, thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
+                   cuDFNsys::Mesh<T> mesh);
 
     void MatlabPlot(const string &mat_key,
                     const string &command_key,

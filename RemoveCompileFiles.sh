@@ -10,13 +10,13 @@ myArray=("BenchmarkCases" "ParticleTrackingFourFrac" "ClearBadH5FileForPercolati
 
 for str in ${myArray[@]}; do
   cd $str
-  gio trash -f *.h5 *.m *.py
+  gio trash -f ./*.h5 ./*.m ./*.py
   gio trash -f ParticlePositionResult
   cd build
   gio trash -f CMakeCache.txt CMakeFiles cmake_install.cmake
   cd ..
   cd bin
-  gio trash -f main* Transform2DH5ParticleDataTo3D
+  gio trash -f ./main* ./Transform2DH5ParticleDataTo3D
   cd ..
   cd ..
   echo "---------------cleaned "$str

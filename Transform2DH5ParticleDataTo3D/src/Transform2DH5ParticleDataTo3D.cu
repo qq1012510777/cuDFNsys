@@ -49,12 +49,14 @@ __global__ void Transform2DTO3DKernel(cuDFNsys::Fracture<_DataType_> *Frac_verts
     cuDFNsys::Vector3<_DataType_> Pos = cuDFNsys::MakeVector3(temp2Dpos_dev_ptr[idx],
                                                               temp2Dpos_dev_ptr[idx + numParticles],
                                                               (_DataType_)0.0);
-    //printf("temp2Dpos_dev_ptr: %f, %f\n", Pos.x, Pos.y);
+    //if (idx == 0)
+        //printf("temp2Dpos_dev_ptr: %f, %f\n", Pos.x, Pos.y);
     uint EleTag_j = EleTag_device_ptr[idx];
 
     uint FracTag_j = ElementFracTag_cuda_devptr[EleTag_j - 1] - 1;
 
-    //printf("%d, FracTag_j: %d\n", idx, FracTag_j);
+    //if (idx == 0)
+        //printf("%d, FracTag_j: %d\n", idx, FracTag_j);
 
     _DataType_ Rotate2DTo3D[3][3];
     Frac_verts_device_ptr[FracTag_j].RoationMatrix(Rotate2DTo3D, 23);

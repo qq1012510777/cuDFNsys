@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
                                                                    Frac_verts_host, perco_dir,
                                                                    Percolation_cluster};
         cout << "DFN I finished" << endl;
-        cuDFNsys::MatlabPlotDFN<_DataType_> As{"DFN_I.h5", "N",
+        cuDFNsys::MatlabPlotDFN<_DataType_> As{"DFN_I.h5", "DFN_I.m",
                                                Frac_verts_host, Intersection_map, ListClusters,
                                                Percolation_cluster, false, true, true, true,
                                                L, perco_dir, true, "DFN_I"};
@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
                                                                     Frac_verts_host, perco_dir,
                                                                     Percolation_cluster};
         cout << "DFN II finished" << endl;
-        cuDFNsys::MatlabPlotDFN<_DataType_> As2{"DFN_II.h5", "N",
+        cuDFNsys::MatlabPlotDFN<_DataType_> As2{"DFN_II.h5", "DFN_II.m",
                                                 Frac_verts_host, Intersection_map, ListClusters,
                                                 Percolation_cluster, true, true, true, true,
                                                 L, perco_dir, true, "DFN_II"};

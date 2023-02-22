@@ -85,7 +85,7 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(const int &NumOfParticles,
     //this->IdentifyNeighborElements(mesh);
 
     this->InitilizeParticles(NumOfParticles, mesh, fem, Injection_mode);
-
+    this->OutputMSD(0, Fracs, mesh);
     this->OutputParticleInfoStepByStep(0,
                                        delta_T_,
                                        Dispersion_local,
@@ -291,6 +291,7 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(const int &NumTimeStep,
         this->InitilizeParticles(NumOfParticles_ii,
                                  mesh, fem, Injection_mode_ii);
         //cout << 2 << endl;
+        this->OutputMSD(0, Fracs, mesh);
         this->OutputParticleInfoStepByStep(0,
                                            delta_T_ii,
                                            Dispersion_local_ii,
@@ -497,6 +498,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(const int &init_NO_STEP,
 
         cout << this->NumParticles - NumPart_dynamic << "/" << this->NumParticles << " reached outlet plane, running time: " << ielaps_b << "; counting time: " << ielaps << "s\n";
 
+        this->OutputMSD(i, Fracs, mesh);
         if (this->RecordMode == "OutputAll")
             this->OutputParticleInfoStepByStep(i,
                                                delta_T_,
@@ -670,6 +672,75 @@ template void cuDFNsys::ParticleTransport<float>::ParticleMovementCPU(const int 
                                                                       int Nproc);
 
 // ====================================================
+// NAME:        OutputMSD
+// DESCRIPTION: OutputMSD curve
+// AUTHOR:      Tingchang YIN
+// DATE:        22/03/2023
+// ====================================================
+template <typename T>
+void cuDFNsys::ParticleTransport<T>::OutputMSD(const uint &StepNO,
+                                               thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
+                                               cuDFNsys::Mesh<T> mesh)
+{
+    // Output MSD
+    cuDFNsys::HDF5API h5g;
+    uint2 dim_scalar = make_uint2(1, 1);
+    string MSD_file = "Dispersion_MeanSquareDisplacement.h5";
+    //cout << "222222\n";
+    if (StepNO == 0)
+        h5g.NewFile(MSD_file);
+    //cout << "3333\n";
+    thrust::device_vector<cuDFNsys::Fracture<T>> Frac_verts_device;
+    Frac_verts_device = Fracs;
+    cuDFNsys::Fracture<T> *Frac_verts_device_ptr;
+    Frac_verts_device_ptr = thrust::raw_pointer_cast(Frac_verts_device.data());
+
+    thrust::device_vector<uint> ElementFracTag_cuda_dev = mesh.ElementFracTag;
+    uint *ElementFracTag_cuda_devptr = thrust::raw_pointer_cast(ElementFracTag_cuda_dev.data());
+
+    // thrust::host_vector<uint> EleTag_host(this->ParticlePlumes.size());
+    // for (size_t i = 0; i < EleTag_host.size(); ++i)
+    //     EleTag_host[i] = this->ParticlePlumes[i].ElementID;
+    // thrust::device_vector<uint> EleTag_device = EleTag_host;
+    // uint *EleTag_device_ptr = thrust::raw_pointer_cast(EleTag_device.data());
+
+    thrust::host_vector<T> Position3D(this->ParticlePlumes.size() * 3);
+    thrust::device_vector<T> Position3D_dev = Position3D;
+    T *Position3D_dev_ptr = thrust::raw_pointer_cast(Position3D_dev.data());
+
+    thrust::device_vector<cuDFNsys::Particle<T>> ParticlePlumes_DEV = this->ParticlePlumes;
+    cuDFNsys::Particle<T> *P_DEV = thrust::raw_pointer_cast(ParticlePlumes_DEV.data());
+
+    cuDFNsys::Transform2DTo3DKernel<<<this->ParticlePlumes.size() / 256 + 1, 256>>>(Frac_verts_device_ptr,
+                                                                                    Position3D_dev_ptr,
+                                                                                    P_DEV, //temp2DposCUDA_dev_ptr,
+                                                                                    ElementFracTag_cuda_devptr,
+                                                                                    //EleTag_device_ptr,
+                                                                                    this->ParticlePlumes.size());
+    cudaDeviceSynchronize();
+    Position3D = Position3D_dev;
+    double MSD_g = 0;
+
+    for (uint i = 0; i < this->ParticlePlumes.size(); ++i)
+        MSD_g += pow(Position3D[this->ParticlePlumes.size() * 2 + i] - 50.0, 2.0);
+    //cout << Position3D[i] << ", " << Position3D[this->ParticlePlumes.size() + i] << ", " << Position3D[this->ParticlePlumes.size() * 2 + i] << "\n";
+    //break;
+
+    //exit(0);
+    MSD_g /= (this->ParticlePlumes.size() * 1.0);
+
+    h5g.AddDataset(MSD_file, "N", "MSD_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
+                   &MSD_g, dim_scalar);
+    //------------
+};
+template void cuDFNsys::ParticleTransport<double>::OutputMSD(const uint &StepNO,
+                                                             thrust::host_vector<cuDFNsys::Fracture<double>> Fracs,
+                                                             cuDFNsys::Mesh<double> mesh);
+template void cuDFNsys::ParticleTransport<float>::OutputMSD(const uint &StepNO,
+                                                            thrust::host_vector<cuDFNsys::Fracture<float>> Fracs,
+                                                            cuDFNsys::Mesh<float> mesh);
+
+// ====================================================
 // NAME:        OutputParticleInfoStepByStep
 // DESCRIPTION: output the position of particles after a step
 //              they are 2D though
@@ -722,6 +793,8 @@ void cuDFNsys::ParticleTransport<T>::OutputParticleInfoStepByStep(const uint &St
 
         ouy[0] = {(uint)NumParticles};
         h5g.AddDataset(h5dispersioninfo, "N", "NumParticles", ouy, dim_scalar);
+
+        //h5g.NewFile(DispersionInfo + "_MeanSquareDisplacement.h5");
     }
 
     uint Step[1] = {StepNO};
@@ -840,6 +913,9 @@ void cuDFNsys::ParticleTransport<T>::OutputParticleInfoStepByStep(const uint &St
 
     delete[] _IfReaded_and_ElementFracTag_;
     _IfReaded_and_ElementFracTag_ = NULL;
+
+    if (StepNO > 0)
+        exit(0);
 }; // OutputParticleInfoStepByStep
 template void cuDFNsys::ParticleTransport<double>::OutputParticleInfoStepByStep(const uint &StepNO,
                                                                                 const double delta_T,

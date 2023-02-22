@@ -17,29 +17,38 @@
 *****************************************************************************/
 
 ///////////////////////////////////////////////////////////////////
-// NAME:              Particle.cuh
+// NAME:              Transform2DTo3DKernel.cuh
 //
-// PURPOSE:           a struct of Particle: record the position of
-//                    a particle
+// PURPOSE:           Transform 2D particle positions to 3D
 //
-// FUNCTIONS/OBJECTS: Particle
+// FUNCTIONS/OBJECTS: Transform2DTo3DKernel
 //
 // AUTHOR:            Tingchang YIN
 ///////////////////////////////////////////////////////////////////
 #pragma once
-#include "../DataTypeSelector/DataTypeSelector.cuh"
-#include "../GlobalDef/GlobalDef.cuh"
+#include "EdgeToEle.cuh"
+#include "NeighborEle.cuh"
+#include "OutputObjectData/OutputObjectData.cuh"
+#include "Particle.cuh"
+#include "ParticleMovementOneTimeStepCPU.cuh"
+#include "ParticleMovementOneTimeStepGPUKernel.cuh"
+#include "PredicateNumOfReachedOutletParticles.cuh"
+#include "ToStringWithWidth/ToStringWithWidth.cuh"
+#include <cmath>
+#include <cstdlib>
+#include <fstream>
+#include <set>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 namespace cuDFNsys
 {
 template <typename T>
-struct Particle
-{
-    // position in 2d
-    cuDFNsys::Vector2<T> Position2D;
-    // element ID
-    uint ElementID;
-    // particle ID
-    int ParticleID; // ParticleID <= 0 means that this particle reaches outlet plane
-};
+__global__ void Transform2DTo3DKernel(cuDFNsys::Fracture<T> *Frac_verts_device_ptr,
+                                      T *Position3D_dev_ptr,
+                                      cuDFNsys::Particle<T> *temp2Dpos_dev_ptr,
+                                      uint *ElementFracTag_cuda_devptr,
+                                      //uint *EleTag_device_ptr,
+                                      uint count);
 }; // namespace cuDFNsys
