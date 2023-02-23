@@ -719,15 +719,28 @@ void cuDFNsys::ParticleTransport<T>::OutputMSD(const uint &StepNO,
                                                                                     this->ParticlePlumes.size());
     cudaDeviceSynchronize();
     Position3D = Position3D_dev;
-    double MSD_g = 0;
 
-    for (uint i = 0; i < this->ParticlePlumes.size(); ++i)
-        MSD_g += pow(Position3D[this->ParticlePlumes.size() * 2 + i] - 50.0, 2.0);
-    //cout << Position3D[i] << ", " << Position3D[this->ParticlePlumes.size() + i] << ", " << Position3D[this->ParticlePlumes.size() * 2 + i] << "\n";
-    //break;
+    std::vector<double> Position3D_zz1(Position3D.begin() + this->ParticlePlumes.size() * 2, Position3D.end());
 
-    //exit(0);
-    MSD_g /= (this->ParticlePlumes.size() * 1.0);
+    Eigen::Map<Eigen::VectorXd> Position3D_zz(Position3D_zz1.data(), Position3D_zz1.size());
+    // cout << "size: " << Position3D_zz.rows() << endl;
+    // for (uint i = 0; i < this->ParticlePlumes.size(); ++i)
+    //     if (Position3D_zz[i] - Position3D[this->ParticlePlumes.size() * 2 + i] != 0)
+    //         cout << i << ": " << Position3D_zz[i] - Position3D[this->ParticlePlumes.size() * 2 + i] << endl;
+
+    Position3D_zz1.clear();
+    Position3D_zz1.reserve(0);
+    Position3D.clear();
+    Position3D_dev.clear();
+    Position3D.reserve(0);
+    Position3D_dev.reserve(0);
+
+    Position3D_zz = Position3D_zz - Eigen::VectorXd::Ones(Position3D_zz.rows()) * 50.0;
+    Position3D_zz = Position3D_zz.cwiseAbs();
+
+    double mean_z = Position3D_zz.mean();
+    Position3D_zz = Position3D_zz - Eigen::VectorXd::Ones(Position3D_zz.rows()) * mean_z;
+    double MSD_g = Position3D_zz.dot(Position3D_zz) / Position3D_zz.rows();
 
     h5g.AddDataset(MSD_file, "N", "MSD_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
                    &MSD_g, dim_scalar);
