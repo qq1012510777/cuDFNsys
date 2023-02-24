@@ -6,7 +6,7 @@ myArray=("BenchmarkCases" "ParticleTrackingFourFrac" "ClearBadH5FileForPercolati
   "CompareCPUGPU" "CompareWithAndWithoutDeadEnds" "ContinueParticleTransport" "FracturesFixedChangeDomainSize" \
   "ParticleTransportValidationSingleFrac" "PercolationTest" "QuickStartGuide" \
   "ReadMatAndOutputH5" "ReadObjectsAndDebug" "TestFunctionsOnlyForDevlopment" "TestResolutionEffect" \
-  "Transform2DH5ParticleDataTo3D")
+  "Transform2DH5ParticleDataTo3D" "GenMultipleFamilies")
 
 for str in ${myArray[@]}; do
   cd $str

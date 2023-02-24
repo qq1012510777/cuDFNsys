@@ -37,7 +37,6 @@ __device__ __host__ cuDFNsys::Quaternion<T> cuDFNsys::Quaternion<T>::DescribeRot
     result.QuaternionNum.y = sina_2 * v.x,
     result.QuaternionNum.z = sina_2 * v.y,
     result.QuaternionNum.w = sina_2 * v.z;
-
     cuDFNsys::Vector1<T> norm_r = pow(result.QuaternionNum.x * result.QuaternionNum.x + result.QuaternionNum.y * result.QuaternionNum.y +
                                           result.QuaternionNum.z * result.QuaternionNum.z + result.QuaternionNum.w * result.QuaternionNum.w,
                                       0.5);
@@ -45,6 +44,9 @@ __device__ __host__ cuDFNsys::Quaternion<T> cuDFNsys::Quaternion<T>::DescribeRot
     result.QuaternionNum.y /= norm_r;
     result.QuaternionNum.z /= norm_r;
     result.QuaternionNum.w /= norm_r;
+    // printf("tt %f, %f, %f, %f\n", result.QuaternionNum.w, result.QuaternionNum.x,
+    //        result.QuaternionNum.y, result.QuaternionNum.z);
+
     return result;
 }; // Quaternion::DescribeRotation
 template __device__ __host__ cuDFNsys::Quaternion<double> cuDFNsys::Quaternion<double>::DescribeRotation(const cuDFNsys::Vector3<double> v, const cuDFNsys::Vector1<double> angle);
@@ -59,6 +61,8 @@ template __device__ __host__ cuDFNsys::Quaternion<float> cuDFNsys::Quaternion<fl
 template <typename T>
 __device__ __host__ cuDFNsys::Vector3<T> cuDFNsys::Quaternion<T>::Rotate(const cuDFNsys::Vector3<T> v)
 {
+    //printf("* %f, %f, %f, %f\n", QuaternionNum.w, QuaternionNum.x, QuaternionNum.y, QuaternionNum.z);
+
     cuDFNsys::Vector1<T> t2 = QuaternionNum.x * QuaternionNum.y,
                          t3 = QuaternionNum.x * QuaternionNum.z,
                          t4 = QuaternionNum.x * QuaternionNum.w,

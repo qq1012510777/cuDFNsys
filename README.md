@@ -8,6 +8,8 @@ _cuDFNsys_ right now can only generate one group of fractures, because the autho
 
 In reality, multiple fracture famlies might be observed. _cuDFNsys_ is able to load the fracture data in which multiple groups exist.
 
+The directory _GenMultipleFamilies_ shows how to generate multiple families of fractures.
+
 <p align="center">
   <img width="300" src="https://github.com/qq1012510777/cuDFNsys/blob/main/moive_particlesII.gif">
 </p>
@@ -54,7 +56,7 @@ The Gmsh C++ API that _cuDFNsys_ relies on should support the OCC mode, meaning 
 
 * [Installation of UMFPACK](https://github.com/DrTimothyAldenDavis/SuiteSparse)
 
-Installation of OpenMP, Eigen and HDF5 are not difficult. Just google.
+Installations of OpenMP, Eigen and HDF5 are not difficult. Just google.
 
 # Environment setup
 After installations of above-mentioned packages, _cuDFNsys_ should be linked to them. In the directory 'Modules', .cmake files can be found, where the path of corresponding packages should be added/set/changed.

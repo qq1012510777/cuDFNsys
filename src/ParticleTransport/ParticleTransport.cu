@@ -927,8 +927,8 @@ void cuDFNsys::ParticleTransport<T>::OutputParticleInfoStepByStep(const uint &St
     delete[] _IfReaded_and_ElementFracTag_;
     _IfReaded_and_ElementFracTag_ = NULL;
 
-    if (StepNO > 0)
-        exit(0);
+    // if (StepNO > 0)
+    //     exit(0);
 }; // OutputParticleInfoStepByStep
 template void cuDFNsys::ParticleTransport<double>::OutputParticleInfoStepByStep(const uint &StepNO,
                                                                                 const double delta_T,

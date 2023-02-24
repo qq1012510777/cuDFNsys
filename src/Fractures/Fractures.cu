@@ -29,7 +29,7 @@ __global__ void cuDFNsys::Fractures(cuDFNsys::Fracture<T> *verts,
                                     unsigned long seed,
                                     int count,
                                     cuDFNsys::Vector1<T> model_L,
-                                    uint ModeSizeDistri,                 // 1 = power law; 2 = lognormal; 3 = uniform; 4 = monosize
+                                    uint ModeSizeDistri,                 // 0 = power law; 1 = lognormal; 2 = uniform; 3 = monosize
                                     cuDFNsys::Vector4<T> ParaSizeDistri, // when mode = 1, ;
                                     cuDFNsys::Vector1<T> kappa,
                                     cuDFNsys::Vector1<T> conductivity_powerlaw_exponent,
