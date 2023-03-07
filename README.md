@@ -4,10 +4,6 @@ _cuDFNsys_ is an open-source CUDA library (under the GPL license) for DFN genera
 
 _cuDFNsys_ does not support the GUI and can only run on Ubuntu. _cuDFNsys_ is not friendly to users unfamiliar with Linux, C++ and CMake.
 
-_cuDFNsys_ right now can only generate one group of fractures, because the authors are studying the percolation in DFNs. With only one group, some quantities can be analytically calculated. Geometrical attributes of fractures follow certain probability density distributions. 
-
-In reality, multiple fracture famlies might be observed. _cuDFNsys_ is able to load the fracture data in which multiple groups exist.
-
 The directory _GenMultipleFamilies_ shows how to generate multiple families of fractures.
 
 <p align="center">
