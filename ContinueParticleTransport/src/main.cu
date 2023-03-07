@@ -212,7 +212,7 @@ int main(int argc, char *argv[])
                                                       atof(argv[4]),
                                                       "Particle_tracking",
                                                       "Flux-weighted",
-                                                      "OutputAll"};
+                                                      "FPTCurve"};
             p.MatlabPlot("MHFEM_" + to_string(i + 1) + ".h5", "ParticlesDFNMatlab.m", mesh, fem, L, true, "ParticlesDFN");
         }
         //cudaDeviceReset();

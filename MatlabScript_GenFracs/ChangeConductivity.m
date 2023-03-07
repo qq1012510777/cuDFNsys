@@ -5,8 +5,8 @@ currentPath = fileparts(mfilename('fullpath'));
 NumFracs = h5read([currentPath, '/Fractures.h5'], '/NumFractures');
 L = h5read([currentPath, '/Fractures.h5'], '/L');
 
-gamma = 5e-4;
-beta = 0.1;
+gamma = 6e-4;
+beta = 0.7;
 
 new_filename = 'Fractures_new.h5';
 
@@ -15,6 +15,9 @@ h5write([currentPath, '/', new_filename], '/L', L)
 
 h5create([currentPath, '/', new_filename], '/NumFractures', size(NumFracs));
 h5write([currentPath, '/', new_filename], '/NumFractures', NumFracs);
+
+
+Conductivity_Vec = zeros(1, NumFracs);
 
 for i = 1:NumFracs
     Center = h5read([currentPath, '/Fractures.h5'], ['/Fracture_', num2str(i), '/Center']);
@@ -25,8 +28,9 @@ for i = 1:NumFracs
     Verts3D = h5read([currentPath, '/Fractures.h5'], ['/Fracture_', num2str(i), '/Verts3D']);
     Verts3DTruncated = h5read([currentPath, '/Fractures.h5'], ['/Fracture_', num2str(i), '/Verts3DTruncated']);
 
-    Conductivity = 1.0e-8; %gamma^3.0 / 12 * Radius^(3.0*beta);
-
+    Conductivity = gamma^3.0 / 12 * Radius^(3.0*beta);
+    Conductivity_Vec(i) = Conductivity;
+    
     h5create([currentPath, '/', new_filename], ['/Fracture_', num2str(i), '/Conductivity'], size(Conductivity));
     h5create([currentPath, '/', new_filename], ['/Fracture_', num2str(i), '/Verts3D'], size(Verts3D));
     h5create([currentPath, '/', new_filename], ['/Fracture_', num2str(i), '/Center'], size(Center));
@@ -45,3 +49,4 @@ for i = 1:NumFracs
     h5write([currentPath, '/', new_filename], ['/Fracture_', num2str(i), '/ConnectModelSurf'], (ConnectModelSurf));
     h5write([currentPath, '/', new_filename], ['/Fracture_', num2str(i), '/NormalVec'], (NormalVec));
 end
+disp(['Var[k_f] = ', num2str(var(Conductivity_Vec))])
