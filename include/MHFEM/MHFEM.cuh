@@ -70,6 +70,7 @@ public:
           const T &outlet_p_,
           const int &dir_,
           const T &L,
+          double3 DomainDimensionRatio = make_double3(1, 1, 1),
           bool if_CPU = false,
           int Nproc = 10);
 
@@ -79,7 +80,8 @@ public:
                     const cuDFNsys::Mesh<T> &mesh,
                     const T &L,
                     bool if_python_visualization = false,
-                    string PythonName_Without_suffix = "DFN_mhfem_py");
+                    string PythonName_Without_suffix = "DFN_mhfem_py",
+                    double3 DomainDimensionRatio = make_double3(1, 1, 1));
 
 private:
     void Implementation(const cuDFNsys::Mesh<T> &mesh,

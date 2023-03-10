@@ -31,7 +31,8 @@ cuDFNsys::Mesh<T>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
                         const T &min_ele_edge,
                         const T &max_ele_edge,
                         const int &dir_,
-                        const T &L)
+                        const T &L,
+                        double3 DomainDimensionRatio)
 {
     this->Dir = dir_;
     this->FracID = Fracs_percol;
@@ -172,7 +173,7 @@ cuDFNsys::Mesh<T>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
         //cudaDeviceReset();
         cout << "\t\tNumbering edges\n";
         istart = cuDFNsys::CPUSecond();
-        this->NumberingEdges(L/*, Fracs*/);
+        this->NumberingEdges(L, DomainDimensionRatio/*, Fracs*/);
         cout << "\t\tFinished! Running time: " << cuDFNsys::CPUSecond() - istart << " sec\n";
 
         gmsh::model::mesh::clear();
@@ -211,14 +212,14 @@ template cuDFNsys::Mesh<double>::Mesh(const thrust::host_vector<cuDFNsys::Fractu
                                       const double &min_ele_edge,
                                       const double &max_ele_edge,
                                       const int &dir_,
-                                      const double &L);
+                                      const double &L, double3 DomainDimensionRatio);
 template cuDFNsys::Mesh<float>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs,
                                      const std::vector<pair<int, int>> &IntersectionPair_percol,
                                      std::vector<size_t> *Fracs_percol,
                                      const float &min_ele_edge,
                                      const float &max_ele_edge,
                                      const int &dir_,
-                                     const float &L);
+                                     const float &L, double3 DomainDimensionRatio);
 
 // ====================================================
 // NAME:        MatlabPlot
@@ -235,7 +236,7 @@ void cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
                                    const bool &if_check_2D_coordinates,
                                    const bool &if_check_edge_Numbering,
                                    bool if_python_visualization,
-                                   string PythonName_Without_suffix)
+                                   string PythonName_Without_suffix, double3 DomainDimensionRatio)
 {
     //cuDFNsys::MatlabAPI M1;
 
@@ -272,6 +273,11 @@ void cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
 
     delete[] ptr_coordinates_3D;
     ptr_coordinates_3D = NULL;
+
+    uint2 dim_ds = make_uint2(3, 1);
+    double DomainDimensionRatio_D[3] = {DomainDimensionRatio.x, DomainDimensionRatio.y, DomainDimensionRatio.z};
+
+    h5gg.AddDataset(mat_key, "N", "DomainDimensionRatio", DomainDimensionRatio_D, dim_ds);
 
     size_t ele_num = this->Element3D.size();
     T *ptr_element_3D = new T[ele_num * 3];
@@ -523,19 +529,29 @@ void cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
         oss << "currentPath = fileparts(mfilename('fullpath'));\n";
         oss << "coordinate_3D = h5read([currentPath, '/" << mat_key << "'], '/coordinate_3D');\n";
         oss << "element_3D = h5read([currentPath, '/" << mat_key << "'], '/element_3D');\n";
-        oss << "L = 0.5 * " << L << ";\n";
+        oss << "L = h5read([currentPath, '/" << mat_key << "'], '/L_m');\n";
+        oss << "DomainDimensionRatio = h5read([currentPath, '/" << mat_key << "'], '/DomainDimensionRatio');\n";
         oss << "cube_frame = [-L, -L, L; -L, L, L; L, L, L; L -L, L; -L, -L, -L; -L, L, -L; L, L, -L; L -L, -L; -L, L, L; -L, L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L, -L; L, -L, -L; L, -L, L; L, -L, L; L, -L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L,-L; -L, L, -L; -L,L, L];\n";
+        oss << "cube_frame(:, 1) = 0.5 .* cube_frame(:, 1) .* DomainDimensionRatio(1); ";
+        oss << "cube_frame(:, 2) = 0.5 .* cube_frame(:, 2) .* DomainDimensionRatio(2); ";
+        oss << "cube_frame(:, 3) = 0.5 .* cube_frame(:, 3) .* DomainDimensionRatio(3);\n";
+
         oss << "figure(1); view(3); title('DFN mesh'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
         oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
         oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, 'FaceVertexCData', coordinate_3D(:, 3), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 1); hold on\n";
 
-        oss << "axis([-1.1 * L,  1.1 * L, -1.1 * L, 1.1 * L, -1.1 * L, 1.1 * L]);\n\n";
+        oss << "axis([-1.1 / 2 * DomainDimensionRatio(1) * L,  1.1 / 2 * DomainDimensionRatio(1) * L, -1.1 / 2 * DomainDimensionRatio(2) * L, 1.1 / 2 * DomainDimensionRatio(2) * L, -1.1 / 2 * DomainDimensionRatio(3) * L, 1.1 / 2 * DomainDimensionRatio(3) * L]);\n";
+        oss << "pbaspect([DomainDimensionRatio]); hold on\n";
 
         if (if_check_edge_Numbering == true)
         {
             oss << "edge_attri = h5read([currentPath, '/" << mat_key << "'], '/edge_attri');\n";
             oss << "figure(2); view(3); title('check edge numbering'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
             oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
+
+            oss << "axis([-1.1 / 2 * DomainDimensionRatio(1) * L,  1.1 / 2 * DomainDimensionRatio(1) * L, -1.1 / 2 * DomainDimensionRatio(2) * L, 1.1 / 2 * DomainDimensionRatio(2) * L, -1.1 / 2 * DomainDimensionRatio(3) * L, 1.1 / 2 * DomainDimensionRatio(3) * L]);\n";
+            oss << "pbaspect([DomainDimensionRatio]); hold on\n";
+
             oss << "kk = zeros(size(edge_attri, 1) * 3, 3);kk([1:3:end], :) = [edge_attri(:, [1, 2]), edge_attri(:, 4)];kk([2:3:end], :) = [edge_attri(:, [2, 3]), edge_attri(:, 5)];kk([3:3:end], :) = [edge_attri(:, [3, 1]), edge_attri(:, 6)];\n\n";
 
             oss << "\ninlet_loc = find(kk(:, 3)==0);\n";
@@ -589,7 +605,7 @@ template void cuDFNsys::Mesh<double>::MatlabPlot(const string &mat_key,
                                                  const bool &if_check_2D_coordinates,
                                                  const bool &if_check_edge_Numbering,
                                                  bool if_python_visualization,
-                                                 string PythonName_Without_suffix);
+                                                 string PythonName_Without_suffix, double3 DomainDimensionRatio);
 template void cuDFNsys::Mesh<float>::MatlabPlot(const string &mat_key,
                                                 const string &command_key,
                                                 thrust::host_vector<cuDFNsys::Fracture<float>> Fracs,
@@ -597,7 +613,7 @@ template void cuDFNsys::Mesh<float>::MatlabPlot(const string &mat_key,
                                                 const bool &if_check_2D_coordinates,
                                                 const bool &if_check_edge_Numbering,
                                                 bool if_python_visualization,
-                                                string PythonName_Without_suffix);
+                                                string PythonName_Without_suffix, double3 DomainDimensionRatio);
 
 // ====================================================
 // NAME:        GetCoordinates
@@ -767,7 +783,7 @@ template void cuDFNsys::Mesh<float>::GetElements(const thrust::host_vector<cuDFN
 // DATE:        08/04/2022
 // ====================================================
 template <typename T>
-void cuDFNsys::Mesh<T>::NumberingEdges(const T L/*, const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs*/)
+void cuDFNsys::Mesh<T>::NumberingEdges(const T L, double3 DomainDimensionRatio)
 {
     uint NUM_ele = this->Element3D.size();
     uint NUM_node = this->Coordinate3D.size();
@@ -868,7 +884,7 @@ void cuDFNsys::Mesh<T>::NumberingEdges(const T L/*, const thrust::host_vector<cu
                 {
                     pair<bool, string> if_d = this->IfTwoEndsDirchlet(node1,
                                                                       node2,
-                                                                      L);
+                                                                      L, DomainDimensionRatio);
 
                     if (if_d.first == true)
                     {
@@ -1014,8 +1030,8 @@ void cuDFNsys::Mesh<T>::NumberingEdges(const T L/*, const thrust::host_vector<cu
     NumOutletEdges = Sep_edge_NO_out - 1;
     NumNeumannEdges = Sep_edge_NO_neumann - 1;
 }; // NumberingEdges
-template void cuDFNsys::Mesh<double>::NumberingEdges(const double L/*, const thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs*/);
-template void cuDFNsys::Mesh<float>::NumberingEdges(const float L/*, const thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs*/);
+template void cuDFNsys::Mesh<double>::NumberingEdges(const double L, double3 DomainDimensionRatio /*, const thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs*/);
+template void cuDFNsys::Mesh<float>::NumberingEdges(const float L, double3 DomainDimensionRatio /*, const thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs*/);
 
 // ====================================================
 // NAME:        GetEntitiesElements
@@ -1027,59 +1043,6 @@ template <typename T>
 void cuDFNsys::Mesh<T>::GetEntitiesElements(thrust::host_vector<thrust::host_vector<uint3>> &elementEntities_2D,
                                             thrust::host_vector<uint> &Largest_ele, const std::vector<std::vector<std::pair<int, int>>> &outmap)
 {
-    /*
-    gmsh::vectorpair dimTags;
-    gmsh::model::occ::getEntities(dimTags, 2);
-    elementEntities_2D.resize(dimTags.size());
-    Largest_ele.resize(dimTags.size());
-    vector<size_t> Zero_element_entityNO;
-    for (size_t i = 0; i < dimTags.size(); ++i)
-    {
-        Largest_ele[i] = 0;
-        T area_ll = 0;
-
-        std::vector<int> elemTypes;
-        std::vector<std::vector<std::size_t>> elemTags, elemNodeTags;
-        gmsh::model::mesh::getElements(elemTypes, elemTags, elemNodeTags, 2, dimTags[i].second);
-        size_t NUM_ele = elemNodeTags[0].size() / 3;
-
-        elementEntities_2D[i].reserve(NUM_ele);
-        for (size_t j = 0; j < NUM_ele * 3; j += 3)
-        {
-            int node1 = (size_t)elemNodeTags[0][j];
-            int node2 = (size_t)elemNodeTags[0][j + 1];
-            int node3 = (size_t)elemNodeTags[0][j + 2];
-
-            bool skinny_if = cuDFNsys::If3DTriangleSkinny<T>(this->Coordinate3D[node1 - 1],
-                                                             this->Coordinate3D[node2 - 1],
-                                                             this->Coordinate3D[node3 - 1],
-                                                             _TOL_If3DTriangleSkinny);
-
-            if (skinny_if == false)
-            {
-                elementEntities_2D[i].push_back(make_uint3(node1, node2, node3));
-                //cout << "YY " << area << "; node " << RowVector3d(node1, node2, node3) << endl;
-
-                T area = cuDFNsys::Triangle3DArea<T>(this->Coordinate3D[node1 - 1],
-                                                     this->Coordinate3D[node2 - 1],
-                                                     this->Coordinate3D[node3 - 1]);
-                if (area > area_ll)
-                {
-                    area_ll = area;
-                    Largest_ele[i] = elementEntities_2D[i].size();
-                }
-            }
-        }
-        elementEntities_2D[i].shrink_to_fit();
-
-        if (elementEntities_2D[i].size() < 1)
-        {
-            Zero_element_entityNO.push_back(i);
-            //string AS = "Error! One entity has zero element!\n";
-            //throw Error_throw_ignore(AS);
-        }
-    };*/
-
     elementEntities_2D.resize(outmap.size());
     Largest_ele.resize(outmap.size());
     vector<size_t> Zero_element_entityNO;
@@ -1252,7 +1215,7 @@ template size_t cuDFNsys::Mesh<float>::GetElementID(size_t i, size_t j);
 template <typename T>
 pair<bool, string> cuDFNsys::Mesh<T>::IfTwoEndsDirchlet(const size_t node1,
                                                         const size_t node2,
-                                                        const T L)
+                                                        const T L, double3 DomainDimensionRatio)
 {
     pair<bool, string> kk = std::make_pair(false, "N");
 
@@ -1264,16 +1227,18 @@ pair<bool, string> cuDFNsys::Mesh<T>::IfTwoEndsDirchlet(const size_t node1,
                     this->Coordinate3D[node2 - 1].y,
                     this->Coordinate3D[node2 - 1].z};
 
-    if (abs(coord_1[this->Dir] - L * 0.5) < _TOL_IfTwoEndsDirchlet &&
-        abs(coord_2[this->Dir] - L * 0.5) < _TOL_IfTwoEndsDirchlet)
+    double *DomainDimensionRatio_rr = &DomainDimensionRatio.x;
+
+    if (abs(coord_1[this->Dir] - DomainDimensionRatio_rr[this->Dir] * L * 0.5) < _TOL_IfTwoEndsDirchlet &&
+        abs(coord_2[this->Dir] - DomainDimensionRatio_rr[this->Dir] * L * 0.5) < _TOL_IfTwoEndsDirchlet)
     {
         kk.first = true;
         kk.second = "in";
         return kk;
     }
 
-    if (abs(coord_1[this->Dir] - L * (-0.5)) < _TOL_IfTwoEndsDirchlet &&
-        abs(coord_2[this->Dir] - L * (-0.5)) < _TOL_IfTwoEndsDirchlet)
+    if (abs(coord_1[this->Dir] - DomainDimensionRatio_rr[this->Dir] * L * (-0.5)) < _TOL_IfTwoEndsDirchlet &&
+        abs(coord_2[this->Dir] - DomainDimensionRatio_rr[this->Dir] * L * (-0.5)) < _TOL_IfTwoEndsDirchlet)
     {
         kk.first = true;
         kk.second = "out";
@@ -1284,7 +1249,7 @@ pair<bool, string> cuDFNsys::Mesh<T>::IfTwoEndsDirchlet(const size_t node1,
 }; // IfTwoEndsDirchlet
 template pair<bool, string> cuDFNsys::Mesh<double>::IfTwoEndsDirchlet(const size_t node1,
                                                                       const size_t node2,
-                                                                      const double L);
+                                                                      const double L, double3 DomainDimensionRatio);
 template pair<bool, string> cuDFNsys::Mesh<float>::IfTwoEndsDirchlet(const size_t node1,
                                                                      const size_t node2,
-                                                                     const float L);
+                                                                     const float L, double3 DomainDimensionRatio);

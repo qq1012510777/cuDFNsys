@@ -33,7 +33,8 @@ __global__ void cuDFNsys::Fractures(cuDFNsys::Fracture<T> *verts,
                                     cuDFNsys::Vector4<T> ParaSizeDistri, // when mode = 1, ;
                                     cuDFNsys::Vector1<T> kappa,
                                     cuDFNsys::Vector1<T> conductivity_powerlaw_exponent,
-                                    T Gamma_constant)
+                                    T Gamma_constant,
+                                    double3 DimensionRatio)
 {
     int i = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -83,15 +84,30 @@ __global__ void cuDFNsys::Fractures(cuDFNsys::Fracture<T> *verts,
             verts[i].Conductivity = (pow(Gamma_constant, 3.0) / 12.0) * pow(R_, 3.0 * conductivity_powerlaw_exponent);
     }
 
-    verts[i].Center.x = cuDFNsys::RandomUniform((T)(-model_L * 0.5),
-                                                (T)(model_L * 0.5),
-                                                (T)(curand_uniform(&state)));
-    verts[i].Center.y = cuDFNsys::RandomUniform((T)(-model_L * 0.5),
-                                                (T)(model_L * 0.5),
-                                                (T)(curand_uniform(&state)));
-    verts[i].Center.z = cuDFNsys::RandomUniform((T)(-model_L * 0.5),
-                                                (T)(model_L * 0.5),
-                                                (T)(curand_uniform(&state)));
+    if (DimensionRatio.x == 1 && DimensionRatio.y == 1 && DimensionRatio.z == 1)
+    {
+        verts[i].Center.x = cuDFNsys::RandomUniform((T)(-model_L * 0.5),
+                                                    (T)(model_L * 0.5),
+                                                    (T)(curand_uniform(&state)));
+        verts[i].Center.y = cuDFNsys::RandomUniform((T)(-model_L * 0.5),
+                                                    (T)(model_L * 0.5),
+                                                    (T)(curand_uniform(&state)));
+        verts[i].Center.z = cuDFNsys::RandomUniform((T)(-model_L * 0.5),
+                                                    (T)(model_L * 0.5),
+                                                    (T)(curand_uniform(&state)));
+    }
+    else
+    {
+        verts[i].Center.x = cuDFNsys::RandomUniform((T)(-DimensionRatio.x * model_L * 0.5),
+                                                    (T)(DimensionRatio.x * model_L * 0.5),
+                                                    (T)(curand_uniform(&state)));
+        verts[i].Center.y = cuDFNsys::RandomUniform((T)(-DimensionRatio.y * model_L * 0.5),
+                                                    (T)(DimensionRatio.y * model_L * 0.5),
+                                                    (T)(curand_uniform(&state)));
+        verts[i].Center.z = cuDFNsys::RandomUniform((T)(-DimensionRatio.z * model_L * 0.5),
+                                                    (T)(DimensionRatio.z * model_L * 0.5),
+                                                    (T)(curand_uniform(&state)));
+    }
 
     verts[i].NormalVec = cuDFNsys::MakeVector3((T)cuDFNsys::RandomUniform((cuDFNsys::Vector1<T>)-1.0, (cuDFNsys::Vector1<T>)1.0, (cuDFNsys::Vector1<T>)curand_uniform(&state)),
                                                (T)cuDFNsys::RandomUniform((cuDFNsys::Vector1<T>)-1.0, (cuDFNsys::Vector1<T>)1.0, (cuDFNsys::Vector1<T>)curand_uniform(&state)),
@@ -155,22 +171,22 @@ __global__ void cuDFNsys::Fractures(cuDFNsys::Fracture<T> *verts,
         verts[i].Verts3DTruncated[j].z = verts[i].Verts3D[j].z;
     };
 
-    bool gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 0, 1);
+    bool gh = cuDFNsys::TruncateFracture<T>(&verts[i], DimensionRatio.x * model_L, 0, 1);
     verts[i].ConnectModelSurf[0] = gh;
 
-    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 0, -1);
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], DimensionRatio.x * model_L, 0, -1);
     verts[i].ConnectModelSurf[1] = gh;
 
-    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 1, 1);
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], DimensionRatio.y * model_L, 1, 1);
     verts[i].ConnectModelSurf[2] = gh;
 
-    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 1, -1);
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], DimensionRatio.y * model_L, 1, -1);
     verts[i].ConnectModelSurf[3] = gh;
 
-    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 2, 1);
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], DimensionRatio.z * model_L, 2, 1);
     verts[i].ConnectModelSurf[4] = gh;
 
-    gh = cuDFNsys::TruncateFracture<T>(&verts[i], model_L, 2, -1);
+    gh = cuDFNsys::TruncateFracture<T>(&verts[i], DimensionRatio.z * model_L, 2, -1);
     verts[i].ConnectModelSurf[5] = gh;
 }; // Fractures
 template __global__ void cuDFNsys::Fractures<double>(cuDFNsys::Fracture<double> *verts,
@@ -180,7 +196,7 @@ template __global__ void cuDFNsys::Fractures<double>(cuDFNsys::Fracture<double> 
                                                      uint ModeSizeDistri,                      // 1 = power law; 2 = lognormal; 3 = uniform; 4 = monosize
                                                      cuDFNsys::Vector4<double> ParaSizeDistri, // when mode = 1, ;
                                                      cuDFNsys::Vector1<double> kappa,
-                                                     cuDFNsys::Vector1<double> conductivity_powerlaw_exponent, double Gamma_constant);
+                                                     cuDFNsys::Vector1<double> conductivity_powerlaw_exponent, double Gamma_constant, double3 DimensionRatio);
 template __global__ void cuDFNsys::Fractures<float>(cuDFNsys::Fracture<float> *verts,
                                                     unsigned long seed,
                                                     int count,
@@ -188,7 +204,7 @@ template __global__ void cuDFNsys::Fractures<float>(cuDFNsys::Fracture<float> *v
                                                     uint ModeSizeDistri,                     // 1 = power law; 2 = lognormal; 3 = uniform; 4 = monosize
                                                     cuDFNsys::Vector4<float> ParaSizeDistri, // when mode = 1, ;
                                                     cuDFNsys::Vector1<float> kappa,
-                                                    cuDFNsys::Vector1<float> conductivity_powerlaw_exponent, float Gamma_constant);
+                                                    cuDFNsys::Vector1<float> conductivity_powerlaw_exponent, float Gamma_constant, double3 DimensionRatio);
 
 // ====================================================
 // NAME:        Fractures

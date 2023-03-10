@@ -133,6 +133,7 @@ public:
                     const cuDFNsys::Mesh<T> &mesh,
                     const cuDFNsys::MHFEM<T> &fem,
                     const T &L,
+                    double3 DomainDimensionRatio = make_double3(1, 1, 1),
                     bool if_python_visualization = false,
                     string PythonName_Without_suffix = "ParticleMovement");
 

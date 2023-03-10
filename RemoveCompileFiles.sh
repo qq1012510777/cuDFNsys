@@ -6,7 +6,8 @@ myArray=("BenchmarkCases" "ParticleTrackingFourFrac" "ClearBadH5FileForPercolati
   "CompareCPUGPU" "CompareWithAndWithoutDeadEnds" "ContinueParticleTransport" "FracturesFixedChangeDomainSize" \
   "ParticleTransportValidationSingleFrac" "PercolationTest" "QuickStartGuide" \
   "ReadMatAndOutputH5" "ReadObjectsAndDebug" "TestFunctionsOnlyForDevlopment" "TestResolutionEffect" \
-  "Transform2DH5ParticleDataTo3D" "GenMultipleFamilies" "ConnectivityMultipleFamilies")
+  "Transform2DH5ParticleDataTo3D" "GenMultipleFamilies" "ConnectivityMultipleFamilies"
+  "ColumnLikeDomainForDispersion")
 
 for str in ${myArray[@]}; do
   cd $str
@@ -16,7 +17,7 @@ for str in ${myArray[@]}; do
   gio trash -f CMakeCache.txt CMakeFiles cmake_install.cmake
   cd ..
   cd bin
-  gio trash -f ./main* ./Transform2DH5ParticleDataTo3D
+  gio trash -f ./main* ./Transform2DH5ParticleDataTo3D ./ColumnLikeDomainForDispersion
   cd ..
   cd ..
   echo "---------------cleaned "$str

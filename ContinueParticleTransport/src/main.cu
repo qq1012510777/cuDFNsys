@@ -47,6 +47,7 @@ int main(int argc, char *argv[])
 
         int DSIZE = 0;
         _DataType_ L = 0;
+        double3 DomainDimensionRatio = make_double3(1, 1, 1);
         //_DataType_ minGrid = 0;
         //_DataType_ maxGrid = 0;
 
@@ -64,7 +65,8 @@ int main(int argc, char *argv[])
         thrust::device_vector<cuDFNsys::Fracture<_DataType_>> Frac_verts_device;
 
         cuDFNsys::InputObjectData<_DataType_> lk;
-        lk.InputFractures("Fractures.h5", Frac_verts_host, L);
+        lk.InputFractures("Fractures.h5", Frac_verts_host, L, DomainDimensionRatio);
+
         DSIZE = Frac_verts_host.size();
 
         Frac_verts_device = Frac_verts_host;
@@ -89,7 +91,7 @@ int main(int argc, char *argv[])
         cuDFNsys::MatlabPlotDFN<_DataType_> As{"DFN_I.h5", "DFN_I.m",
                                                Frac_verts_host, Intersection_map, ListClusters,
                                                Percolation_cluster, false, true, true, true,
-                                               L, perco_dir, true, "DFN_I"};
+                                               L, perco_dir, true, "DFN_I", DomainDimensionRatio};
 
         //
         Intersection_map.clear();
@@ -109,7 +111,7 @@ int main(int argc, char *argv[])
         cuDFNsys::MatlabPlotDFN<_DataType_> As2{"DFN_II.h5", "DFN_II.m",
                                                 Frac_verts_host, Intersection_map, ListClusters,
                                                 Percolation_cluster, true, true, true, true,
-                                                L, perco_dir, true, "DFN_II"};
+                                                L, perco_dir, true, "DFN_II", DomainDimensionRatio};
         Frac_verts_device.clear();
         Frac_verts_device.shrink_to_fit();
         //-----------
@@ -133,7 +135,7 @@ int main(int argc, char *argv[])
             cout << "meshing ..." << endl;
 
             cuDFNsys::OutputObjectData<_DataType_> lkew;
-            lkew.OutputFractures("FracturesII.h5", Frac_verts_host, L);
+            lkew.OutputFractures("FracturesII.h5", Frac_verts_host, L, DomainDimensionRatio);
 
             cuDFNsys::Mesh<_DataType_> mesh;
             try
@@ -144,7 +146,7 @@ int main(int argc, char *argv[])
             {
                 cout << "mesh ing ...\n";
                 cuDFNsys::Mesh<_DataType_> mesh2{Frac_verts_host, IntersectionPair_percol,
-                                                 &Fracs_percol, 1, 10, perco_dir, L};
+                                                 &Fracs_percol, 1, 10, perco_dir, L, DomainDimensionRatio};
                 lkew.OutputMesh("mesh.h5", mesh2, Fracs_percol);
                 lk.InputMesh("mesh.h5", mesh, &Fracs_percol);
             }
@@ -152,7 +154,7 @@ int main(int argc, char *argv[])
             int i = 0;
             mesh.MatlabPlot("DFN_mesh_" + to_string(i + 1) + ".h5",
                             "DFN_mesh_" + to_string(i + 1) + ".m",
-                            Frac_verts_host, L, true, true, true, "DFN_mesh_" + to_string(i + 1));
+                            Frac_verts_host, L, true, true, true, "DFN_mesh_" + to_string(i + 1), DomainDimensionRatio);
 
             cout << "MHFEM ing ..." << endl;
 
@@ -169,7 +171,7 @@ int main(int argc, char *argv[])
             }
             catch (...)
             {
-                cuDFNsys::MHFEM<_DataType_> fem2{mesh, Frac_verts_host, P_in, P_out, perco_dir, L};
+                cuDFNsys::MHFEM<_DataType_> fem2{mesh, Frac_verts_host, P_in, P_out, perco_dir, L, DomainDimensionRatio};
 
                 lkew.OutputMHFEM("mhfem.h5", fem2);
                 fem = fem2;
@@ -188,7 +190,8 @@ int main(int argc, char *argv[])
             //---------------------
             fem.MatlabPlot("MHFEM_" + to_string(i + 1) + ".h5",
                            "MHFEM_" + to_string(i + 1) + ".m",
-                           Frac_verts_host, mesh, L, true, "MHFEM_" + to_string(i + 1));
+                           Frac_verts_host, mesh, L, true, "MHFEM_" + to_string(i + 1),
+                           DomainDimensionRatio);
             //---------------
             // return 0;
 
@@ -206,14 +209,15 @@ int main(int argc, char *argv[])
             cout << "Particle transport ing ......\n";
 
             cuDFNsys::ParticleTransport<_DataType_> p{atoi(argv[1]), // number of time step
-                                                      Frac_verts_host, mesh, fem, (uint)perco_dir, -0.5f * L,
+                                                      Frac_verts_host, mesh, fem, (uint)perco_dir,
+                                                      -0.5f * L * (&DomainDimensionRatio.x)[perco_dir],
                                                       atoi(argv[2]), // num of particle
                                                       atof(argv[3]), // delta_T_ii
                                                       atof(argv[4]),
                                                       "Particle_tracking",
                                                       "Flux-weighted",
-                                                      "FPTCurve"};
-            p.MatlabPlot("MHFEM_" + to_string(i + 1) + ".h5", "ParticlesDFNMatlab.m", mesh, fem, L, true, "ParticlesDFN");
+                                                      "OutputAll"};
+            p.MatlabPlot("MHFEM_" + to_string(i + 1) + ".h5", "ParticlesDFNMatlab.m", mesh, fem, L, DomainDimensionRatio, true, "ParticlesDFN");
         }
         //cudaDeviceReset();
         double ielaps = cuDFNsys::CPUSecond() - istart;

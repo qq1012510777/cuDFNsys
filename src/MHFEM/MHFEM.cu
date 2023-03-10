@@ -30,7 +30,7 @@ cuDFNsys::MHFEM<T>::MHFEM(const cuDFNsys::Mesh<T> &mesh,
                           const T &inlet_p_,
                           const T &outlet_p_,
                           const int &dir_,
-                          const T &L,
+                          const T &L, double3 DomainDimensionRatio,
                           bool if_CPU,
                           int Nproc)
 {
@@ -40,21 +40,26 @@ cuDFNsys::MHFEM<T>::MHFEM(const cuDFNsys::Mesh<T> &mesh,
     this->OutletP = outlet_p_;
     this->Implementation(mesh, Fracs, if_CPU, Nproc);
     this->QError = (abs(QIn - QOut) / (QIn > QOut ? QIn : QOut)) * 100.0f;
-    this->Permeability = 0.5f * (QOut + QIn) / L / (inlet_p_ - outlet_p_);
+    double *Rt = &DomainDimensionRatio.x;
+
+    this->Permeability = 0.5f * (QOut + QIn) / (L * Rt[this->Dir]) / (inlet_p_ - outlet_p_);
 }; // MHFEM
 template cuDFNsys::MHFEM<double>::MHFEM(const cuDFNsys::Mesh<double> &mesh,
                                         const thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs,
                                         const double &inlet_p_,
                                         const double &outlet_p_,
                                         const int &dir_,
-                                        const double &L, bool if_CPU,
+                                        const double &L, double3 DomainDimensionRatio,
+                                        bool if_CPU,
                                         int Nproc);
 template cuDFNsys::MHFEM<float>::MHFEM(const cuDFNsys::Mesh<float> &mesh,
                                        const thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs,
                                        const float &inlet_p_,
                                        const float &outlet_p_,
                                        const int &dir_,
-                                       const float &L, bool if_CPU,
+                                       const float &L,
+                                       double3 DomainDimensionRatio,
+                                       bool if_CPU,
                                        int Nproc);
 
 // ====================================================
@@ -70,7 +75,7 @@ void cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
                                     const cuDFNsys::Mesh<T> &mesh,
                                     const T &L,
                                     bool if_python_visualization,
-                                    string PythonName_Without_suffix)
+                                    string PythonName_Without_suffix, double3 DomainDimensionRatio)
 {
     //cuDFNsys::MatlabAPI M1;
 
@@ -111,6 +116,10 @@ void cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
     h5gg.AddDataset(mat_key, "N", "InletP", yu, dim_f);
     yu[0] = this->OutletP;
     h5gg.AddDataset(mat_key, "N", "OutletP", yu, dim_f);
+
+    uint2 dim_ds = make_uint2(3, 1);
+    double DomainDimensionRatio_d[3] = {DomainDimensionRatio.x, DomainDimensionRatio.y, DomainDimensionRatio.z};
+    h5gg.AddDataset(mat_key, "N", "DomainDimensionRatio", DomainDimensionRatio_d, dim_ds);
 
     //---------------------
     size_t ele_num = mesh.Element3D.size();
@@ -267,20 +276,26 @@ void cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
         std::ofstream oss(command_key, ios::out);
         oss << "clc;\nclose all;\nclear all;\n";
         //oss << "load('" << mat_key << "');\n";
-        oss << "L = 0.5 * " << L << ";\n";
+        // oss << "L = 0.5 * " << L << ";\n";
         oss << "currentPath = fileparts(mfilename('fullpath'));\n";
         oss << "coordinate_3D = h5read([currentPath, '/" << mat_key << "'], '/coordinate_3D');\n";
         oss << "element_3D = h5read([currentPath, '/" << mat_key << "'], '/element_3D');\n";
         oss << "velocity_center_grid = h5read([currentPath, '/" << mat_key << "'], '/velocity_center_grid');\n";
         oss << "pressure_eles = h5read([currentPath, '/" << mat_key << "'], '/pressure_eles');\n";
 
+        oss << "L = h5read([currentPath, '/" << mat_key << "'], '/L_m');\n";
+        oss << "DomainDimensionRatio = h5read([currentPath, '/" << mat_key << "'], '/DomainDimensionRatio');\n";
         oss << "cube_frame = [-L, -L, L; -L, L, L; L, L, L; L -L, L; -L, -L, -L; -L, L, -L; L, L, -L; L -L, -L; -L, L, L; -L, L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L, -L; L, -L, -L; L, -L, L; L, -L, L; L, -L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L,-L; -L, L, -L; -L,L, L];\n";
+        oss << "cube_frame(:, 1) = 0.5 .* cube_frame(:, 1) .* DomainDimensionRatio(1); ";
+        oss << "cube_frame(:, 2) = 0.5 .* cube_frame(:, 2) .* DomainDimensionRatio(2); ";
+        oss << "cube_frame(:, 3) = 0.5 .* cube_frame(:, 3) .* DomainDimensionRatio(3);\n";
+
         oss << "figure(1); view(3); title('DFN flow (mhfem)'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
         oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
         oss << endl;
-        oss << "xlim([-1.1*L, 1.1*L]);\n";
-        oss << "ylim([-1.1*L, 1.1*L]);\n";
-        oss << "zlim([-1.1*L, 1.1*L]);\nhold on\n";
+        oss << "axis([-1.1 / 2 * DomainDimensionRatio(1) * L,  1.1 / 2 * DomainDimensionRatio(1) * L, -1.1 / 2 * DomainDimensionRatio(2) * L, 1.1 / 2 * DomainDimensionRatio(2) * L, -1.1 / 2 * DomainDimensionRatio(3) * L, 1.1 / 2 * DomainDimensionRatio(3) * L]);\n";
+        oss << "pbaspect([DomainDimensionRatio]); hold on\n";
+
         //oss << "centers_ele = zeros(size(element_3D, 1), 3);\n";
         //oss << "centers_ele(:, 1) = 0.5 * (coordinate_3D(element_3D(:, 1), 1) + coordinate_3D(element_3D(:, 2), 1) + coordinate_3D(element_3D(:, 3), 1));\n";
         //oss << "centers_ele(:, 2) = 0.5 * (coordinate_3D(element_3D(:, 1), 2) + coordinate_3D(element_3D(:, 2), 2) + coordinate_3D(element_3D(:, 3), 2));\n";
@@ -325,14 +340,14 @@ template void cuDFNsys::MHFEM<double>::MatlabPlot(const string &mat_key,
                                                   const cuDFNsys::Mesh<double> &mesh,
                                                   const double &L,
                                                   bool if_python_visualization,
-                                                  string PythonName_Without_suffix);
+                                                  string PythonName_Without_suffix, double3 DomainDimensionRatio);
 template void cuDFNsys::MHFEM<float>::MatlabPlot(const string &mat_key,
                                                  const string &command_key,
                                                  thrust::host_vector<cuDFNsys::Fracture<float>> Fracs,
                                                  const cuDFNsys::Mesh<float> &mesh,
                                                  const float &L,
                                                  bool if_python_visualization,
-                                                 string PythonName_Without_suffix);
+                                                 string PythonName_Without_suffix, double3 DomainDimensionRatio);
 
 // ====================================================
 // NAME:        Implementation

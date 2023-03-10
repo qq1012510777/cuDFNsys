@@ -46,7 +46,8 @@ public:
     // output Fractures in H5
     void OutputFractures(const string &filename_,
                          const thrust::host_vector<cuDFNsys::Fracture<T>> &Frac_verts_host,
-                         const T &L);
+                         const T &L,
+                         double3 DomainDimensionRatio = make_double3(1, 1, 1));
 
     // output Mesh in h5
     void OutputMesh(const string &filename_,

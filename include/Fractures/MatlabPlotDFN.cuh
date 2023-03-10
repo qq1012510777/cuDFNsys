@@ -60,6 +60,7 @@ public:
                   T L,
                   int dir,
                   bool if_python_visualization = false,
-                  string PythonName_Without_suffix = "DFN_py");
+                  string PythonName_Without_suffix = "DFN_py",
+                  double3 DomainDimensionRatio_d = make_double3(1, 1, 1));
 };
 }; // namespace cuDFNsys

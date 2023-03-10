@@ -100,7 +100,8 @@ public:
          const T &min_ele_edge,
          const T &max_ele_edge,
          const int &dir_,
-         const T &L);
+         const T &L,
+         double3 DomainDimensionRatio = make_double3(1, 1, 1));
 
     // plot mesh
     void MatlabPlot(const string &mat_key,
@@ -110,7 +111,8 @@ public:
                     const bool &if_check_2D_coordinates,
                     const bool &if_check_edge_Numbering,
                     bool if_python_visualization = false,
-                    string PythonName_Without_suffix = "DFN_mesh_py");
+                    string PythonName_Without_suffix = "DFN_mesh_py",
+                    double3 DomainDimensionRatio = make_double3(1, 1, 1));
 
 private:
     // get coordinates of mesh
@@ -118,7 +120,7 @@ private:
     // get elements of mesh
     void GetElements(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs_s, const std::vector<std::vector<std::pair<int, int>>> &outmap);
     // numbering edges of elements
-    void NumberingEdges(const T L/*, const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs*/);
+    void NumberingEdges(const T L, double3 DomainDimensionRatio = make_double3(1, 1, 1));
 
 private:
     // get elements in each 3D surface entity
@@ -131,6 +133,6 @@ private:
     // check if a edge is dirchlet edge
     pair<bool, string> IfTwoEndsDirchlet(const size_t node1,
                                          const size_t node2,
-                                         const T L);
+                                         const T L, double3 DomainDimensionRatio = make_double3(1, 1, 1));
 };
 }; // namespace cuDFNsys

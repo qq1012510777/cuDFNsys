@@ -27,7 +27,7 @@
 template <typename T>
 void cuDFNsys::OutputObjectData<T>::OutputFractures(const string &filename_,
                                                     const thrust::host_vector<cuDFNsys::Fracture<T>> &Frac_verts_host,
-                                                    const T &L)
+                                                    const T &L, double3 DomainDimensionRatio)
 {
     uint Dsize = Frac_verts_host.size();
 
@@ -47,6 +47,10 @@ void cuDFNsys::OutputObjectData<T>::OutputFractures(const string &filename_,
     uint2 dim_e = make_uint2(1, 1);
     uint DiszeP[1] = {Dsize};
     h5_.AddDataset(filename_, "N", "NumFractures", DiszeP, dim_e);
+
+    uint2 dim_q = make_uint2(3, 1);
+    double sd[3] = {DomainDimensionRatio.x, DomainDimensionRatio.y, DomainDimensionRatio.z};
+    h5_.AddDataset(filename_, "N", "DomainDimensionRatio", sd, dim_q);
 
     T L_m[1] = {L};
     h5_.AddDataset(filename_, "N", "L", L_m, dim_e);
@@ -141,10 +145,10 @@ void cuDFNsys::OutputObjectData<T>::OutputFractures(const string &filename_,
 }; // OutputFractures
 template void cuDFNsys::OutputObjectData<double>::OutputFractures(const string &filename_,
                                                                   const thrust::host_vector<cuDFNsys::Fracture<double>> &Frac_verts_host,
-                                                                  const double &L);
+                                                                  const double &L, double3 DomainDimensionRatio);
 template void cuDFNsys::OutputObjectData<float>::OutputFractures(const string &filename_,
                                                                  const thrust::host_vector<cuDFNsys::Fracture<float>> &Frac_verts_host,
-                                                                 const float &L);
+                                                                 const float &L, double3 DomainDimensionRatio);
 
 // ====================================================
 // NAME:        OutputMesh

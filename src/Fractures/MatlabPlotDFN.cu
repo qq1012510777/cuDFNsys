@@ -39,7 +39,7 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
                                           T L,
                                           int dir,
                                           bool if_python_visualization,
-                                          string PythonName_Without_suffix)
+                                          string PythonName_Without_suffix, double3 DomainDimensionRatio_d)
 {
     //cuDFNsys::MatlabAPI M1;
     cuDFNsys::HDF5API h5gg;
@@ -76,6 +76,11 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
     dim_f = make_uint2(1, 1);
     T modelsize[1] = {L};
     h5gg.AddDataset(mat_key, "N", "L_m", modelsize, dim_f);
+
+    //------------
+    uint2 dim_ds = make_uint2(3, 1);
+    double DomainDimensionRatio[3] = {DomainDimensionRatio_d.x, DomainDimensionRatio_d.y, DomainDimensionRatio_d.z};
+    h5gg.AddDataset(mat_key, "N", "DomainDimensionRatio", DomainDimensionRatio, dim_ds);
 
     //-----------------
     T *R_ = new T[NUM_Frac];
@@ -354,9 +359,14 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
         oss << "clc;\nclose all;\nclear all;\n";
         oss << "currentPath = fileparts(mfilename('fullpath'));\n";
         // oss << "load('" << mat_key << "');\n";
-        oss << "L = 0.5 * " << L << ";\n";
+        oss << "L = h5read([currentPath, '/" << mat_key << "'], '/L_m');\n";
+        oss << "DomainDimensionRatio = h5read([currentPath, '/" << mat_key << "'], '/DomainDimensionRatio');\n";
         oss << "cube_frame = [-L, -L, L; -L, L, L; L, L, L; L -L, L; -L, -L, -L; -L, L, -L; L, L, -L; L -L, -L; -L, L, L; -L, L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L, -L; L, -L, -L; L, -L, L; L, -L, L; L, -L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L,-L; -L, L, -L; -L,L, L];\n";
+        oss << "cube_frame(:, 1) = 0.5 .* cube_frame(:, 1) .* DomainDimensionRatio(1); ";
+        oss << "cube_frame(:, 2) = 0.5 .* cube_frame(:, 2) .* DomainDimensionRatio(2); ";
+        oss << "cube_frame(:, 3) = 0.5 .* cube_frame(:, 3) .* DomainDimensionRatio(3);\n";
         oss << "figure(1); view(3); title('Discete fracture network'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
+
         oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
 
         oss << "Frac_NUM_verts = h5read([currentPath, '/" << mat_key << "'], '/Frac_NUM_verts');\n";
@@ -383,14 +393,16 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
             oss << "patch('Vertices', intersections_verts, 'Faces', intersections_structures, 'FaceVertexCData', ones(size(intersections_verts, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0, 'linewidth', 3, 'edgecolor', 'r'); view(3); colorbar; hold on;\n";
         }
 
-        oss << "axis([-1.1 * L,  1.1 * L, -1.1 * L, 1.1 * L, -1.1 * L, 1.1 * L]);\n";
-
+        oss << "axis([-1.1 / 2 * DomainDimensionRatio(1) * L,  1.1 / 2 * DomainDimensionRatio(1) * L, -1.1 / 2 * DomainDimensionRatio(2) * L, 1.1 / 2 * DomainDimensionRatio(2) * L, -1.1 / 2 * DomainDimensionRatio(3) * L, 1.1 / 2 * DomainDimensionRatio(3) * L]);\n";
+        oss << "pbaspect([DomainDimensionRatio]); hold on\n";
         if (If_show_cluster == true)
         {
             oss << "\nListClusters = h5read([currentPath, '/" << mat_key << "'], '/ListClusters');\n";
             oss << "PercolationClusters = h5read([currentPath, '/" << mat_key << "'], '/PercolationClusters');\n";
-            oss << "figure(2); title('DFN highlighting clusters'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); view(3); axis([-1.1 * L,  1.1 * L, -1.1 * L, 1.1 * L, -1.1 * L, 1.1 * L]); hold on\n";
+            oss << "figure(2); title('DFN highlighting clusters'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); view(3); hold on\n";
             //oss << "ListClusters(ListClusters==-1) = NaN;\n";
+            oss << "axis([-1.1 / 2 * DomainDimensionRatio(1) * L,  1.1 / 2 * DomainDimensionRatio(1) * L, -1.1 / 2 * DomainDimensionRatio(2) * L, 1.1 / 2 * DomainDimensionRatio(2) * L, -1.1 / 2 * DomainDimensionRatio(3) * L, 1.1 / 2 * DomainDimensionRatio(3) * L]);\n";
+            oss << "pbaspect([DomainDimensionRatio]); hold on\n";
             oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
             oss << "colorValue = zeros(size(element, 1), 1);\n";
             oss << "for i = 1:size(ListClusters, 1)\n";
@@ -441,7 +453,7 @@ template cuDFNsys::MatlabPlotDFN<double>::MatlabPlotDFN(string mat_key,         
                                                         double L,
                                                         int dir,
                                                         bool if_python_visualization,
-                                                        string PythonName_Without_suffix);
+                                                        string PythonName_Without_suffix, double3 DomainDimensionRatio_d);
 template cuDFNsys::MatlabPlotDFN<float>::MatlabPlotDFN(string mat_key,                                                                                             // mat file name
                                                        string command_key,                                                                                         // m file name
                                                        thrust::host_vector<cuDFNsys::Fracture<float>> Frac_verts_host,                                             // Vector of Fracture
@@ -455,4 +467,4 @@ template cuDFNsys::MatlabPlotDFN<float>::MatlabPlotDFN(string mat_key,          
                                                        float L,
                                                        int dir,
                                                        bool if_python_visualization,
-                                                       string PythonName_Without_suffix);
+                                                       string PythonName_Without_suffix, double3 DomainDimensionRatio_d);

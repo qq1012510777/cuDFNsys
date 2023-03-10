@@ -957,6 +957,7 @@ void cuDFNsys::ParticleTransport<T>::MatlabPlot(const string &mat_key,
                                                 const cuDFNsys::Mesh<T> &mesh,
                                                 const cuDFNsys::MHFEM<T> &fem,
                                                 const T &L,
+                                                double3 DomainDimensionRatio,
                                                 bool if_python_visualization,
                                                 string PythonName_Without_suffix)
 {
@@ -1124,17 +1125,23 @@ void cuDFNsys::ParticleTransport<T>::MatlabPlot(const string &mat_key,
         oss << "element_3D = h5read([currentPath, '/" << mat_key << "'], '/element_3D');\n";
         oss << "pressure_eles = h5read([currentPath, '/" << mat_key << "'], '/pressure_eles');\n";
 
-        oss << "L = 0.5 * " << L << ";\n";
         oss << "P_out = " << fem.OutletP << "; P_in = " << fem.InletP << ";\n";
         oss << "Offset_colorbar_value_for_particle = " << L << ";\n";
         oss << "If_video = false;\n";
+        oss << "L = h5read([currentPath, '/" << mat_key << "'], '/L_m');\n";
+        oss << "DomainDimensionRatio = h5read([currentPath, '/" << mat_key << "'], '/DomainDimensionRatio');\n";
         oss << "cube_frame = [-L, -L, L; -L, L, L; L, L, L; L -L, L; -L, -L, -L; -L, L, -L; L, L, -L; L -L, -L; -L, L, L; -L, L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L, -L; L, -L, -L; L, -L, L; L, -L, L; L, -L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L,-L; -L, L, -L; -L,L, L];\n";
+        oss << "cube_frame(:, 1) = 0.5 .* cube_frame(:, 1) .* DomainDimensionRatio(1); ";
+        oss << "cube_frame(:, 2) = 0.5 .* cube_frame(:, 2) .* DomainDimensionRatio(2); ";
+        oss << "cube_frame(:, 3) = 0.5 .* cube_frame(:, 3) .* DomainDimensionRatio(3);\n";
+        
         oss << "figure(1); view(3); title('DFN flow (mhfem) and particle trajectory'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
         oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
         oss << endl;
         oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, 'FaceVertexCData', pressure_eles, 'FaceColor', 'flat', 'EdgeAlpha', 0.1, 'facealpha', 0.1); colorbar; view(3); hold on\n";
         oss << "caxis([" << fem.OutletP << ", " << fem.InletP << "]);\n";
-        oss << "xlim([-(0.1 * L + L), (0.1 * L + L)])\nylim([ -(0.1 * L + L), (0.1 * L + L) ])\nzlim([ -(0.1 * L + L), (0.1 * L + L) ]);hold on\n\n";
+        oss << "axis([-1.1 / 2 * DomainDimensionRatio(1) * L,  1.1 / 2 * DomainDimensionRatio(1) * L, -1.1 / 2 * DomainDimensionRatio(2) * L, 1.1 / 2 * DomainDimensionRatio(2) * L, -1.1 / 2 * DomainDimensionRatio(3) * L, 1.1 / 2 * DomainDimensionRatio(3) * L]);\n";
+        oss << "pbaspect([DomainDimensionRatio]); hold on\n";
 
         oss << "N_steps = h5read([currentPath, '/ParticlePositionResult/DispersionInfo.h5'], '/NumOfSteps');\n";
         // oss << "S = h5read([currentPath, '/ParticlePositionResult/ParticlePositionInit.h5'], '/Step_0000000000');\n";
@@ -1193,8 +1200,10 @@ void cuDFNsys::ParticleTransport<T>::MatlabPlot(const string &mat_key,
         oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, 'FaceVertexCData', pressure_eles, 'FaceColor', 'flat', 'EdgeAlpha', 0.2, 'facealpha', 0.9); view(3); hold on\n";
         oss << "colormap(jet)\n";
         oss << "caxis([P_out, P_in + Offset_colorbar_value_for_particle]);\n";
-        oss << "xlim([-(0.1 * L + L), (0.1 * L + L)])\nylim([ -(0.1 * L + L), (0.1 * L + L) ])\nzlim([ -(0.1 * L + L), (0.1 * L + L) ]);hold on\n\n";
-
+        
+        oss << "axis([-1.1 / 2 * DomainDimensionRatio(1) * L,  1.1 / 2 * DomainDimensionRatio(1) * L, -1.1 / 2 * DomainDimensionRatio(2) * L, 1.1 / 2 * DomainDimensionRatio(2) * L, -1.1 / 2 * DomainDimensionRatio(3) * L, 1.1 / 2 * DomainDimensionRatio(3) * L]);\n";
+        oss << "pbaspect([DomainDimensionRatio]); hold on\n";
+           
         oss << "Cb = colorbar;\n";
         oss << "Cb.Limits = [P_out, P_in];\n";
         oss << "Cb.Title.String = 'Hydraulic head';\n";
@@ -1239,14 +1248,14 @@ template void cuDFNsys::ParticleTransport<double>::MatlabPlot(const string &mat_
                                                               const string &command_key,
                                                               const cuDFNsys::Mesh<double> &mesh,
                                                               const cuDFNsys::MHFEM<double> &fem,
-                                                              const double &L,
+                                                              const double &L, double3 DomainDimensionRatio,
                                                               bool if_python_visualization,
                                                               string PythonName_Without_suffix);
 template void cuDFNsys::ParticleTransport<float>::MatlabPlot(const string &mat_key,
                                                              const string &command_key,
                                                              const cuDFNsys::Mesh<float> &mesh,
                                                              const cuDFNsys::MHFEM<float> &fem,
-                                                             const float &L,
+                                                             const float &L, double3 DomainDimensionRatio,
                                                              bool if_python_visualization,
                                                              string PythonName_Without_suffix);
 

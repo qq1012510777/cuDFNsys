@@ -27,7 +27,7 @@
 template <typename T>
 void cuDFNsys::InputObjectData<T>::InputFractures(const string &filename,
                                                   thrust::host_vector<cuDFNsys::Fracture<T>> &Frac_verts_host,
-                                                  T &L)
+                                                  T &L, double3 &DomainDimensionRatio)
 {
     //
     try
@@ -122,6 +122,14 @@ void cuDFNsys::InputObjectData<T>::InputFractures(const string &filename,
     //--------------------------- finish getting model size
     //--------------------------- finish getting model size
     //--------------------------- finish getting model size
+    cuDFNsys::HDF5API h5g;
+
+    vector<double> Di_ = h5g.ReadDataset<double>(filename,
+                                                 "N", "DomainDimensionRatio");
+    DomainDimensionRatio.x = Di_[0];
+    DomainDimensionRatio.y = Di_[1];
+    DomainDimensionRatio.z = Di_[2];
+    //----------------------------------
 
     Frac_verts_host.resize(Dsize);
 
@@ -225,10 +233,10 @@ void cuDFNsys::InputObjectData<T>::InputFractures(const string &filename,
 }; // InputFractures
 template void cuDFNsys::InputObjectData<double>::InputFractures(const string &filename,
                                                                 thrust::host_vector<cuDFNsys::Fracture<double>> &Frac_verts_host,
-                                                                double &L);
+                                                                double &L, double3 &DomainDimensionRatio);
 template void cuDFNsys::InputObjectData<float>::InputFractures(const string &filename,
                                                                thrust::host_vector<cuDFNsys::Fracture<float>> &Frac_verts_host,
-                                                               float &L);
+                                                               float &L, double3 &DomainDimensionRatio);
 
 // ====================================================
 // NAME:        InputMesh
