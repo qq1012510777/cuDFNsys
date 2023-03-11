@@ -17,7 +17,7 @@ for str in ${myArray[@]}; do
   gio trash -f CMakeCache.txt CMakeFiles cmake_install.cmake
   cd ..
   cd bin
-  gio trash -f ./main* ./Transform2DH5ParticleDataTo3D ./ColumnLikeDomainForDispersion
+  gio trash -f ./main* ./Transform2DH5ParticleDataTo3D ./ColumnLikeDomainForDispersion ./QuickStartGuide
   cd ..
   cd ..
   echo "---------------cleaned "$str

@@ -267,6 +267,8 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
         oss << "Frac_NUM_verts = np.array(f['Frac_NUM_verts'][:])\n";
         oss << "verts = np.array(f['verts'][:])\n";
         oss << "L_m = f['L_m'][0]\n";
+        oss << "DomainDimensionRatio = f['DomainDimensionRatio'][:]\n";
+
         if (If_show_cluster)
         {
             oss << "ListClusters = np.array(f['ListClusters'][:])\nnp.delete(ListClusters, 0, axis=0)\n";
@@ -314,7 +316,7 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
         oss << "\tpoo += NumVerticesSingleFrac\n";
         oss << "\n";
         oss << "ML.triangular_mesh(verts[0, :], verts[1, :], verts[2, :], structure_, scalars=verts[2, :], opacity=1)\n";
-        oss << "ML.outline(extent=[-0.5 * L_m, 0.5 * L_m] * 3)\n";
+        oss << "ML.outline(extent=[-0.5 * DomainDimensionRatio[0] * L_m, 0.5 * DomainDimensionRatio[0] * L_m, -0.5 * DomainDimensionRatio[1] * L_m, 0.5 * DomainDimensionRatio[1] * L_m, -0.5 * DomainDimensionRatio[2] * L_m, 0.5 * DomainDimensionRatio[2] * L_m])\n";
         oss << "ML.axes()\n";
         oss << "ML.colorbar(orientation='vertical')\n";
         oss << "ML.xlabel('x (m)')\n";
@@ -325,7 +327,8 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
         if (If_show_cluster)
         {
             oss << "ML.triangular_mesh(verts[0, :], verts[1, :], verts[2, :], structure_, scalars=scalar_t, opacity=1)\n";
-            oss << "ML.outline(extent=[-0.5 * L_m, 0.5 * L_m] * 3)\n";
+            oss << "ML.outline(extent=[-0.5 * DomainDimensionRatio[0] * L_m, 0.5 * DomainDimensionRatio[0] * L_m, -0.5 * DomainDimensionRatio[1] * L_m, 0.5 * DomainDimensionRatio[1] * L_m, -0.5 * DomainDimensionRatio[2] * L_m, 0.5 * DomainDimensionRatio[2] * L_m])\n";
+        
             oss << "ML.axes()\n";
             oss << "ML.colorbar(orientation='vertical')\n";
             oss << "ML.xlabel('x (m)')\n";

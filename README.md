@@ -4,8 +4,6 @@ _cuDFNsys_ is an open-source CUDA library (under the GPL license) for DFN genera
 
 _cuDFNsys_ does not support the GUI and can only run on Ubuntu. _cuDFNsys_ is not friendly to users unfamiliar with Linux, C++ and CMake.
 
-The directory _GenMultipleFamilies_ shows how to generate multiple families of fractures.
-
 <p align="center">
   <img width="300" src="https://github.com/qq1012510777/cuDFNsys/blob/main/moive_particlesII.gif">
 </p>
@@ -88,7 +86,7 @@ Right now, I provide a quickstart guide to explain how can one do simulations wi
 
 To compile and run QuickStartGuide example, run compileCode.sh in the directory-'QuickStartGuide'.
 
-For example, run the command with your shell: **bash compileCode.sh 1000 500 1e5 0 0**
+For example, run the command with your shell: **bash compileCode.sh 1000 500 5e5 0 0**
 
 Explanation of the four arguments:
 
@@ -106,12 +104,10 @@ Explanation of the four arguments:
 
 _QuickStartGuide_: a quickstart guide CUDA example to show how to do simulations with _cuDFNsys_ functions.
 
-_CodingGuideline_: my coding guidline, e.g. how to name a member variable in a class
-
 _Modules_: cmake script to find packages that _cuDFNsys_ relies on in a Ubuntu system
 
 _include_: header files containing declarations of functions/classes
 
 _src_: source files containing definitions of functions/classes
 
-_PercolationTest_, _TestFunctionsOnlyForDevlopment_, _TestResolutionEffect_ and other directories are all about examples (user's interfaces), with different purposes, meanwhile showing that how to call _cuDFNsys_ functions, with cmake and other tools.
+Other directories are all about my personal examples (user's interfaces), with different purposes, meanwhile showing that how to call _cuDFNsys_ functions, with cmake and other tools.

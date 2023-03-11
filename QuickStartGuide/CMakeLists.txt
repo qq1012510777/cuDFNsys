@@ -26,7 +26,7 @@ set (CUDFNSYS_ROOT $ENV{HOME}/cuDFNsys) # set where is the cuDFNsys (important)
 
 set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin) ## bin is the EXECUTABLE_OUTPUT_PATH
 
-set (SRC_LIST ${PROJECT_SOURCE_DIR}/src/main.cu) # the path of user's interface
+set (SRC_LIST ${PROJECT_SOURCE_DIR}/src/QuickStartGuide.cu) # the path of user's interface
 
 include_directories(${CUDFNSYS_ROOT}/include)
 
@@ -39,12 +39,12 @@ ADD_DEFINITIONS(-DUSE_DOUBLES) ## use double data type
 
 file(GLOB_RECURSE SRC_CU_PATH ${CUDFNSYS_ROOT}/src/*.cu)
 
-ADD_EXECUTABLE(main
+ADD_EXECUTABLE(QuickStartGuide
     ${SRC_LIST} ${SRC_CU_PATH}
 )
 
-TARGET_LINK_LIBRARIES( main ${CUDA_LIBRARIES})
-TARGET_LINK_LIBRARIES( main ${LIBs})
+TARGET_LINK_LIBRARIES( QuickStartGuide ${CUDA_LIBRARIES})
+TARGET_LINK_LIBRARIES( QuickStartGuide ${LIBs})
 
 SET (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --display_error_number")
 SET (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --diag_suppress=3057")

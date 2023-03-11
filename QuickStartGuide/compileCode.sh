@@ -1,7 +1,7 @@
 #/bin/bash
 
 # you can run it with command: bash compileCode.sh 1000 500 1e5 0
-
+rm -rf ./ParticlePositionResult  ./*.h5
 ## compile 
 cd build
 # rm -rf CMakeCache.txt  CMakeFiles  cmake_install.cmake  Makefile
@@ -41,9 +41,9 @@ echo '------------------------------------------'
 echo '------------------------------------------'
 echo '------------------------------------------'
 
-./bin/main $1 $2 $3 $4
+./bin/QuickStartGuide $1 $2 $3 $4
 wait
-./bin/Transform2DH5ParticleDataTo3D DFN_mesh.h5
+./bin/Transform2DH5ParticleDataTo3D 0 DFN_mesh.h5
 
 
 

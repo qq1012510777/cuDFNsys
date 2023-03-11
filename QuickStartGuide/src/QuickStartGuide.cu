@@ -41,11 +41,15 @@ int main(int argc, char *argv[])
         int dev = 0;                     // No. 0 GPU card
         GPUErrCheck(cudaSetDevice(dev)); // try to use the first GPU card and check its availability
 
-        int DSIZE = 150;
+        int DSIZE = 300;
         // the number of fractures is 150
 
         _DataType_ L = 30;
         // the domain size is 30 m, the center of the domain is (0, 0, 0)
+        double3 DomainDimensionRatio = make_double3(1, 1, 2);
+        /// (1, 1, 1) means that the domain will be cubic
+        /// but if it is (1, 2, 3), the domain will be cuboid, and the size is (L, 2L, 3L)
+        /// Therefore, the three elements in the ratio indicate (x_ratio, y_ratio, z_ratio)
 
         _DataType_ minGrid = 2;
         _DataType_ maxGrid = 3;
@@ -56,10 +60,9 @@ int main(int argc, char *argv[])
         // here we just set fisher constant = 0
         // i.e. uniform orientation
 
-        _DataType_ beta = 0.25;
+        _DataType_ beta = 0.25, gamma = 5.5e-4;
         // the formula is: b = gamma * r ^ beta, b is aperture
         // r is fracture size
-        // gamma here is 5e-4, a default value in the function cuDFNsys::Fractures
 
         int ModeSizeDistri = 0;
         // ModeSizeDistri here means that the distribution of fracture sizes is a power law
@@ -106,7 +109,9 @@ int main(int argc, char *argv[])
                                                                   ModeSizeDistri,        // distribution pattern of fracture sizes
                                                                   ParaSizeDistri,        // parameters of distribution of fracture sizes
                                                                   kappa_para,            // kappa value of fisher distribution
-                                                                  beta);                 // beta
+                                                                  beta,                  // beta
+                                                                  gamma,                 // gamma
+                                                                  DomainDimensionRatio); // ratio
 
         cudaDeviceSynchronize();             // now we finished generating fractures
         Frac_verts_host = Frac_verts_device; // copy data from device to host
@@ -157,7 +162,8 @@ int main(int argc, char *argv[])
                                                L,                   // domain size
                                                perco_dir,           // flow direction
                                                true,                // true means I also want to see DFN with python script, a .py file will be generated
-                                               "DFN_I"};            // the name of python script, without suffix
+                                               "DFN_I",             // the name of python script, without suffix
+                                               DomainDimensionRatio};
 
         // then I want to identify intersections of TRUNCATED fractures!!!
         // as well as the percolation cluster
@@ -202,7 +208,8 @@ int main(int argc, char *argv[])
                                                   L,                   // domain size
                                                   perco_dir,           // flow direction
                                                   true,                // true means I also want to see DFN with python script, a .py file will be generated
-                                                  "DFN_II"};           // the name of python script, without suffix
+                                                  "DFN_II",            // the name of python script, without suffix
+                                                  DomainDimensionRatio};
 
         Frac_verts_device.clear();
         Frac_verts_device.shrink_to_fit();
@@ -238,7 +245,8 @@ int main(int argc, char *argv[])
                                             minGrid,                 // minimum grid size
                                             maxGrid,                 // maximum grid size
                                             perco_dir,               // flow direction
-                                            L};                      // domain size
+                                            L,                       // domain size
+                                            DomainDimensionRatio};
             // mesh finished
             mesh.MatlabPlot("DFN_mesh.h5",   // h5 file
                             "DFN_mesh.m",    // name of matlab script
@@ -247,7 +255,8 @@ int main(int argc, char *argv[])
                             true,            // if check 2D coordinates, because 3D fractures can be mapped to 2D plane
                             true,            // if check the edge attributes? Neumann, Dirichlet?
                             true,            // if I want to see mesh with Python?
-                            "DFN_mesh");     // name of python script without suffix
+                            "DFN_mesh",      // name of python script without suffix
+                            DomainDimensionRatio);
             ielaps = cuDFNsys::CPUSecond() - istart;
             cout << "Running time of mesh: " << ielaps << " sec\n";
 
@@ -257,7 +266,8 @@ int main(int argc, char *argv[])
                                             100,             // hydraulic head of inlet = 100 m
                                             20,              // hydraulic head of outlet = 20 m
                                             perco_dir,       // flow direction
-                                            L};              // domain size
+                                            L,               // domain size
+                                            DomainDimensionRatio};
 
             fem.MatlabPlot("MHFEM.h5",      // h5 file
                            "MHFEM.m",       // matlab script to see mhfem result
@@ -265,7 +275,8 @@ int main(int argc, char *argv[])
                            mesh,            // mesh object
                            L,               // domain size
                            true,            // if use python to do visualization
-                           "MHFEM");        // name of python script, without suffix
+                           "MHFEM",         // name of python script, without suffix
+                           DomainDimensionRatio);
 
             ielaps = cuDFNsys::CPUSecond() - istart;
             cout << "Running time of mhfem: " << ielaps << " sec\n";
@@ -275,23 +286,24 @@ int main(int argc, char *argv[])
             // the above two command just in order to output fractures information to transform 2D particle data to 3D
 
             istart = cuDFNsys::CPUSecond();
-            cuDFNsys::ParticleTransport<_DataType_> p{atoi(argv[1]),             // number of particle
-                                                      atoi(argv[2]),             // number of time steps
-                                                      (_DataType_)atof(argv[3]), // delta T
-                                                      (_DataType_)atof(argv[4]), // molecular diffusion
-                                                      Frac_verts_host,           // fractures
-                                                      mesh,                      // mesh object
-                                                      fem,                       // mhfem object
-                                                      (uint)perco_dir,           // flow direction
-                                                      -0.5 * L,                  // the target plane, z = -0.5 * L
-                                                      "Particle_tracking",       // use particle tracking algorithm
-                                                      "Flux-weighted"};          // the injection mode is flux-weighted
+            cuDFNsys::ParticleTransport<_DataType_> p{atoi(argv[1]),                               // number of particle
+                                                      atoi(argv[2]),                               // number of time steps
+                                                      (_DataType_)atof(argv[3]),                   // delta T
+                                                      (_DataType_)atof(argv[4]),                   // molecular diffusion
+                                                      Frac_verts_host,                             // fractures
+                                                      mesh,                                        // mesh object
+                                                      fem,                                         // mhfem object
+                                                      (uint)perco_dir,                             // flow direction
+                                                      -0.5 * (&DomainDimensionRatio.x)[perco_dir], // the target plane, z = -0.5 * L; it could be changed if the percolation direction is not along the z axis
+                                                      "Particle_tracking",                         // use particle tracking algorithm
+                                                      "Flux-weighted"};                            // the injection mode is flux-weighted
 
             p.MatlabPlot("MHFEM.h5",            // h5 file of mhfem
                          "ParticlesMovement.m", // matlab script
                          mesh,                  // mesh result
                          fem,                   // mhfem object
                          L,                     // domain size
+                         DomainDimensionRatio,  // ratio of dimensions of the domain
                          true,                  // Visualize it with python
                          "ParticlesMovement");  // the name of python script without suffix
 

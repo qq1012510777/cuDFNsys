@@ -969,14 +969,16 @@ void cuDFNsys::ParticleTransport<T>::MatlabPlot(const string &mat_key,
         oss << "from mayavi import mlab as ML\n";
         oss << "import math\n";
         oss << "import gc            \n";
-        oss << "f = h5py.File('MHFEM_1.h5')\n";
+        oss << "f = h5py.File('" << mat_key << "')\n";
         oss << "coordinate_3D = np.array(f['coordinate_3D'][:])\n";
         oss << "element_3D = np.array(f['element_3D'][:], dtype=int)\n";
         oss << "InletP = np.array(f['InletP'][:])\n";
         oss << "OutletP = np.array(f['OutletP'][:])\n";
         oss << "L_m = f['L_m'][:][0]\n";
+        oss << "DomainDimensionRatio = f['DomainDimensionRatio'][:]\n";
         oss << "pressure_eles = np.array(f['pressure_eles'][:])\n";
-        oss << "f.close()           \n";
+        oss << "f.close()\n";
+
         oss << "mesh = ML.triangular_mesh(coordinate_3D[0, :], coordinate_3D[1, :], coordinate_3D[2, :], np.transpose(element_3D - 1), representation='wireframe', color=(0, 0, 0), line_width=1.0)\n";
         oss << "mesh.mlab_source.dataset.cell_data.scalars = np.transpose(pressure_eles)\n";
         oss << "mesh.mlab_source.dataset.cell_data.scalars.name = 'Cell data'\n";
@@ -984,7 +986,7 @@ void cuDFNsys::ParticleTransport<T>::MatlabPlot(const string &mat_key,
         oss << "mesh.parent.update()\n";
         oss << "mesh2 = ML.pipeline.set_active_attribute(mesh, cell_scalars='Cell data')\n";
         oss << "s2 = ML.pipeline.surface(mesh2, colormap='rainbow', opacity=1)\n";
-        oss << "ML.outline(extent=[-0.5 * L_m, 0.5 * L_m] * 3)\n";
+        oss << "ML.outline(extent=[-0.5 * DomainDimensionRatio[0] * L_m, 0.5 * DomainDimensionRatio[0] * L_m, -0.5 * DomainDimensionRatio[1] * L_m, 0.5 * DomainDimensionRatio[1] * L_m, -0.5 * DomainDimensionRatio[2] * L_m, 0.5 * DomainDimensionRatio[2] * L_m])\n";
         oss << "ML.axes()\n";
         oss << "s2.module_manager.scalar_lut_manager.data_range = np.array([OutletP[0], InletP[0]])\n";
         oss << "ML.colorbar(object=s2, orientation='vertical')\n";
@@ -1043,12 +1045,13 @@ void cuDFNsys::ParticleTransport<T>::MatlabPlot(const string &mat_key,
         osse << "import numpy as np\n";
         osse << "from mayavi import mlab as ML\n";
         osse << "import math           \n";
-        osse << "f = h5py.File('MHFEM_1.h5')\n";
+        osse << "f = h5py.File('" << mat_key << "')\n";
         osse << "coordinate_3D = np.array(f['coordinate_3D'][:])\n";
         osse << "element_3D = np.array(f['element_3D'][:], dtype=int)\n";
         osse << "InletP = np.array(f['InletP'][:])\n";
         osse << "OutletP = np.array(f['OutletP'][:])\n";
         osse << "L_m = f['L_m'][:][0]\n";
+        osse << "DomainDimensionRatio = f['DomainDimensionRatio'][:]\n";
         osse << "pressure_eles = np.array(f['pressure_eles'][:])\n";
         osse << "f.close()           \n";
         osse << "mesh = ML.triangular_mesh(coordinate_3D[0, :], coordinate_3D[1, :], coordinate_3D[2, :], np.transpose(element_3D - 1), opacity=1)\n";
@@ -1058,7 +1061,8 @@ void cuDFNsys::ParticleTransport<T>::MatlabPlot(const string &mat_key,
         osse << "mesh.parent.update()\n";
         osse << "mesh2 = ML.pipeline.set_active_attribute(mesh, cell_scalars='Cell data')\n";
         osse << "s2 = ML.pipeline.surface(mesh2, colormap='rainbow', opacity=0.1)\n";
-        osse << "ML.outline(extent=[-0.5 * L_m, 0.5 * L_m] * 3)\n";
+        osse << "ML.outline(extent=[-0.5 * DomainDimensionRatio[0] * L_m, 0.5 * DomainDimensionRatio[0] * L_m, -0.5 * DomainDimensionRatio[1] * L_m, 0.5 * DomainDimensionRatio[1] * L_m, -0.5 * DomainDimensionRatio[2] * L_m, 0.5 * DomainDimensionRatio[2] * L_m])\n";
+
         osse << "ML.axes()\n";
         osse << "s2.module_manager.scalar_lut_manager.data_range = np.array([OutletP[0], InletP[0]])\n";
         osse << "ML.colorbar(object=s2, orientation='vertical')\n";
@@ -1134,7 +1138,7 @@ void cuDFNsys::ParticleTransport<T>::MatlabPlot(const string &mat_key,
         oss << "cube_frame(:, 1) = 0.5 .* cube_frame(:, 1) .* DomainDimensionRatio(1); ";
         oss << "cube_frame(:, 2) = 0.5 .* cube_frame(:, 2) .* DomainDimensionRatio(2); ";
         oss << "cube_frame(:, 3) = 0.5 .* cube_frame(:, 3) .* DomainDimensionRatio(3);\n";
-        
+
         oss << "figure(1); view(3); title('DFN flow (mhfem) and particle trajectory'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
         oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
         oss << endl;
@@ -1200,10 +1204,10 @@ void cuDFNsys::ParticleTransport<T>::MatlabPlot(const string &mat_key,
         oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, 'FaceVertexCData', pressure_eles, 'FaceColor', 'flat', 'EdgeAlpha', 0.2, 'facealpha', 0.9); view(3); hold on\n";
         oss << "colormap(jet)\n";
         oss << "caxis([P_out, P_in + Offset_colorbar_value_for_particle]);\n";
-        
+
         oss << "axis([-1.1 / 2 * DomainDimensionRatio(1) * L,  1.1 / 2 * DomainDimensionRatio(1) * L, -1.1 / 2 * DomainDimensionRatio(2) * L, 1.1 / 2 * DomainDimensionRatio(2) * L, -1.1 / 2 * DomainDimensionRatio(3) * L, 1.1 / 2 * DomainDimensionRatio(3) * L]);\n";
         oss << "pbaspect([DomainDimensionRatio]); hold on\n";
-           
+
         oss << "Cb = colorbar;\n";
         oss << "Cb.Limits = [P_out, P_in];\n";
         oss << "Cb.Title.String = 'Hydraulic head';\n";

@@ -431,10 +431,12 @@ void cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
         if (if_check_edge_Numbering == true)
             oss << "edge_attri = np.transpose(np.array(f['edge_attri'][:]))\n";
         oss << "L_m = f['L_m'][:][0]\n";
+        oss << "DomainDimensionRatio = f['DomainDimensionRatio'][:]\n";
+
         oss << "f.close()\n";
         oss << "ML.triangular_mesh(coordinate_3D[0, :], coordinate_3D[1, :], coordinate_3D[2, :], np.transpose(element_3D - 1), scalars=coordinate_3D[2, :], opacity=0.8)\n";
         oss << "ML.triangular_mesh(coordinate_3D[0, :], coordinate_3D[1, :], coordinate_3D[2, :], np.transpose(element_3D-1), representation='wireframe', color=(0, 0, 0), line_width=1.0)\n";
-        oss << "ML.outline(extent=[-0.5 * L_m, 0.5 * L_m] * 3)\n";
+        oss << "ML.outline(extent=[-0.5 * DomainDimensionRatio[0] * L_m, 0.5 * DomainDimensionRatio[0] * L_m, -0.5 * DomainDimensionRatio[1] * L_m, 0.5 * DomainDimensionRatio[1] * L_m, -0.5 * DomainDimensionRatio[2] * L_m, 0.5 * DomainDimensionRatio[2] * L_m])\n";
         oss << "ML.axes()\n";
         oss << "ML.colorbar(orientation='vertical')\n";
         oss << "ML.xlabel('x (m)')\n";
@@ -452,7 +454,7 @@ void cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
             oss << "neumann_loc = np.where(kk[:, 2] == 2)\n";
             oss << "interior_loc = np.where(kk[:, 2] == 3)\n";
             oss << "ML.triangular_mesh(coordinate_3D[0, :], coordinate_3D[1, :], coordinate_3D[2, :], np.transpose(element_3D - 1), representation='wireframe', color=(0, 0, 0), line_width=1.0)\n";
-            oss << "ML.outline(extent=[-0.5 * L_m, 0.5 * L_m] * 3)\n";
+            oss << "ML.outline(extent=[-0.5 * DomainDimensionRatio[0] * L_m, 0.5 * DomainDimensionRatio[0] * L_m, -0.5 * DomainDimensionRatio[1] * L_m, 0.5 * DomainDimensionRatio[1] * L_m, -0.5 * DomainDimensionRatio[2] * L_m, 0.5 * DomainDimensionRatio[2] * L_m])\n";
             oss << "ML.axes()\n";
             oss << "ML.colorbar(orientation='vertical')\n";
             oss << "ML.xlabel('x (m)')\n";

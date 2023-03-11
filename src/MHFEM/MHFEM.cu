@@ -241,6 +241,7 @@ void cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
         oss << "InletP = np.array(f['InletP'][:])\n";
         oss << "OutletP = np.array(f['OutletP'][:])\n";
         oss << "L_m = f['L_m'][:][0]\n";
+        oss << "DomainDimensionRatio = f['DomainDimensionRatio'][:]\n";
         oss << "pressure_eles = np.array(f['pressure_eles'][:])\n";
         oss << "velocity_center_grid = np.array(f['velocity_center_grid'][:])\n";
         oss << "f.close()\n";
@@ -252,7 +253,7 @@ void cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
         oss << "mesh.parent.update()\n";
         oss << "mesh2 = ML.pipeline.set_active_attribute(mesh, cell_scalars='Cell data')\n";
         oss << "s2 = ML.pipeline.surface(mesh2, colormap='rainbow', opacity=0.8)\n";
-        oss << "ML.outline(extent=[-0.5 * L_m, 0.5 * L_m] * 3)\n";
+        oss << "ML.outline(extent=[-0.5 * DomainDimensionRatio[0] * L_m, 0.5 * DomainDimensionRatio[0] * L_m, -0.5 * DomainDimensionRatio[1] * L_m, 0.5 * DomainDimensionRatio[1] * L_m, -0.5 * DomainDimensionRatio[2] * L_m, 0.5 * DomainDimensionRatio[2] * L_m])\n";
         oss << "ML.axes()\n";
         oss << "s2.module_manager.scalar_lut_manager.data_range = np.array([OutletP[0], InletP[0]])\n";
         oss << "ML.colorbar(object=s2, orientation='vertical')\n";
