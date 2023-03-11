@@ -88,8 +88,11 @@ int main(int argc, char *argv[])
 
         thrust::host_vector<cuDFNsys::Fracture<_DataType_>> Frac_verts_host;
 
+        double3 UI;
+
         cuDFNsys::InputObjectData<_DataType_> lk;
-        lk.InputFractures(FracH5, Frac_verts_host, L);
+
+        lk.InputFractures(FracH5, Frac_verts_host, L, UI);
         //DSIZE = Frac_verts_host.size();
         thrust::device_vector<cuDFNsys::Fracture<_DataType_>> Frac_verts_device;
         Frac_verts_device = Frac_verts_host;

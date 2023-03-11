@@ -10,7 +10,7 @@ The directory _GenMultipleFamilies_ shows how to generate multiple families of f
   <img width="300" src="https://github.com/qq1012510777/cuDFNsys/blob/main/moive_particlesII.gif">
 </p>
 <p align="center">
-    <em>Figure 1. Dispersion in a DFN. The number of particles is 500 000. The movement of particles is purely driven by the advection.</em>
+    <em>Figure 1. Dispersion in a DFN of a column-like domain. The number of particles is 500 000. The movement of particles is purely driven by the advection.</em>
 </p>
 
 # Authors

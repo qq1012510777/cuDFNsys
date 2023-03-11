@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
 
         srand((unsigned int)time(0));
         Eigen::MatrixXd Ter = Eigen::MatrixXd::Random(1, 1);
-        int DSIZE = 600;
+        int DSIZE = 800;
         _DataType_ L = 100;
         cuDFNsys::Vector4<_DataType_> ParaSizeDistri =
             cuDFNsys::MakeVector4((_DataType_)1.5,
@@ -187,7 +187,8 @@ int main(int argc, char *argv[])
                 cuDFNsys::OutputObjectData<_DataType_> lk;
                 lk.OutputFractures(Filename_FracturesForParticle, Frac_verts_host, L, DomainDimensionRatio);
             }
-
+            return 0;
+            
             cout << "Particle transport ing ...\n";
 
             //double *FG = &DomainDimensionRatio.x;
