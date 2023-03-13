@@ -26,7 +26,7 @@ set (CUDFNSYS_ROOT $ENV{HOME}/cuDFNsys)
 
 set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin) ## bin is the EXECUTABLE_OUTPUT_PATH
 
-set (SRC_LIST ${PROJECT_SOURCE_DIR}/src/ContinueParticleTransport.cu)
+set (SRC_LIST ${PROJECT_SOURCE_DIR}/src/ValidateLocalDiffusion.cu)
 
 include_directories(${CUDFNSYS_ROOT}/include)
 
@@ -37,19 +37,19 @@ include_directories(${HEADERs})
 ADD_DEFINITIONS(-std=c++17)  
 ADD_DEFINITIONS(-DUSE_DOUBLES) ## use double data type
 
-set (SRC_LIST ${PROJECT_SOURCE_DIR}/src/ContinueParticleTransport.cu)
+set (SRC_LIST ${PROJECT_SOURCE_DIR}/src/ValidateLocalDiffusion.cu)
 
 file(GLOB_RECURSE SRC_CU_PATH ${CUDFNSYS_ROOT}/src/*.cu)
 
-ADD_EXECUTABLE(ContinueParticleTransport
+ADD_EXECUTABLE(ValidateLocalDiffusion
     ${SRC_LIST} ${SRC_CU_PATH}
 )
 
-TARGET_LINK_LIBRARIES( ContinueParticleTransport ${CUDA_LIBRARIES})
-TARGET_LINK_LIBRARIES( ContinueParticleTransport ${LIBs})
+TARGET_LINK_LIBRARIES( ValidateLocalDiffusion ${CUDA_LIBRARIES})
+TARGET_LINK_LIBRARIES( ValidateLocalDiffusion ${LIBs})
 
 SET (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --display_error_number")
 SET (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --diag_suppress=3057")
 SET (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --diag_suppress=1301")
 SET (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --diag_suppress=3059")
-SET (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -arch=sm_60 -std=c++17 -rdc=true -O2 -DNDEBUG")
+SET (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -arch=sm_60 -std=c++17 -rdc=true")

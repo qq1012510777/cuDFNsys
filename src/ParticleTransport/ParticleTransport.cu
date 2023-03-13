@@ -383,7 +383,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(const int &init_NO_STEP,
     //cuDFNsys::NeighborEle *NeighborEleOfOneEle_dev_ptr = thrust::raw_pointer_cast(NeighborEleOfOneEle_dev.data());
 
     uint NumPart_dynamic = this->ParticlePlumes.size();
-
+    uint TotalNumParticlesLeaveModelFromInlet = 0;
     for (uint i = init_NO_STEP; i <= NumTimeStep + init_NO_STEP; ++i)
     {
         thrust::host_vector<uint> Particle_runtime_error(NumPart_dynamic, 0);
@@ -395,7 +395,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(const int &init_NO_STEP,
 
         cout << "The Step " << i << endl;
         double istart_b = cuDFNsys::CPUSecond();
-        ParticleMovementOneTimeStepGPUKernel<T><<<NumPart_dynamic / 256 + 1, 256>>>((unsigned long)t + (unsigned long)(i * 100),
+        ParticleMovementOneTimeStepGPUKernel<T><<<NumPart_dynamic / 256 + 1, 256>>>((unsigned long)t + (unsigned long)(i * 10000),
                                                                                     delta_T_,
                                                                                     Dispersion_local,
                                                                                     P_DEV,
@@ -410,7 +410,8 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(const int &init_NO_STEP,
                                                                                     NumPart_dynamic,
                                                                                     mesh.Element3D.size(),
                                                                                     i,
-                                                                                    Particle_runtime_error_dev_pnt);
+                                                                                    Particle_runtime_error_dev_pnt,
+                                                                                    this->NumParticles);
         cudaDeviceSynchronize();
         Particle_runtime_error = Particle_runtime_error_dev;
 
@@ -490,15 +491,28 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(const int &init_NO_STEP,
 
         this->ParticlePlumes.shrink_to_fit();
 
+        uint NumParticlesAboveModel = this->ParticlePlumes.size();
+
+        this->ParticlePlumes.erase(thrust::remove_if(this->ParticlePlumes.begin(), this->ParticlePlumes.end(),
+                                                     [&](const cuDFNsys::Particle<T> &x) { return x.ParticleID == this->NumParticles * 2; }),
+                                   this->ParticlePlumes.end());
+        this->ParticlePlumes.shrink_to_fit();
+
+        NumParticlesAboveModel -= this->ParticlePlumes.size();
+
+        TotalNumParticlesLeaveModelFromInlet += NumParticlesAboveModel;
+
         ParticlePlumes_DEV = this->ParticlePlumes;
 
         NumPart_dynamic = this->ParticlePlumes.size();
 
         double ielaps = cuDFNsys::CPUSecond() - istart;
 
-        cout << this->NumParticles - NumPart_dynamic << "/" << this->NumParticles << " reached outlet plane, running time: " << ielaps_b << "; counting time: " << ielaps << "s\n";
+        cout << NumPart_dynamic << "/" << this->NumParticles << " particles are still in the domain, a total of " << TotalNumParticlesLeaveModelFromInlet << " particles left the model from the inlet; running time: " << ielaps_b << "; counting time: " << ielaps << "s\n";
 
-        this->OutputMSD(i, Fracs, mesh);
+        if (NumPart_dynamic != 0)
+            this->OutputMSD(i, Fracs, mesh);
+
         if (this->RecordMode == "OutputAll")
             this->OutputParticleInfoStepByStep(i,
                                                delta_T_,
@@ -688,7 +702,10 @@ void cuDFNsys::ParticleTransport<T>::OutputMSD(const uint &StepNO,
     string MSD_file = "Dispersion_MeanSquareDisplacement.h5";
     //cout << "222222\n";
     if (StepNO == 0)
+    {
+        std::remove(MSD_file.c_str());
         h5g.NewFile(MSD_file);
+    }
     //cout << "3333\n";
     thrust::device_vector<cuDFNsys::Fracture<T>> Frac_verts_device;
     Frac_verts_device = Fracs;

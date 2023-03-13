@@ -122,13 +122,20 @@ void cuDFNsys::InputObjectData<T>::InputFractures(const string &filename,
     //--------------------------- finish getting model size
     //--------------------------- finish getting model size
     //--------------------------- finish getting model size
-    cuDFNsys::HDF5API h5g;
+    try
+    {
+        cuDFNsys::HDF5API h5g;
 
-    vector<double> Di_ = h5g.ReadDataset<double>(filename,
-                                                 "N", "DomainDimensionRatio");
-    DomainDimensionRatio.x = Di_[0];
-    DomainDimensionRatio.y = Di_[1];
-    DomainDimensionRatio.z = Di_[2];
+        vector<double> Di_ = h5g.ReadDataset<double>(filename,
+                                                     "N", "DomainDimensionRatio");
+        DomainDimensionRatio.x = Di_[0];
+        DomainDimensionRatio.y = Di_[1];
+        DomainDimensionRatio.z = Di_[2];
+    }
+    catch (...)
+    {
+        DomainDimensionRatio = make_double3(1, 1, 1);
+    }
     //----------------------------------
 
     Frac_verts_host.resize(Dsize);

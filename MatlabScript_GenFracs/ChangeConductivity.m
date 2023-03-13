@@ -4,9 +4,11 @@ close all
 currentPath = fileparts(mfilename('fullpath'));
 NumFracs = h5read([currentPath, '/Fractures.h5'], '/NumFractures');
 L = h5read([currentPath, '/Fractures.h5'], '/L');
+% DomainDimensionRatio = h5read([currentPath, '/Fractures.h5'], '/DomainDimensionRatio');
+DomainDimensionRatio = [1, 1, 1]';
 
 gamma = 6e-4;
-beta = 0.7;
+beta = 0.1;
 
 new_filename = 'Fractures_new.h5';
 
@@ -16,6 +18,8 @@ h5write([currentPath, '/', new_filename], '/L', L)
 h5create([currentPath, '/', new_filename], '/NumFractures', size(NumFracs));
 h5write([currentPath, '/', new_filename], '/NumFractures', NumFracs);
 
+h5create([currentPath, '/', new_filename], '/DomainDimensionRatio', size(DomainDimensionRatio));
+h5write([currentPath, '/', new_filename], '/DomainDimensionRatio', DomainDimensionRatio);
 
 Conductivity_Vec = zeros(1, NumFracs);
 

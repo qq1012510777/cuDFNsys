@@ -40,7 +40,7 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
                                                                int count,
                                                                int numElements,
                                                                uint stepNO,
-                                                               uint *Particle_runtime_error_dev_pnt)
+                                                               uint *Particle_runtime_error_dev_pnt, uint NUMParticlesInTotal)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -401,9 +401,19 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
             }
             else
             {
-                printf("Warning: the particle %d goes above the model or moves along the inlet plane!\n", i + 1);
-                // delete this particle in the future
-                // goto Debug100;
+                if (Dispersion_local != 0)
+                {
+                    printf("Delete the particle %d, because the molecular diffusion is large and the particle goes above the model or moves along the inlet plane!\n", P_DEV[i].ParticleID);
+                    // delete this particle in the future
+                    // goto Debug100;
+                    P_DEV[i].ParticleID = NUMParticlesInTotal * 2;
+                }
+                else
+                {
+                    printf("Warning: the molecular diffusion is zero but the particle %d goes above the model or moves along the inlet plane!\n", P_DEV[i].ParticleID);
+                    Particle_runtime_error_dev_pnt[i] = 1;
+                };
+
                 return;
             }
         }
@@ -483,10 +493,26 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
             // if it is a inlet plane
             if (tmp3[Dir_flow] > ((T)-1.0 * outletcoordinate - 1e-4))
             {
-                printf("Warning: the particle %d goes above the model!\n", i + 1);
-                // printf("tmp3[Dir_flow]: %.40f\n", tmp3[Dir_flow]);
-                // printf("((T)-1.0 * outletcoordinate - 1e-4): %.40f\n", ((T)-1.0 * outletcoordinate - 1e-4));
-                // delete this particle in the future
+                // printf("### The particle ID %d goes above the model! So I delete this particle\n", i + 1);
+                // // printf("tmp3[Dir_flow]: %.40f\n", tmp3[Dir_flow]);
+                // // printf("((T)-1.0 * outletcoordinate - 1e-4): %.40f\n", ((T)-1.0 * outletcoordinate - 1e-4));
+                // // delete this particle in the future
+                // P_DEV[i].ParticleID = count + 1;
+                // return;
+
+                if (Dispersion_local != 0)
+                {
+                    printf("Delete the particle %d, because the molecular diffusion is large and the particle goes above the model!\n", P_DEV[i].ParticleID);
+                    // delete this particle in the future
+                    // goto Debug100;
+                    P_DEV[i].ParticleID = NUMParticlesInTotal * 2;
+                }
+                else
+                {
+                    printf("Warning: the molecular diffusion is zero but the particle %d goes above the model!\n", P_DEV[i].ParticleID);
+                    Particle_runtime_error_dev_pnt[i] = 1;
+                };
+
                 return;
             }
 
@@ -919,7 +945,7 @@ template __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel<double>(
                                                                                 double outletcoordinate,
                                                                                 int count,
                                                                                 int numElements,
-                                                                                uint stepNO, uint *Particle_runtime_error_dev_pnt);
+                                                                                uint stepNO, uint *Particle_runtime_error_dev_pnt, uint NUMParticlesInTotal);
 template __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel<float>(unsigned long seed,
                                                                                float delta_T_,
                                                                                float Dispersion_local,
@@ -934,4 +960,4 @@ template __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel<float>(u
                                                                                float outletcoordinate,
                                                                                int count,
                                                                                int numElements,
-                                                                               uint stepNO, uint *Particle_runtime_error_dev_pnt);
+                                                                               uint stepNO, uint *Particle_runtime_error_dev_pnt, uint NUMParticlesInTotal);

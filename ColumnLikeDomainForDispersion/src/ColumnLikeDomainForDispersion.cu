@@ -49,14 +49,14 @@ int main(int argc, char *argv[])
 
         srand((unsigned int)time(0));
         Eigen::MatrixXd Ter = Eigen::MatrixXd::Random(1, 1);
-        int DSIZE = 800;
-        _DataType_ L = 100;
+        int DSIZE = atoi(argv[1]);
+        _DataType_ L = atof(argv[2]);
         cuDFNsys::Vector4<_DataType_> ParaSizeDistri =
-            cuDFNsys::MakeVector4((_DataType_)1.5,
-                                  (_DataType_)1,
-                                  (_DataType_)100,
+            cuDFNsys::MakeVector4((_DataType_)atof(argv[3]),
+                                  (_DataType_)atof(argv[4]),
+                                  (_DataType_)atof(argv[5]),
                                   (_DataType_)0);
-        double3 DomainDimensionRatio = make_double3(1, 1, 4);
+        double3 DomainDimensionRatio = make_double3(1, 1, atof(argv[6]));
         int perco_dir = 2;
 
         thrust::host_vector<cuDFNsys::Fracture<_DataType_>> Frac_verts_host(DSIZE);
@@ -175,7 +175,7 @@ int main(int argc, char *argv[])
                            "MHFEM_.m",
                            Frac_verts_host, mesh, L, true, "MHFEM_", DomainDimensionRatio);
             //---------------
-
+            return 0;
             string Filename_FracturesForParticle = "FracturesForParticle.h5";
 
             std::ifstream file(Filename_FracturesForParticle);

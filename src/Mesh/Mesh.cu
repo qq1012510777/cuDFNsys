@@ -152,6 +152,12 @@ cuDFNsys::Mesh<T>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
             // }
 
             // gmsh::fltk::run();
+        }
+        else
+        {
+            outmap.resize(1);
+            outmap[0].resize(1);
+            outmap[0][0] = std::make_pair(2, 1);
         };
 
         istart = cuDFNsys::CPUSecond();
@@ -173,7 +179,7 @@ cuDFNsys::Mesh<T>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
         //cudaDeviceReset();
         cout << "\t\tNumbering edges\n";
         istart = cuDFNsys::CPUSecond();
-        this->NumberingEdges(L, DomainDimensionRatio/*, Fracs*/);
+        this->NumberingEdges(L, DomainDimensionRatio /*, Fracs*/);
         cout << "\t\tFinished! Running time: " << cuDFNsys::CPUSecond() - istart << " sec\n";
 
         gmsh::model::mesh::clear();
@@ -657,8 +663,8 @@ void cuDFNsys::Mesh<T>::GetElements(const thrust::host_vector<cuDFNsys::Fracture
     cout << "\t\t\tGot entity elements" << endl;
     //cout << 1 << endl;
 
-    //for (size_t i = 0; i < elementEntities_2D.size(); ++i)
-    //cout << "this entity: " << elementEntities_2D[i].size() << " elements, the largest ele: " << Largest_ele[i] << endl;
+    // for (size_t i = 0; i < elementEntities_2D.size(); ++i)
+    // cout << "this entity: " << elementEntities_2D[i].size() << " elements, the largest ele: " << Largest_ele[i] << endl;
 
     thrust::host_vector<uint3> One_entity_one_ele(elementEntities_2D.size());
     //cout << "node:\n";
@@ -696,8 +702,8 @@ void cuDFNsys::Mesh<T>::GetElements(const thrust::host_vector<cuDFNsys::Fracture
     cout << "\t\t\tIdentified element's fracID" << endl;
     //------------------------------------------------------------------------------------------
     // cout << "elementEntities_2D.size: " << elementEntities_2D.size() << endl;
-    //for (size_t i = 0; i < elementEntities_2D.size(); ++i)
-    // cout << Elements_Frac_dev[i] << endl;
+    // for (size_t i = 0; i < elementEntities_2D.size(); ++i)
+    //     cout << Elements_Frac_dev[i] << endl;
 
     Elements_Frac_host = Elements_Frac_dev;
 
@@ -729,6 +735,7 @@ void cuDFNsys::Mesh<T>::GetElements(const thrust::host_vector<cuDFNsys::Fracture
         {
             string AS = "one frac has no grids!\n";
             //cout << AS;
+            //exit(0);
             throw cuDFNsys::ExceptionsIgnore(AS);
         }
         this->Element3D.insert(this->Element3D.end(),
@@ -1048,6 +1055,9 @@ void cuDFNsys::Mesh<T>::GetEntitiesElements(thrust::host_vector<thrust::host_vec
     elementEntities_2D.resize(outmap.size());
     Largest_ele.resize(outmap.size());
     vector<size_t> Zero_element_entityNO;
+
+
+
     for (size_t i = 0; i < outmap.size(); ++i)
     {
         Largest_ele[i] = 0;
