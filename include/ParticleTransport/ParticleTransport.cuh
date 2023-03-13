@@ -78,7 +78,7 @@ public:
                       const string &Injection_mode,
                       bool if_cpu = false,
                       int Nproc = 10,
-                      bool record_time = false,
+                      bool record_time = false, // record the run time of each step
                       string recordMode = "OutputAll");
 
     ParticleTransport(const int &NumTimeStep,

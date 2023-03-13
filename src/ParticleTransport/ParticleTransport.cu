@@ -443,7 +443,9 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(const int &init_NO_STEP,
         // if RecordMode == "FPTCurve", we have to find which particles have been reached after this step!
         // if RecordMode == "FPTCurve", we have to find which particles have been reached after this step!
         // then we read the H5, and change the record the number of steps in the element
-        if (this->RecordMode == "FPTCurve")
+        // now I think, for either mode, the FPT curve should be recorded
+        if (this->RecordMode == "FPTCurve" ||
+            this->RecordMode == "OutputAll")
         {
             string matkeyd = ParticlePosition + "_WhichStepDoesTheParticleReached.h5";
 
@@ -893,13 +895,18 @@ void cuDFNsys::ParticleTransport<T>::OutputParticleInfoStepByStep(const uint &St
             h5g.AddDataset(mat_key, "N", "ParticleIDAndElementTag_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
                            _IfReaded_and_ElementFracTag_, dim_datauu);
 
-            uint2 dimf2 = make_uint2(1, this->ParticlePlumes.size());
-            std::vector<int> WhichStepDoesTheParticleReached(this->ParticlePlumes.size(), -1);
-
-            string matkeyd = ParticlePosition + "_WhichStepDoesTheParticleReached.h5";
-            h5g.NewFile(matkeyd);
-            h5g.AddDataset(matkeyd, "N", "WhichStepDoesTheParticleReached", WhichStepDoesTheParticleReached.data(), dimf2);
+            // uint2 dimf2 = make_uint2(1, this->ParticlePlumes.size());
+            // std::vector<int> WhichStepDoesTheParticleReached(this->ParticlePlumes.size(), -1);
+            // string matkeyd = ParticlePosition + "_WhichStepDoesTheParticleReached.h5";
+            // h5g.NewFile(matkeyd);
+            // h5g.AddDataset(matkeyd, "N", "WhichStepDoesTheParticleReached", WhichStepDoesTheParticleReached.data(), dimf2);
         }
+        uint2 dimf2 = make_uint2(1, this->ParticlePlumes.size());
+        std::vector<int> WhichStepDoesTheParticleReached(this->ParticlePlumes.size(), -1);
+
+        string matkeyd = ParticlePosition + "_WhichStepDoesTheParticleReached.h5";
+        h5g.NewFile(matkeyd);
+        h5g.AddDataset(matkeyd, "N", "WhichStepDoesTheParticleReached", WhichStepDoesTheParticleReached.data(), dimf2);
     }
     else
     {

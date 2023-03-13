@@ -69,9 +69,10 @@ int main(int argc, char *argv[])
                                                                   DSIZE, L,
                                                                   0,
                                                                   ParaSizeDistri,
-                                                                  0,                             // kappa
-                                                                  0.1,                           // beta
-                                                                  5.2e-4, DomainDimensionRatio); // gamma
+                                                                  10,     // kappa
+                                                                  0.1,    // beta
+                                                                  6.0e-4, // gamma
+                                                                  DomainDimensionRatio);
         cudaDeviceSynchronize();
 
         Frac_verts_host = Frac_verts_device;
@@ -131,7 +132,7 @@ int main(int argc, char *argv[])
             std::vector<pair<int, int>> IntersectionPair_percol;
             int NUMprior = Fracs_percol.size();
 
-            bool ifRemoveDeadEnds = (atoi(argv[12]) == 0 ? false : true);
+            bool ifRemoveDeadEnds = (atoi(argv[7]) == 0 ? false : true);
 
             cuDFNsys::RemoveDeadEndFrac<_DataType_> RDEF{Fracs_percol,
                                                          IntersectionPair_percol,
@@ -145,7 +146,7 @@ int main(int argc, char *argv[])
             cout << "meshing ..." << endl;
 
             cuDFNsys::Mesh<_DataType_> mesh{Frac_verts_host, IntersectionPair_percol,
-                                            &Fracs_percol, 1, 10, perco_dir, L,
+                                            &Fracs_percol, atof(argv[8]), atof(argv[9]), perco_dir, L,
                                             DomainDimensionRatio};
             lk.OutputMesh("mesh.h5", mesh, Fracs_percol);
 
@@ -188,21 +189,21 @@ int main(int argc, char *argv[])
                 lk.OutputFractures(Filename_FracturesForParticle, Frac_verts_host, L, DomainDimensionRatio);
             }
             return 0;
-            
-            cout << "Particle transport ing ...\n";
+
+            //cout << "Particle transport ing ...\n";
 
             //double *FG = &DomainDimensionRatio.x;
 
-            cuDFNsys::ParticleTransport<_DataType_> p{atoi(argv[1]),             // number of particle
-                                                      atoi(argv[2]),             // number of time steps
-                                                      (_DataType_)atof(argv[3]), // delta T
-                                                      (_DataType_)atof(argv[4]), // molecular diffusion
-                                                      Frac_verts_host, mesh, fem, (uint)perco_dir,
-                                                      -0.5f * L * (&DomainDimensionRatio.x)[perco_dir],
-                                                      "Particle_tracking",
-                                                      "Flux-weighted"};
-
-            p.MatlabPlot("MHFEM_.h5", "particle.m", mesh, fem, L, DomainDimensionRatio);
+            // cuDFNsys::ParticleTransport<_DataType_> p{atoi(argv[1]),             // number of particle
+            //                                           atoi(argv[2]),             // number of time steps
+            //                                           (_DataType_)atof(argv[3]), // delta T
+            //                                           (_DataType_)atof(argv[4]), // molecular diffusion
+            //                                           Frac_verts_host, mesh, fem, (uint)perco_dir,
+            //                                           -0.5f * L * (&DomainDimensionRatio.x)[perco_dir],
+            //                                           "Particle_tracking",
+            //                                           "Flux-weighted"};
+            //
+            // p.MatlabPlot("MHFEM_.h5", "particle.m", mesh, fem, L, DomainDimensionRatio);
         }
     }
     catch (cuDFNsys::ExceptionsIgnore &e)

@@ -227,6 +227,52 @@ void cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
     delete[] velocity_center_grid;
     velocity_center_grid = NULL;
 
+    //-----------
+    std::vector<uint> ElementFracTag;
+
+    ElementFracTag.insert(ElementFracTag.end(), mesh.ElementFracTag.begin(),
+                          mesh.ElementFracTag.end());
+
+    uint2 dim_fqsc = make_uint2(1, ElementFracTag.size());
+    h5gg.AddDataset(mat_key, "N", "ElementFracTag", ElementFracTag.data(), dim_fqsc);
+
+    //
+    std::vector<T> ElementAperture(ElementFracTag.size());
+    for (uint i = 0; i < ElementAperture.size(); ++i)
+        ElementAperture[i] = pow(Fracs[ElementFracTag[i]].Conductivity / 12.0, 1.0 / 3.0);
+    h5gg.AddDataset(mat_key, "N", "ElementAperture", ElementAperture.data(), dim_fqsc);
+
+    if (1)
+    {
+        size_t NUM_ele = mesh.Element3D.size();
+
+        T *edge_attri = new T[NUM_ele * 6];
+        if (edge_attri == NULL)
+        {
+            string AS = "Alloc error in Mesh::MatlabPlot\n";
+            throw cuDFNsys::ExceptionsPause(AS);
+        }
+
+        for (size_t i = 0; i < NUM_ele; ++i)
+        {
+            edge_attri[i] = mesh.Element3D[i].x;
+            edge_attri[i + NUM_ele] = mesh.Element3D[i].y;
+            edge_attri[i + 2 * NUM_ele] = mesh.Element3D[i].z;
+
+            edge_attri[i + 3 * NUM_ele] = mesh.EdgeAttri[i].e[0];
+            edge_attri[i + 4 * NUM_ele] = mesh.EdgeAttri[i].e[1];
+            edge_attri[i + 5 * NUM_ele] = mesh.EdgeAttri[i].e[2];
+        }
+        //M1.WriteMat(mat_key, "u", NUM_ele * 6,
+        //            NUM_ele, 6, edge_attri, "edge_attri");
+
+        uint2 dim_fwww = make_uint2(6, NUM_ele);
+        h5gg.AddDataset(mat_key, "N", "edge_attri", edge_attri, dim_fwww);
+
+        delete[] edge_attri;
+        edge_attri = NULL;
+    }
+
     //-------------------
     if (if_python_visualization)
     {
@@ -333,6 +379,14 @@ void cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
         oss << "CenterELE(:, 3) = 1/3 * (coordinate_3D(element_3D(:, 1), 3) + coordinate_3D(element_3D(:, 2), 3) + coordinate_3D(element_3D(:, 3), 3));\n";
         oss << "quiver3(CenterELE(:, 1), CenterELE(:, 2), CenterELE(:, 3), velocity_center_grid(:, 1),velocity_center_grid(:, 2),velocity_center_grid(:, 3), 4, 'LineWidth', 1.5, 'color', 'r');\n";
         oss << "VelocityNorm = vecnorm(velocity_center_grid');\n";
+        oss << "ElementAperture = h5read([currentPath, '/"<< mat_key<< "'], '/ElementAperture');\n";
+        oss << "VelocityNorm = [vecnorm(velocity_center_grid')]' ./ ElementAperture;\n";
+        oss << "meanFractureVelocity = mean(VelocityNorm)\n";
+        oss << "edge_attri = h5read([currentPath, '/"<< mat_key<< "'], '/edge_attri');\n";
+        oss << "inlet_loc = find(edge_attri(:, 4)==0);\n";
+        oss << "inlet_loc = [inlet_loc; find(edge_attri(:, 5)==0)];\n";
+        oss << "inlet_loc = [inlet_loc; find(edge_attri(:, 6)==0)];\n";
+        oss << "meanFractureVelocity_Inlet = mean(VelocityNorm(inlet_loc))\n";
         oss.close();
     }
 }; // MHFEM
