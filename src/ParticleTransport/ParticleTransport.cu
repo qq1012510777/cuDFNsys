@@ -25,110 +25,111 @@
 // AUTHOR:      Tingchang YIN
 // DATE:        15/11/2022
 // ====================================================
-template <typename T>
-cuDFNsys::ParticleTransport<T>::ParticleTransport(const int &NumOfParticles,
-                                                  const int &NumTimeStep,
-                                                  T delta_T_,
-                                                  T Dispersion_local,
-                                                  thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
-                                                  cuDFNsys::Mesh<T> mesh,
-                                                  const cuDFNsys::MHFEM<T> &fem,
-                                                  uint Dir_flow,
-                                                  T outletcoordinate,
-                                                  const string &Particle_mode,
-                                                  const string &Injection_mode,
-                                                  bool if_cpu, int Nproc, bool record_time, string recordMode)
-{
-    IfRecordTime = record_time;
-    this->Dir = Dir_flow;
+///     template <typename T>
+///     cuDFNsys::ParticleTransport<T>::ParticleTransport(const int &NumOfParticles,
+///                                                       const int &NumTimeStep,
+///                                                       T delta_T_,
+///                                                       T Dispersion_local,
+///                                                       thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
+///                                                       cuDFNsys::Mesh<T> mesh,
+///                                                       const cuDFNsys::MHFEM<T> &fem,
+///                                                       uint Dir_flow,
+///                                                       T outletcoordinate,
+///                                                       const string &Particle_mode,
+///                                                       const string &Injection_mode,
+///                                                       bool if_cpu, int Nproc, bool record_time, string recordMode)
+///     {
+///         IfRecordTime = record_time;
+///         this->Dir = Dir_flow;///
 
-    string filename_EdgesSharedEle = "EdgesSharedEle.h5";
+///         string filename_EdgesSharedEle = "EdgesSharedEle.h5";///
 
-    if (recordMode != "OutputAll" && recordMode != "FPTCurve")
-        throw cuDFNsys::ExceptionsPause("Undefined Particle information record mode!\n");
-    else
-        this->RecordMode = recordMode;
+///         if (recordMode != "OutputAll" && recordMode != "FPTCurve")
+///             throw cuDFNsys::ExceptionsPause("Undefined Particle information record mode!\n");
+///         else
+///             this->RecordMode = recordMode;///
 
-    std::ifstream fileer(filename_EdgesSharedEle);
-    bool pwqsc = fileer.good();
+///         std::ifstream fileer(filename_EdgesSharedEle);
+///         bool pwqsc = fileer.good();///
 
-    if (!pwqsc)
-        this->IdentifyEdgesSharedEle(mesh);
-    else
-    {
-        cout << "Loading " << filename_EdgesSharedEle << " ...\n";
-        cuDFNsys::HDF5API h5gdd;
-        vector<uint> data_EdgesSharedEle = h5gdd.ReadDataset<uint>(filename_EdgesSharedEle, "N", "data");
+///         if (!pwqsc)
+///             this->IdentifyEdgesSharedEle(mesh);
+///         else
+///         {
+///             cout << "Loading " << filename_EdgesSharedEle << " ...\n";
+///             cuDFNsys::HDF5API h5gdd;
+///             vector<uint> data_EdgesSharedEle = h5gdd.ReadDataset<uint>(filename_EdgesSharedEle, "N", "data");///
 
-        uint NUMoo = 1 + _NumOfSharedEleAtMost * 2;
+///             uint NUMoo = 1 + _NumOfSharedEleAtMost * 2;///
 
-        uint rows__s = data_EdgesSharedEle.size() / NUMoo;
+///             uint rows__s = data_EdgesSharedEle.size() / NUMoo;///
 
-        this->EdgesSharedEle.resize(rows__s);
+///             this->EdgesSharedEle.resize(rows__s);///
 
-        for (uint i = 0; i < rows__s; ++i)
-        {
-            EdgesSharedEle[i].NumSharedEle = data_EdgesSharedEle[i * NUMoo];
-            for (uint j = 0; j < _NumOfSharedEleAtMost; ++j)
-            {
-                EdgesSharedEle[i].EleID[j] = data_EdgesSharedEle[i * NUMoo + j + 1];
+///             for (uint i = 0; i < rows__s; ++i)
+///             {
+///                 EdgesSharedEle[i].NumSharedEle = data_EdgesSharedEle[i * NUMoo];
+///                 for (uint j = 0; j < _NumOfSharedEleAtMost; ++j)
+///                 {
+///                     EdgesSharedEle[i].EleID[j] = data_EdgesSharedEle[i * NUMoo + j + 1];///
 
-                EdgesSharedEle[i].LocalEdgeNO[j] = data_EdgesSharedEle[i * NUMoo + j + 1 + _NumOfSharedEleAtMost];
-            }
-        }
-        // cout << this->EdgesSharedEle[rows__s - 1].NumSharedEle;
-        // cout << ", " << this->EdgesSharedEle[rows__s - 1].EleID[0] << ", " << this->EdgesSharedEle[rows__s - 1].EleID[1];
-        // cout << ", " << this->EdgesSharedEle[rows__s - 1].LocalEdgeNO[0] << ", " << this->EdgesSharedEle[rows__s - 1].LocalEdgeNO[1] << endl;
-        // cout << "Finish loading " << filename_EdgesSharedEle << " ...\n";
-    }
+///                     EdgesSharedEle[i].LocalEdgeNO[j] = data_EdgesSharedEle[i * NUMoo + j + 1 + _NumOfSharedEleAtMost];
+///                 }
+///             }
+///             // cout << this->EdgesSharedEle[rows__s - 1].NumSharedEle;
+///             // cout << ", " << this->EdgesSharedEle[rows__s - 1].EleID[0] << ", " << this->EdgesSharedEle[rows__s - 1].EleID[1];
+///             // cout << ", " << this->EdgesSharedEle[rows__s - 1].LocalEdgeNO[0] << ", " << this->EdgesSharedEle[rows__s - 1].LocalEdgeNO[1] << endl;
+///             // cout << "Finish loading " << filename_EdgesSharedEle << " ...\n";
+///         }///
 
-    //this->IdentifyNeighborElements(mesh);
+///         //this->IdentifyNeighborElements(mesh);///
 
-    this->InitilizeParticles(NumOfParticles, mesh, fem, Injection_mode);
-    this->OutputMSD(0, Fracs, mesh);
-    this->OutputParticleInfoStepByStep(0,
-                                       delta_T_,
-                                       Dispersion_local,
-                                       Particle_mode,
-                                       Injection_mode,
-                                       Fracs, mesh);
-    //cout << NumTimeStep << ", " << delta_T_ << ", " << Dispersion_local << " ______ \n";
-    if (!if_cpu)
-        this->ParticleMovement(1, NumTimeStep, delta_T_, Dispersion_local, Particle_mode,
-                               Injection_mode, Fracs, mesh, fem, outletcoordinate);
-    else
-        this->ParticleMovementCPU(1, NumTimeStep, delta_T_, Dispersion_local, Particle_mode,
-                                  Injection_mode, Fracs, mesh, fem, outletcoordinate, Nproc);
-}; // ParticleTransport
-template cuDFNsys::ParticleTransport<double>::ParticleTransport(const int &NumOfParticles,
-                                                                const int &NumTimeStep,
-                                                                double delta_T_,
-                                                                double Dispersion_local,
-                                                                thrust::host_vector<cuDFNsys::Fracture<double>> Fracs,
-                                                                cuDFNsys::Mesh<double> mesh,
-                                                                const cuDFNsys::MHFEM<double> &fem,
-                                                                uint Dir_flow,
-                                                                double outletcoordinate,
-                                                                const string &Particle_mode,
-                                                                const string &Injection_mode,
-                                                                bool if_cpu, int Nproc, bool record_time, string recordMode);
-template cuDFNsys::ParticleTransport<float>::ParticleTransport(const int &NumOfParticles,
-                                                               const int &NumTimeStep,
-                                                               float delta_T_,
-                                                               float Dispersion_local,
-                                                               thrust::host_vector<cuDFNsys::Fracture<float>> Fracs,
-                                                               cuDFNsys::Mesh<float> mesh,
-                                                               const cuDFNsys::MHFEM<float> &fem,
-                                                               uint Dir_flow,
-                                                               float outletcoordinate,
-                                                               const string &Particle_mode,
-                                                               const string &Injection_mode,
-                                                               bool if_cpu, int Nproc, bool record_time, string recordMode);
+///         this->InitilizeParticles(NumOfParticles, mesh, fem, Injection_mode);
+///         this->OutputMSD(0, Fracs, mesh, -outletcoordinate);///
+
+///         this->OutputParticleInfoStepByStep(0,
+///                                            delta_T_,
+///                                            Dispersion_local,
+///                                            Particle_mode,
+///                                            Injection_mode,
+///                                            Fracs, mesh);
+///         //cout << NumTimeStep << ", " << delta_T_ << ", " << Dispersion_local << " ______ \n";
+///         if (!if_cpu)
+///             this->ParticleMovement(1, NumTimeStep, delta_T_, Dispersion_local, Particle_mode,
+///                                    Injection_mode, Fracs, mesh, fem, outletcoordinate);
+///         else
+///             this->ParticleMovementCPU(1, NumTimeStep, delta_T_, Dispersion_local, Particle_mode,
+///                                       Injection_mode, Fracs, mesh, fem, outletcoordinate, Nproc);
+///     }; // ParticleTransport
+///     template cuDFNsys::ParticleTransport<double>::ParticleTransport(const int &NumOfParticles,
+///                                                                     const int &NumTimeStep,
+///                                                                     double delta_T_,
+///                                                                     double Dispersion_local,
+///                                                                     thrust::host_vector<cuDFNsys::Fracture<double>> Fracs,
+///                                                                     cuDFNsys::Mesh<double> mesh,
+///                                                                     const cuDFNsys::MHFEM<double> &fem,
+///                                                                     uint Dir_flow,
+///                                                                     double outletcoordinate,
+///                                                                     const string &Particle_mode,
+///                                                                     const string &Injection_mode,
+///                                                                     bool if_cpu, int Nproc, bool record_time, string recordMode);
+///     template cuDFNsys::ParticleTransport<float>::ParticleTransport(const int &NumOfParticles,
+///                                                                    const int &NumTimeStep,
+///                                                                    float delta_T_,
+///                                                                    float Dispersion_local,
+///                                                                    thrust::host_vector<cuDFNsys::Fracture<float>> Fracs,
+///                                                                    cuDFNsys::Mesh<float> mesh,
+///                                                                    const cuDFNsys::MHFEM<float> &fem,
+///                                                                    uint Dir_flow,
+///                                                                    float outletcoordinate,
+///                                                                    const string &Particle_mode,
+///                                                                    const string &Injection_mode,
+///                                                                    bool if_cpu, int Nproc, bool record_time, string recordMode);
 
 // ====================================================
 // NAME:        ParticleTransport
 // DESCRIPTION: constructor of ParticleTransport
-//              for t != 0; continute the transport
+//              for t = 0 or t != 0; continute the transport
 // AUTHOR:      Tingchang YIN
 // DATE:        15/11/2022
 // ====================================================
@@ -145,13 +146,23 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(const int &NumTimeStep,
                                                   string Particle_mode_ii,
                                                   string Injection_mode_ii,
                                                   string recordMode,
-                                                  bool if_cpu, int Nproc, bool record_time)
+                                                  bool if_cpu, int Nproc, bool record_time,
+                                                  T SpacingOfControlPlanes)
 {
     //cuDFNsys::MatlabAPI M1;
     // if (recordMode != "OutputAll" && recordMode != "FPTCurve")
     //     throw cuDFNsys::ExceptionsPause("Undefined Particle information record mode!\n");
     // else
     //     this->RecordMode = recordMode;
+    T linearDis = 0;
+    for (uint i = 0;; i++)
+    {
+        linearDis += SpacingOfControlPlanes;
+        if (linearDis < abs(outletcoordinate) * 2.0)
+            this->ControlPlanes.push_back(linearDis);
+        else
+            break;
+    }
 
     IfRecordTime = record_time;
 
@@ -291,13 +302,17 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(const int &NumTimeStep,
         this->InitilizeParticles(NumOfParticles_ii,
                                  mesh, fem, Injection_mode_ii);
         //cout << 2 << endl;
-        this->OutputMSD(0, Fracs, mesh);
+        this->OutputMSD(0, Fracs, mesh, -outletcoordinate);
         this->OutputParticleInfoStepByStep(0,
                                            delta_T_ii,
                                            Dispersion_local_ii,
                                            Particle_mode_ii,
                                            Injection_mode_ii,
                                            Fracs, mesh);
+
+        this->IfReachControlPlane(0, this->Dir,
+                                  this->ControlPlanes, Fracs, mesh,
+                                  -outletcoordinate);
         //cout << NumTimeStep << ", " << delta_T_ii << ", " << Dispersion_local << " ______ \n";
         //cout << 3 << endl;
         if (!if_cpu)
@@ -328,7 +343,7 @@ template cuDFNsys::ParticleTransport<double>::ParticleTransport(const int &NumTi
                                                                 string Particle_mode_ii,
                                                                 string Injection_mode_ii,
                                                                 string recordMode,
-                                                                bool if_cpu, int Nproc, bool record_time);
+                                                                bool if_cpu, int Nproc, bool record_time, double SpacingOfControlPlanes);
 template cuDFNsys::ParticleTransport<float>::ParticleTransport(const int &NumTimeStep,
                                                                thrust::host_vector<cuDFNsys::Fracture<float>> Fracs,
                                                                cuDFNsys::Mesh<float> mesh,
@@ -341,7 +356,7 @@ template cuDFNsys::ParticleTransport<float>::ParticleTransport(const int &NumTim
                                                                string Particle_mode_ii,
                                                                string Injection_mode_ii,
                                                                string recordMode,
-                                                               bool if_cpu, int Nproc, bool record_time);
+                                                               bool if_cpu, int Nproc, bool record_time, float SpacingOfControlPlanes);
 
 // ====================================================
 // NAME:        ParticleMovement
@@ -439,6 +454,12 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(const int &init_NO_STEP,
 
         double istart = cuDFNsys::CPUSecond();
 
+        this->IfReachControlPlane(i, this->Dir,
+                                  this->ControlPlanes,
+                                  Fracs,
+                                  mesh,
+                                  -outletcoordinate);
+
         // if RecordMode == "FPTCurve", we have to find which particles have been reached after this step!
         // if RecordMode == "FPTCurve", we have to find which particles have been reached after this step!
         // if RecordMode == "FPTCurve", we have to find which particles have been reached after this step!
@@ -513,7 +534,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(const int &init_NO_STEP,
         cout << NumPart_dynamic << "/" << this->NumParticles << " particles are still in the domain, a total of " << TotalNumParticlesLeaveModelFromInlet << " particles left the model from the inlet; running time: " << ielaps_b << "; counting time: " << ielaps << "s\n";
 
         if (NumPart_dynamic != 0)
-            this->OutputMSD(i, Fracs, mesh);
+            this->OutputMSD(i, Fracs, mesh, -outletcoordinate);
 
         if (this->RecordMode == "OutputAll")
             this->OutputParticleInfoStepByStep(i,
@@ -559,6 +580,94 @@ template void cuDFNsys::ParticleTransport<float>::ParticleMovement(const int &in
                                                                    cuDFNsys::Mesh<float> mesh,
                                                                    const cuDFNsys::MHFEM<float> &fem,
                                                                    float outletcoordinate);
+// ====================================================
+// NAME:        IfReachControlPlane
+// DESCRIPTION: If particles reached the control plane
+// AUTHOR:      Tingchang YIN
+// DATE:        15/11/2022
+// ====================================================
+template <typename T>
+void cuDFNsys::ParticleTransport<T>::IfReachControlPlane(const uint &StepNo, const uint &PercoDir,
+                                                         const std::vector<T> &ControlPlane,
+                                                         const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
+                                                         const cuDFNsys::Mesh<T> &mesh,
+                                                         const T &HalfDomainSize_PercoDir)
+{
+    if (ControlPlane.size() == 0)
+    {
+        return;
+    }
+
+    cuDFNsys::HDF5API h5g;
+
+    if (StepNo == 0)
+    {
+        for (size_t i = 0; i < ControlPlane.size(); ++i)
+        {
+            string control_plane_file = ParticlePosition + "_WhichStepDoesTheParticleReachedControlPlane_" + std::to_string(ControlPlane[i]) + "_m.h5";
+
+            uint2 dimf2 = make_uint2(1, this->ParticlePlumes.size());
+
+            std::vector<int> WhichStepDoesTheParticleReached(this->ParticlePlumes.size(), -1);
+
+            h5g.NewFile(control_plane_file);
+            h5g.AddDataset(control_plane_file, "N", "TravelTime_ReachedControlPlane_" + std::to_string(ControlPlane[i]) + "_m",
+                           WhichStepDoesTheParticleReached.data(), dimf2);
+        }
+        return;
+    }
+
+    thrust::host_vector<T> Position3D = this->Get3DParticlePositions(Fracs, mesh);
+
+    std::vector<T> Position3D_zz1(Position3D.begin() + this->ParticlePlumes.size() * PercoDir,
+                                  Position3D.begin() + (1 + PercoDir) * this->ParticlePlumes.size());
+
+    for (size_t i = 0; i < ControlPlane.size(); ++i)
+    {
+        string control_plane_file = ParticlePosition + "_WhichStepDoesTheParticleReachedControlPlane_" + std::to_string(ControlPlane[i]) + "_m.h5";
+
+        std::vector<int> WhichStepDoesTheParticleReached_i_control_plane = h5g.ReadDataset<int>(control_plane_file, "N",
+                                                                                                "TravelTime_ReachedControlPlane_" + std::to_string(ControlPlane[i]) + "_m");
+
+        typename std::vector<T>::iterator ityus;
+        ityus = Position3D_zz1.begin();
+
+        bool if_changed = false;
+
+        while ((ityus = std::find_if(ityus, Position3D_zz1.end(), [&](T const &val) { return abs(val - HalfDomainSize_PercoDir) >= ControlPlane[i]; })) != Position3D_zz1.end())
+        {
+            int idx_tq = ityus - Position3D_zz1.begin();
+
+            if (WhichStepDoesTheParticleReached_i_control_plane[this->ParticlePlumes[idx_tq].ParticleID] == -1)
+            {
+                WhichStepDoesTheParticleReached_i_control_plane[this->ParticlePlumes[idx_tq].ParticleID] = StepNo;
+                if (!if_changed)
+                    if_changed = true;
+            }
+
+            ityus++;
+        }
+
+        if (if_changed)
+        {
+            //cout << "chnage\n";
+            uint2 dimu = make_uint2(1, WhichStepDoesTheParticleReached_i_control_plane.size());
+            h5g.OverWrite<int>(control_plane_file, "N", "TravelTime_ReachedControlPlane_" + std::to_string(ControlPlane[i]) + "_m",
+                               WhichStepDoesTheParticleReached_i_control_plane.data(), dimu);
+        }
+    }
+
+}; // IfReachControlPlane
+template void cuDFNsys::ParticleTransport<double>::IfReachControlPlane(const uint &StepNo, const uint &PercoDir,
+                                                                       const std::vector<double> &ControlPlane,
+                                                                       const thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs,
+                                                                       const cuDFNsys::Mesh<double> &mesh,
+                                                                       const double &HalfDomainSize_PercoDir);
+template void cuDFNsys::ParticleTransport<float>::IfReachControlPlane(const uint &StepNo, const uint &PercoDir,
+                                                                      const std::vector<float> &ControlPlane,
+                                                                      const thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs,
+                                                                      const cuDFNsys::Mesh<float> &mesh,
+                                                                      const float &HalfDomainSize_PercoDir);
 
 // ====================================================
 // NAME:        ParticleMovementCPU
@@ -688,27 +797,15 @@ template void cuDFNsys::ParticleTransport<float>::ParticleMovementCPU(const int 
                                                                       int Nproc);
 
 // ====================================================
-// NAME:        OutputMSD
-// DESCRIPTION: OutputMSD curve
+// NAME:        Get3DParticlePositions
+// DESCRIPTION: Get 3D Particle Positions
 // AUTHOR:      Tingchang YIN
-// DATE:        22/03/2023
+// DATE:        14/03/2023
 // ====================================================
 template <typename T>
-void cuDFNsys::ParticleTransport<T>::OutputMSD(const uint &StepNO,
-                                               thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
-                                               cuDFNsys::Mesh<T> mesh)
+thrust::host_vector<T> cuDFNsys::ParticleTransport<T>::Get3DParticlePositions(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
+                                                                              const cuDFNsys::Mesh<T> &mesh)
 {
-    // Output MSD
-    cuDFNsys::HDF5API h5g;
-    uint2 dim_scalar = make_uint2(1, 1);
-    string MSD_file = "Dispersion_MeanSquareDisplacement.h5";
-    //cout << "222222\n";
-    if (StepNO == 0)
-    {
-        std::remove(MSD_file.c_str());
-        h5g.NewFile(MSD_file);
-    }
-    //cout << "3333\n";
     thrust::device_vector<cuDFNsys::Fracture<T>> Frac_verts_device;
     Frac_verts_device = Fracs;
     cuDFNsys::Fracture<T> *Frac_verts_device_ptr;
@@ -738,6 +835,59 @@ void cuDFNsys::ParticleTransport<T>::OutputMSD(const uint &StepNO,
                                                                                     this->ParticlePlumes.size());
     cudaDeviceSynchronize();
     Position3D = Position3D_dev;
+    return Position3D;
+}; // Get3DParticlePositions
+template thrust::host_vector<double> cuDFNsys::ParticleTransport<double>::Get3DParticlePositions(const thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs,
+                                                                                                 const cuDFNsys::Mesh<double> &mesh);
+template thrust::host_vector<float> cuDFNsys::ParticleTransport<float>::Get3DParticlePositions(const thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs,
+                                                                                               const cuDFNsys::Mesh<float> &mesh);
+
+// ====================================================
+// NAME:        OutputMSD
+// DESCRIPTION: OutputMSD curve
+// AUTHOR:      Tingchang YIN
+// DATE:        22/02/2023
+// ====================================================
+template <typename T>
+void cuDFNsys::ParticleTransport<T>::OutputMSD(const uint &StepNO,
+                                               const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
+                                               const cuDFNsys::Mesh<T> &mesh, const T &HalfDomainSize_PercoDirection)
+{
+    // Output MSD
+    cuDFNsys::HDF5API h5g;
+    uint2 dim_scalar = make_uint2(1, 1);
+    string MSD_file = "Dispersion_MeanSquareDisplacement.h5";
+    //cout << "222222\n";
+    if (StepNO == 0)
+    {
+        std::remove(MSD_file.c_str());
+        h5g.NewFile(MSD_file);
+    }
+    //cout << "3333\n";
+    /// thrust::device_vector<cuDFNsys::Fracture<T>> Frac_verts_device;
+    /// Frac_verts_device = Fracs;
+    /// cuDFNsys::Fracture<T> *Frac_verts_device_ptr;
+    /// Frac_verts_device_ptr = thrust::raw_pointer_cast(Frac_verts_device.data());
+    /// thrust::device_vector<uint> ElementFracTag_cuda_dev = mesh.ElementFracTag;
+    /// uint *ElementFracTag_cuda_devptr = thrust::raw_pointer_cast(ElementFracTag_cuda_dev.data());
+    /// // thrust::host_vector<uint> EleTag_host(this->ParticlePlumes.size());
+    /// // for (size_t i = 0; i < EleTag_host.size(); ++i)
+    /// //     EleTag_host[i] = this->ParticlePlumes[i].ElementID;
+    /// // thrust::device_vector<uint> EleTag_device = EleTag_host;
+    /// // uint *EleTag_device_ptr = thrust::raw_pointer_cast(EleTag_device.data());
+    /// thrust::host_vector<T> Position3D(this->ParticlePlumes.size() * 3);
+    /// thrust::device_vector<T> Position3D_dev = Position3D;
+    /// T *Position3D_dev_ptr = thrust::raw_pointer_cast(Position3D_dev.data());
+    /// thrust::device_vector<cuDFNsys::Particle<T>> ParticlePlumes_DEV = this->ParticlePlumes;
+    /// cuDFNsys::Particle<T> *P_DEV = thrust::raw_pointer_cast(ParticlePlumes_DEV.data());
+    /// cuDFNsys::Transform2DTo3DKernel<<<this->ParticlePlumes.size() / 256 + 1, 256>>>(Frac_verts_device_ptr,
+    ///                                                                                 Position3D_dev_ptr,
+    ///                                                                                 P_DEV, //temp2DposCUDA_dev_ptr,
+    ///                                                                                 ElementFracTag_cuda_devptr,
+    ///                                                                                 //EleTag_device_ptr,
+    ///                                                                                 this->ParticlePlumes.size());
+    /// cudaDeviceSynchronize();
+    thrust::host_vector<T> Position3D = this->Get3DParticlePositions(Fracs, mesh); //Position3D_dev;
 
     std::vector<double> Position3D_zz1(Position3D.begin() + this->ParticlePlumes.size() * 2, Position3D.end());
 
@@ -750,11 +900,9 @@ void cuDFNsys::ParticleTransport<T>::OutputMSD(const uint &StepNO,
     Position3D_zz1.clear();
     Position3D_zz1.reserve(0);
     Position3D.clear();
-    Position3D_dev.clear();
     Position3D.reserve(0);
-    Position3D_dev.reserve(0);
 
-    Position3D_zz = Position3D_zz - Eigen::VectorXd::Ones(Position3D_zz.rows()) * 50.0;
+    Position3D_zz = Position3D_zz - Eigen::VectorXd::Ones(Position3D_zz.rows()) * HalfDomainSize_PercoDirection;
     Position3D_zz = Position3D_zz.cwiseAbs();
 
     double mean_z = Position3D_zz.mean();
@@ -766,11 +914,11 @@ void cuDFNsys::ParticleTransport<T>::OutputMSD(const uint &StepNO,
     //------------
 };
 template void cuDFNsys::ParticleTransport<double>::OutputMSD(const uint &StepNO,
-                                                             thrust::host_vector<cuDFNsys::Fracture<double>> Fracs,
-                                                             cuDFNsys::Mesh<double> mesh);
+                                                             const thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs,
+                                                             const cuDFNsys::Mesh<double> &mesh, const double &HalfDomainSize_PercoDirection);
 template void cuDFNsys::ParticleTransport<float>::OutputMSD(const uint &StepNO,
-                                                            thrust::host_vector<cuDFNsys::Fracture<float>> Fracs,
-                                                            cuDFNsys::Mesh<float> mesh);
+                                                            const thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs,
+                                                            const cuDFNsys::Mesh<float> &mesh, const float &HalfDomainSize_PercoDirection);
 
 // ====================================================
 // NAME:        OutputParticleInfoStepByStep

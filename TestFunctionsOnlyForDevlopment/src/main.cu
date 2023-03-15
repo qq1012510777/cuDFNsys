@@ -216,13 +216,6 @@ int main(int argc, char *argv[])
 
             cout << "Particle transport ing ...\n";
             return 0;
-            cuDFNsys::ParticleTransport<_DataType_> p{atoi(argv[13]),             // number of particle
-                                                      atoi(argv[14]),             // number of time steps
-                                                      (_DataType_)atof(argv[15]), // delta T
-                                                      (_DataType_)atof(argv[16]), // molecular diffusion
-                                                      Frac_verts_host, mesh, fem, (uint)perco_dir, -0.5f * L,
-                                                      "Particle_tracking", "Flux-weighted"};
-            p.MatlabPlot("MHFEM_" + to_string(i + 1) + ".h5", "particle.m", mesh, fem, L);
         }
         //cudaDeviceReset();
         double ielaps = cuDFNsys::CPUSecond() - istart;

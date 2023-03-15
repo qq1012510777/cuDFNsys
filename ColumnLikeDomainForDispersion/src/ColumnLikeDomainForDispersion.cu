@@ -57,6 +57,10 @@ int main(int argc, char *argv[])
                                   (_DataType_)atof(argv[5]),
                                   (_DataType_)0);
         double3 DomainDimensionRatio = make_double3(1, 1, atof(argv[6]));
+        int IfRemoveDeadEnd = atoi(argv[7]);
+        _DataType_ minGridSize = atof(argv[8]);
+        _DataType_ maxGridSize = atof(argv[9]);
+
         int perco_dir = 2;
 
         thrust::host_vector<cuDFNsys::Fracture<_DataType_>> Frac_verts_host(DSIZE);
@@ -146,7 +150,7 @@ int main(int argc, char *argv[])
             cout << "meshing ..." << endl;
 
             cuDFNsys::Mesh<_DataType_> mesh{Frac_verts_host, IntersectionPair_percol,
-                                            &Fracs_percol, atof(argv[8]), atof(argv[9]), perco_dir, L,
+                                            &Fracs_percol, minGridSize, maxGridSize, perco_dir, L,
                                             DomainDimensionRatio};
             lk.OutputMesh("mesh.h5", mesh, Fracs_percol);
 
@@ -191,19 +195,6 @@ int main(int argc, char *argv[])
             return 0;
 
             //cout << "Particle transport ing ...\n";
-
-            //double *FG = &DomainDimensionRatio.x;
-
-            // cuDFNsys::ParticleTransport<_DataType_> p{atoi(argv[1]),             // number of particle
-            //                                           atoi(argv[2]),             // number of time steps
-            //                                           (_DataType_)atof(argv[3]), // delta T
-            //                                           (_DataType_)atof(argv[4]), // molecular diffusion
-            //                                           Frac_verts_host, mesh, fem, (uint)perco_dir,
-            //                                           -0.5f * L * (&DomainDimensionRatio.x)[perco_dir],
-            //                                           "Particle_tracking",
-            //                                           "Flux-weighted"};
-            //
-            // p.MatlabPlot("MHFEM_.h5", "particle.m", mesh, fem, L, DomainDimensionRatio);
         }
     }
     catch (cuDFNsys::ExceptionsIgnore &e)

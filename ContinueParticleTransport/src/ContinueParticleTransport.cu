@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
                                                         Fracs_percol};
             std::vector<pair<int, int>> IntersectionPair_percol;
 
-            bool ifRemoveDeadends = (atoi(argv[5]) == 0 ? false : true);
+            bool ifRemoveDeadends = (atoi(argv[1]) == 0 ? false : true);
 
             cuDFNsys::RemoveDeadEndFrac<_DataType_> RDEF{Fracs_percol,
                                                          IntersectionPair_percol,
@@ -160,8 +160,8 @@ int main(int argc, char *argv[])
 
             _DataType_ P_in = 100, P_out = 20;
 
-            if (argv[6] != NULL && argv[7] != NULL)
-                P_in = atof(argv[6]), P_out = atof(argv[7]);
+            // if (argv[6] != NULL && argv[7] != NULL)
+                // P_in = atof(argv[6]), P_out = atof(argv[7]);
 
             cuDFNsys::MHFEM<_DataType_> fem;
             try
@@ -208,15 +208,16 @@ int main(int argc, char *argv[])
             }
             cout << "Particle transport ing ......\n";
 
-            cuDFNsys::ParticleTransport<_DataType_> p{atoi(argv[1]), // number of time step
+            cuDFNsys::ParticleTransport<_DataType_> p{atoi(argv[2]), // number of time step
                                                       Frac_verts_host, mesh, fem, (uint)perco_dir,
                                                       -0.5f * L * (&DomainDimensionRatio.x)[perco_dir],
-                                                      atoi(argv[2]), // num of particle
-                                                      atof(argv[3]), // delta_T_ii
-                                                      atof(argv[4]),
+                                                      atoi(argv[3]), // num of particle
+                                                      atof(argv[4]), // delta_T_ii
+                                                      atof(argv[5]),
                                                       "Particle_tracking",
                                                       "Flux-weighted",
-                                                      "OutputAll"};
+                                                      "FPTCurve",
+                                                      false, 1, false, atof(argv[6])};
             p.MatlabPlot("MHFEM_" + to_string(i + 1) + ".h5", "ParticlesDFNMatlab.m", mesh, fem, L, DomainDimensionRatio, true, "ParticlesDFN");
         }
         //cudaDeviceReset();

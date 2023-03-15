@@ -86,7 +86,7 @@ Right now, I provide a quickstart guide to explain how can one do simulations wi
 
 To compile and run QuickStartGuide example, run compileCode.sh in the directory-'QuickStartGuide'.
 
-For example, run the command with your shell: **bash compileCode.sh 1000 500 5e5 0 0**
+For example, run the command with your shell: **bash compileCode.sh 1000 500 5e5 0**
 
 Explanation of the four arguments:
 
@@ -96,9 +96,7 @@ Explanation of the four arguments:
 
 * Delta t: 1e5
 
-* Diffusion (local): 0
-
-* Do not remove dead-ends: 0
+* Diffusion (molecular): 0
 
 # Directories
 

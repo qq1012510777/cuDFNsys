@@ -232,11 +232,12 @@ int main(int argc, char *argv[])
                                                          IntersectionPair_percol, // intersection pair
                                                          (size_t)perco_dir,       // flow direction
                                                          Frac_verts_host,         // host vector of fractures
-                                                         Intersection_map};       // map of intersection
-            // the above function removes dead end fractures
+                                                         Intersection_map,        // map of intersection
+                                                         false};                  // does not remove dead-end fractures; true = remove dead ends
+            // the above function just sorts fractures and does not remove dead end fractures
 
             ielaps = cuDFNsys::CPUSecond() - istart;
-            cout << "Running time of removing dead-end fractures: " << ielaps << " sec\n";
+            cout << "Running time of sorting fractures: " << ielaps << " sec\n";
 
             istart = cuDFNsys::CPUSecond();
             cuDFNsys::Mesh<_DataType_> mesh{Frac_verts_host,         // host vector of fractures, after removing fractures of dead end
@@ -286,17 +287,28 @@ int main(int argc, char *argv[])
             // the above two command just in order to output fractures information to transform 2D particle data to 3D
 
             istart = cuDFNsys::CPUSecond();
-            cuDFNsys::ParticleTransport<_DataType_> p{atoi(argv[1]),                               // number of particle
-                                                      atoi(argv[2]),                               // number of time steps
-                                                      (_DataType_)atof(argv[3]),                   // delta T
-                                                      (_DataType_)atof(argv[4]),                   // molecular diffusion
+
+            int NumParticles = atoi(argv[1]);                     // number of particle
+            int NumTimeStep = atoi(argv[2]);                      // number of time steps
+            _DataType_ DeltaT = atof(argv[3]);                    // delta T
+            _DataType_ DiffusionMole = (_DataType_)atof(argv[4]); // molecular diffusion
+
+            cuDFNsys::ParticleTransport<_DataType_> p{NumTimeStep,                                 // number of time steps
                                                       Frac_verts_host,                             // fractures
-                                                      mesh,                                        // mesh object
-                                                      fem,                                         // mhfem object
-                                                      (uint)perco_dir,                             // flow direction
+                                                      mesh,                                        // mesh
+                                                      fem,                                         // fem
+                                                      (uint)perco_dir,                             // percolation direction
                                                       -0.5 * (&DomainDimensionRatio.x)[perco_dir], // the target plane, z = -0.5 * L; it could be changed if the percolation direction is not along the z axis
+                                                      NumParticles,                                // number of particles
+                                                      DeltaT,                                      // delta t
+                                                      DiffusionMole,                               // molecular diffusion
                                                       "Particle_tracking",                         // use particle tracking algorithm
-                                                      "Flux-weighted"};                            // the injection mode is flux-weighted
+                                                      "Flux-weighted",                             // injection mode
+                                                      "OutputAll",                                 // output all information
+                                                      false,                                       // if use CPU?
+                                                      0,                                           // number of CPU processors
+                                                      false,                                       // if record run time
+                                                      50};                                         // the spacing of the linear distance of control planes
 
             p.MatlabPlot("MHFEM.h5",            // h5 file of mhfem
                          "ParticlesMovement.m", // matlab script

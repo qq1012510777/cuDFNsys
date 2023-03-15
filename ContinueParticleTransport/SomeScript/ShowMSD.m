@@ -2,10 +2,12 @@ clear all
 close all
 clc
 
+currentPath = fileparts(mfilename('fullpath'));
 
-deltaT = 5e4;
-StepNUM = 120003;
-StepNUM = 13749;
+deltaT = h5read([currentPath, '/ParticlePositionResult/DispersionInfo.h5'], ['/Delta_T']);
+StepNUM = h5read([currentPath, '/ParticlePositionResult/DispersionInfo.h5'], ['/NumOfSteps']);
+StepNUM = double(StepNUM);
+
 MSD = zeros(1, StepNUM+1);
 
 for i = 0:StepNUM
@@ -15,7 +17,7 @@ end
 
 figure(1)
 
-loglog([0:StepNUM] .* deltaT, MSD);
+scatter([0:StepNUM] .* deltaT, MSD);
 hold on
 
 title('cMSD vs. time')
