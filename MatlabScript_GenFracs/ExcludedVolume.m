@@ -4,7 +4,7 @@ close all
 
 syms x
 % ----------sin gamma
-kappaVec = [10];
+kappaVec = [0];
 PreFactor = []; % sin gamma
 
 for i = 1:size(kappaVec, 1)

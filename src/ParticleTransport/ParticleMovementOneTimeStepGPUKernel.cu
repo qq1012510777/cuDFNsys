@@ -107,8 +107,10 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
       z2 = curand_normal(&state);
 
     cuDFNsys::Vector2<T> TargPos;
-    TargPos.x = InitPos.x + Veloc_p.x * delta_T_ + (T)1.0f * z1 * sqrt((T)2.0f * Dispersion_local * delta_T_);
-    TargPos.y = InitPos.y + Veloc_p.y * delta_T_ + (T)1.0f * z2 * sqrt((T)2.0f * Dispersion_local * delta_T_);
+    T X_ = Veloc_p.x * delta_T_ + (T)1.0f * z1 * sqrt((T)2.0f * Dispersion_local * delta_T_);
+    T Y_ = Veloc_p.y * delta_T_ + (T)1.0f * z2 * sqrt((T)2.0f * Dispersion_local * delta_T_);
+    TargPos.x = InitPos.x + X_;
+    TargPos.y = InitPos.y + Y_;
 
     // TargPos.x = round(TargPos.x * 1e5) / 1e5;
     // TargPos.y = round(TargPos.y * 1e5) / 1e5;
@@ -202,6 +204,8 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
             P_DEV[i].ElementID = EleID;
             P_DEV[i].Position2D = TargPos;
             //printf("Particle %d is still in the grid\n", i + 1);
+            P_DEV[i].AccumDisplacement += pow(X_ * X_ + Y_ * Y_, 0.5);
+
             goto TimeStepInfo;
         }
 
@@ -228,10 +232,15 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
             if (abs(tmp_pnt[Dir_flow] - outletcoordinate) < 1e-4)
             {
                 P_DEV[i].ParticleID = -P_DEV[i].ParticleID; // reaches outlet plane
+                P_DEV[i].AccumDisplacement += pow(X_ * X_ + Y_ * Y_, 0.5);
+
                 return;
             }
             else
+            {
+                P_DEV[i].AccumDisplacement += pow(X_ * X_ + Y_ * Y_, 0.5);
                 goto TimeStepInfo;
+            }
         };
 
         ///---------------now, I am sure that the target position is out of the grid very much------------------------
@@ -427,6 +436,7 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
             P_DEV[i].ParticleID = -P_DEV[i].ParticleID;
             P_DEV[i].ElementID = EleID;
             P_DEV[i].Position2D = IntersectionOnCrossedEdge;
+            P_DEV[i].AccumDisplacement += pow(X_ * X_ + Y_ * Y_, 0.5);
             return;
         }
 
@@ -485,6 +495,9 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
                 P_DEV[i].ParticleID = -P_DEV[i].ParticleID;
                 P_DEV[i].ElementID = EleID;
                 P_DEV[i].Position2D = IntersectionOnCrossedEdge;
+
+                P_DEV[i].AccumDisplacement += pow(X_ * X_ + Y_ * Y_, 0.5);
+                
                 return;
             };
 

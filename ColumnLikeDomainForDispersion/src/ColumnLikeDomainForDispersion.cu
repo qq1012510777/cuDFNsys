@@ -51,15 +51,16 @@ int main(int argc, char *argv[])
         Eigen::MatrixXd Ter = Eigen::MatrixXd::Random(1, 1);
         int DSIZE = atoi(argv[1]);
         _DataType_ L = atof(argv[2]);
+        _DataType_ kappa_ = atof(argv[3]);
         cuDFNsys::Vector4<_DataType_> ParaSizeDistri =
-            cuDFNsys::MakeVector4((_DataType_)atof(argv[3]),
-                                  (_DataType_)atof(argv[4]),
+            cuDFNsys::MakeVector4((_DataType_)atof(argv[4]),
                                   (_DataType_)atof(argv[5]),
+                                  (_DataType_)atof(argv[6]),
                                   (_DataType_)0);
-        double3 DomainDimensionRatio = make_double3(1, 1, atof(argv[6]));
-        int IfRemoveDeadEnd = atoi(argv[7]);
-        _DataType_ minGridSize = atof(argv[8]);
-        _DataType_ maxGridSize = atof(argv[9]);
+        double3 DomainDimensionRatio = make_double3(1, 1, atof(argv[7]));
+        int IfRemoveDeadEnd = atoi(argv[8]);
+        _DataType_ minGridSize = atof(argv[9]);
+        _DataType_ maxGridSize = atof(argv[10]);
 
         int perco_dir = 2;
 
@@ -73,7 +74,7 @@ int main(int argc, char *argv[])
                                                                   DSIZE, L,
                                                                   0,
                                                                   ParaSizeDistri,
-                                                                  10,     // kappa
+                                                                  kappa_,     // kappa
                                                                   0.1,    // beta
                                                                   6.0e-4, // gamma
                                                                   DomainDimensionRatio);
@@ -136,13 +137,14 @@ int main(int argc, char *argv[])
             std::vector<pair<int, int>> IntersectionPair_percol;
             int NUMprior = Fracs_percol.size();
 
-            bool ifRemoveDeadEnds = (atoi(argv[7]) == 0 ? false : true);
-
+            bool ifRemoveDeadEnds = (IfRemoveDeadEnd == 0 ? false : true);
+            cout << "ifRemoveDeadEnds: " << ifRemoveDeadEnds << endl;
             cuDFNsys::RemoveDeadEndFrac<_DataType_> RDEF{Fracs_percol,
                                                          IntersectionPair_percol,
                                                          (size_t)perco_dir,
                                                          Frac_verts_host,
-                                                         Intersection_map, ifRemoveDeadEnds};
+                                                         Intersection_map, 
+                                                         ifRemoveDeadEnds};
 
             if (ifRemoveDeadEnds)
                 cout << "remove " << NUMprior - Frac_verts_host.size() << " fractures\n";

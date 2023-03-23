@@ -8,7 +8,7 @@ _cuDFNsys_ does not support the GUI and can only run on Ubuntu. _cuDFNsys_ is no
   <img width="300" src="https://github.com/qq1012510777/cuDFNsys/blob/main/moive_particlesII.gif">
 </p>
 <p align="center">
-    <em>Figure 1. Dispersion in a DFN of a column-like domain. The number of particles is 500 000. The movement of particles is purely driven by the advection.</em>
+    <em>Figure 1. Dispersion in a DFN with a column-like domain. The number of particles is 500 000. The movement of particles is purely driven by the advection.</em>
 </p>
 
 # Authors
@@ -82,7 +82,7 @@ The visulization with MATLAB is simple, you just need the license of MATLAB.
 With Python, you need to install the _mayavi_ Python package. _mayavi_ is a very good visualization engine. The Matplotlib package is not good at 3D visualizations, see [Why my 3D plot doesn’t look right at certain viewing angles](https://matplotlib.org/2.2.2/mpl_toolkits/mplot3d/faq.html).
 
 # Manual
-Right now, I provide a quickstart guide to explain how can one do simulations with _cuDFNsys_ functions. See QuickStartGuide/src/main.cu.
+Right now, I provide a quickstart guide to explain how can one do simulations with _cuDFNsys_ functions. See QuickStartGuide/src/QuickStartGuide.cu.
 
 To compile and run QuickStartGuide example, run compileCode.sh in the directory-'QuickStartGuide'.
 

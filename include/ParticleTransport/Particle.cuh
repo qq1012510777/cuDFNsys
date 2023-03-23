@@ -41,5 +41,7 @@ struct Particle
     uint ElementID;
     // particle ID
     int ParticleID; // ParticleID <= 0 means that this particle reaches outlet plane
+    // accumulative displacement
+    T AccumDisplacement = 0;
 };
 }; // namespace cuDFNsys

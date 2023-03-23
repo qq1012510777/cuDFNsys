@@ -237,18 +237,27 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(const int &NumTimeStep,
 
         string file_block_last = this->ParticlePosition + "Block" + cuDFNsys::ToStringWithWidth(this->BlockNOPresent, 10) + ".h5";
         string datasetname_last = "Step_" + cuDFNsys::ToStringWithWidth(ExistingNumsteps, 10);
-
+        string accumDisplacementName = "AccumDisplacement_" + cuDFNsys::ToStringWithWidth(ExistingNumsteps, 10);
         // cout << file_block_last << endl;
         // cout << datasetname_last << endl;
 
         vector<T> LastStepParticle;
+        vector<T> AccumDisplacement_d;
 
         if (this->RecordMode == "OutputAll")
+        {
             LastStepParticle = h5g.ReadDataset<T>(file_block_last, "N",
                                                   datasetname_last);
+            AccumDisplacement_d = h5g.ReadDataset<T>(file_block_last, "N",
+                                                     accumDisplacementName);
+        }
         else if (this->RecordMode == "FPTCurve")
+        {
             LastStepParticle = h5g.ReadDataset<T>(ParticlePosition + "LastStep.h5", "N",
                                                   datasetname_last);
+            AccumDisplacement_d = h5g.ReadDataset<T>(ParticlePosition + "LastStep.h5", "N",
+                                                     accumDisplacementName);
+        }
 
         uint NumParDyna = LastStepParticle.size() / 2;
         this->ParticlePlumes.resize(NumParDyna);
@@ -269,6 +278,7 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(const int &NumTimeStep,
             this->ParticlePlumes[i].Position2D.y = LastStepParticle[i + NumParDyna];
             this->ParticlePlumes[i].ElementID = Ifreached[i + NumParDyna];
             this->ParticlePlumes[i].ParticleID = Ifreached[i];
+            this->ParticlePlumes[i].AccumDisplacement = AccumDisplacement_d[i];
             // cout << this->ParticlePlumes[i].Position2D.x << ", ";
             // cout << this->ParticlePlumes[i].Position2D.y << ", ";
             // cout << this->ParticlePlumes[i].ElementID << ", ";
@@ -472,8 +482,8 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(const int &init_NO_STEP,
 
             cuDFNsys::HDF5API h5gds;
 
-            vector<int> WhichStepDoesTheParticleReached = h5gds.ReadDataset<int>(matkeyd, "N",
-                                                                                 "WhichStepDoesTheParticleReached");
+            vector<double> WhichStepDoesTheParticleReached = h5gds.ReadDataset<double>(matkeyd, "N",
+                                                                                       "WhichStepDoesTheParticleReached");
 
             bool if_changed = false;
 
@@ -485,9 +495,11 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(const int &init_NO_STEP,
                 int idx_tq = ityus - this->ParticlePlumes.begin();
 
                 if (this->ParticlePlumes[idx_tq].ParticleID < 0)
-                    if (WhichStepDoesTheParticleReached[abs(this->ParticlePlumes[idx_tq].ParticleID)] == -1)
+                    if (WhichStepDoesTheParticleReached[abs(this->ParticlePlumes[idx_tq].ParticleID)] == -1 && this->ParticlePlumes[idx_tq].ParticleID < this->NumParticles)
                     {
                         WhichStepDoesTheParticleReached[abs(this->ParticlePlumes[idx_tq].ParticleID)] = i;
+                        WhichStepDoesTheParticleReached[abs(this->ParticlePlumes[idx_tq].ParticleID) + WhichStepDoesTheParticleReached.size() / 2] =
+                            this->ParticlePlumes[idx_tq].AccumDisplacement;
                         //cout << "found particleID " << this->ParticlePlumes[idx_tq].ParticleID << " reached\n";
                         if (!if_changed)
                             if_changed = true;
@@ -499,8 +511,8 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(const int &init_NO_STEP,
             if (if_changed)
             {
                 //cout << "chnage\n";
-                uint2 dimu = make_uint2(1, WhichStepDoesTheParticleReached.size());
-                h5gds.OverWrite<int>(matkeyd, "N", "WhichStepDoesTheParticleReached", WhichStepDoesTheParticleReached.data(), dimu);
+                uint2 dimu = make_uint2(2, WhichStepDoesTheParticleReached.size() / 2);
+                h5gds.OverWrite<double>(matkeyd, "N", "WhichStepDoesTheParticleReached", WhichStepDoesTheParticleReached.data(), dimu);
             }
         }
 
@@ -606,9 +618,9 @@ void cuDFNsys::ParticleTransport<T>::IfReachControlPlane(const uint &StepNo, con
         {
             string control_plane_file = ParticlePosition + "_WhichStepDoesTheParticleReachedControlPlane_" + std::to_string(ControlPlane[i]) + "_m.h5";
 
-            uint2 dimf2 = make_uint2(1, this->ParticlePlumes.size());
+            uint2 dimf2 = make_uint2(2, this->ParticlePlumes.size());
 
-            std::vector<int> WhichStepDoesTheParticleReached(this->ParticlePlumes.size(), -1);
+            std::vector<double> WhichStepDoesTheParticleReached(this->ParticlePlumes.size() * 2, -1);
 
             h5g.NewFile(control_plane_file);
             h5g.AddDataset(control_plane_file, "N", "TravelTime_ReachedControlPlane_" + std::to_string(ControlPlane[i]) + "_m",
@@ -626,8 +638,8 @@ void cuDFNsys::ParticleTransport<T>::IfReachControlPlane(const uint &StepNo, con
     {
         string control_plane_file = ParticlePosition + "_WhichStepDoesTheParticleReachedControlPlane_" + std::to_string(ControlPlane[i]) + "_m.h5";
 
-        std::vector<int> WhichStepDoesTheParticleReached_i_control_plane = h5g.ReadDataset<int>(control_plane_file, "N",
-                                                                                                "TravelTime_ReachedControlPlane_" + std::to_string(ControlPlane[i]) + "_m");
+        std::vector<double> WhichStepDoesTheParticleReached_i_control_plane = h5g.ReadDataset<double>(control_plane_file, "N",
+                                                                                                      "TravelTime_ReachedControlPlane_" + std::to_string(ControlPlane[i]) + "_m");
 
         typename std::vector<T>::iterator ityus;
         ityus = Position3D_zz1.begin();
@@ -638,9 +650,16 @@ void cuDFNsys::ParticleTransport<T>::IfReachControlPlane(const uint &StepNo, con
         {
             int idx_tq = ityus - Position3D_zz1.begin();
 
-            if (WhichStepDoesTheParticleReached_i_control_plane[this->ParticlePlumes[idx_tq].ParticleID] == -1)
+            if (WhichStepDoesTheParticleReached_i_control_plane[this->ParticlePlumes[idx_tq].ParticleID] == -1 && this->ParticlePlumes[idx_tq].ParticleID < this->NumParticles)
             {
-                WhichStepDoesTheParticleReached_i_control_plane[this->ParticlePlumes[idx_tq].ParticleID] = StepNo;
+                WhichStepDoesTheParticleReached_i_control_plane[abs(this->ParticlePlumes[idx_tq].ParticleID)] = double(StepNo);
+                // cout << this->ParticlePlumes[idx_tq].ParticleID << ", " << WhichStepDoesTheParticleReached_i_control_plane[this->ParticlePlumes[idx_tq].ParticleID] << ", " << StepNo << ", " << this->ParticlePlumes[idx_tq].AccumDisplacement << endl;
+                WhichStepDoesTheParticleReached_i_control_plane[abs(this->ParticlePlumes[idx_tq].ParticleID) + WhichStepDoesTheParticleReached_i_control_plane.size() / 2] =
+                    this->ParticlePlumes[idx_tq].AccumDisplacement;
+
+                // if (this->ParticlePlumes[idx_tq].AccumDisplacement < ControlPlane[i])
+                // throw cuDFNsys::ExceptionsPause("The linear displacement is larger than the trajectory length, trajectory: " + std::to_string(this->ParticlePlumes[idx_tq].AccumDisplacement) + ", linear displacement: " + std::to_string(ControlPlane[i]) + "\n");
+
                 if (!if_changed)
                     if_changed = true;
             }
@@ -651,9 +670,9 @@ void cuDFNsys::ParticleTransport<T>::IfReachControlPlane(const uint &StepNo, con
         if (if_changed)
         {
             //cout << "chnage\n";
-            uint2 dimu = make_uint2(1, WhichStepDoesTheParticleReached_i_control_plane.size());
-            h5g.OverWrite<int>(control_plane_file, "N", "TravelTime_ReachedControlPlane_" + std::to_string(ControlPlane[i]) + "_m",
-                               WhichStepDoesTheParticleReached_i_control_plane.data(), dimu);
+            uint2 dimu = make_uint2(2, WhichStepDoesTheParticleReached_i_control_plane.size() / 2);
+            h5g.OverWrite<double>(control_plane_file, "N", "TravelTime_ReachedControlPlane_" + std::to_string(ControlPlane[i]) + "_m",
+                                  WhichStepDoesTheParticleReached_i_control_plane.data(), dimu);
         }
     }
 
@@ -903,14 +922,22 @@ void cuDFNsys::ParticleTransport<T>::OutputMSD(const uint &StepNO,
     Position3D.reserve(0);
 
     Position3D_zz = Position3D_zz - Eigen::VectorXd::Ones(Position3D_zz.rows()) * HalfDomainSize_PercoDirection;
-    Position3D_zz = Position3D_zz.cwiseAbs();
-
+    Position3D_zz = Position3D_zz.cwiseAbs(); // the linear displacement of particles
     double mean_z = Position3D_zz.mean();
-    Position3D_zz = Position3D_zz - Eigen::VectorXd::Ones(Position3D_zz.rows()) * mean_z;
-    double MSD_g = Position3D_zz.dot(Position3D_zz) / Position3D_zz.rows();
+    Eigen::VectorXd Position3D_zz_dd = Position3D_zz - Eigen::VectorXd::Ones(Position3D_zz.rows()) * mean_z;
+    double cMSD_g = Position3D_zz_dd.dot(Position3D_zz_dd) / Position3D_zz_dd.rows(); // center mean square displacement
+    double MSD_gs = Position3D_zz.dot(Position3D_zz) / Position3D_zz.rows();          // mean square displacement
 
-    h5g.AddDataset(MSD_file, "N", "MSD_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
-                   &MSD_g, dim_scalar);
+    vector<double> Mean_MSD_cMSD = {mean_z, cMSD_g, MSD_gs};
+
+    // h5g.AddDataset(MSD_file, "N", "cMSD_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
+    //                &cMSD_g, dim_scalar);
+    // h5g.AddDataset(MSD_file, "N", "MD_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
+    //                &mean_z, dim_scalar);
+
+    uint2 dimoo = make_uint2(1, 3);
+    h5g.AddDataset(MSD_file, "N", "Mean_MSD_cMSD_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
+                   Mean_MSD_cMSD.data(), dimoo);
     //------------
 };
 template void cuDFNsys::ParticleTransport<double>::OutputMSD(const uint &StepNO,
@@ -1015,10 +1042,13 @@ void cuDFNsys::ParticleTransport<T>::OutputParticleInfoStepByStep(const uint &St
         throw cuDFNsys::ExceptionsPause(AS);
     }
 
+    vector<double> AccumDisplacement_g(NumParDyna);
+
     for (size_t i = 0; i < NumParDyna; ++i)
     {
         _IfReaded_and_ElementFracTag_[i] = this->ParticlePlumes[i].ParticleID;
         _IfReaded_and_ElementFracTag_[i + NumParDyna] = this->ParticlePlumes[i].ElementID;
+        AccumDisplacement_g[i] = this->ParticlePlumes[i].AccumDisplacement;
     }
 
     if (StepNO == 0)
@@ -1033,6 +1063,8 @@ void cuDFNsys::ParticleTransport<T>::OutputParticleInfoStepByStep(const uint &St
                            particle_position_3D, dim_data);
             h5g.AddDataset(mat_key, "N", "ParticleIDAndElementTag_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
                            _IfReaded_and_ElementFracTag_, dim_datauu);
+            h5g.AddDataset(mat_key, "N", "AccumDisplacement_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
+                           AccumDisplacement_g.data(), make_uint2(1, NumParDyna));
         }
         else if (this->RecordMode == "FPTCurve")
         {
@@ -1043,14 +1075,16 @@ void cuDFNsys::ParticleTransport<T>::OutputParticleInfoStepByStep(const uint &St
             h5g.AddDataset(mat_key, "N", "ParticleIDAndElementTag_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
                            _IfReaded_and_ElementFracTag_, dim_datauu);
 
+            h5g.AddDataset(mat_key, "N", "AccumDisplacement_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
+                           AccumDisplacement_g.data(), make_uint2(1, NumParDyna));
             // uint2 dimf2 = make_uint2(1, this->ParticlePlumes.size());
             // std::vector<int> WhichStepDoesTheParticleReached(this->ParticlePlumes.size(), -1);
             // string matkeyd = ParticlePosition + "_WhichStepDoesTheParticleReached.h5";
             // h5g.NewFile(matkeyd);
             // h5g.AddDataset(matkeyd, "N", "WhichStepDoesTheParticleReached", WhichStepDoesTheParticleReached.data(), dimf2);
         }
-        uint2 dimf2 = make_uint2(1, this->ParticlePlumes.size());
-        std::vector<int> WhichStepDoesTheParticleReached(this->ParticlePlumes.size(), -1);
+        uint2 dimf2 = make_uint2(2, this->ParticlePlumes.size());
+        std::vector<double> WhichStepDoesTheParticleReached(2 * this->ParticlePlumes.size(), -1);
 
         string matkeyd = ParticlePosition + "_WhichStepDoesTheParticleReached.h5";
         h5g.NewFile(matkeyd);
@@ -1079,6 +1113,8 @@ void cuDFNsys::ParticleTransport<T>::OutputParticleInfoStepByStep(const uint &St
             //cout << dim_data.x << ", " << dim_data.y << endl;
             h5g.AddDataset(mat_key, "N", "ParticleIDAndElementTag_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
                            _IfReaded_and_ElementFracTag_, dim_datauu);
+            h5g.AddDataset(mat_key, "N", "AccumDisplacement_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
+                           AccumDisplacement_g.data(), make_uint2(1, NumParDyna));
             //cout << dim_datauu.x << ", " << dim_datauu.y << endl;
         }
         else
@@ -1091,6 +1127,8 @@ void cuDFNsys::ParticleTransport<T>::OutputParticleInfoStepByStep(const uint &St
             //cout << dim_data.x << ", " << dim_data.y << endl;
             h5g.AddDataset(mat_key, "N", "ParticleIDAndElementTag_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
                            _IfReaded_and_ElementFracTag_, dim_datauu);
+            h5g.AddDataset(mat_key, "N", "AccumDisplacement_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
+                           AccumDisplacement_g.data(), make_uint2(1, NumParDyna));
         }
     }
     delete[] particle_position_3D;

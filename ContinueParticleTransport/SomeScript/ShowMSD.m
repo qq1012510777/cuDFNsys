@@ -8,16 +8,18 @@ deltaT = h5read([currentPath, '/ParticlePositionResult/DispersionInfo.h5'], ['/D
 StepNUM = h5read([currentPath, '/ParticlePositionResult/DispersionInfo.h5'], ['/NumOfSteps']);
 StepNUM = double(StepNUM);
 
-MSD = zeros(1, StepNUM+1);
+cMSD = zeros(1, StepNUM+1);
 
 for i = 0:StepNUM
-    HJ = h5read(['Dispersion_MeanSquareDisplacement.h5'], ['/MSD_', num2str(i,'%010d')]);
-    MSD(i+1) = HJ;
+    HJ = h5read(['Dispersion_MeanSquareDisplacement.h5'], ['/Mean_MSD_cMSD_', num2str(i,'%010d')]);
+    
+    cMSD(i+1) = HJ(2) - HJ(2).^2;
 end
 
 figure(1)
 
-scatter([0:StepNUM] .* deltaT, MSD);
+% scatter([0:StepNUM] .* deltaT, cMSD);
+scatter([0:StepNUM], cMSD);
 hold on
 
 title('cMSD vs. time')
