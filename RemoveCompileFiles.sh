@@ -7,7 +7,7 @@ myArray=("BenchmarkCases" "ParticleTrackingFourFrac" "ClearBadH5FileForPercolati
   "ParticleTransportValidationSingleFrac" "PercolationTest" "QuickStartGuide" \
   "ReadMatAndOutputH5" "ReadObjectsAndDebug" "TestFunctionsOnlyForDevlopment" "TestResolutionEffect" \
   "Transform2DH5ParticleDataTo3D" "GenMultipleFamilies" "ConnectivityMultipleFamilies"
-  "ColumnLikeDomainForDispersion" "ValidateLocalDiffusion" "ConvertH5Precision")
+  "ColumnLikeDomainForDispersion" "ValidateLocalDiffusion" "ConvertH5Precision" "DispersionAtOneDensityValue")
 
 for str in ${myArray[@]}; do
   cd $str

@@ -69,13 +69,13 @@ template cuDFNsys::MHFEM<float>::MHFEM(const cuDFNsys::Mesh<float> &mesh,
 // DATE:        09/04/2022
 // ====================================================
 template <typename T>
-void cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
-                                    const string &command_key,
-                                    thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
-                                    const cuDFNsys::Mesh<T> &mesh,
-                                    const T &L,
-                                    bool if_python_visualization,
-                                    string PythonName_Without_suffix, double3 DomainDimensionRatio)
+double cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
+                                      const string &command_key,
+                                      thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
+                                      const cuDFNsys::Mesh<T> &mesh,
+                                      const T &L,
+                                      bool if_python_visualization,
+                                      string PythonName_Without_suffix, double3 DomainDimensionRatio)
 {
     //cuDFNsys::MatlabAPI M1;
 
@@ -192,6 +192,9 @@ void cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
         throw cuDFNsys::ExceptionsPause(AS);
     }
 
+    Eigen::VectorXd NormOfVelocity;
+    NormOfVelocity.resize(mesh.Element3D.size(), 1);
+
     for (uint i = 0; i < mesh.Element3D.size(); ++i)
     {
         uint3 EdgeNO = make_uint3((i + 1) * 3 - 3, (i + 1) * 3 - 2, (i + 1) * 3 - 1); // from 0
@@ -216,7 +219,11 @@ void cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
         velocity_center_grid[i] = velocity_p_3D.x;
         velocity_center_grid[i + mesh.Element3D.size()] = velocity_p_3D.y;
         velocity_center_grid[i + 2 * mesh.Element3D.size()] = velocity_p_3D.z;
+
+        NormOfVelocity(i, 0) = pow(velocity_p.x * velocity_p.x + velocity_p.y * velocity_p.y, 0.5) / pow(Fracs[mesh.ElementFracTag[i]].Conductivity * 12, 1.0 / 3.0);
     };
+
+    double meanV = NormOfVelocity.sum() / mesh.Element3D.size();
 
     // M1.WriteMat(mat_key, "u", mesh.Element3D.size() * 3,
     //             mesh.Element3D.size(), 3, velocity_center_grid,
@@ -379,31 +386,32 @@ void cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
         oss << "CenterELE(:, 3) = 1/3 * (coordinate_3D(element_3D(:, 1), 3) + coordinate_3D(element_3D(:, 2), 3) + coordinate_3D(element_3D(:, 3), 3));\n";
         oss << "quiver3(CenterELE(:, 1), CenterELE(:, 2), CenterELE(:, 3), velocity_center_grid(:, 1),velocity_center_grid(:, 2),velocity_center_grid(:, 3), 4, 'LineWidth', 1.5, 'color', 'r');\n";
         oss << "VelocityNorm = vecnorm(velocity_center_grid');\n";
-        oss << "ElementAperture = h5read([currentPath, '/"<< mat_key<< "'], '/ElementAperture');\n";
+        oss << "ElementAperture = h5read([currentPath, '/" << mat_key << "'], '/ElementAperture');\n";
         oss << "VelocityNorm = [vecnorm(velocity_center_grid')]' ./ ElementAperture;\n";
         oss << "meanFractureVelocity = mean(VelocityNorm)\n";
-        oss << "edge_attri = h5read([currentPath, '/"<< mat_key<< "'], '/edge_attri');\n";
+        oss << "edge_attri = h5read([currentPath, '/" << mat_key << "'], '/edge_attri');\n";
         oss << "inlet_loc = find(edge_attri(:, 4)==0);\n";
         oss << "inlet_loc = [inlet_loc; find(edge_attri(:, 5)==0)];\n";
         oss << "inlet_loc = [inlet_loc; find(edge_attri(:, 6)==0)];\n";
         oss << "meanFractureVelocity_Inlet = mean(VelocityNorm(inlet_loc))\n";
         oss.close();
     }
+    return meanV;
 }; // MHFEM
-template void cuDFNsys::MHFEM<double>::MatlabPlot(const string &mat_key,
-                                                  const string &command_key,
-                                                  thrust::host_vector<cuDFNsys::Fracture<double>> Fracs,
-                                                  const cuDFNsys::Mesh<double> &mesh,
-                                                  const double &L,
-                                                  bool if_python_visualization,
-                                                  string PythonName_Without_suffix, double3 DomainDimensionRatio);
-template void cuDFNsys::MHFEM<float>::MatlabPlot(const string &mat_key,
-                                                 const string &command_key,
-                                                 thrust::host_vector<cuDFNsys::Fracture<float>> Fracs,
-                                                 const cuDFNsys::Mesh<float> &mesh,
-                                                 const float &L,
-                                                 bool if_python_visualization,
-                                                 string PythonName_Without_suffix, double3 DomainDimensionRatio);
+template double cuDFNsys::MHFEM<double>::MatlabPlot(const string &mat_key,
+                                                    const string &command_key,
+                                                    thrust::host_vector<cuDFNsys::Fracture<double>> Fracs,
+                                                    const cuDFNsys::Mesh<double> &mesh,
+                                                    const double &L,
+                                                    bool if_python_visualization,
+                                                    string PythonName_Without_suffix, double3 DomainDimensionRatio);
+template double cuDFNsys::MHFEM<float>::MatlabPlot(const string &mat_key,
+                                                   const string &command_key,
+                                                   thrust::host_vector<cuDFNsys::Fracture<float>> Fracs,
+                                                   const cuDFNsys::Mesh<float> &mesh,
+                                                   const float &L,
+                                                   bool if_python_visualization,
+                                                   string PythonName_Without_suffix, double3 DomainDimensionRatio);
 
 // ====================================================
 // NAME:        Implementation

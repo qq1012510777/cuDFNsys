@@ -1613,8 +1613,11 @@ void cuDFNsys::ParticleTransport<T>::InitilizeParticles(const int &NumOfParticle
     if (Injection_mode == "Flux-weighted" || Injection_mode == "Resident")
         for (size_t i = 0; i < mesh.InletEdgeNOLen.size(); ++i)
         {
+
             uint EdgeNO = (uint)mesh.InletEdgeNOLen[i].x;
             T length_ = mesh.InletEdgeNOLen[i].y;
+            if (fem.VelocityNormalScalarSepEdges(EdgeNO - 1, 0) > 0)
+                continue;
 
             if (Injection_mode == "Flux-weighted")
             {
