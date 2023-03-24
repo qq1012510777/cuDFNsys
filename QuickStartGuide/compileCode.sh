@@ -1,13 +1,14 @@
 #/bin/bash
 
-# you can run it with command: bash compileCode.sh 1000 500 1e5 0
+# you can run it with command: bash compileCode.sh 1000 500 5e5 0
 rm -rf ./ParticlePositionResult  ./*.h5
 ## compile 
-cd build
-# rm -rf CMakeCache.txt  CMakeFiles  cmake_install.cmake  Makefile
-cmake ..
+# cd build
+# # rm -rf CMakeCache.txt  CMakeFiles  cmake_install.cmake  Makefile
+# cmake ..
+# make
+# cd ..
 make
-cd ..
 
 if [[ -z "$1" ]]
 then
@@ -41,9 +42,9 @@ echo '------------------------------------------'
 echo '------------------------------------------'
 echo '------------------------------------------'
 
-./bin/QuickStartGuide $1 $2 $3 $4
+./QuickStartGuide $1 $2 $3 $4
 wait
-./bin/Transform2DH5ParticleDataTo3D 0 DFN_mesh.h5
+./Transform2DH5ParticleDataTo3D 0 DFN_mesh.h5
 
 
 

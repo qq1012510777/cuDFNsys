@@ -13,12 +13,20 @@ for str in ${myArray[@]}; do
   cd $str
   gio trash -f ./*.h5 ./*.m ./*.py
   gio trash -f ParticlePositionResult
-  cd build
-  gio trash -f CMakeCache.txt CMakeFiles cmake_install.cmake
-  cd ..
-  cd bin
+  # cd build
+  # gio trash -f CMakeCache.txt CMakeFiles cmake_install.cmake
+  # cd ..
+  # cd bin
   gio trash -f ./main* ./Transform2DH5ParticleDataTo3D ./ColumnLikeDomainForDispersion ./QuickStartGuide ./ContinueParticleTransport ./ValidateLocalDiffusion ./ConvertH5Precision
-  cd ..
   cd ..
   echo "---------------cleaned "$str
 done
+
+cd ./lib
+gio trash -f lib*.a
+cd build 
+gio trash -f CMakeCache.txt CMakeFiles cmake_install.cmake
+cd ..
+cd ..
+
+echo "---------------cleaned lib"

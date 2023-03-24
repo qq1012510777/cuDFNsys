@@ -2,7 +2,7 @@
 
 _cuDFNsys_ is an open-source CUDA library (under the GPL license) for DFN generations. It is also able to simulate flow (steady-state) and particle transport in DFNs, based on the mixed hybrid finite element method and particle tracking algorithm.
 
-_cuDFNsys_ does not support the GUI and can only run on Ubuntu. _cuDFNsys_ is not friendly to users unfamiliar with Linux, C++ and CMake.
+_cuDFNsys_ does not support the GUI and can only run on Ubuntu. _cuDFNsys_ is not friendly to users unfamiliar with Linux, C++, Make and CMake.
 
 <p align="center">
   <img width="300" src="https://github.com/qq1012510777/cuDFNsys/blob/main/moive_particlesII.gif">
@@ -67,11 +67,12 @@ For example, in the 'Modules/FindGMSH.cmake', you'll see
 
 The two user-set variables are paths of the Gmsh header file and library, respectively. You have to change them because you are bound to have different paths for them.
 
-In the 'QuickStartGuide/CMakeLists.txt', you'll see
+In the cuDFNsys/lib directory, the static cuDFNsys library can be installed by running compileCode.sh.
 
-    set (CUDFNSYS_ROOT $ENV{HOME}/cuDFNsys)
+Then, you can link the library to your user's interface code. For instance, in the 'QuickStartGuide', you can run
 
-The above variable is the path of _cuDFNsys_. You, again, might change it.
+    make
+
 
 # Visualization
 
@@ -94,7 +95,7 @@ Explanation of the four arguments:
 
 * Number of time steps: 500
 
-* Delta t: 1e5
+* Delta t: 5e5
 
 * Diffusion (molecular): 0
 

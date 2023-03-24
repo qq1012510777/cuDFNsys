@@ -16,20 +16,17 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.    #
 #***************************************************************************#
 
-cmake_minimum_required (VERSION 3.7)
+cmake_minimum_required (VERSION 3.5)
 
-project (generate_lib)
+project (benchmark)
 
-# find_package(CUDA)
-# if (NOT CUDA_FOUND)
-#     message(STATUS "CUDA not found. Project will not be built.")
-# endif(NOT CUDA_FOUND)
-if(NOT CMAKE_CUDA_COMPILER)
-    set (CMAKE_CUDA_COMPILER "/usr/local/cuda/bin/nvcc")
-ENDIF()
 enable_language(CUDA)
 
 set (CUDFNSYS_ROOT $ENV{HOME}/cuDFNsys)
+
+set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin) ## bin is the EXECUTABLE_OUTPUT_PATH
+
+set (SRC_LIST ${PROJECT_SOURCE_DIR}/src/ContinueParticleTransport.cu)
 
 include_directories(${CUDFNSYS_ROOT}/include)
 
@@ -37,37 +34,24 @@ INCLUDE(${CUDFNSYS_ROOT}/Modules/FindDeps.cmake)
 
 include_directories(${HEADERs})
 
-# ADD_DEFINITIONS(-std=c++17)  
+ADD_DEFINITIONS(-std=c++17)  
+ADD_DEFINITIONS(-DUSE_DOUBLES) ## use double data type
+
+set (SRC_LIST ${PROJECT_SOURCE_DIR}/src/ContinueParticleTransport.cu)
 
 file(GLOB_RECURSE SRC_CU_PATH ${CUDFNSYS_ROOT}/src/*.cu)
 
-# SET (CMAKE_VERBOSE_MAKEFILE TRUE)
+ADD_EXECUTABLE(ContinueParticleTransport
+    ${SRC_LIST} ${SRC_CU_PATH}
+)
+
+TARGET_LINK_LIBRARIES( ContinueParticleTransport ${CUDA_LIBRARIES})
+TARGET_LINK_LIBRARIES( ContinueParticleTransport ${LIBs})
+
 SET (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --display_error_number")
 SET (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --diag_suppress=3057")
 SET (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --diag_suppress=1301")
 SET (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --diag_suppress=3059")
-SET (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -arch=sm_60 -std=c++17 -rdc=true")
+SET (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -arch=sm_60 -std=c++17 -rdc=true -O2 -DNDEBUG")
 
-# SET (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -Xcudafe --display_error_number")
-# SET (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -Xcudafe --diag_suppress=3057")
-# SET (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -Xcudafe --diag_suppress=1301")
-# SET (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -Xcudafe --diag_suppress=3059")
-# SET (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -arch=sm_60 -std=c++17 -rdc=true -O3 -Xcompiler -fPIC")
-
-#add_library (cuDFNsys_shared SHARED ${SRC_CU_PATH})
-add_library(cuDFNsys_static STATIC ${SRC_CU_PATH})
-
-#set_target_properties(cuDFNsys_shared PROPERTIES OUTPUT_NAME "cuDFNsys")
-set_target_properties(cuDFNsys_static PROPERTIES OUTPUT_NAME "cuDFNsys")
-
-set (LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR})
-
-# TARGET_LINK_LIBRARIES( cuDFNsys_shared ${CUDA_LIBRARIES} ${LIBs})
-
-TARGET_LINK_LIBRARIES( cuDFNsys_static ${CUDA_LIBRARIES} ${LIBs})
-
-# set_target_properties(cuDFNsys_shared
-#                       PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-
-set_target_properties(cuDFNsys_static
-                      PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+SET (CMAKE_VERBOSE_MAKEFILE ON)
