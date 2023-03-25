@@ -69,8 +69,12 @@ int main(int argc, char *argv[])
         int NumTimeSteps_Dispersion = atoi(argv[17]);
         int NumParticlesRandomWalk = atoi(argv[18]);
         _DataType_ DeltaT = 0;
-        _DataType_ DiffusionLocal = atof(argv[19]);
-        _DataType_ ControlPlaneSpacing = atof(argv[20]);
+        _DataType_ Factor_mean_time_in_grid = atof(argv[19]);
+        // the mean time (a characteristic grid length over the mean velocity (m/s)) for a random walk to cross a characteristic grid length
+        // but this mean time was reduced, i.e., dividing by a factor (> 1)
+        // then the mean time is DeltaT
+        _DataType_ DiffusionLocal = atof(argv[20]);
+        _DataType_ ControlPlaneSpacing = atof(argv[21]);
 
         cout << "Number of fractures: " << DSIZE << endl;
         cout << "L: " << L << endl;
@@ -190,11 +194,12 @@ int main(int argc, char *argv[])
                                                 DomainDimensionRatio};
                 lk.OutputMesh("mesh.h5", mesh, Fracs_percol);
 
-                mesh.MatlabPlot("DFN_mesh_.h5",
-                                "DFN_mesh_.m",
-                                Frac_verts_host,
-                                L, true, true, true,
-                                "DFN_mesh_", DomainDimensionRatio);
+                double mean_grid_area = mesh.MatlabPlot("DFN_mesh_.h5",
+                                                        "DFN_mesh_.m",
+                                                        Frac_verts_host,
+                                                        L, true, true, true,
+                                                        "DFN_mesh_", DomainDimensionRatio);
+                cout << "The mean area of all elements is " << mean_grid_area << endl;
 
                 cout << "MHFEM ing ..." << endl;
 
@@ -215,15 +220,9 @@ int main(int argc, char *argv[])
                                               Frac_verts_host, mesh, L, true, "MHFEM_", DomainDimensionRatio);
                 cout << "The mean velocity of all elements is " << meanV << endl;
 
-                double ik = 0;
-                for (int u = 1;; u++)
-                    if (pow(10, u) * meanV >= 1.0)
-                    {
-                        ik = u;
-                        break;
-                    }
+                double meanTime = pow(mean_grid_area, 0.5) / meanV;
 
-                DeltaT = 0.5 * pow(10, ik - 1);
+                DeltaT = meanTime / Factor_mean_time_in_grid;
 
                 cout << "\nThe delta T is set to be " << ("\033[1;33m") << DeltaT << ("\033[0m") << "\n\n";
                 //---------------
@@ -355,10 +354,12 @@ int main(int argc, char *argv[])
                     lk.InputMesh("mesh.h5", mesh, &Fracs_percol);
                 }
 
-                mesh.MatlabPlot("DFN_mesh_.h5",
-                                "DFN_mesh_.m",
-                                Frac_verts_host, L, true, true, true, "DFN_mesh_", DomainDimensionRatio);
-
+                double mean_grid_area = mesh.MatlabPlot("DFN_mesh_.h5",
+                                                        "DFN_mesh_.m",
+                                                        Frac_verts_host,
+                                                        L, true, true, true,
+                                                        "DFN_mesh_", DomainDimensionRatio);
+                cout << "The mean area of all elements is " << mean_grid_area << endl;
                 cout << "MHFEM ing ..." << endl;
 
                 cuDFNsys::MHFEM<_DataType_> fem;
@@ -387,15 +388,17 @@ int main(int argc, char *argv[])
                                               Frac_verts_host, mesh, L, true, "MHFEM_", DomainDimensionRatio);
                 cout << "The mean velocity of all elements is " << meanV << endl;
 
-                double ik = 0;
-                for (int u = 1;; u++)
-                    if (pow(10, u) * meanV >= 1.0)
-                    {
-                        ik = u;
-                        break;
-                    }
+                double meanTime = pow(mean_grid_area, 0.5) / meanV;
 
-                DeltaT = 0.5 * pow(10, ik - 1);
+                // double ik = 0;
+                // for (int u = 1;; u++)
+                //     if (meanTime / pow(10, u) >= 10.0)
+                //     {
+                //         ik = u;
+                //         break;
+                //     }
+
+                DeltaT = meanTime / Factor_mean_time_in_grid;
 
                 cout << "\nThe delta T is set to be " << ("\033[1;33m") << DeltaT << ("\033[0m") << "\n\n";
                 //---------------

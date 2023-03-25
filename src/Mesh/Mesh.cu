@@ -235,14 +235,14 @@ template cuDFNsys::Mesh<float>::Mesh(const thrust::host_vector<cuDFNsys::Fractur
 // DATE:        08/04/2022
 // ====================================================
 template <typename T>
-void cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
-                                   const string &command_key,
-                                   thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
-                                   const T &L,
-                                   const bool &if_check_2D_coordinates,
-                                   const bool &if_check_edge_Numbering,
-                                   bool if_python_visualization,
-                                   string PythonName_Without_suffix, double3 DomainDimensionRatio)
+double cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
+                                     const string &command_key,
+                                     thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
+                                     const T &L,
+                                     const bool &if_check_2D_coordinates,
+                                     const bool &if_check_edge_Numbering,
+                                     bool if_python_visualization,
+                                     string PythonName_Without_suffix, double3 DomainDimensionRatio)
 {
     //cuDFNsys::MatlabAPI M1;
 
@@ -293,12 +293,20 @@ void cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
         throw cuDFNsys::ExceptionsPause(AS);
     }
 
+    double Area_characteristic = 0;
+
     for (size_t i = 0; i < ele_num; ++i)
     {
         ptr_element_3D[i] = this->Element3D[i].x;
         ptr_element_3D[i + ele_num] = this->Element3D[i].y;
         ptr_element_3D[i + ele_num * 2] = this->Element3D[i].z;
-    }
+
+        Area_characteristic += double(cuDFNsys::Triangle3DArea<T>(this->Coordinate3D[this->Element3D[i].x - 1],
+                                                                 this->Coordinate3D[this->Element3D[i].y - 1],
+                                                                 this->Coordinate3D[this->Element3D[i].z - 1]));
+    };
+    Area_characteristic = Area_characteristic / ele_num;
+
     //M1.WriteMat(mat_key, "u", ele_num * 3,
     //            ele_num, 3, ptr_element_3D, "element_3D");
     dim_f = make_uint2(3, ele_num);
@@ -605,23 +613,24 @@ void cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
             oss_e.close();
         }
     }
+    return Area_characteristic;
 }; // MatlabPlot
-template void cuDFNsys::Mesh<double>::MatlabPlot(const string &mat_key,
-                                                 const string &command_key,
-                                                 thrust::host_vector<cuDFNsys::Fracture<double>> Fracs,
-                                                 const double &L,
-                                                 const bool &if_check_2D_coordinates,
-                                                 const bool &if_check_edge_Numbering,
-                                                 bool if_python_visualization,
-                                                 string PythonName_Without_suffix, double3 DomainDimensionRatio);
-template void cuDFNsys::Mesh<float>::MatlabPlot(const string &mat_key,
-                                                const string &command_key,
-                                                thrust::host_vector<cuDFNsys::Fracture<float>> Fracs,
-                                                const float &L,
-                                                const bool &if_check_2D_coordinates,
-                                                const bool &if_check_edge_Numbering,
-                                                bool if_python_visualization,
-                                                string PythonName_Without_suffix, double3 DomainDimensionRatio);
+template double cuDFNsys::Mesh<double>::MatlabPlot(const string &mat_key,
+                                                   const string &command_key,
+                                                   thrust::host_vector<cuDFNsys::Fracture<double>> Fracs,
+                                                   const double &L,
+                                                   const bool &if_check_2D_coordinates,
+                                                   const bool &if_check_edge_Numbering,
+                                                   bool if_python_visualization,
+                                                   string PythonName_Without_suffix, double3 DomainDimensionRatio);
+template double cuDFNsys::Mesh<float>::MatlabPlot(const string &mat_key,
+                                                  const string &command_key,
+                                                  thrust::host_vector<cuDFNsys::Fracture<float>> Fracs,
+                                                  const float &L,
+                                                  const bool &if_check_2D_coordinates,
+                                                  const bool &if_check_edge_Numbering,
+                                                  bool if_python_visualization,
+                                                  string PythonName_Without_suffix, double3 DomainDimensionRatio);
 
 // ====================================================
 // NAME:        GetCoordinates
@@ -1055,8 +1064,6 @@ void cuDFNsys::Mesh<T>::GetEntitiesElements(thrust::host_vector<thrust::host_vec
     elementEntities_2D.resize(outmap.size());
     Largest_ele.resize(outmap.size());
     vector<size_t> Zero_element_entityNO;
-
-
 
     for (size_t i = 0; i < outmap.size(); ++i)
     {

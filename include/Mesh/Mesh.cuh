@@ -40,6 +40,7 @@
 #include "IdentifyEleFrac.cuh"
 #include "UMapEdge.cuh"
 #include "gmsh.h"
+#include <Eigen/Dense>
 #include <algorithm>
 #include <cstring>
 #include <fstream>
@@ -104,15 +105,15 @@ public:
          double3 DomainDimensionRatio = make_double3(1, 1, 1));
 
     // plot mesh
-    void MatlabPlot(const string &mat_key,
-                    const string &command_key,
-                    thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
-                    const T &L,
-                    const bool &if_check_2D_coordinates,
-                    const bool &if_check_edge_Numbering,
-                    bool if_python_visualization = false,
-                    string PythonName_Without_suffix = "DFN_mesh_py",
-                    double3 DomainDimensionRatio = make_double3(1, 1, 1));
+    double MatlabPlot(const string &mat_key,
+                      const string &command_key,
+                      thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
+                      const T &L,
+                      const bool &if_check_2D_coordinates,
+                      const bool &if_check_edge_Numbering,
+                      bool if_python_visualization = false,
+                      string PythonName_Without_suffix = "DFN_mesh_py",
+                      double3 DomainDimensionRatio = make_double3(1, 1, 1));
 
 private:
     // get coordinates of mesh
