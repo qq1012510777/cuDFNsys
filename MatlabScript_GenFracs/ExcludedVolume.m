@@ -22,7 +22,7 @@ end
 %---------- power laws
 alphaVec = [1.5];
 minRVec = [1];
-maxRVec = [100];
+maxRVec = [15];
 
 Vex = [];
 

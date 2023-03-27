@@ -24,6 +24,8 @@
 // ====================================================
 
 #include "cuDFNsys.cuh"
+#include <fstream>
+#include <iostream>
 #include <unistd.h>
 
 #ifdef USE_DOUBLES
@@ -34,7 +36,13 @@ typedef float _DataType_;
 
 int main(int argc, char *argv[])
 {
+    double iStart = cuDFNsys::CPUSecond();
 
+    // std::remove("./SimulationFailed.txt");
+    // std::remove("./NoPercolation.txt");
+    // std::remove("./SimulationFinished.txt");
+
+    bool If_percolation_happens = false;
     try
     {
         int dev = 0;
@@ -140,7 +148,6 @@ int main(int argc, char *argv[])
                                                    Percolation_cluster, false, true, true, true,
                                                    L, perco_dir, true, "DFN_I", DomainDimensionRatio};
             cuDFNsys::OutputObjectData<_DataType_> lk;
-            lk.OutputFractures("Fractures.h5", Frac_verts_host, L, DomainDimensionRatio);
 
             Intersection_map.clear();
             ListClusters.clear();
@@ -166,6 +173,9 @@ int main(int argc, char *argv[])
 
             if (Percolation_cluster.size() > 0)
             {
+                lk.OutputFractures("Fractures.h5", Frac_verts_host, L, DomainDimensionRatio);
+
+                If_percolation_happens = true;
                 // double istart_1 = cuDFNsys::CPUSecond();
                 std::vector<size_t> Fracs_percol;
 
@@ -319,7 +329,7 @@ int main(int argc, char *argv[])
             //-----------
             if (Percolation_cluster.size() > 0)
             {
-
+                If_percolation_happens = true;
                 double istart_1 = cuDFNsys::CPUSecond();
                 std::vector<size_t> Fracs_percol;
                 cuDFNsys::GetAllPercolatingFractures GetPer{Percolation_cluster,
@@ -435,16 +445,37 @@ int main(int argc, char *argv[])
     catch (cuDFNsys::ExceptionsIgnore &e)
     {
         cout << e.what() << endl;
+        cout << "Failed simulation!\n";
+        // std::ofstream fs("./SimulationFailed.txt");
+        // fs.close();
         exit(0);
     }
     catch (cuDFNsys::ExceptionsPause &e)
     {
         cout << e.what() << endl;
+        cout << "Failed simulation!\n";
+        // std::ofstream fs("./SimulationFailed.txt");
+        // fs.close();
         exit(0);
     }
     catch (...)
     {
+        cout << "Failed simulation!\n";
+        std::ofstream fs("./SimulationFailed.txt");
+        fs.close();
         throw;
     }
+
+    if (!If_percolation_happens)
+    {
+        cout << "No percolation happens\n";
+        // std::ofstream fs("./NoPercolation.txt");
+        // fs.close();
+    }
+
+    // std::ofstream fs("./SimulationFinished.txt");
+    // fs.close();
+
+    cout << "This simulation consumes " << cuDFNsys::CPUSecond() - iStart << " seconds\n";
     return 0;
 };

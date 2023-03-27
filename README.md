@@ -8,7 +8,7 @@ _cuDFNsys_ does not support the GUI and can only run on Ubuntu. _cuDFNsys_ is no
   <img width="300" src="https://github.com/qq1012510777/cuDFNsys/blob/main/moive_particlesII.gif">
 </p>
 <p align="center">
-    <em>Figure 1. Dispersion in a DFN with a column-like domain. The number of particles is 500 000. The movement of particles is purely driven by the advection.</em>
+    <em>Figure 1. Dispersion in a DFN with a column-like domain. The number of particles is 500 000. The movement of particles is purely driven by the advection. Left: the DFN and hydraulic head field. Right: the particle spreading. </em>
 </p>
 
 # Authors
