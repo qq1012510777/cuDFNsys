@@ -36,6 +36,10 @@ typedef float _DataType_;
 
 int main(int argc, char *argv[])
 {
+    // int A[3] ;
+    // A[21546] = A[1];
+    // return 0;
+
     double iStart = cuDFNsys::CPUSecond();
 
     // std::remove("./SimulationFailed.txt");
