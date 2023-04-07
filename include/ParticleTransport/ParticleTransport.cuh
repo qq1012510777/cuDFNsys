@@ -62,6 +62,8 @@ public:
 
     std::vector<T> ControlPlanes;
 
+    bool IfOutputMSD = true;
+
 private:
     string ParticlePosition = "ParticlePositionResult/ParticlePosition";
     string DispersionInfo = "ParticlePositionResult/DispersionInfo";
@@ -91,12 +93,15 @@ public:
                       T outletcoordinate,
                       int NumOfParticles_ii = 0,
                       T delta_T_ii = 0,
-                      T Diffusion_local_ii = 0,
+                      T Diffusion_local_ii = 0, // molecular diffusion
                       string Particle_mode_ii = "Particle_tracking",
                       string Injection_mode_ii = "Flux-weighted",
                       string recordMode = "OutputAll",
-                      bool if_cpu = false, int Nproc = 10, bool record_time = false,
-                      T SpacingOfControlPlanes = 10);
+                      bool if_cpu = false,
+                      int Nproc = 10,
+                      bool record_time = false, // record running time
+                      T SpacingOfControlPlanes = 10,
+                      bool IfOutputMSD = true);
 
     void ParticleMovement(const int &init_NO_STEP,
                           const int &NumTimeStep,

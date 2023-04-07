@@ -146,14 +146,18 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(const int &NumTimeStep,
                                                   string Particle_mode_ii,
                                                   string Injection_mode_ii,
                                                   string recordMode,
-                                                  bool if_cpu, int Nproc, bool record_time,
-                                                  T SpacingOfControlPlanes)
+                                                  bool if_cpu,
+                                                  int Nproc,
+                                                  bool record_time,
+                                                  T SpacingOfControlPlanes,
+                                                  bool IfOutputMSD_)
 {
     //cuDFNsys::MatlabAPI M1;
     // if (recordMode != "OutputAll" && recordMode != "FPTCurve")
     //     throw cuDFNsys::ExceptionsPause("Undefined Particle information record mode!\n");
     // else
     //     this->RecordMode = recordMode;
+    this->IfOutputMSD = IfOutputMSD_;
     T linearDis = 0;
     for (uint i = 0;; i++)
     {
@@ -312,7 +316,8 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(const int &NumTimeStep,
         this->InitilizeParticles(NumOfParticles_ii,
                                  mesh, fem, Injection_mode_ii);
         //cout << 2 << endl;
-        this->OutputMSD(0, Fracs, mesh, -outletcoordinate);
+        if (this->IfOutputMSD)
+            this->OutputMSD(0, Fracs, mesh, -outletcoordinate);
         this->OutputParticleInfoStepByStep(0,
                                            delta_T_ii,
                                            Dispersion_local_ii,
@@ -353,7 +358,7 @@ template cuDFNsys::ParticleTransport<double>::ParticleTransport(const int &NumTi
                                                                 string Particle_mode_ii,
                                                                 string Injection_mode_ii,
                                                                 string recordMode,
-                                                                bool if_cpu, int Nproc, bool record_time, double SpacingOfControlPlanes);
+                                                                bool if_cpu, int Nproc, bool record_time, double SpacingOfControlPlanes, bool IfOutputMSD_);
 template cuDFNsys::ParticleTransport<float>::ParticleTransport(const int &NumTimeStep,
                                                                thrust::host_vector<cuDFNsys::Fracture<float>> Fracs,
                                                                cuDFNsys::Mesh<float> mesh,
@@ -366,7 +371,7 @@ template cuDFNsys::ParticleTransport<float>::ParticleTransport(const int &NumTim
                                                                string Particle_mode_ii,
                                                                string Injection_mode_ii,
                                                                string recordMode,
-                                                               bool if_cpu, int Nproc, bool record_time, float SpacingOfControlPlanes);
+                                                               bool if_cpu, int Nproc, bool record_time, float SpacingOfControlPlanes, bool IfOutputMSD_);
 
 // ====================================================
 // NAME:        ParticleMovement
@@ -545,7 +550,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(const int &init_NO_STEP,
 
         cout << NumPart_dynamic << "/" << this->NumParticles << " particles are still in the domain, a total of " << TotalNumParticlesLeaveModelFromInlet << " particles left the model from the inlet; running time: " << ielaps_b << "; counting time: " << ielaps << "s\n";
 
-        if (NumPart_dynamic != 0)
+        if (NumPart_dynamic != 0 && this->IfOutputMSD)
             this->OutputMSD(i, Fracs, mesh, -outletcoordinate);
 
         if (this->RecordMode == "OutputAll")

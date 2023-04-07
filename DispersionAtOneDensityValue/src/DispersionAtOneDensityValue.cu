@@ -87,6 +87,7 @@ int main(int argc, char *argv[])
         // then the mean time is DeltaT
         _DataType_ DiffusionLocal = atof(argv[20]);
         _DataType_ ControlPlaneSpacing = atof(argv[21]);
+        bool IfoutputMsd = atoi(argv[22]) == 0 ? false : true;
 
         cout << "Number of fractures: " << DSIZE << endl;
         cout << "L: " << L << endl;
@@ -102,9 +103,10 @@ int main(int argc, char *argv[])
         cout << "Hydraulic head at the inlet and outlet: " << P_in << ", " << P_out << endl;
         cout << "Number of time steps for random walks: " << NumTimeSteps_Dispersion << endl;
         cout << "Number of particles: " << NumParticlesRandomWalk << endl;
-        //cout << "Delta T: " << DeltaT << endl;
+        cout << "Factor_mean_time_in_grid: " << Factor_mean_time_in_grid << endl;
         cout << "Molecular diffusion: " << DiffusionLocal << endl;
         cout << "The spacing of control planes: " << ControlPlaneSpacing << endl;
+        cout << "IfoutputMsd: " << (IfoutputMsd == true ? "true" : "false") << endl;
 
         int perco_dir = 2;
 
@@ -268,7 +270,7 @@ int main(int argc, char *argv[])
                                                           "Flux-weighted",
                                                           "FPTCurve",
                                                           false, 1, false,
-                                                          ControlPlaneSpacing};
+                                                          ControlPlaneSpacing, IfoutputMsd};
 
                 p.MatlabPlot("MHFEM_.h5", "ParticlesDFNMatlab.m", mesh, fem, L, DomainDimensionRatio, true, "ParticlesDFN");
             }
@@ -415,6 +417,19 @@ int main(int argc, char *argv[])
                 DeltaT = meanTime / Factor_mean_time_in_grid;
 
                 cout << "\nThe delta T is set to be " << ("\033[1;33m") << DeltaT << ("\033[0m") << "\n\n";
+
+                string FractureFileName_r = "ParticlePositionResult/DispersionInfo.h5";
+
+                std::ifstream fileeqr(FractureFileName_r);
+                bool psd = fileeqr.good();
+
+                if (psd)
+                {
+                    cuDFNsys::HDF5API hg6;
+                    vector<double> Aqs = hg6.ReadDataset<double>(FractureFileName_r,
+                                                                 "N", "Delta_T");
+                    cout << "\nThe delta T is set to be " << ("\033[1;33m") << Aqs[0] << ("\033[0m") << "\n\n";
+                }
                 //---------------
                 // return 0;
 
@@ -440,7 +455,7 @@ int main(int argc, char *argv[])
                                                           "Particle_tracking",
                                                           "Flux-weighted",
                                                           "FPTCurve",
-                                                          false, 1, false, ControlPlaneSpacing};
+                                                          false, 1, false, ControlPlaneSpacing, IfoutputMsd};
                 p.MatlabPlot("MHFEM_.h5", "ParticlesDFNMatlab.m", mesh, fem, L, DomainDimensionRatio, true, "ParticlesDFN");
             }
             //cudaDeviceReset();

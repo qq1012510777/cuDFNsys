@@ -1,7 +1,7 @@
 #!/bin/bash
 
-let begin_=1          ########here change this variable!!!!!!!
-let end_=40          ########here change this variable!!!!!!!
+let begin_=21          ########here change this variable!!!!!!!
+let end_=30          ########here change this variable!!!!!!!
 
 for i in $( seq $begin_ $end_)
 do
@@ -9,20 +9,13 @@ do
 
     if  [ -d "$DFN_i" ]
     then
-
-        if [ -d "$DFN_i/ParticlePositionResult" ]
-        then
-            s=1
-        else
-            echo $DFN_i"ParticlePositionResult is not existing ************"
-            echo " " 
-            continue
-        fi
-        
         cd $DFN_i/ParticlePositionResult
 
         echo $DFN_i" ##################"
-        h5dump -A  ParticlePositionLastStep.h5
+        str=$(h5dump -A  ParticlePositionLastStep.h5)
+        str1=$(echo $str | cut -d '{' -f5 )
+        str2=$(echo $str1 | cut -d ' ' -f3)
+        echo $str2" particles still in"
         echo " "
         cd ../../
     else
