@@ -85,9 +85,14 @@ int main(int argc, char *argv[])
         // the mean time (a characteristic grid length over the mean velocity (m/s)) for a random walk to cross a characteristic grid length
         // but this mean time was reduced, i.e., dividing by a factor (> 1)
         // then the mean time is DeltaT
-        _DataType_ DiffusionLocal = atof(argv[20]);
-        _DataType_ ControlPlaneSpacing = atof(argv[21]);
-        bool IfoutputMsd = atoi(argv[22]) == 0 ? false : true;
+        _DataType_ DiffusionLocal = 0;
+        _DataType_ LengthScale_Over_Pe = 0;
+        _DataType_ LengthScale = atof(argv[20]);
+        _DataType_ Pe = atof(argv[21]);
+        _DataType_ ControlPlaneSpacing = atof(argv[22]);
+        bool IfoutputMsd = atoi(argv[23]) == 0 ? false : true;
+        bool IfoutputParticleInfoAllsteps = atoi(argv[24]) == 0 ? false : true;
+        string recordMode = IfoutputParticleInfoAllsteps == false ? "FPTCurve" : "OutputAll";
 
         cout << "Number of fractures: " << DSIZE << endl;
         cout << "L: " << L << endl;
@@ -104,12 +109,14 @@ int main(int argc, char *argv[])
         cout << "Number of time steps for random walks: " << NumTimeSteps_Dispersion << endl;
         cout << "Number of particles: " << NumParticlesRandomWalk << endl;
         cout << "Factor_mean_time_in_grid: " << Factor_mean_time_in_grid << endl;
-        cout << "Molecular diffusion: " << DiffusionLocal << endl;
+        cout << "LengthScale: " << LengthScale << endl;
+        cout << "Pe: " << Pe << endl;
         cout << "The spacing of control planes: " << ControlPlaneSpacing << endl;
         cout << "IfoutputMsd: " << (IfoutputMsd == true ? "true" : "false") << endl;
+        cout << "IfoutputParticleInfoAllsteps: " << (IfoutputParticleInfoAllsteps == false ? "FPTCurve" : "OutputAll") << endl;
 
         int perco_dir = 2;
-
+        LengthScale_Over_Pe = LengthScale / Pe;
         string FractureFileName = "Fractures.h5";
 
         std::ifstream fileer(FractureFileName);
@@ -241,6 +248,9 @@ int main(int argc, char *argv[])
                 DeltaT = meanTime / Factor_mean_time_in_grid;
 
                 cout << "\nThe delta T is set to be " << ("\033[1;33m") << DeltaT << ("\033[0m") << "\n\n";
+
+                DiffusionLocal = LengthScale_Over_Pe * meanV;
+                cout << "\nThe DiffusionLocal is set to be " << ("\033[1;33m") << DiffusionLocal << ("\033[0m") << "\n\n";
                 //---------------
 
                 string Filename_FracturesForParticle = "FracturesForParticle.h5";
@@ -268,7 +278,7 @@ int main(int argc, char *argv[])
                                                           DiffusionLocal,
                                                           "Particle_tracking",
                                                           "Flux-weighted",
-                                                          "FPTCurve",
+                                                          recordMode,
                                                           false, 1, false,
                                                           ControlPlaneSpacing, IfoutputMsd};
 
@@ -418,6 +428,9 @@ int main(int argc, char *argv[])
 
                 cout << "\nThe delta T is set to be " << ("\033[1;33m") << DeltaT << ("\033[0m") << "\n\n";
 
+                DiffusionLocal = LengthScale_Over_Pe * meanV;
+                cout << "\nThe DiffusionLocal is set to be " << ("\033[1;33m") << DiffusionLocal << ("\033[0m") << "\n\n";
+
                 string FractureFileName_r = "ParticlePositionResult/DispersionInfo.h5";
 
                 std::ifstream fileeqr(FractureFileName_r);
@@ -429,6 +442,10 @@ int main(int argc, char *argv[])
                     vector<double> Aqs = hg6.ReadDataset<double>(FractureFileName_r,
                                                                  "N", "Delta_T");
                     cout << "\nThe delta T is set to be " << ("\033[1;33m") << Aqs[0] << ("\033[0m") << "\n\n";
+
+                    Aqs = hg6.ReadDataset<double>(FractureFileName_r,
+                                                  "N", "Dispersion_local");
+                    cout << "\nThe DiffusionLocal is set to be " << ("\033[1;33m") << Aqs[0] << ("\033[0m") << "\n\n";
                 }
                 //---------------
                 // return 0;
@@ -454,7 +471,7 @@ int main(int argc, char *argv[])
                                                           DiffusionLocal,
                                                           "Particle_tracking",
                                                           "Flux-weighted",
-                                                          "FPTCurve",
+                                                          recordMode,
                                                           false, 1, false, ControlPlaneSpacing, IfoutputMsd};
                 p.MatlabPlot("MHFEM_.h5", "ParticlesDFNMatlab.m", mesh, fem, L, DomainDimensionRatio, true, "ParticlesDFN");
             }
@@ -480,9 +497,9 @@ int main(int argc, char *argv[])
     catch (...)
     {
         cout << "Failed simulation!\n";
-        std::ofstream fs("./SimulationFailed.txt");
-        fs.close();
-        throw;
+        // std::ofstream fs("./SimulationFailed.txt");
+        // fs.close();
+        exit(0);
     }
 
     if (!If_percolation_happens)

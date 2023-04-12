@@ -25,7 +25,7 @@ minRVec = [1];
 maxRVec = [15];
 
 Vex = [];
-
+meanR = [];
 m = 1;
 
 for i = 1:size(kappaVec, 1)
@@ -42,7 +42,9 @@ for i = 1:size(kappaVec, 1)
 
         R_cubic = eval(int(x ^ 3 * f, x, min_, max_));
 
-        Vex = PreFactor(i) * 8 * 2 ^ 0.5 * R_cubic
+        Vex = [Vex; PreFactor(i) * 8 * 2 ^ 0.5 * R_cubic];
+        
+        meanR = [meanR; eval(int(x ^ 1 * f, x, min_, max_))];
 
         m = m + 1;
     end

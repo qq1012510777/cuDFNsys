@@ -412,7 +412,7 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
             {
                 if (Dispersion_local != 0)
                 {
-                    printf("Delete the particle %d, because the molecular diffusion is large and the particle goes above the model or moves along the inlet plane!\n", P_DEV[i].ParticleID);
+                    // printf("Delete the particle %d, because the molecular diffusion is large and the particle goes above the model or moves along the inlet plane!\n", P_DEV[i].ParticleID);
                     // delete this particle in the future
                     // goto Debug100;
                     P_DEV[i].ParticleID = NUMParticlesInTotal * 2;
@@ -515,7 +515,7 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
 
                 if (Dispersion_local != 0)
                 {
-                    printf("Delete the particle %d, because the molecular diffusion is large and the particle goes above the model!\n", P_DEV[i].ParticleID);
+                    // printf("Delete the particle %d, because the molecular diffusion is large and the particle goes above the model!\n", P_DEV[i].ParticleID);
                     // delete this particle in the future
                     // goto Debug100;
                     P_DEV[i].ParticleID = NUMParticlesInTotal * 2;
