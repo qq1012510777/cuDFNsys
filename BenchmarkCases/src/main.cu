@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
 
         if (mode == 1)
         {
-            DSIZE = 1;
+            DSIZE = 2;
             cout << "\nFracturesCrossedVertical\n";
             cuDFNsys::FracturesCrossedVertical<_DataType_><<<DSIZE / 256 + 1, 256>>>(Frac_verts_device_ptr,
                                                                                      (unsigned long)t,

@@ -32,6 +32,9 @@ cuDFNsys::IdentifyIntersection<T>::IdentifyIntersection(thrust::host_vector<cuDF
 {
     Intersection_map.clear();
 
+    if (verts.size() <= 1)
+        throw cuDFNsys::ExceptionsPause("There is only one fracture!\n");
+
     for (int i = 1; i < verts.size(); ++i)
     {
 #pragma omp parallel for schedule(dynamic) num_threads(Nproc)
@@ -216,6 +219,9 @@ cuDFNsys::IdentifyIntersection<T>::IdentifyIntersection(const size_t &Fracsize,
                                                         std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<T>, cuDFNsys::Vector3<T>>> &Intersection_map)
 {
     Intersection_map.clear();
+
+    if (Fracsize <= 1)
+        throw cuDFNsys::ExceptionsPause("There is only one fracture!\n");
 
     int DSIZE = (int)Fracsize;
     int NUM_frac_pairs = DSIZE * floor((DSIZE - 1) / 2) + (DSIZE - 1) % 2 * DSIZE * 0.5;

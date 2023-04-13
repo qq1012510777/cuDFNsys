@@ -143,7 +143,7 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
     verts = NULL;
 
     //--------------------------------------
-    if (If_show_intersection == true)
+    if (If_show_intersection == true && Intersection_host.size() >= 1)
     {
         int NUM_intersections = Intersection_host.size();
 
@@ -177,7 +177,7 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
         Intersections_ = NULL;
     }
 
-    if (If_show_cluster == true)
+    if (If_show_cluster == true && Intersection_host.size() >= 1)
     {
         size_t Max_cluster_size = 0;
         for (size_t i = 0; i < ListClusters.size(); ++i)
@@ -269,7 +269,7 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
         oss << "L_m = f['L_m'][0]\n";
         oss << "DomainDimensionRatio = f['DomainDimensionRatio'][:]\n";
 
-        if (If_show_cluster)
+        if (If_show_cluster && Intersection_host.size() >= 1)
         {
             oss << "ListClusters = np.array(f['ListClusters'][:])\nnp.delete(ListClusters, 0, axis=0)\n";
             oss << "PercolationClusters = np.array(f['PercolationClusters'][:])\n";
@@ -277,10 +277,12 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
         if (If_show_orientation)
             oss << "Polar_Orientation = np.array(f['Polar_Orientation'][:])\n";
         oss << endl;
-        if (If_show_intersection)
+        if (If_show_intersection && Intersection_host.size() >= 1)
         {
             oss << "\nintersections = np.array(f['intersections'][:])\n";
-            oss << "NumIntersections = intersections.shape[1] if intersections.shape[0] != 1 else 1\n";
+            oss << "NumIntersections = intersections.shape[1] if intersections.ndim != 1 else 1\n";
+            oss << "if intersections.ndim == 1:\n";
+            oss << "\tintersections=intersections[:, np.newaxis]\n";
             oss << "Intersection =  np.concatenate((np.transpose(intersections[[0, 1, 2], :]), np.transpose(intersections[[3, 4, 5], :])), axis=0)\n";
             oss << "Connection_ = list()\n";
             oss << "Connection_ = [(Connection_ + [i, i + NumIntersections]) for i in range(NumIntersections)]\n";
@@ -297,12 +299,12 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
         oss << "\n";
         oss << "poo = 0\n";
         oss << "structure_ = list()\n";
-        if (If_show_cluster)
+        if (If_show_cluster && Intersection_host.size() >= 1)
             oss << "scalar_t = np.zeros([verts.shape[1]])\n";
 
         oss << "for i in range(NUM_Fracs):\n";
         oss << "\tNumVerticesSingleFrac = int(Frac_NUM_verts[0, i])\n";
-        if (If_show_cluster)
+        if (If_show_cluster && Intersection_host.size() >= 1)
         {
             oss << "\tpos = np.where(ListClusters == i + 1)\n";
             oss << "\tpos_t = int(pos[1])\n";
@@ -324,11 +326,11 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
         oss << "ML.zlabel('z (m)')\n";
         oss << "ML.show()\n\n";
 
-        if (If_show_cluster)
+        if (If_show_cluster && Intersection_host.size() >= 1)
         {
             oss << "ML.triangular_mesh(verts[0, :], verts[1, :], verts[2, :], structure_, scalars=scalar_t, opacity=1)\n";
             oss << "ML.outline(extent=[-0.5 * DomainDimensionRatio[0] * L_m, 0.5 * DomainDimensionRatio[0] * L_m, -0.5 * DomainDimensionRatio[1] * L_m, 0.5 * DomainDimensionRatio[1] * L_m, -0.5 * DomainDimensionRatio[2] * L_m, 0.5 * DomainDimensionRatio[2] * L_m])\n";
-        
+
             oss << "ML.axes()\n";
             oss << "ML.colorbar(orientation='vertical')\n";
             oss << "ML.xlabel('x (m)')\n";
@@ -388,9 +390,10 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
         oss << "end\n\n";
         oss << "patch('Vertices', verts, 'Faces', element, 'FaceVertexCData', verts(:, 3), 'FaceColor', 'interp', 'EdgeAlpha', 0.9, 'facealpha', 1); view(3); colorbar; hold on;\n";
 
-        if (If_show_intersection == true)
+        if (If_show_intersection == true && Intersection_host.size() >= 1)
         {
             oss << "\nintersections = h5read([currentPath, '/" << mat_key << "'], '/intersections');\n";
+            oss << "if (size(intersections, 2) == 1); intersections=intersections'; end;\n";
             oss << "intersections_verts = [intersections(:, [1 2 3]); intersections(:, [4 5 6])];\n";
             oss << "intersections_structures = [[1:size(intersections, 1)]', [1:size(intersections, 1)]' + size(intersections, 1)];\n";
             oss << "patch('Vertices', intersections_verts, 'Faces', intersections_structures, 'FaceVertexCData', ones(size(intersections_verts, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0, 'linewidth', 3, 'edgecolor', 'r'); view(3); colorbar; hold on;\n";
@@ -398,10 +401,11 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
 
         oss << "axis([-1.1 / 2 * DomainDimensionRatio(1) * L,  1.1 / 2 * DomainDimensionRatio(1) * L, -1.1 / 2 * DomainDimensionRatio(2) * L, 1.1 / 2 * DomainDimensionRatio(2) * L, -1.1 / 2 * DomainDimensionRatio(3) * L, 1.1 / 2 * DomainDimensionRatio(3) * L]);\n";
         oss << "pbaspect([DomainDimensionRatio]); hold on\n";
-        if (If_show_cluster == true)
+        if (If_show_cluster == true && Intersection_host.size() >= 1)
         {
             oss << "\nListClusters = h5read([currentPath, '/" << mat_key << "'], '/ListClusters');\n";
             oss << "PercolationClusters = h5read([currentPath, '/" << mat_key << "'], '/PercolationClusters');\n";
+            oss << "if (size(PercolationClusters, 2) == 1 && size(PercolationClusters, 1) == 1); ListClusters=ListClusters'; end;\n";
             oss << "figure(2); title('DFN highlighting clusters'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); view(3); hold on\n";
             //oss << "ListClusters(ListClusters==-1) = NaN;\n";
             oss << "axis([-1.1 / 2 * DomainDimensionRatio(1) * L,  1.1 / 2 * DomainDimensionRatio(1) * L, -1.1 / 2 * DomainDimensionRatio(2) * L, 1.1 / 2 * DomainDimensionRatio(2) * L, -1.1 / 2 * DomainDimensionRatio(3) * L, 1.1 / 2 * DomainDimensionRatio(3) * L]);\n";
@@ -424,6 +428,7 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
         {
             oss << "\nfigure(3);\n";
             oss << "Polar_Orientation = h5read([currentPath, '/" << mat_key << "'], '/Polar_Orientation');\n";
+            oss << "if (size(Polar_Orientation, 2) == 1 && size(Polar_Orientation, 1) == 2); Polar_Orientation=Polar_Orientation'; end;\n";
             oss << "polarscatter(Polar_Orientation(:, 1), Polar_Orientation(:, 2), 's', 'filled'); rlim([0 0.5*pi]);\n";
             oss << "rticks([pi / 12, 2 * pi / 12, 3 * pi / 12, 4 * pi / 12, 5 * pi / 12, 6 * pi / 12 ]);\n";
             oss << "title(['Fractures', '''',' orientations']); hold on\n";

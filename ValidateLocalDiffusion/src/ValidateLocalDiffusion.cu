@@ -168,13 +168,19 @@ int main(int argc, char *argv[])
 
             cout << "Particle transport ing ...\n";
             // return 0;
-            cuDFNsys::ParticleTransport<_DataType_> p{100000,  // number of particle
-                                                      5000,    // number of time steps
-                                                      5e4,     // delta T
-                                                      2.22e-8, // molecular diffusion
-                                                      Frac_verts_host, mesh, fem, (uint)perco_dir, -0.5f * L,
-                                                      "Particle_tracking", "Flux-weighted",
-                                                      false, 1, true, "FPTCurve"};
+            cuDFNsys::ParticleTransport<_DataType_> p{5000, // number of time step
+                                                      Frac_verts_host,
+                                                      mesh,
+                                                      fem,
+                                                      (uint)perco_dir,
+                                                      -0.5f * L,
+                                                      100000, // num of particle
+                                                      5e4,    // delta_T_ii
+                                                      2.22e-8,
+                                                      "Particle_tracking",
+                                                      "Flux-weighted",
+                                                      "OutputAll",
+                                                      false, 1, false, 1000, false};
             p.MatlabPlot("MHFEM_" + to_string(i + 1) + ".h5", "particle.m", mesh, fem, L);
         }
         //cudaDeviceReset();

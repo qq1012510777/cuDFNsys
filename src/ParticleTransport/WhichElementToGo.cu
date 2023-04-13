@@ -107,7 +107,7 @@ __host__ __device__ void cuDFNsys::WhichElementToGo(uint currentEleID,
     ifAllsharedEdgeVelocityPositive = false;
 
     //printf("Dispersion_local: %.40f, TotalVeloc: %.40f\n", Dispersion_local,TotalVeloc);
-    if (Dispersion_local == 0 && // particle tracking
+    if (/*Dispersion_local == 0 &&*/ // commented Apr-13-2023 // particle tracking
         TotalVeloc == 0)         // all element normal velocities are positive
     {
         ifAllsharedEdgeVelocityPositive = true;
@@ -164,11 +164,16 @@ __host__ __device__ void cuDFNsys::WhichElementToGo(uint currentEleID,
     //printf("\n");
     //}
 
-    if (Dispersion_local > 0)
-    {
-        for (uint i = 0; i < NumSharedEle - 1; ++i)
-            veloc_vec[i] = 1.0 / (NumSharedEle - 1) + (i > 0 ? veloc_vec[i - 1] : 0);
-    }
+    // equal probability !!!!!!
+    // equal probability !!!!!!
+    // equal probability !!!!!!
+    // I do not want to use it
+    //if (Dispersion_local > 0)
+    //{
+    //    //printf("ds\n");
+    //    // for (uint i = 0; i < NumSharedEle - 1; ++i)
+    //    // veloc_vec[i] = 1.0 / (NumSharedEle - 1) + (i > 0 ? veloc_vec[i - 1] : 0);
+    //}
 
     //printf("element velocity weight 2: ");
     //for (uint i = 0; i < NumSharedEle - 1; ++i)

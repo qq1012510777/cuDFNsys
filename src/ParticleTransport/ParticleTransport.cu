@@ -325,6 +325,10 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(const int &NumTimeStep,
                                            Injection_mode_ii,
                                            Fracs, mesh);
 
+        cuDFNsys::HDF5API h5g;
+        int wqe = 0;
+        h5g.AddDataset(this->DispersionInfo + ".h5", "N", "NumParticlesLeftFromInlet", &wqe, make_uint2(1, 1));
+
         this->IfReachControlPlane(0, this->Dir,
                                   this->ControlPlanes, Fracs, mesh,
                                   -outletcoordinate);
@@ -414,6 +418,12 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(const int &init_NO_STEP,
 
     uint NumPart_dynamic = this->ParticlePlumes.size();
     uint TotalNumParticlesLeaveModelFromInlet = 0;
+
+    cuDFNsys::HDF5API h5g;
+    std::vector<uint> ERFTY = h5g.ReadDataset<uint>(this->DispersionInfo + ".h5", "N",
+                                                    "NumParticlesLeftFromInlet");
+    TotalNumParticlesLeaveModelFromInlet = ERFTY[0];
+
     for (uint i = init_NO_STEP; i <= NumTimeStep + init_NO_STEP; ++i)
     {
         thrust::host_vector<uint> Particle_runtime_error(NumPart_dynamic, 0);
@@ -550,7 +560,9 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(const int &init_NO_STEP,
 
         cout << NumPart_dynamic << "/" << this->NumParticles << " particles are still in the domain, a total of " << TotalNumParticlesLeaveModelFromInlet << " particles left the model from the inlet; running time: " << ielaps_b << "; counting time: " << ielaps << "s\n";
 
-        if (NumPart_dynamic != 0 && this->IfOutputMSD)
+        h5g.OverWrite<uint>(this->DispersionInfo + ".h5", "N", "NumParticlesLeftFromInlet", &TotalNumParticlesLeaveModelFromInlet, make_uint2(1, 1));
+
+        if (NumPart_dynamic != 0 && this->IfOutputMSD && (1.0 * NumPart_dynamic / (1.0 * this->NumParticles - 1.0 * TotalNumParticlesLeaveModelFromInlet)) > 0.5)
             this->OutputMSD(i, Fracs, mesh, -outletcoordinate);
 
         if (this->RecordMode == "OutputAll")
