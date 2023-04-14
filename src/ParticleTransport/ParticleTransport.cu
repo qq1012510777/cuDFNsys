@@ -478,13 +478,13 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(const int &init_NO_STEP,
         this->ParticlePlumes = ParticlePlumes_DEV;
 
         double istart = cuDFNsys::CPUSecond();
-
+        //cout << 3 << endl;
         this->IfReachControlPlane(i, this->Dir,
                                   this->ControlPlanes,
                                   Fracs,
                                   mesh,
                                   -outletcoordinate);
-
+        //cout << 4 << endl;
         // if RecordMode == "FPTCurve", we have to find which particles have been reached after this step!
         // if RecordMode == "FPTCurve", we have to find which particles have been reached after this step!
         // if RecordMode == "FPTCurve", we have to find which particles have been reached after this step!
@@ -623,9 +623,7 @@ void cuDFNsys::ParticleTransport<T>::IfReachControlPlane(const uint &StepNo, con
                                                          const T &HalfDomainSize_PercoDir)
 {
     if (ControlPlane.size() == 0)
-    {
         return;
-    }
 
     cuDFNsys::HDF5API h5g;
 
@@ -653,6 +651,7 @@ void cuDFNsys::ParticleTransport<T>::IfReachControlPlane(const uint &StepNo, con
 
     for (size_t i = 0; i < ControlPlane.size(); ++i)
     {
+        //cout << "1.4_" << i << endl;
         string control_plane_file = ParticlePosition + "_WhichStepDoesTheParticleReachedControlPlane_" + std::to_string(ControlPlane[i]) + "_m.h5";
 
         std::vector<double> WhichStepDoesTheParticleReached_i_control_plane = h5g.ReadDataset<double>(control_plane_file, "N",
@@ -667,26 +666,35 @@ void cuDFNsys::ParticleTransport<T>::IfReachControlPlane(const uint &StepNo, con
         {
             int idx_tq = ityus - Position3D_zz1.begin();
 
-            if (WhichStepDoesTheParticleReached_i_control_plane[this->ParticlePlumes[idx_tq].ParticleID] == -1 && this->ParticlePlumes[idx_tq].ParticleID < this->NumParticles)
-            {
-                WhichStepDoesTheParticleReached_i_control_plane[abs(this->ParticlePlumes[idx_tq].ParticleID)] = double(StepNo);
-                // cout << this->ParticlePlumes[idx_tq].ParticleID << ", " << WhichStepDoesTheParticleReached_i_control_plane[this->ParticlePlumes[idx_tq].ParticleID] << ", " << StepNo << ", " << this->ParticlePlumes[idx_tq].AccumDisplacement << endl;
-                WhichStepDoesTheParticleReached_i_control_plane[abs(this->ParticlePlumes[idx_tq].ParticleID) + WhichStepDoesTheParticleReached_i_control_plane.size() / 2] =
-                    this->ParticlePlumes[idx_tq].AccumDisplacement;
+            // cout << "idx_tq: " << idx_tq << ", " << (this->ParticlePlumes[idx_tq].ParticleID) << endl;
+            // cout << "\t" << WhichStepDoesTheParticleReached_i_control_plane[this->ParticlePlumes[idx_tq].ParticleID] << endl;
+            // cout << "\t" << this->ParticlePlumes[idx_tq].ParticleID << endl;
 
-                // if (this->ParticlePlumes[idx_tq].AccumDisplacement < ControlPlane[i])
-                // throw cuDFNsys::ExceptionsPause("The linear displacement is larger than the trajectory length, trajectory: " + std::to_string(this->ParticlePlumes[idx_tq].AccumDisplacement) + ", linear displacement: " + std::to_string(ControlPlane[i]) + "\n");
+            if (this->ParticlePlumes[idx_tq].ParticleID < this->NumParticles && this->ParticlePlumes[idx_tq].ParticleID >= 0)
+                if (WhichStepDoesTheParticleReached_i_control_plane[this->ParticlePlumes[idx_tq].ParticleID] == -1)
+                {
+                    // cout << abs(this->ParticlePlumes[idx_tq].ParticleID) << endl;
 
-                if (!if_changed)
-                    if_changed = true;
-            }
+                    WhichStepDoesTheParticleReached_i_control_plane[abs(this->ParticlePlumes[idx_tq].ParticleID)] = double(StepNo);
+
+                    // cout << this->ParticlePlumes[idx_tq].ParticleID << ", " << WhichStepDoesTheParticleReached_i_control_plane[this->ParticlePlumes[idx_tq].ParticleID] << ", " << StepNo << ", " << this->ParticlePlumes[idx_tq].AccumDisplacement << endl;
+
+                    WhichStepDoesTheParticleReached_i_control_plane[abs(this->ParticlePlumes[idx_tq].ParticleID) + WhichStepDoesTheParticleReached_i_control_plane.size() / 2] =
+                        this->ParticlePlumes[idx_tq].AccumDisplacement;
+                    // cout << WhichStepDoesTheParticleReached_i_control_plane[abs(this->ParticlePlumes[idx_tq].ParticleID) + WhichStepDoesTheParticleReached_i_control_plane.size() / 2] << endl;
+                    // if (this->ParticlePlumes[idx_tq].AccumDisplacement < ControlPlane[i])
+                    // throw cuDFNsys::ExceptionsPause("The linear displacement is larger than the trajectory length, trajectory: " + std::to_string(this->ParticlePlumes[idx_tq].AccumDisplacement) + ", linear displacement: " + std::to_string(ControlPlane[i]) + "\n");
+
+                    if (!if_changed)
+                        if_changed = true;
+                }
 
             ityus++;
         }
 
         if (if_changed)
         {
-            //cout << "chnage\n";
+            //cout << "changed\n";
             uint2 dimu = make_uint2(2, WhichStepDoesTheParticleReached_i_control_plane.size() / 2);
             h5g.OverWrite<double>(control_plane_file, "N", "TravelTime_ReachedControlPlane_" + std::to_string(ControlPlane[i]) + "_m",
                                   WhichStepDoesTheParticleReached_i_control_plane.data(), dimu);
