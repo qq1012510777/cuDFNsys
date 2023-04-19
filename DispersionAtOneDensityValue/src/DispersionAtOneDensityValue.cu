@@ -76,23 +76,23 @@ int main(int argc, char *argv[])
         int IfRemoveDeadEnd = atoi(argv[12]);
         _DataType_ minGridSize = atof(argv[13]);
         _DataType_ maxGridSize = atof(argv[14]);
-        _DataType_ P_in = atof(argv[15]), P_out = atof(argv[16]);
 
-        int NumTimeSteps_Dispersion = atoi(argv[17]);
-        int NumParticlesRandomWalk = atoi(argv[18]);
+        int NumTimeSteps_Dispersion = atoi(argv[15]);
+        int NumParticlesRandomWalk = atoi(argv[16]);
         _DataType_ DeltaT = 0;
-        _DataType_ Factor_mean_time_in_grid = atof(argv[19]);
+        _DataType_ Factor_mean_time_in_grid = atof(argv[17]);
         // the mean time (a characteristic grid length over the mean velocity (m/s)) for a random walk to cross a characteristic grid length
         // but this mean time was reduced, i.e., dividing by a factor (> 1)
         // then the mean time is DeltaT
         _DataType_ DiffusionLocal = 0;
         _DataType_ LengthScale_Over_Pe = 0;
-        _DataType_ LengthScale = atof(argv[20]);
-        _DataType_ Pe = atof(argv[21]);
-        _DataType_ ControlPlaneSpacing = atof(argv[22]);
-        bool IfoutputMsd = atoi(argv[23]) == 0 ? false : true;
-        bool IfoutputParticleInfoAllsteps = atoi(argv[24]) == 0 ? false : true;
+        _DataType_ LengthScale = atof(argv[18]);
+        _DataType_ Pe = atof(argv[19]);
+        _DataType_ ControlPlaneSpacing = atof(argv[20]);
+        bool IfoutputMsd = atoi(argv[21]) == 0 ? false : true;
+        bool IfoutputParticleInfoAllsteps = atoi(argv[22]) == 0 ? false : true;
         string recordMode = IfoutputParticleInfoAllsteps == false ? "FPTCurve" : "OutputAll";
+        _DataType_ P_in = L, P_out = 0;
 
         cout << "Number of fractures: " << DSIZE << endl;
         cout << "L: " << L << endl;
@@ -116,6 +116,7 @@ int main(int argc, char *argv[])
         cout << "IfoutputParticleInfoAllsteps: " << (IfoutputParticleInfoAllsteps == false ? "FPTCurve" : "OutputAll") << endl;
 
         int perco_dir = 2;
+
         LengthScale_Over_Pe = LengthScale / Pe;
         string FractureFileName = "Fractures.h5";
 
@@ -238,12 +239,17 @@ int main(int argc, char *argv[])
                     throw cuDFNsys::ExceptionsIgnore("Found large error or isnan, the error: " + std::to_string(fem.QError) + ", the permeability: " + std::to_string(fem.Permeability) + "\n");
 
                 //---------------------
-                double meanV = fem.MatlabPlot("MHFEM_.h5",
-                                              "MHFEM_.m",
-                                              Frac_verts_host, mesh, L, true, "MHFEM_", DomainDimensionRatio);
+                double2 TGH = fem.MatlabPlot("MHFEM_.h5",
+                                             "MHFEM_.m",
+                                             Frac_verts_host, mesh, L, true, "MHFEM_", DomainDimensionRatio);
+
+                double meanV = TGH.x;
+                double maxV = TGH.y;
+
+                cout << "The maximum velocity of all elements is " << maxV << endl;
                 cout << "The mean velocity of all elements is " << meanV << endl;
 
-                double meanTime = pow(mean_grid_area, 0.5) / meanV;
+                double meanTime = pow(mean_grid_area, 0.5) / maxV;
 
                 DeltaT = meanTime / Factor_mean_time_in_grid;
 
@@ -409,20 +415,17 @@ int main(int argc, char *argv[])
                     throw cuDFNsys::ExceptionsIgnore("Found large error or isnan, the error: " + std::to_string(fem.QError) + ", the permeability: " + std::to_string(fem.Permeability) + "\n");
 
                 //---------------------
-                double meanV = fem.MatlabPlot("MHFEM_.h5",
-                                              "MHFEM_.m",
-                                              Frac_verts_host, mesh, L, true, "MHFEM_", DomainDimensionRatio);
+                double2 TGH = fem.MatlabPlot("MHFEM_.h5",
+                                             "MHFEM_.m",
+                                             Frac_verts_host, mesh, L, true, "MHFEM_", DomainDimensionRatio);
+
+                double meanV = TGH.x;
+                double maxV = TGH.y;
+
+                cout << "The maximum velocity of all elements is " << maxV << endl;
                 cout << "The mean velocity of all elements is " << meanV << endl;
 
-                double meanTime = pow(mean_grid_area, 0.5) / meanV;
-
-                // double ik = 0;
-                // for (int u = 1;; u++)
-                //     if (meanTime / pow(10, u) >= 10.0)
-                //     {
-                //         ik = u;
-                //         break;
-                //     }
+                double meanTime = pow(mean_grid_area, 0.5) / maxV;
 
                 DeltaT = meanTime / Factor_mean_time_in_grid;
 
@@ -430,6 +433,7 @@ int main(int argc, char *argv[])
 
                 DiffusionLocal = LengthScale_Over_Pe * meanV;
                 cout << "\nThe DiffusionLocal is set to be " << ("\033[1;33m") << DiffusionLocal << ("\033[0m") << "\n\n";
+                //-----------------
 
                 string FractureFileName_r = "ParticlePositionResult/DispersionInfo.h5";
 

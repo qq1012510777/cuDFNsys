@@ -69,13 +69,13 @@ template cuDFNsys::MHFEM<float>::MHFEM(const cuDFNsys::Mesh<float> &mesh,
 // DATE:        09/04/2022
 // ====================================================
 template <typename T>
-double cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
-                                      const string &command_key,
-                                      thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
-                                      const cuDFNsys::Mesh<T> &mesh,
-                                      const T &L,
-                                      bool if_python_visualization,
-                                      string PythonName_Without_suffix, double3 DomainDimensionRatio)
+double2 cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
+                                       const string &command_key,
+                                       thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
+                                       const cuDFNsys::Mesh<T> &mesh,
+                                       const T &L,
+                                       bool if_python_visualization,
+                                       string PythonName_Without_suffix, double3 DomainDimensionRatio)
 {
     //cuDFNsys::MatlabAPI M1;
 
@@ -223,7 +223,10 @@ double cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
         NormOfVelocity(i, 0) = pow(velocity_p.x * velocity_p.x + velocity_p.y * velocity_p.y, 0.5) / pow(Fracs[mesh.ElementFracTag[i]].Conductivity * 12, 1.0 / 3.0);
     };
 
+    // now it is the maximum velocity
+    double maxV = NormOfVelocity.maxCoeff(); //NormOfVelocity.sum() / mesh.Element3D.size();
     double meanV = NormOfVelocity.sum() / mesh.Element3D.size();
+    double2 JKLDSF = make_double2(meanV, maxV);
 
     // M1.WriteMat(mat_key, "u", mesh.Element3D.size() * 3,
     //             mesh.Element3D.size(), 3, velocity_center_grid,
@@ -396,22 +399,22 @@ double cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
         oss << "meanFractureVelocity_Inlet = mean(VelocityNorm(inlet_loc))\n";
         oss.close();
     }
-    return meanV;
+    return JKLDSF;
 }; // MHFEM
-template double cuDFNsys::MHFEM<double>::MatlabPlot(const string &mat_key,
+template double2 cuDFNsys::MHFEM<double>::MatlabPlot(const string &mat_key,
+                                                     const string &command_key,
+                                                     thrust::host_vector<cuDFNsys::Fracture<double>> Fracs,
+                                                     const cuDFNsys::Mesh<double> &mesh,
+                                                     const double &L,
+                                                     bool if_python_visualization,
+                                                     string PythonName_Without_suffix, double3 DomainDimensionRatio);
+template double2 cuDFNsys::MHFEM<float>::MatlabPlot(const string &mat_key,
                                                     const string &command_key,
-                                                    thrust::host_vector<cuDFNsys::Fracture<double>> Fracs,
-                                                    const cuDFNsys::Mesh<double> &mesh,
-                                                    const double &L,
+                                                    thrust::host_vector<cuDFNsys::Fracture<float>> Fracs,
+                                                    const cuDFNsys::Mesh<float> &mesh,
+                                                    const float &L,
                                                     bool if_python_visualization,
                                                     string PythonName_Without_suffix, double3 DomainDimensionRatio);
-template double cuDFNsys::MHFEM<float>::MatlabPlot(const string &mat_key,
-                                                   const string &command_key,
-                                                   thrust::host_vector<cuDFNsys::Fracture<float>> Fracs,
-                                                   const cuDFNsys::Mesh<float> &mesh,
-                                                   const float &L,
-                                                   bool if_python_visualization,
-                                                   string PythonName_Without_suffix, double3 DomainDimensionRatio);
 
 // ====================================================
 // NAME:        Implementation

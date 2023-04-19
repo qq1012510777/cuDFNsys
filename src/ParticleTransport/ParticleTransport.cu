@@ -562,7 +562,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(const int &init_NO_STEP,
 
         h5g.OverWrite<uint>(this->DispersionInfo + ".h5", "N", "NumParticlesLeftFromInlet", &TotalNumParticlesLeaveModelFromInlet, make_uint2(1, 1));
 
-        if (NumPart_dynamic != 0 && this->IfOutputMSD && (1.0 * NumPart_dynamic / (1.0 * this->NumParticles - 1.0 * TotalNumParticlesLeaveModelFromInlet)) > 0.5)
+        if (NumPart_dynamic != 0 && this->IfOutputMSD && (1.0 * NumPart_dynamic / (1.0 * this->NumParticles - 1.0 * TotalNumParticlesLeaveModelFromInlet)) > 0.9999)
             this->OutputMSD(i, Fracs, mesh, -outletcoordinate);
 
         if (this->RecordMode == "OutputAll")
@@ -670,8 +670,8 @@ void cuDFNsys::ParticleTransport<T>::IfReachControlPlane(const uint &StepNo, con
             // cout << "\t" << WhichStepDoesTheParticleReached_i_control_plane[this->ParticlePlumes[idx_tq].ParticleID] << endl;
             // cout << "\t" << this->ParticlePlumes[idx_tq].ParticleID << endl;
 
-            if (this->ParticlePlumes[idx_tq].ParticleID < this->NumParticles && this->ParticlePlumes[idx_tq].ParticleID >= 0)
-                if (WhichStepDoesTheParticleReached_i_control_plane[this->ParticlePlumes[idx_tq].ParticleID] == -1)
+            if (this->ParticlePlumes[idx_tq].ParticleID < this->NumParticles)
+                if (WhichStepDoesTheParticleReached_i_control_plane[abs(this->ParticlePlumes[idx_tq].ParticleID)] == -1)
                 {
                     // cout << abs(this->ParticlePlumes[idx_tq].ParticleID) << endl;
 
