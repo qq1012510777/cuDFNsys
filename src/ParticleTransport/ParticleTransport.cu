@@ -562,7 +562,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(const int &init_NO_STEP,
 
         h5g.OverWrite<uint>(this->DispersionInfo + ".h5", "N", "NumParticlesLeftFromInlet", &TotalNumParticlesLeaveModelFromInlet, make_uint2(1, 1));
 
-        if (NumPart_dynamic != 0 && this->IfOutputMSD && (1.0 * NumPart_dynamic / (1.0 * this->NumParticles - 1.0 * TotalNumParticlesLeaveModelFromInlet)) > 0.9999)
+        if (NumPart_dynamic != 0 && this->IfOutputMSD && (1.0 * NumPart_dynamic / (1.0 * this->NumParticles - 1.0 * TotalNumParticlesLeaveModelFromInlet)) > 0.50)
             this->OutputMSD(i, Fracs, mesh, -outletcoordinate);
 
         if (this->RecordMode == "OutputAll")
@@ -741,7 +741,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovementCPU(const int &init_NO_STEP
     // uint *EleToFracID_ptr = thrust::raw_pointer_cast(mesh.ElementFracTag.data());
     if (this->RecordMode != "OutputAll")
         throw cuDFNsys::ExceptionsPause("ParticleMovementCPU only support OutputAll mode\n");
-
+    throw cuDFNsys::ExceptionsPause("ParticleMovementCPU is not updated! It is not recommended\n");
     thrust::host_vector<T> Velocity_sep_edge;
     Velocity_sep_edge.reserve(fem.VelocityNormalScalarSepEdges.rows());
     Eigen::MatrixXd Vg = fem.VelocityNormalScalarSepEdges;

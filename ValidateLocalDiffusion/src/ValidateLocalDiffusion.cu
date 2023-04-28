@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
 
             cout << "MHFEM ing ..." << endl;
 
-            cuDFNsys::MHFEM<_DataType_> fem{mesh, Frac_verts_host, 100, 20, perco_dir, L};
+            cuDFNsys::MHFEM<_DataType_> fem{mesh, Frac_verts_host, 100, 99.999, perco_dir, L};
             cout << "Fluxes: " << fem.QIn << ", ";
             cout << fem.QOut << ", Permeability: ";
             cout << fem.Permeability << endl;
@@ -175,12 +175,12 @@ int main(int argc, char *argv[])
                                                       (uint)perco_dir,
                                                       -0.5f * L,
                                                       100000, // num of particle
-                                                      5e4,    // delta_T_ii
-                                                      2.22e-8,
+                                                      1,    // delta_T_ii
+                                                      2.22e-7,
                                                       "Particle_tracking",
                                                       "Flux-weighted",
                                                       "OutputAll",
-                                                      false, 1, false, 1000, false};
+                                                      false, 1, false, 1000, true};
             p.MatlabPlot("MHFEM_" + to_string(i + 1) + ".h5", "particle.m", mesh, fem, L);
         }
         //cudaDeviceReset();

@@ -87,7 +87,7 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
     // if (!IfTargPosInGrid_yy)
     // {
     //     printf("not inside~\n");
-    //     return;
+    //     r1eturn;
     // }
     //
     //printf("velocity 2D: %.40f, %.40f\n", Veloc_p.x, Veloc_p.y);
@@ -238,7 +238,7 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
             }
             else
             {
-                P_DEV[i].AccumDisplacement += pow(X_ * X_ + Y_ * Y_, 0.5);
+                P_DEV[i].AccumDisplacement += pow(X_ * X_ + Y_ * Y_, 0.5); // just on bounds of grids
                 goto TimeStepInfo;
             }
         };
@@ -415,7 +415,7 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
                     // printf("Delete the particle %d, because the molecular diffusion is large and the particle goes above the model or moves along the inlet plane!\n", P_DEV[i].ParticleID);
                     // delete this particle in the future
                     // goto Debug100;
-                    P_DEV[i].ParticleID = NUMParticlesInTotal * 2;
+                    P_DEV[i].ParticleID = NUMParticlesInTotal * 2; //
                 }
                 else
                 {
@@ -423,7 +423,7 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
                     Particle_runtime_error_dev_pnt[i] = 1;
                 };
 
-                return;
+                return; // error
             }
         }
 
@@ -511,7 +511,7 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
                 // // printf("((T)-1.0 * outletcoordinate - 1e-4): %.40f\n", ((T)-1.0 * outletcoordinate - 1e-4));
                 // // delete this particle in the future
                 // P_DEV[i].ParticleID = count + 1;
-                // return;
+                // r1eturn;
 
                 if (Dispersion_local != 0)
                 {

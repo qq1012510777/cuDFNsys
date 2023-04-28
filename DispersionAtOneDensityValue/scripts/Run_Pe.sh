@@ -1,11 +1,21 @@
 #!/bin/bash
 source ~/.bashrc
 
-let begin_=16           ########here change this variable!!!!!!!
-let end_=20          ########here change this variable!!!!!!!
+if [ ! -n "$1" ]; then
+    echo "Please define the model NO as the 1st input"
+    exit 0
+fi 
 
-NUM_fracs=3500
-ModelSize=125
+if [ ! -n "$2" ]; then
+    echo "Please define the model NO as the 1st input"
+    exit 0
+fi 
+
+let begin_=$1           ########here change this variable!!!!!!!
+let end_=$2          ########here change this variable!!!!!!!
+
+NUM_fracs=740
+ModelSize=75
 Kappa=0
 Beta=0.1
 Gamma=5.1e-4
@@ -15,24 +25,22 @@ DomainDimensionRatioZ=1
 IfRemoveDeadEnds=0
 MinGridSize=1
 MaxGridSize=8
-P_in=100
-P_out=20
 NumStepsDispersion=200
 NumParticlesRandomWalk=700000
-FactorMeanTimeInGrid=30  # this important
+FactorMeanTimeInGrid=0.3  # this important # change this # change this
 Lengthscale=5.4772
-Pe=200
-ControlPlaneSpacing=25
+Pe=100 # change this # change this
+ControlPlaneSpacing=1125
 IfoutputMsd=1
 IfoutputParticleInfoAllsteps=0
 # change above
-MaxExeTimes=500
-SpecialChar="L125_Pe100" # change this # change this  # change this # change this
-
+MaxExeTimes=1000
+SpecialChar="L75s_Pe100" # change this # change this  # change this # change this
+LimitationOfArrivedParticles=2000 # if there are less than $LimitationOfArrivedParticles particles remain in the model, then discontinue simulations
 ###################################3
 
 #commands="/storage/torresLab/yintingchang/cuDFNsys/DispersionAtOneDensityValue/main 230 50 0 0.1 5.1e-4 0 1.5 1 15 0 1 0 1 3 100 20 200 500000 25  0 10000"
-commands="/storage/torresLab/yintingchang/cuDFNsys/DispersionAtOneDensityValue/main ${NUM_fracs} ${ModelSize} ${Kappa} ${Beta} ${Gamma} ${SizeFracMode} ${ParaSizeDistri[0]} ${ParaSizeDistri[1]} ${ParaSizeDistri[2]} ${ParaSizeDistri[3]} ${DomainDimensionRatioZ} ${IfRemoveDeadEnds} ${MinGridSize} ${MaxGridSize} ${P_in} ${P_out} ${NumStepsDispersion} ${NumParticlesRandomWalk} ${FactorMeanTimeInGrid} ${Lengthscale} ${Pe} ${ControlPlaneSpacing} ${IfoutputMsd} ${IfoutputParticleInfoAllsteps}"
+commands="/storage/torresLab/yintingchang/cuDFNsys/DispersionAtOneDensityValue/main ${NUM_fracs} ${ModelSize} ${Kappa} ${Beta} ${Gamma} ${SizeFracMode} ${ParaSizeDistri[0]} ${ParaSizeDistri[1]} ${ParaSizeDistri[2]} ${ParaSizeDistri[3]} ${DomainDimensionRatioZ} ${IfRemoveDeadEnds} ${MinGridSize} ${MaxGridSize} ${NumStepsDispersion} ${NumParticlesRandomWalk} ${FactorMeanTimeInGrid} ${Lengthscale} ${Pe} ${ControlPlaneSpacing} ${IfoutputMsd} ${IfoutputParticleInfoAllsteps}"
 
 sign=1
 CountTimes=0
@@ -43,7 +51,8 @@ echo "" > $LLog_Errors
 Myarray=()
 ProgramErrorCountor=()
 ShellErrorCounter=()
-for i in $( seq $1 `expr $end_ + 1`); do
+i_a=1
+for i in $( seq ${i_a} `expr $end_ + 1`); do
     Myarray+=(0)
     ProgramErrorCountor+=(0)
     ShellErrorCounter+=(0)
@@ -82,7 +91,30 @@ while [ $sign -gt 0 ]; do
             strsd=$(h5dump -A  ./ParticlePositionResult/ParticlePositionLastStep.h5)
             str1sd=$(echo $strsd | cut -d '{' -f5 )
             str2sd=$(echo $str1sd | cut -d ' ' -f3)
-            echo $str2sd" particles still in "$DFN_i
+            if [[ "$str2sd" == *")"*  ]]
+            then
+                echo "1 particles still in "$DFN_i
+                str2sd="1"
+            else
+                if [ -z "$str2sd" ]
+                then
+                    echo "0 particles still in "$DFN_i
+                    str2sd="0"
+                else
+                    echo "$str2sd particles still in "$DFN_i
+                fi
+            fi
+        
+            NumParticlesInDFN=$(($str2sd))
+
+            if [ ${NumParticlesInDFN} -gt $LimitationOfArrivedParticles ]
+            then
+                donothing=1 
+            else
+                Myarray[$i]=`expr ${MaxExeTimes} + 1`
+                cd ..
+                continue # do not need more steps
+            fi
         else
             echo $DFN_i" has no ./ParticlePositionResult/ParticlePositionLastStep.h5"
         fi
@@ -227,9 +259,18 @@ while [ $sign -gt 0 ]; do
             str2sd=$(echo $str1sd | cut -d ' ' -f3)
             #echo $str2sd" particles still in "$DFN_i
 
+            if [[ "$str2sd" == *")"*  ]]
+            then
+                str2sd="1"
+            fi
+            if [ -z "$str2sd" ]
+            then
+                str2sd="0"                
+            fi
+
             NumParticlesInDFN=$(($str2sd))
 
-            if [ ${NumParticlesInDFN} -gt 2000 ]
+            if [ ${NumParticlesInDFN} -gt $LimitationOfArrivedParticles ]
             then 
                 Iuy=1
             else
