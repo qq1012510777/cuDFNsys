@@ -50,3 +50,27 @@ for i = 1:size(kappaVec, 1)
     end
 
 end
+
+% --------monosize
+%---------- power laws
+
+RVec = [7.5];
+
+Vex_mono = [];
+meanR_mono = [];
+m = 1;
+
+for i = 1:size(RVec, 1)
+
+    for j = 1:size(alphaVec, 1)
+
+        R = RVec(j);
+       
+        Vex_mono = [Vex_mono; PreFactor(i) * 8 * 2 ^ 0.5 * R .^ 3];
+        
+        meanR_mono = [meanR_mono; R];
+
+        m = m + 1;
+    end
+
+end

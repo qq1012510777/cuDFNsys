@@ -118,6 +118,9 @@ int main(int argc, char *argv[])
         int perco_dir = 2;
 
         LengthScale_Over_Pe = LengthScale / Pe;
+        if (Pe >= 2000)
+            LengthScale_Over_Pe = 0;
+
         string FractureFileName = "Fractures.h5";
 
         std::ifstream fileer(FractureFileName);

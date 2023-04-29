@@ -497,7 +497,7 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
                 P_DEV[i].Position2D = IntersectionOnCrossedEdge;
 
                 P_DEV[i].AccumDisplacement += pow(X_ * X_ + Y_ * Y_, 0.5);
-                
+
                 return;
             };
 
