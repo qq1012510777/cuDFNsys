@@ -18,9 +18,9 @@
 
 // ====================================================
 // NAME:        DispersionAtOneDensityValue.cu
-// DESCRIPTION: Dispersion in a DFN with a specific percolation parameter value
+// DESCRIPTION: Dispersion in a DFN with INCREASING percolation parameter values
 // AUTHOR:      Tingchang YIN
-// DATE:        24/03/2023
+// DATE:        02/05/2023
 // ====================================================
 
 #include "cuDFNsys.cuh"
@@ -53,41 +53,45 @@ int main(int argc, char *argv[])
     cudaDeviceSynchronize();
 
     //------------Density increases
-    uint LoopTimes = atoi(argv[1]);
-    uint InitDensity = atoi(argv[2]);
-    uint DensityIncreament = atoi(argv[3]);
-    uint MaxTranLoopTimes = atoi(argv[4]);
-    //------------ other inputs
-    _DataType_ L = atof(argv[5]);
-    _DataType_ kappa_ = atof(argv[6]),
-               beta_ = atof(argv[7]),
-               gamma_ = atof(argv[8]);
-    int size_frac_mode = atoi(argv[9]); // mode of fracture size distributions
-    cuDFNsys::Vector4<_DataType_> ParaSizeDistri =
-        cuDFNsys::MakeVector4((_DataType_)atof(argv[10]),
-                              (_DataType_)atof(argv[11]),
-                              (_DataType_)atof(argv[12]),
-                              (_DataType_)atof(argv[13]));
-    double3 DomainDimensionRatio = make_double3(1, 1, atof(argv[14]));
-    int IfRemoveDeadEnd = atoi(argv[15]);
-    _DataType_ minGridSize = atof(argv[16]);
-    _DataType_ maxGridSize = atof(argv[17]);
+    uint InitLoop = atoi(argv[1]);
+    uint FinalLoop = atoi(argv[2]);
+    uint InitDensity = atoi(argv[3]);
+    uint DensityIncreament = atoi(argv[4]);
+    uint MaxTranLoopTimes = atoi(argv[5]);
 
-    int NumTimeSteps_Dispersion = atoi(argv[18]);
-    int NumParticlesRandomWalk = atoi(argv[19]);
+    uint LoopTimes = FinalLoop - InitLoop + 1;
+
+    //------------ other inputs
+    _DataType_ L = atof(argv[6]);
+    _DataType_ kappa_ = atof(argv[7]),
+               beta_ = atof(argv[8]),
+               gamma_ = atof(argv[9]);
+    int size_frac_mode = atoi(argv[10]); // mode of fracture size distributions
+    cuDFNsys::Vector4<_DataType_> ParaSizeDistri =
+        cuDFNsys::MakeVector4((_DataType_)atof(argv[11]),
+                              (_DataType_)atof(argv[12]),
+                              (_DataType_)atof(argv[13]),
+                              (_DataType_)atof(argv[14]));
+    double3 DomainDimensionRatio = make_double3(1, 1, atof(argv[15]));
+    int IfRemoveDeadEnd = atoi(argv[16]);
+    _DataType_ minGridSize = atof(argv[17]);
+    _DataType_ maxGridSize = atof(argv[18]);
+
+    int NumTimeSteps_Dispersion = atoi(argv[19]);
+    int NumParticlesRandomWalk = atoi(argv[20]);
     _DataType_ DeltaT = 0;
-    _DataType_ Factor_mean_time_in_grid = atof(argv[20]);
+    _DataType_ Factor_mean_time_in_grid = atof(argv[21]);
     // the mean time (a characteristic grid length over the mean velocity (m/s)) for a random walk to cross a characteristic grid length
     // but this mean time was reduced, i.e., dividing by a factor (> 1)
     // then the mean time is DeltaT
     _DataType_ DiffusionLocal = 0;
     _DataType_ LengthScale_Over_Pe = 0;
-    _DataType_ LengthScale = atof(argv[21]);
-    _DataType_ Pe = atof(argv[22]);
-    _DataType_ ControlPlaneSpacing = atof(argv[23]);
-    bool IfoutputMsd = atoi(argv[24]) == 0 ? false : true;
-    bool IfoutputParticleInfoAllsteps = atoi(argv[25]) == 0 ? false : true;
-    int ThresholdToStop = atoi(argv[26]);
+    _DataType_ LengthScale = atof(argv[22]);
+    _DataType_ Pe = atof(argv[23]);
+    _DataType_ ControlPlaneSpacing = atof(argv[24]);
+    bool IfoutputMsd = atoi(argv[25]) == 0 ? false : true;
+    bool IfoutputParticleInfoAllsteps = atoi(argv[26]) == 0 ? false : true;
+    int ThresholdToStop = atoi(argv[27]);
 
     string recordMode = IfoutputParticleInfoAllsteps == false ? "FPTCurve" : "OutputAll";
     _DataType_ P_in = L, P_out = 0;
@@ -118,7 +122,7 @@ int main(int argc, char *argv[])
     //-----------------------
     cuDFNsys::HDF5API h5g;
 
-    for (uint i = 1; i <= LoopTimes; ++i)
+    for (uint i = InitLoop; i <= LoopTimes + InitLoop; ++i)
     {
         string path2 = "DFN_" + cuDFNsys::ToStringWithWidth(i, 3);
         string command1 = "mkdir -p " + path2;
@@ -133,6 +137,7 @@ int main(int argc, char *argv[])
         {
             try
             {
+                cout << "DSIZE: " << DSIZE << ", j = " << j << endl;
                 //-----------if a mesh h5 exists ----
                 // then the DFN is percolative
                 bool If_percolative = false;
@@ -160,7 +165,7 @@ int main(int argc, char *argv[])
                     }
 
                     //----------amend MSD data
-                    system("python ../scripts/AmendMSDData.py");
+                    system("python ../scripts/DelDataSet.py");
                 }
 
                 //------------need more simulations
@@ -183,7 +188,7 @@ int main(int argc, char *argv[])
                     cuDFNsys::Fractures<_DataType_><<<DSIZE / 256 + 1, 256>>>(Frac_verts_device_ptr,
                                                                               (unsigned long)t + (unsigned long)ceil(abs(Ter(0, 0)) * ((unsigned long)t * 1.0)),
                                                                               DSIZE, L,
-                                                                              0,
+                                                                              size_frac_mode,
                                                                               ParaSizeDistri,
                                                                               kappa_, // kappa
                                                                               beta_,  // beta
@@ -219,6 +224,14 @@ int main(int argc, char *argv[])
                                                        Frac_verts_host, Intersection_map, ListClusters,
                                                        Percolation_cluster, false, true, true, true,
                                                        L, perco_dir, true, "DFN_I", DomainDimensionRatio};
+
+                std::vector<double> Data1(14);
+                cuDFNsys::GetStatistics<double>(Frac_verts_host,
+                                                Intersection_map,
+                                                ListClusters,
+                                                Percolation_cluster, L, Data1[0], Data1[1], Data1[2], Data1[3],
+                                                Data1[4], Data1[5], Data1[6], Data1[7], Data1[8], Data1[9],
+                                                Data1[10], Data1[11], Data1[12], Data1[13]);
 
                 Intersection_map.clear();
                 ListClusters.clear();
@@ -278,6 +291,7 @@ int main(int argc, char *argv[])
                                                          DomainDimensionRatio};
                         lk_out.OutputMesh("mesh.h5", mesh2, Fracs_percol);
                         mesh = mesh2;
+                        h5g.NewFile("FlowProperties.h5");
                     }
                     else
                         lk.InputMesh("mesh.h5", mesh, &Fracs_percol);
@@ -287,6 +301,7 @@ int main(int argc, char *argv[])
                                                             Frac_verts_host,
                                                             L, true, true, true,
                                                             "DFN_mesh_", DomainDimensionRatio);
+
                     cout << "The mean area of all elements is " << mean_grid_area << endl;
 
                     cout << "MHFEM ing ..." << endl;
@@ -315,6 +330,41 @@ int main(int argc, char *argv[])
 
                     double meanV = TGH.x;
                     double maxV = TGH.y;
+
+                    try
+                    {
+                        h5g.AddDataset<double>("FlowProperties.h5", "N", "MeanV", &meanV, make_uint2(1, 1));
+                        h5g.AddDataset<double>("FlowProperties.h5", "N", "maxV", &maxV, make_uint2(1, 1));
+                        vector<string> datasetname = {
+                            "P33_total",
+                            "P33_connected_z",
+                            "Ratio_of_P33_z",
+                            "P33_largest_cluster",
+                            "P32_total",
+                            "P32_connected_z",
+                            "Ratio_of_P32_z",
+                            "P32_largest_cluster",
+                            "P30",
+                            "P30_connected_z",
+                            "Ratio_of_P30_z",
+                            "P30_largest_cluster",
+                            "Percolation_probability_z",
+                            "n_I",
+                            "Permeability_z",
+                            "Q_error_z"};
+                        vector<double *> data_input = {&Data1[0], &Data1[1], &Data1[2], &Data1[3],
+                                                       &Data1[4], &Data1[5], &Data1[6], &Data1[7], &Data1[8], &Data1[9],
+                                                       &Data1[10], &Data1[11], &Data1[12], &Data1[13], &fem.Permeability, &fem.QError};
+                        vector<uint2> dim_ss(data_input.size(), make_uint2(1, 1));
+                        h5g.AddDatasetsWithOneGroup<double>("FlowProperties.h5", "ConnectivityPermeability", datasetname, data_input, dim_ss);
+                    }
+                    catch (H5::Exception &e)
+                    {
+                        //cout
+                        //e.printError();
+                        //exit(0);
+                        // do nothing
+                    }
 
                     cout << "The maximum velocity of all elements is " << maxV << endl;
                     cout << "The mean velocity of all elements is " << meanV << endl;
@@ -372,6 +422,7 @@ int main(int argc, char *argv[])
                 else
                 {
                     system("rm -rf *.h5 ParticlePositionResult");
+                    j = 0;
                 }
             }
             catch (cuDFNsys::ExceptionsIgnore &e)
@@ -393,11 +444,10 @@ int main(int argc, char *argv[])
             catch (H5::Exception &e)
             {
                 cout << "H5::Exception\n";
-                e.printError();
+                //e.printError();
                 cout << path2 << endl;
                 system("rm -rf *.h5 ParticlePositionResult");
                 j = 0;
-                
             }
             catch (...)
             {
