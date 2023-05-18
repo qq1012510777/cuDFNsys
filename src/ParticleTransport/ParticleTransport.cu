@@ -954,6 +954,8 @@ void cuDFNsys::ParticleTransport<T>::OutputMSD(const uint &StepNO,
     double MSD_gs = Position3D_zz.dot(Position3D_zz) / Position3D_zz.rows();          // mean square displacement
 
     vector<double> Mean_MSD_cMSD = {mean_z, cMSD_g, MSD_gs};
+    // I made a mistake, which, however, is not serious
+    // Mean_MSD_cMSD[1] is cMSD; Mean_MSD_cMSD[2] is MSD
 
     // h5g.AddDataset(MSD_file, "N", "cMSD_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
     //                &cMSD_g, dim_scalar);

@@ -92,6 +92,7 @@ int main(int argc, char *argv[])
     bool IfoutputMsd = atoi(argv[25]) == 0 ? false : true;
     bool IfoutputParticleInfoAllsteps = atoi(argv[26]) == 0 ? false : true;
     int ThresholdToStop = atoi(argv[27]);
+    int ThresholdForMaximumLeftParticles = atoi(argv[28]);
 
     string recordMode = IfoutputParticleInfoAllsteps == false ? "FPTCurve" : "OutputAll";
     _DataType_ P_in = L, P_out = 0;
@@ -137,6 +138,7 @@ int main(int argc, char *argv[])
         {
             try
             {
+                system("echo \" \" > ../log.txt");
                 cout << "DSIZE: " << DSIZE << ", j = " << j << endl;
                 //-----------if a mesh h5 exists ----
                 // then the DFN is percolative
@@ -162,6 +164,11 @@ int main(int argc, char *argv[])
                                                      "Step_" + cuDFNsys::ToStringWithWidth<int>(NUMsTEPS[0], 10));
                         if (rows_ <= ThresholdToStop)
                             break; // get enough particles arrived
+
+                        std::vector<uint> NumPaLeft = h5g.ReadDataset<uint>("ParticlePositionResult/DispersionInfo.h5",
+                                                                            "N", "NumParticlesLeftFromInlet");
+                        if (NumPaLeft[0] > ThresholdForMaximumLeftParticles)
+                            throw cuDFNsys::ExceptionsIgnore("Too many particles left from the inlet!\n");
                     }
 
                     //----------amend MSD data
