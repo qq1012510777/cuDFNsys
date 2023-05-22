@@ -85,19 +85,13 @@ With Python, you need to install the _mayavi_ Python package. _mayavi_ is a very
 # Manual
 Right now, I provide a quickstart guide to explain how can one do simulations with _cuDFNsys_ functions. See QuickStartGuide/src/QuickStartGuide.cu.
 
-To compile and run QuickStartGuide example, run compileCode.sh in the directory-'QuickStartGuide'.
+To compile and run QuickStartGuide example, run `make` in the directory-'QuickStartGuide'.
 
-For example, run the command with your shell: **bash compileCode.sh 1000 500 5e5 0**
+Then, run the command in your shell: `./QuickStartGuide 10000`
 
-Explanations of the four arguments:
+The number `10000` above means that 10000 particles are injected.
 
-* Number of particles: 1000
-
-* Number of time steps: 500
-
-* Delta t: 5e5
-
-* Diffusion (molecular): 0
+Note that the particles' information (e.g., positions) are 2D. You have to transform them into 3D data with the command `./Transform2DH5ParticleDataTo3D 0 DFN_mesh.h5`.
 
 # Directories
 

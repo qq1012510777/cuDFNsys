@@ -20,10 +20,13 @@
 // NAME:        A quickstart example
 // DESCRIPTION: Call cuDFNsys functions to do simulation.
 // AUTHOR:      Tingchang YIN
-// DATE:        03/11/2022
+// DATE:        22/05/2023
 // ====================================================
 
 #include "cuDFNsys.cuh"
+#include <fstream>
+#include <iostream>
+#include <limits.h>
 #include <unistd.h>
 
 #ifdef USE_DOUBLES
@@ -38,6 +41,13 @@ int main(int argc, char *argv[])
 
     try
     {
+        // The code/exeutable file here can be run many times untill all particles arrive at the target plane (i.e., the bottom of the domain)
+        // If a DFN is not percolative, then re-run the code to generate a new DFN.
+        // if the existing DFN is percolative, then re-run the code to implement more random walk steps
+        // if an error happens during the simulation, then the DFN will be discarded and a new DFN could be created after you re-run the code
+
+        int NumParticles = atoi(argv[1]); // the number of particle you want to inject
+
         int dev = 0;                     // No. 0 GPU card
         GPUErrCheck(cudaSetDevice(dev)); // try to use the first GPU card and check its availability
 
@@ -65,7 +75,7 @@ int main(int argc, char *argv[])
         // r is fracture size
 
         int ModeSizeDistri = 0;
-        // ModeSizeDistri here means that the distribution of fracture sizes is a power law
+        // ModeSizeDistri = 0 here means that the distribution of fracture sizes is a power law
         // fracture size here is the radius of fractures
 
         cuDFNsys::Vector4<_DataType_> ParaSizeDistri =
@@ -96,26 +106,47 @@ int main(int argc, char *argv[])
         // cudaDeviceSynchronize() is very important, means that,
         // after the above kernel function is finished, then the following scripts are implemented.
 
+        // because the random walks may need more than one simulations,
+        // we here check if there is an existing DFN with flow in it.
+        bool If_percolative = false;     // if the DFN is percolative
+        std::ifstream fileer("mesh.h5"); // test the mesh file exists or not
+        If_percolative = fileer.good();
+
+        cuDFNsys::InputObjectData<_DataType_> lk;
+        // a class to load objects' information, e.g., fractures, mesh, fem
+
         time_t t;
         time(&t);
         // t is for random seed
 
         double istart = cuDFNsys::CPUSecond(); // we can count time
 
-        cuDFNsys::Fractures<_DataType_><<<DSIZE / 256 + 1, 256>>>(Frac_verts_device_ptr, // the pointer to device vector
-                                                                  (unsigned long)t,      // seed
-                                                                  DSIZE,                 // number of fracture
-                                                                  L,                     // domain size
-                                                                  ModeSizeDistri,        // distribution pattern of fracture sizes
-                                                                  ParaSizeDistri,        // parameters of distribution of fracture sizes
-                                                                  kappa_para,            // kappa value of fisher distribution
-                                                                  beta,                  // beta
-                                                                  gamma,                 // gamma
-                                                                  DomainDimensionRatio); // ratio
+        if (!If_percolative)
+        {
+            cuDFNsys::Fractures<_DataType_><<<DSIZE / 256 + 1, 256>>>(Frac_verts_device_ptr, // the pointer to device vector
+                                                                      (unsigned long)t,      // seed
+                                                                      DSIZE,                 // number of fracture
+                                                                      L,                     // domain size
+                                                                      ModeSizeDistri,        // distribution pattern of fracture sizes
+                                                                      ParaSizeDistri,        // parameters of distribution of fracture sizes
+                                                                      kappa_para,            // kappa value of fisher distribution
+                                                                      beta,                  // beta
+                                                                      gamma,                 // gamma
+                                                                      DomainDimensionRatio); // ratio
 
-        cudaDeviceSynchronize();             // now we finished generating fractures
-        Frac_verts_host = Frac_verts_device; // copy data from device to host
-
+            cudaDeviceSynchronize();             // now we finished generating fractures
+            Frac_verts_host = Frac_verts_device; // copy data from device to host
+        }
+        else
+        {
+            // if a percolative DFN and the mesh file exist,
+            // we just load the DFN file
+            Frac_verts_host.resize(0);
+            lk.InputFractures("Fractures.h5", Frac_verts_host, L, DomainDimensionRatio);
+            Frac_verts_host.shrink_to_fit();
+            Frac_verts_device = Frac_verts_host;
+            DSIZE = Frac_verts_host.size();
+        }
         double ielaps = cuDFNsys::CPUSecond() - istart;
         cout << "Running time of fracture generation: " << ielaps << " sec\n";
 
@@ -215,8 +246,15 @@ int main(int argc, char *argv[])
         Frac_verts_device.shrink_to_fit();
         // device vector of fractures now is not neccessary
 
+        cuDFNsys::OutputObjectData<_DataType_> lk_out;
+        // a C++ class to output objects' information (e.g., mesh, fractures, fem)
+
         if (Percolation_cluster.size() > 0) // please be sure that there is at least one spanning cluster
         {
+
+            lk_out.OutputFractures("Fractures.h5", Frac_verts_host, L, DomainDimensionRatio);
+            // output fractures' information, if the DFN is percolative
+
             std::vector<size_t> Fracs_percol; // will store ID / No of fractures in percolating cluster
 
             istart = cuDFNsys::CPUSecond();
@@ -240,44 +278,94 @@ int main(int argc, char *argv[])
             cout << "Running time of sorting fractures: " << ielaps << " sec\n";
 
             istart = cuDFNsys::CPUSecond();
-            cuDFNsys::Mesh<_DataType_> mesh{Frac_verts_host,         // host vector of fractures, after removing fractures of dead end
-                                            IntersectionPair_percol, // intersection pair
-                                            &Fracs_percol,           // fractures' ID in percolating cluster
-                                            minGrid,                 // minimum grid size
-                                            maxGrid,                 // maximum grid size
-                                            perco_dir,               // flow direction
-                                            L,                       // domain size
-                                            DomainDimensionRatio};
-            // mesh finished
-            mesh.MatlabPlot("DFN_mesh.h5",   // h5 file
-                            "DFN_mesh.m",    // name of matlab script
-                            Frac_verts_host, // fracture vector on the host side
-                            L,               // domain size
-                            true,            // if check 2D coordinates, because 3D fractures can be mapped to 2D plane
-                            true,            // if check the edge attributes? Neumann, Dirichlet?
-                            true,            // if I want to see mesh with Python?
-                            "DFN_mesh",      // name of python script without suffix
-                            DomainDimensionRatio);
+            cuDFNsys::Mesh<_DataType_> mesh; // a mesh object
+
+            if (!If_percolative)
+            {
+                cuDFNsys::Mesh<_DataType_> meshII{Frac_verts_host,         // host vector of fractures, after removing fractures of dead end
+                                                  IntersectionPair_percol, // intersection pair
+                                                  &Fracs_percol,           // fractures' ID in percolating cluster
+                                                  minGrid,                 // minimum grid size
+                                                  maxGrid,                 // maximum grid size
+                                                  perco_dir,               // flow direction
+                                                  L,                       // domain size
+                                                  DomainDimensionRatio};
+
+                lk_out.OutputMesh("mesh.h5", meshII, Fracs_percol);
+                mesh = meshII;
+            }
+            else
+            {
+                lk.InputMesh("mesh.h5", mesh, &Fracs_percol);
+                // load the mesh file
+            }
+
+            // mesh finished, mean_grid_area is the mean area of finite elements
+            double mean_grid_area = mesh.MatlabPlot("DFN_mesh.h5",   // h5 file
+                                                    "DFN_mesh.m",    // name of matlab script
+                                                    Frac_verts_host, // fracture vector on the host side
+                                                    L,               // domain size
+                                                    true,            // if check 2D coordinates, because 3D fractures can be mapped to 2D plane
+                                                    true,            // if check the edge attributes? Neumann, Dirichlet?
+                                                    true,            // if I want to see mesh with Python?
+                                                    "DFN_mesh",      // name of python script without suffix
+                                                    DomainDimensionRatio);
+
             ielaps = cuDFNsys::CPUSecond() - istart;
             cout << "Running time of mesh: " << ielaps << " sec\n";
 
             istart = cuDFNsys::CPUSecond();
-            cuDFNsys::MHFEM<_DataType_> fem{mesh,            // mesh object
-                                            Frac_verts_host, // fractures
-                                            100,             // hydraulic head of inlet = 100 m
-                                            20,              // hydraulic head of outlet = 20 m
-                                            perco_dir,       // flow direction
-                                            L,               // domain size
-                                            DomainDimensionRatio};
 
-            fem.MatlabPlot("MHFEM.h5",      // h5 file
-                           "MHFEM.m",       // matlab script to see mhfem result
-                           Frac_verts_host, // fractures
-                           mesh,            // mesh object
-                           L,               // domain size
-                           true,            // if use python to do visualization
-                           "MHFEM",         // name of python script, without suffix
-                           DomainDimensionRatio);
+            cuDFNsys::MHFEM<_DataType_> fem; // a fem object
+
+            if (!If_percolative)
+            {
+                cuDFNsys::MHFEM<_DataType_> femII{mesh,            // mesh object
+                                                  Frac_verts_host, // fractures
+                                                  100,             // hydraulic head of inlet = 100 m
+                                                  20,              // hydraulic head of outlet = 20 m
+                                                  perco_dir,       // flow direction
+                                                  L,               // domain size
+                                                  DomainDimensionRatio};
+
+                lk_out.OutputMHFEM("mhfem.h5", femII);
+                fem = femII;
+            }
+            else
+            {
+                lk.InputMHFEM("mhfem.h5", fem);
+                // load fem files
+            }
+
+            double2 TGH = fem.MatlabPlot("MHFEM.h5",      // h5 file
+                                         "MHFEM.m",       // matlab script to see mhfem result
+                                         Frac_verts_host, // fractures
+                                         mesh,            // mesh object
+                                         L,               // domain size
+                                         true,            // if use python to do visualization
+                                         "MHFEM",         // name of python script, without suffix
+                                         DomainDimensionRatio);
+
+            double meanV = TGH.x; // mean velocity of flow field
+            double maxV = TGH.y;  // max velovity of flow field
+
+            double meanTime = pow(mean_grid_area, 0.5) / maxV;
+
+            int NumTimeStep = 200;       // number of time steps
+            double Pe_number = 200;      // Peclet number
+            double LengthScale = 5.4772; // a length scale, l_f. Note that Pe = l_f * meanV / DiffusionMole
+            double DiffusionMole = LengthScale / Pe_number * meanV;
+            double Factor_mean_time_in_grid = 2;
+            _DataType_ DeltaT = meanTime / Factor_mean_time_in_grid; // delta T
+
+            cout << "- NumParticles: " << NumParticles << endl;
+            cout << "- NumTimeStep: " << NumTimeStep << endl;
+            cout << "- Pe_number: " << Pe_number << endl;
+            cout << "- LengthScale: " << LengthScale << endl;
+            cout << "- Factor_mean_time_in_grid: " << Factor_mean_time_in_grid << endl;
+            cout << "- DeltaT: " << DeltaT << endl;
+            cout << "- DiffusionMole: " << DiffusionMole << endl;
+            cout << "\n";
 
             ielaps = cuDFNsys::CPUSecond() - istart;
             cout << "Running time of mhfem: " << ielaps << " sec\n";
@@ -287,11 +375,6 @@ int main(int argc, char *argv[])
             // the above two command just in order to output fractures information to transform 2D particle data to 3D
 
             istart = cuDFNsys::CPUSecond();
-
-            int NumParticles = atoi(argv[1]);                     // number of particle
-            int NumTimeStep = atoi(argv[2]);                      // number of time steps
-            _DataType_ DeltaT = atof(argv[3]);                    // delta T
-            _DataType_ DiffusionMole = (_DataType_)atof(argv[4]); // molecular diffusion
 
             cuDFNsys::ParticleTransport<_DataType_> p{NumTimeStep,                                 // number of time steps
                                                       Frac_verts_host,                             // fractures
@@ -330,17 +413,24 @@ int main(int argc, char *argv[])
             ielaps = cuDFNsys::CPUSecond() - istart;
             cout << "Running time of particle tracking: " << ielaps << " sec\n";
         }
+        else
+        {
+            cout << "No percolation happens\n";
+        }
     }
     catch (cuDFNsys::ExceptionsIgnore &e)
     {
+        system("rm -rf ./*.h5 ./ParticlePositionResult");
         cout << e.what() << endl;
     }
     catch (cuDFNsys::ExceptionsPause &e)
     {
+        system("rm -rf ./*.h5 ./ParticlePositionResult");
         cout << e.what() << endl;
     }
     catch (...)
     {
+        system("rm -rf ./*.h5 ./ParticlePositionResult");
         throw;
     };
     return 0;
