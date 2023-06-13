@@ -85,7 +85,7 @@ __global__ void FracturesBeta50Beta60(cuDFNsys::Fracture<T> *verts,
                                       int count,
                                       T model_L);
 
-// two incomplet fractures
+// two incomplete fractures
 template <typename T>
 __global__ void FracturesIncomplete(cuDFNsys::Fracture<T> *verts,
                                     unsigned long seed,
@@ -113,4 +113,11 @@ template <typename T>
 __global__ void FracturesChangeDomainSize(cuDFNsys::Fracture<T> *verts,
                                           int count,
                                           T model_L);
+
+template <typename T>
+__global__ void FractureTwoIntersectOrNot(cuDFNsys::Fracture<T> *verts,
+                                          unsigned long seed,
+                                          int count,
+                                          T model_L,
+                                          bool IfIntersect);
 }; // namespace cuDFNsys

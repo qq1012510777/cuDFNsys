@@ -190,6 +190,7 @@ cuDFNsys::RemoveDeadEndFrac<T>::RemoveDeadEndFrac(std::vector<size_t> &One_clust
         int DSIZE = One_cluster.size();
 
         Intersection_pair.reserve(DSIZE * floor((DSIZE - 1) / 2) + (DSIZE - 1) % 2 * DSIZE * 0.5);
+        
         for (size_t i = 0; i < One_cluster.size() - 1; ++i)
         {
             size_t FracTag_1 = One_cluster[i];

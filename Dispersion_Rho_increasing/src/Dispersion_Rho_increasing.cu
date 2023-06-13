@@ -134,6 +134,14 @@ int main(int argc, char *argv[])
 
         uint DSIZE = InitDensity + (i - 1) * DensityIncreament;
 
+        if (i == InitLoop)
+            system("echo \" \" > ../recordTime_and_Error.log");
+
+        string Start_i = "loop " + std::to_string(i) + ", NF = " + std::to_string(DSIZE) + " started\n";
+        system("echo $(date +%d-%m-%y---%T) >> ../recordTime_and_Error.log");
+        Start_i = "echo \"" + Start_i + "\" >> ../recordTime_and_Error.log";
+        system(Start_i.c_str());
+
         for (uint j = 0; j < MaxTranLoopTimes; j++)
         {
             try
@@ -163,12 +171,19 @@ int main(int argc, char *argv[])
                         int rows_ = GetRowsOfDataset("ParticlePositionResult/ParticlePositionLastStep.h5",
                                                      "Step_" + cuDFNsys::ToStringWithWidth<int>(NUMsTEPS[0], 10));
                         if (rows_ <= ThresholdToStop)
+                        {
+                            system("echo $(date +%d-%m-%y---%T) >> ../recordTime_and_Error.log");
+                            system("echo \"Finished\n\n\" >> ../recordTime_and_Error.log");
                             break; // get enough particles arrived
-
+                        }
                         std::vector<uint> NumPaLeft = h5g.ReadDataset<uint>("ParticlePositionResult/DispersionInfo.h5",
                                                                             "N", "NumParticlesLeftFromInlet");
                         if (NumPaLeft[0] > ThresholdForMaximumLeftParticles)
+                        {
+                            system("echo $(date +%d-%m-%y---%T) >> ../recordTime_and_Error.log");
+                            system("echo \"Too many particles left from the inlet\n\n\" >> ../recordTime_and_Error.log");
                             throw cuDFNsys::ExceptionsIgnore("Too many particles left from the inlet!\n");
+                        }
                     }
 
                     //----------amend MSD data
@@ -439,6 +454,10 @@ int main(int argc, char *argv[])
                 cout << path2 << endl;
                 system("rm -rf *.h5 ParticlePositionResult");
                 j = 0;
+
+                system("echo $(date +%d-%m-%y---%T) >> ../recordTime_and_Error.log");
+                string ERDS = "echo \"\t" + e.what() + "\n\n\" >> ../recordTime_and_Error.log";
+                system(ERDS.c_str());
             }
             catch (cuDFNsys::ExceptionsPause &e)
             {
@@ -447,6 +466,10 @@ int main(int argc, char *argv[])
                 cout << path2 << endl;
                 system("rm -rf *.h5 ParticlePositionResult");
                 j = 0;
+
+                system("echo $(date +%d-%m-%y---%T) >> ../recordTime_and_Error.log");
+                string ERDS = "echo \"\t" + e.what() + "\n\n\" >> ../recordTime_and_Error.log";
+                system(ERDS.c_str());
             }
             catch (H5::Exception &e)
             {
@@ -455,6 +478,9 @@ int main(int argc, char *argv[])
                 cout << path2 << endl;
                 system("rm -rf *.h5 ParticlePositionResult");
                 j = 0;
+
+                system("echo $(date +%d-%m-%y---%T) >> ../recordTime_and_Error.log");
+                system("echo \"H5::Exception\n\n\" >> ../recordTime_and_Error.log");
             }
             catch (...)
             {
@@ -462,6 +488,9 @@ int main(int argc, char *argv[])
                 cout << path2 << endl;
                 system("rm -rf *.h5 ParticlePositionResult");
                 j = 0;
+
+                system("echo $(date +%d-%m-%y---%T) >> ../recordTime_and_Error.log");
+                system("echo \"Unknown exceptions\n\n\" >> ../recordTime_and_Error.log");
             }
         }
 

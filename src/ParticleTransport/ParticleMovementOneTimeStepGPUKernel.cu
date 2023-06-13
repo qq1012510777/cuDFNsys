@@ -105,7 +105,7 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
 
     T z1 = curand_normal(&state),
       z2 = curand_normal(&state);
-
+    // printf("%f, %f\n", z1, z2);
     cuDFNsys::Vector2<T> TargPos;
     T X_ = Veloc_p.x * delta_T_ + (T)1.0f * z1 * sqrt((T)2.0f * Dispersion_local * delta_T_);
     T Y_ = Veloc_p.y * delta_T_ + (T)1.0f * z2 * sqrt((T)2.0f * Dispersion_local * delta_T_);
