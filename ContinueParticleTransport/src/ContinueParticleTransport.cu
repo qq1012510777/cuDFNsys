@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
                                                         Fracs_percol};
             std::vector<pair<int, int>> IntersectionPair_percol;
 
-            bool ifRemoveDeadends = (atoi(argv[1]) == 0 ? false : true);
+            bool ifRemoveDeadends = false;
 
             cuDFNsys::RemoveDeadEndFrac<_DataType_> RDEF{Fracs_percol,
                                                          IntersectionPair_percol,
@@ -152,16 +152,16 @@ int main(int argc, char *argv[])
             }
 
             int i = 0;
-            mesh.MatlabPlot("DFN_mesh_" + to_string(i + 1) + ".h5",
-                            "DFN_mesh_" + to_string(i + 1) + ".m",
-                            Frac_verts_host, L, true, true, true, "DFN_mesh_" + to_string(i + 1), DomainDimensionRatio);
+            double mean_grid_area = mesh.MatlabPlot("DFN_mesh_" + to_string(i + 1) + ".h5",
+                                                    "DFN_mesh_" + to_string(i + 1) + ".m",
+                                                    Frac_verts_host, L, true, true, true, "DFN_mesh_" + to_string(i + 1), DomainDimensionRatio);
 
             cout << "MHFEM ing ..." << endl;
 
             _DataType_ P_in = 100, P_out = 20;
 
             // if (argv[6] != NULL && argv[7] != NULL)
-                // P_in = atof(argv[6]), P_out = atof(argv[7]);
+            // P_in = atof(argv[6]), P_out = atof(argv[7]);
 
             cuDFNsys::MHFEM<_DataType_> fem;
             try
@@ -188,12 +188,25 @@ int main(int argc, char *argv[])
             cout << "Running time of the meshing and flow simulation: ";
             cout << ielaps_1 << " sec\n";
             //---------------------
-            fem.MatlabPlot("MHFEM_" + to_string(i + 1) + ".h5",
-                           "MHFEM_" + to_string(i + 1) + ".m",
-                           Frac_verts_host, mesh, L, true, "MHFEM_" + to_string(i + 1),
-                           DomainDimensionRatio);
+            double2 TGH = fem.MatlabPlot("MHFEM_" + to_string(i + 1) + ".h5",
+                                         "MHFEM_" + to_string(i + 1) + ".m",
+                                         Frac_verts_host, mesh, L, true, "MHFEM_" + to_string(i + 1),
+                                         DomainDimensionRatio);
             //---------------
             // return 0;
+            cout << "The mean area of all elements is " << mean_grid_area << endl;
+            double meanV = TGH.x;
+            double maxV = TGH.y;
+            cout << "The maximum velocity of all elements is " << maxV << endl;
+            cout << "The mean velocity of all elements is " << meanV << endl;
+
+            int NumParticles = atoi(argv[1]);
+            double Factor_mean_time_in_grid = atof(argv[2]);
+            double LengthScale_Over_Pe = atof(argv[3]) / atof(argv[4]);
+
+            double DiffusionLocal = LengthScale_Over_Pe * meanV;
+            double meanTime = pow(mean_grid_area, 0.5) / maxV;
+            double DeltaT = meanTime / Factor_mean_time_in_grid;
 
             string Filename_FracturesForParticle = "FracturesForParticle.h5";
 
@@ -208,16 +221,16 @@ int main(int argc, char *argv[])
             }
             cout << "Particle transport ing ......\n";
 
-            cuDFNsys::ParticleTransport<_DataType_> p{atoi(argv[2]), // number of time step
+            cuDFNsys::ParticleTransport<_DataType_> p{atoi(argv[5]), // number of time step
                                                       Frac_verts_host, mesh, fem, (uint)perco_dir,
                                                       -0.5f * L * (&DomainDimensionRatio.x)[perco_dir],
-                                                      atoi(argv[3]), // num of particle
-                                                      atof(argv[4]), // delta_T_ii
-                                                      atof(argv[5]),
+                                                      NumParticles, // num of particle
+                                                      DeltaT,       // delta_T_ii
+                                                      DiffusionLocal,
                                                       "Particle_tracking",
-                                                      "Flux-weighted",
-                                                      "FPTCurve",
-                                                      false, 1, false, atof(argv[6])};
+                                                      "Point",
+                                                      "OutputAll",
+                                                      false, 1, false, 10000, true, true};
             p.MatlabPlot("MHFEM_" + to_string(i + 1) + ".h5", "ParticlesDFNMatlab.m", mesh, fem, L, DomainDimensionRatio, true, "ParticlesDFN");
         }
         //cudaDeviceReset();

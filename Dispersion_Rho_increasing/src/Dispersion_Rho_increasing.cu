@@ -94,28 +94,40 @@ int main(int argc, char *argv[])
     int ThresholdToStop = atoi(argv[27]);
     int ThresholdForMaximumLeftParticles = atoi(argv[28]);
 
+    string injectionMode = argv[29]; // Flux-weighted or Resident
+    bool IfInjectAt_Center = (atoi(argv[30]) == 0 ? false : true);
+    _DataType_ InjectionPlane = atof(argv[31]);
+    bool If_ReRun_ = atoi(argv[32]) == 0 ? false : true;
+    string LogFile = argv[33];
+
     string recordMode = IfoutputParticleInfoAllsteps == false ? "FPTCurve" : "OutputAll";
     _DataType_ P_in = L, P_out = 0;
 
-    cout << "L: " << L << endl;
-    cout << "Kappa: " << kappa_ << endl;
-    cout << "Beta: " << beta_ << endl;
-    cout << "Gamma: " << gamma_ << endl;
-    cout << "Mode of fracture size distributions: " << size_frac_mode << endl;
-    cout << "Parameters of the size distribution: " << ParaSizeDistri.x << ", " << ParaSizeDistri.y << ", " << ParaSizeDistri.z << ", " << ParaSizeDistri.w << endl;
-    cout << "Domain's dimension ratio: " << DomainDimensionRatio.x << ", " << DomainDimensionRatio.y << ", " << DomainDimensionRatio.z << endl;
-    cout << "If remove the dead ends: " << (IfRemoveDeadEnd == 0 ? "false" : "true") << endl;
-    cout << "Min grid size: " << minGridSize << endl;
-    cout << "Max grid size: " << maxGridSize << endl;
-    cout << "Hydraulic head at the inlet and outlet: " << P_in << ", " << P_out << endl;
-    cout << "Number of time steps for random walks: " << NumTimeSteps_Dispersion << endl;
-    cout << "Number of particles: " << NumParticlesRandomWalk << endl;
-    cout << "Factor_mean_time_in_grid: " << Factor_mean_time_in_grid << endl;
-    cout << "LengthScale: " << LengthScale << endl;
-    cout << "Pe: " << Pe << endl;
-    cout << "The spacing of control planes: " << ControlPlaneSpacing << endl;
-    cout << "IfoutputMsd: " << (IfoutputMsd == true ? "true" : "false") << endl;
-    cout << "IfoutputParticleInfoAllsteps: " << (IfoutputParticleInfoAllsteps == false ? "FPTCurve" : "OutputAll") << endl;
+    std::ofstream oss("./InputInfo.info", ios::out);
+
+    oss << "L: " << L << endl;
+    oss << "Kappa: " << kappa_ << endl;
+    oss << "Beta: " << beta_ << endl;
+    oss << "Gamma: " << gamma_ << endl;
+    oss << "Mode of fracture size distributions: " << size_frac_mode << endl;
+    oss << "Parameters of the size distribution: " << ParaSizeDistri.x << ", " << ParaSizeDistri.y << ", " << ParaSizeDistri.z << ", " << ParaSizeDistri.w << endl;
+    oss << "Domain's dimension ratio: " << DomainDimensionRatio.x << ", " << DomainDimensionRatio.y << ", " << DomainDimensionRatio.z << endl;
+    oss << "If remove the dead ends: " << (IfRemoveDeadEnd == 0 ? "false" : "true") << endl;
+    oss << "Min grid size: " << minGridSize << endl;
+    oss << "Max grid size: " << maxGridSize << endl;
+    oss << "Hydraulic head at the inlet and outlet: " << P_in << ", " << P_out << endl;
+    oss << "Number of time steps for random walks: " << NumTimeSteps_Dispersion << endl;
+    oss << "Number of particles: " << NumParticlesRandomWalk << endl;
+    oss << "Factor_mean_time_in_grid: " << Factor_mean_time_in_grid << endl;
+    oss << "LengthScale: " << LengthScale << endl;
+    oss << "Pe: " << Pe << endl;
+    oss << "The spacing of control planes: " << ControlPlaneSpacing << endl;
+    oss << "IfoutputMsd: " << (IfoutputMsd == true ? "true" : "false") << endl;
+    oss << "IfoutputParticleInfoAllsteps: " << (IfoutputParticleInfoAllsteps == false ? "FPTCurve" : "OutputAll") << endl;
+    oss << "injectionMode: " << injectionMode << endl;
+    oss << "InjectionPlane: " << (IfInjectAt_Center ? InjectionPlane : 0.5 * L) << endl;
+    oss << "If_ReRun_: " << (If_ReRun_ ? "true" : "false") << endl;
+    oss.close();
 
     int perco_dir = 2;
     LengthScale_Over_Pe = LengthScale / Pe;
@@ -146,7 +158,10 @@ int main(int argc, char *argv[])
         {
             try
             {
-                system("echo \" \" > ../log.txt");
+                string GGF = "echo \" \" > ../" + LogFile;
+
+                system(GGF.c_str());
+
                 cout << "DSIZE: " << DSIZE << ", j = " << j << endl;
                 //-----------if a mesh h5 exists ----
                 // then the DFN is percolative
@@ -436,9 +451,11 @@ int main(int argc, char *argv[])
                                                               DeltaT,                 // delta_T_ii
                                                               DiffusionLocal,
                                                               "Particle_tracking",
-                                                              "Flux-weighted",
+                                                              injectionMode,
                                                               recordMode,
-                                                              false, 1, false, ControlPlaneSpacing, IfoutputMsd};
+                                                              false, 1, false, ControlPlaneSpacing, IfoutputMsd,
+                                                              IfInjectAt_Center,
+                                                              InjectionPlane};
                     p.MatlabPlot("MHFEM_.h5", "ParticlesDFNMatlab.m", mesh, fem, L, DomainDimensionRatio, true, "ParticlesDFN");
                 }
                 else
@@ -464,8 +481,30 @@ int main(int argc, char *argv[])
                 cout << "cuDFNsys::ExceptionsPause\n";
                 cout << e.what() << endl;
                 cout << path2 << endl;
-                system("rm -rf *.h5 ParticlePositionResult");
-                j = 0;
+                if (!If_ReRun_)
+                {
+                    system("rm -rf *.h5 ParticlePositionResult");
+                    j = 0;
+                }
+                else
+                {
+                    string vccy = "result=$(grep \"Loop times is too large!\" ../" + LogFile + ")";
+                    int status = system(vccy.c_str());
+
+                    if (status == 0)
+                    {
+                        system("echo $(date +%d-%m-%y---%T) >> ../recordTime_and_Error.log");
+                        string ERDS = "echo \"ReRunTheSameDFN_Transport\" >> ../recordTime_and_Error.log";
+                        system(ERDS.c_str());
+                        //exit(0);
+                    }
+                    else
+                    {
+                        system("rm -rf *.h5 ParticlePositionResult");
+                        j = 0;
+                        //exit(0);
+                    }
+                }
 
                 system("echo $(date +%d-%m-%y---%T) >> ../recordTime_and_Error.log");
                 string ERDS = "echo \"\t" + e.what() + "\n\n\" >> ../recordTime_and_Error.log";

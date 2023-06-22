@@ -101,7 +101,7 @@ public:
                       int Nproc = 10,
                       bool record_time = false, // record running time
                       T SpacingOfControlPlanes = 10,
-                      bool IfOutputMSD = true);
+                      bool IfOutputMSD = true, bool IfInitCenterDomain = false, T InjectionPlane = 0);
 
     void ParticleMovement(const int &init_NO_STEP,
                           const int &NumTimeStep,
@@ -161,7 +161,7 @@ private:
     void InitilizeParticles(const int &NumOfParticles,
                             cuDFNsys::Mesh<T> mesh,
                             const cuDFNsys::MHFEM<T> &fem,
-                            const string &Injection_mode);
+                            const string &Injection_mode, bool IfInitCenterDomain = false, T InjectionPlane = 0);
 
     void IdentifyNeighborElements(cuDFNsys::Mesh<T> mesh);
 };

@@ -44,6 +44,10 @@ int main(int argc, char *argv[])
         _DataType_ LengthScale_Over_Pe = atof(argv[2]) / atof(argv[3]);
         int NumTimeSteps_Dispersion = atoi(argv[4]);
         int NumParticlesRandomWalk = atoi(argv[5]);
+        string injectionMode = argv[6]; // Flux-weighted or Resident
+        string OutputMode = argv[7];    // OutputAll or FPTCurve
+        bool IfInjectAt_Center = (atoi(argv[8]) == 0 ? false : true);
+        _DataType_ InjectionPlane = atof(argv[9]); 
 
         int perco_dir = 2;
 
@@ -110,14 +114,14 @@ int main(int argc, char *argv[])
                                                Percolation_cluster, false, true, true, true,
                                                L, perco_dir, true, "DFN_I", DomainDimensionRatio};
 
-        std::vector<double> Data1(14);
-        cuDFNsys::GetStatistics<double>(Frac_verts_host,
-                                        Intersection_map,
-                                        ListClusters,
-                                        Percolation_cluster, L, Data1[0], Data1[1], Data1[2], Data1[3],
-                                        Data1[4], Data1[5], Data1[6], Data1[7], Data1[8], Data1[9],
-                                        Data1[10], Data1[11], Data1[12], Data1[13]);
-
+        // std::vector<double> Data1(14);
+        // cuDFNsys::GetStatistics<double>(Frac_verts_host,
+        //                                 Intersection_map,
+        //                                 ListClusters,
+        //                                 Percolation_cluster, L, Data1[0], Data1[1], Data1[2], Data1[3],
+        //                                 Data1[4], Data1[5], Data1[6], Data1[7], Data1[8], Data1[9],
+        //                                 Data1[10], Data1[11], Data1[12], Data1[13]);
+        //
         Intersection_map.clear();
         ListClusters.clear();
         Percolation_cluster.clear();
@@ -236,9 +240,9 @@ int main(int argc, char *argv[])
                                                       DeltaT,                 // delta_T_ii
                                                       DiffusionLocal,
                                                       "Particle_tracking",
-                                                      "Flux-weighted",
-                                                      "FPTCurve",
-                                                      false, 1, false, 10000, true};
+                                                      injectionMode, // Flux-weighted or Resident
+                                                      OutputMode,
+                                                      false, 1, false, 10000, true, IfInjectAt_Center, InjectionPlane};
             p.MatlabPlot("MHFEM_.h5", "ParticlesDFNMatlab.m", mesh, fem, L, DomainDimensionRatio, true, "ParticlesDFN");
         }
     }
