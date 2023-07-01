@@ -5,10 +5,17 @@ _cuDFNsys_ is an open-source CUDA library (under the GPL license) for DFN genera
 _cuDFNsys_ does not support the GUI and can only run on Ubuntu. _cuDFNsys_ is not friendly to users unfamiliar with Linux, C++, Make and CMake.
 
 <p align="center">
-  <img width="300" src="https://github.com/qq1012510777/cuDFNsys/blob/main/moive_particlesII.gif">
+  <img width="500" src="https://github.com/qq1012510777/cuDFNsys/blob/main/moive_particlesII.gif">
 </p>
 <p align="center">
     <em>Figure 1. Dispersion in a DFN with 300 000 particles. The movement of particles is purely driven by the advection. Left: the DFN and hydraulic head field. Right: the particle spreading. </em>
+</p>
+
+<p align="center">
+  <img width="500" src="https://github.com/qq1012510777/cuDFNsys/blob/main/moive_particles_Diffusion_dominated.gif">
+</p>
+<p align="center">
+    <em>Figure 2. Diffusion-dominated dispersion in a DFN with 300 000 particles. The Peclet number is one. Left: the DFN and hydraulic head field. Right: the particle spreading. The particles initialize at a plane with z = 0. </em>
 </p>
 
 # Authors
