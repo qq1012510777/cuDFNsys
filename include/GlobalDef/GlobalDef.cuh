@@ -59,8 +59,8 @@ using namespace std;
 #define _TOL_IfTwoEndsDirchlet 1e-7
 
 __device__ const float _TOL_ParticleOnGridBound = 1e-3;
-__device__ const uint _SizeOfArray_CrossedGlobalEdge_ = 50;
+__device__ const uint _SizeOfArray_CrossedGlobalEdge_ = 45;
 
 const uint _NumOfSharedEleAtMost = 4;
 const uint _NumOfNeighborEleAtMost = 80;
-const uint _ParTran_MaxLoopTimes = 50;
+const uint _ParTran_MaxLoopTimes = 200;

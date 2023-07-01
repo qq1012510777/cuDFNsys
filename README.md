@@ -1,6 +1,6 @@
 # cuDFNsys
 
-_cuDFNsys_ is an open-source CUDA library (under the GPL license) for DFN generations. It is also able to simulate flow (steady-state) and particle transport in DFNs, based on the mixed hybrid finite element method and particle tracking algorithm.
+_cuDFNsys_ is an open-source CUDA library (under the GPL license) for DFN generations. It is also able to simulate flow (steady-state) and particle transport in DFNs, based on the mixed hybrid finite element method and particle tracking algorithm. _cuDFNsys_ contains around 10 000 lines of codes (counted on June 29th, 2023).
 
 _cuDFNsys_ does not support the GUI and can only run on Ubuntu. _cuDFNsys_ is not friendly to users unfamiliar with Linux, C++, Make and CMake.
 
@@ -8,7 +8,7 @@ _cuDFNsys_ does not support the GUI and can only run on Ubuntu. _cuDFNsys_ is no
   <img width="300" src="https://github.com/qq1012510777/cuDFNsys/blob/main/moive_particlesII.gif">
 </p>
 <p align="center">
-    <em>Figure 1. Dispersion in a DFN with a column-like domain with 500 000 particles. The movement of particles is purely driven by the advection. Left: the DFN and hydraulic head field. Right: the particle spreading. </em>
+    <em>Figure 1. Dispersion in a DFN with 300 000 particles. The movement of particles is purely driven by the advection. Left: the DFN and hydraulic head field. Right: the particle spreading. </em>
 </p>
 
 # Authors
@@ -103,4 +103,4 @@ _include_: header files containing declarations of functions/classes
 
 _src_: source files containing definitions of functions/classes
 
-Other directories are all about my personal examples (user's interfaces), with different purposes, meanwhile showing that how to call _cuDFNsys_ functions, with cmake and other tools.
+Other directories are all about my personal examples (user's interfaces), with different purposes, meanwhile showing that how to call _cuDFNsys_ functions, with `make` and other tools.

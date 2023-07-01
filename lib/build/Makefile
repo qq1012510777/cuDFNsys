@@ -1500,6 +1500,33 @@ home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.s:
 	$(MAKE) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.s
 .PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.s
 
+home/tingchangyin/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.o: home/tingchangyin/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.o
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.o
+
+# target to build an object file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.o:
+	$(MAKE) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.o
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.o
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.i: home/tingchangyin/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.i
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.i
+
+# target to preprocess a source file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.i:
+	$(MAKE) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.i
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.i
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.s: home/tingchangyin/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.s
+
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.s
+
+# target to generate assembly for a file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.s:
+	$(MAKE) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.s
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.s
+
 home/tingchangyin/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.o: home/tingchangyin/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.o
 
 .PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.o
@@ -1878,6 +1905,9 @@ help:
 	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleTransport.o"
 	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleTransport.i"
 	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/ParticleTransport.s"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.o"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.i"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.s"
 	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.o"
 	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.i"
 	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.s"

@@ -17,10 +17,9 @@
 *****************************************************************************/
 
 ///////////////////////////////////////////////////////////////////
-// NAME:              ParticleMovementOneTimeStepGPUKernel.cuh
+// NAME:              RandomWalkerGeometryFunctions.cuh
 //
-// PURPOSE:           GPU kernel function to move particles
-//                    in one time step
+// PURPOSE:           some geometry-related functions for random walkers
 //
 // FUNCTIONS/OBJECTS: ParticleMovementOneTimeStepGPUKernel
 //
@@ -35,36 +34,25 @@
 #include "../MatrixManipulation/MatrixManipulation.cuh"
 #include "../Mesh/EleCoor.cuh"
 #include "../RandomFunction/RandomFunction.cuh"
-#include "AngleBetweenTwoNeighboringTriangles.cuh"
-#include "EdgeToEle.cuh"
-#include "IdentifyParticleCrossesWhichEdge.cuh"
-#include "IfParticleOnBoundOfElement.cuh"
-#include "IfParticlePositionInNeighboringElement.cuh"
-#include "IfParticlePositionNearOneVertexOfElement.cuh"
-#include "Particle.cuh"
-#include "ParticleReflection.cuh"
-#include "RandomWalkerGeometryFunctions.cuh"
-#include "Roate2DPositionTo3D.cuh"
-#include "RotationRemainningTrajectoryBetweenTwo3DTriangles.cuh"
-#include "WhichElementToGo.cuh"
 
+// ramdom walker geometry functions
 namespace cuDFNsys
 {
 template <typename T>
-__global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
-                                                     T delta_T_,
-                                                     T Dispersion_local,
-                                                     cuDFNsys::Particle<T> *P_DEV,
-                                                     cuDFNsys::Fracture<T> *Frac_DEV,
-                                                     cuDFNsys::EdgeToEle *EdgesSharedEle_DEV,
-                                                     cuDFNsys::EleCoor<T> *Coordinate2D_Vec_dev_ptr,
-                                                     //cuDFNsys::NeighborEle *NeighborEleOfOneEle_dev_ptr,
-                                                     uint *EleToFracID_ptr,
-                                                     T *velocity_ptr,
-                                                     uint Dir_flow,
-                                                     T outletcoordinate,
-                                                     int count,
-                                                     int numElements,
-                                                     uint stepNO,
-                                                     uint *Particle_runtime_error_dev_pnt, uint NUMParticlesInTotal);
+__host__ __device__ uint2 IfRandomWalkLieOnBorderTriangle(cuDFNsys::Vector2<T> p,
+                                                          cuDFNsys::Vector2<T> Triangle[3],
+                                                          T Tol);
+
+template <typename T>
+__host__ __device__ int Sgn(const T &x);
+
+template <typename T>
+__host__ __device__ bool WhichEdgeDoesTrajectoryIntersect(cuDFNsys::Vector2<T> pp[2],
+                                                          cuDFNsys::Vector2<T> Triangle[3],
+                                                          uint Result[4]);
+
+template <typename T>
+__host__ __device__ cuDFNsys::Vector3<T> IntersectionLineLine2D(cuDFNsys::Vector2<T> pp[2],
+                                                                cuDFNsys::Vector2<T> cc[2]);
+
 }; // namespace cuDFNsys

@@ -243,7 +243,7 @@ int main(int argc, char *argv[])
                                                       injectionMode, // Flux-weighted or Resident
                                                       OutputMode,
                                                       false, 1, false, 10000, true, IfInjectAt_Center, InjectionPlane};
-            p.MatlabPlot("MHFEM_.h5", "ParticlesDFNMatlab.m", mesh, fem, L, DomainDimensionRatio, true, "ParticlesDFN");
+            p.MatlabPlot("MHFEM_.h5", "particlesDFNMatlab.m", mesh, fem, L, DomainDimensionRatio, true, "particlesDFN");
         }
     }
     catch (cuDFNsys::ExceptionsIgnore &e)

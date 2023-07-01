@@ -457,6 +457,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(const int &init_NO_STEP,
                                                                                     Particle_runtime_error_dev_pnt,
                                                                                     this->NumParticles);
         cudaDeviceSynchronize();
+
         Particle_runtime_error = Particle_runtime_error_dev;
 
         double ielaps_b = cuDFNsys::CPUSecond() - istart_b;
@@ -479,7 +480,11 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(const int &init_NO_STEP,
             throw cuDFNsys::ExceptionsPause("Error happens when particle is moving!\n");
         }
 
+        /// sort the particle vector here
+        thrust::sort(ParticlePlumes_DEV.begin(), ParticlePlumes_DEV.end());
         this->ParticlePlumes = ParticlePlumes_DEV;
+        // for (size_t jk = 0; jk < this->ParticlePlumes.size(); ++jk)
+        // cout << (jk == 0 ? "\n\t" : "\t") << this->ParticlePlumes[jk].ElementID << (jk == this->ParticlePlumes.size() - 1 ? "\n\n" : "\n");
 
         double istart = cuDFNsys::CPUSecond();
         //cout << 3 << endl;

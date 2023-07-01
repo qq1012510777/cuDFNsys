@@ -1052,7 +1052,7 @@ __global__ void cuDFNsys::FractureTwoIntersectOrNot(cuDFNsys::Fracture<T> *verts
     if (i == 0)
         verts[i].Conductivity = (T)(pow(1.0e-3, 3.0) / 12.0);
     else
-        verts[i].Conductivity = (T)(pow(1.0e-4, 3.0) / 12.0);
+        verts[i].Conductivity = (T)(pow(2.0e-3, 3.0) / 12.0);
 
     if (i == 0)
         verts[i].NormalVec = cuDFNsys::MakeVector3((T)0., -(T)(1.0 / tan(20.f / 180.f * M_PI)), (T)1.);

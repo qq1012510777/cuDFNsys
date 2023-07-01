@@ -47,9 +47,9 @@ int main(int argc, char *argv[])
         _DataType_ maxGrid = 0;
 
         L = 30;
-        DSIZE = 2;
+        DSIZE = 1;
         minGrid = 1;
-        maxGrid = 5;
+        maxGrid = 2;
 
         int perco_dir = 2;
 
@@ -66,17 +66,23 @@ int main(int argc, char *argv[])
         time(&t);
 
         cout << "generating fractures" << endl;
-        if (2 == 1)
+        if (DSIZE == 1)
+        {
             cuDFNsys::FracturesCrossedVertical<_DataType_><<<DSIZE / 256 + 1, 256>>>(Frac_verts_device_ptr,
                                                                                      (unsigned long)t,
                                                                                      DSIZE,
                                                                                      L);
+            // cuDFNsys::FracturesIncomplete<_DataType_><<<DSIZE / 256 + 1, 256>>>(Frac_verts_device_ptr,
+            //                                                                     (unsigned long)t,
+            //                                                                     DSIZE,
+            //                                                                     L);
+        }
         else
             cuDFNsys::FractureTwoIntersectOrNot<_DataType_><<<DSIZE / 256 + 1, 256>>>(Frac_verts_device_ptr,
                                                                                       (unsigned long)t,
                                                                                       DSIZE,
                                                                                       L,
-                                                                                      false);
+                                                                                      true);
 
         cudaDeviceSynchronize();
 
@@ -188,7 +194,7 @@ int main(int argc, char *argv[])
             //---------------------
             int i = 0;
             double mean_grid_area = mesh.MatlabPlot("DFN_mesh_" + to_string(i + 1) + ".h5",
-                                                    "N",
+                                                    "DFN_mesh.m",
                                                     Frac_verts_host, L, true, true, true, "DFN_mesh_" + to_string(i + 1));
             double2 TGH = fem.MatlabPlot("MHFEM_" + to_string(i + 1) + ".h5",
                                          "MHFEM_" + to_string(i + 1) + ".m",
@@ -233,12 +239,12 @@ int main(int argc, char *argv[])
                                                       DiffusionLocal,
                                                       "Particle_tracking",
                                                       "Flux-weighted",
-                                                      "FPTCurve",
+                                                      "OutputAll",
                                                       false,
                                                       1,
                                                       false,
                                                       1000,
-                                                      true};
+                                                      true, 0, 5};
 
             p.MatlabPlot("MHFEM_" + to_string(i + 1) + ".h5", "particle.m", mesh, fem, L);
         }
