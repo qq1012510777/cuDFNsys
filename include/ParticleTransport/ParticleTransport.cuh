@@ -101,7 +101,10 @@ public:
                       int Nproc = 10,
                       bool record_time = false, // record running time
                       T SpacingOfControlPlanes = 10,
-                      bool IfOutputMSD = true, bool IfInitCenterDomain = false, T InjectionPlane = 0);
+                      bool IfOutputMSD = true,
+                      bool IfInitCenterDomain = false,
+                      T InjectionPlane = 0,
+                      bool If_completeMixing = true);
 
     void ParticleMovement(const int &init_NO_STEP,
                           const int &NumTimeStep,
@@ -112,7 +115,7 @@ public:
                           thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
                           cuDFNsys::Mesh<T> mesh,
                           const cuDFNsys::MHFEM<T> &fem,
-                          T outletcoordinate);
+                          T outletcoordinate, bool If_completeMixing = true);
 
     void ParticleMovementCPU(const int &init_NO_STEP,
                              const int &NumTimeStep,

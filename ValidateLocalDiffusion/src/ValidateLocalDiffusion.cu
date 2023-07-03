@@ -36,6 +36,15 @@ int main(int argc, char *argv[])
 {
     try
     {
+        // to validate dispersion in two intersected fractures / or two non-intersected fractures
+        // Re = 0.01 LengthScale = 30
+        // NUMstep = 50
+        // Factor_mean_time_in_grid = 1e5
+        int NumParticles = atoi(argv[1]);
+        double Factor_mean_time_in_grid = atof(argv[2]);
+        double LengthScale_Over_Pe = atof(argv[3]) / atof(argv[4]);
+        uint NUMstep = atoi(argv[5]);
+
         double istart = cuDFNsys::CPUSecond();
 
         int dev = 0;
@@ -47,7 +56,7 @@ int main(int argc, char *argv[])
         _DataType_ maxGrid = 0;
 
         L = 30;
-        DSIZE = 1;
+        DSIZE = 2; //------------------------------------------
         minGrid = 1;
         maxGrid = 2;
 
@@ -206,10 +215,6 @@ int main(int argc, char *argv[])
             cout << "The maximum velocity of all elements is " << maxV << endl;
             cout << "The mean velocity of all elements is " << meanV << endl;
 
-            int NumParticles = atoi(argv[1]);
-            double Factor_mean_time_in_grid = atof(argv[2]);
-            double LengthScale_Over_Pe = atof(argv[3]) / atof(argv[4]);
-
             double DiffusionLocal = LengthScale_Over_Pe * meanV;
             double meanTime = pow(mean_grid_area, 0.5) / maxV;
             double DeltaT = meanTime / Factor_mean_time_in_grid;
@@ -228,7 +233,7 @@ int main(int argc, char *argv[])
 
             cout << "Particle transport ing ...\n";
             // return 0;
-            cuDFNsys::ParticleTransport<_DataType_> p{atoi(argv[5]), // number of time step
+            cuDFNsys::ParticleTransport<_DataType_> p{(int)NUMstep, // number of time step
                                                       Frac_verts_host,
                                                       mesh,
                                                       fem,
@@ -244,7 +249,7 @@ int main(int argc, char *argv[])
                                                       1,
                                                       false,
                                                       1000,
-                                                      true, 0, 5};
+                                                      true, true, 2, false};
 
             p.MatlabPlot("MHFEM_" + to_string(i + 1) + ".h5", "particle.m", mesh, fem, L);
         }

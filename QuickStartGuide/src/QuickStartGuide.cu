@@ -376,22 +376,22 @@ int main(int argc, char *argv[])
 
             istart = cuDFNsys::CPUSecond();
 
-            cuDFNsys::ParticleTransport<_DataType_> p{NumTimeStep,                                 // number of time steps
-                                                      Frac_verts_host,                             // fractures
-                                                      mesh,                                        // mesh
-                                                      fem,                                         // fem
-                                                      (uint)perco_dir,                             // percolation direction
-                                                      -0.5 * (&DomainDimensionRatio.x)[perco_dir], // the target plane, z = -0.5 * L; it could be changed if the percolation direction is not along the z axis
-                                                      NumParticles,                                // number of particles
-                                                      DeltaT,                                      // delta t
-                                                      DiffusionMole,                               // molecular diffusion
-                                                      "Particle_tracking",                         // use particle tracking algorithm
-                                                      "Flux-weighted",                             // injection mode
-                                                      "OutputAll",                                 // output all information
-                                                      false,                                       // if use CPU?
-                                                      0,                                           // number of CPU processors
-                                                      false,                                       // if record run time
-                                                      50};                                         // the spacing of the linear distance of control planes
+            cuDFNsys::ParticleTransport<_DataType_> p{NumTimeStep,                                     // number of time steps
+                                                      Frac_verts_host,                                 // fractures
+                                                      mesh,                                            // mesh
+                                                      fem,                                             // fem
+                                                      (uint)perco_dir,                                 // percolation direction
+                                                      -0.5 * (&DomainDimensionRatio.x)[perco_dir] * L, // the target plane, z = -0.5 * L; it could be changed if the percolation direction is not along the z axis
+                                                      NumParticles,                                    // number of particles
+                                                      DeltaT,                                          // delta t
+                                                      DiffusionMole,                                   // molecular diffusion
+                                                      "Particle_tracking",                             // use particle tracking algorithm
+                                                      "Flux-weighted",                                 // injection mode
+                                                      "OutputAll",                                     // output all information
+                                                      false,                                           // if use CPU?
+                                                      0,                                               // number of CPU processors
+                                                      false,                                           // if record run time
+                                                      50};                                             // the spacing of the linear distance of control planes
 
             p.MatlabPlot("MHFEM.h5",            // h5 file of mhfem
                          "ParticlesMovement.m", // matlab script

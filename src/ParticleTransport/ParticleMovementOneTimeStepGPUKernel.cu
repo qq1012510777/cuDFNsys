@@ -40,7 +40,9 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
                                                                int count,
                                                                int numElements,
                                                                uint stepNO,
-                                                               uint *Particle_runtime_error_dev_pnt, uint NUMParticlesInTotal)
+                                                               uint *Particle_runtime_error_dev_pnt,
+                                                               uint NUMParticlesInTotal,
+                                                               bool If_completeMixing)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -83,6 +85,7 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
 
     bool IfUpdateTrajectoryLastStep = true;
     bool HaveRandomWalkerBeenThroughTrace = false;
+    bool HaveRandomWalkerBeenReflected = false;
 
     T delta_T_consume = 0;
     T ratio_diffusion = 1;
@@ -90,6 +93,8 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
       diffusion_term_y = (T)1.0f * z2 * sqrt((T)2.0f * Dispersion_local * delta_T_);
 
     T normLastTrajectory = 0;
+
+    T _ParTran_MaxLoopTimes = 1000;
 
     for (uint Loop_time = 1;; Loop_time++)
     {
@@ -414,6 +419,8 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
                 IfUpdateTrajectoryLastStep = false;
                 normLastTrajectory = pow((TargPos.x - InitPos.x) * (TargPos.x - InitPos.x) + (TargPos.y - InitPos.y) * (TargPos.y - InitPos.y), 0.5);
                 // goto Debug100;
+                HaveRandomWalkerBeenReflected = true;
+
                 continue;
             }
         }
@@ -428,6 +435,9 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
             EleID = (EdgesSharedEle_DEV[GlobalEdgeNO].EleID[0] == EleID ? EdgesSharedEle_DEV[GlobalEdgeNO].EleID[1] : EdgesSharedEle_DEV[GlobalEdgeNO].EleID[0]);
 
             // P_DEV[i].AccumDisplacement += norm_FinishedTrajec;
+
+            if ((HaveRandomWalkerBeenThroughTrace || HaveRandomWalkerBeenReflected) && Dispersion_local == 0)
+                IfUpdateTrajectoryLastStep = true;
 
             continue;
         }
@@ -467,7 +477,7 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
                                           newELEID_,
                                           newFracID_,
                                           IndexLocal,
-                                          ifAllsharedEdgeVelocityPositive);
+                                          ifAllsharedEdgeVelocityPositive, If_completeMixing);
             // printf("ifAllsharedEdgeVelocityPositive: %d\n", ifAllsharedEdgeVelocityPositive);
 
             if (ifAllsharedEdgeVelocityPositive == false && (newELEID_ == -1 || newFracID_ == -1 || IndexLocal == -1))
@@ -497,6 +507,7 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
                 // P_DEV[i].AccumDisplacement += norm_FinishedTrajec;
 
                 normLastTrajectory = pow((TargPos.x - InitPos.x) * (TargPos.x - InitPos.x) + (TargPos.y - InitPos.y) * (TargPos.y - InitPos.y), 0.5);
+                HaveRandomWalkerBeenReflected = true;
 
                 continue;
             };
@@ -714,7 +725,13 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
         // Particle_runtime_error_dev_pnt[i] = 1;
 
         // new point 3D
-        cuDFNsys::Vector3<T> TargPos3D = cuDFNsys::MakeVector3(P_DEV[i].Position2D.x, P_DEV[i].Position2D.y, (T)0.0);
+        cuDFNsys::Vector3<T> TargPos3D;
+
+        if (P_DEV[i].ParticleID >= 0)
+            TargPos3D = cuDFNsys::MakeVector3(P_DEV[i].Position2D.x, P_DEV[i].Position2D.y, (T)0.0);
+        else
+            TargPos3D = cuDFNsys::MakeVector3(TargPos.x, TargPos.y, (T)0.0);
+
         T RK_1[3][3];
         Frac_DEV[FracID].RoationMatrix(RK_1, 23);
         TargPos3D = cuDFNsys::ProductSquare3Vector3<T>(RK_1, TargPos3D);
@@ -732,8 +749,9 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
         Init_pre_3D.y += Frac_DEV[Pre_fractureIDID].Center.y;
         Init_pre_3D.z += Frac_DEV[Pre_fractureIDID].Center.z;
 
-        P_DEV[i].AccumDisplacement = sqrt((TargPos3D.x - Init_pre_3D.x) * (TargPos3D.x - Init_pre_3D.x) + (TargPos3D.y - Init_pre_3D.y) * (TargPos3D.y - Init_pre_3D.y) +
-                                          (TargPos3D.z - Init_pre_3D.z) * (TargPos3D.z - Init_pre_3D.z));
+        P_DEV[i].AccumDisplacement += sqrt((TargPos3D.x - Init_pre_3D.x) * (TargPos3D.x - Init_pre_3D.x) + (TargPos3D.y - Init_pre_3D.y) * (TargPos3D.y - Init_pre_3D.y) +
+                                           (TargPos3D.z - Init_pre_3D.z) * (TargPos3D.z - Init_pre_3D.z));
+        //printf("%.30f\n", P_DEV[i].AccumDisplacement);
 
         return;
     }
@@ -761,7 +779,8 @@ template __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel<double>(
                                                                                 double outletcoordinate,
                                                                                 int count,
                                                                                 int numElements,
-                                                                                uint stepNO, uint *Particle_runtime_error_dev_pnt, uint NUMParticlesInTotal);
+                                                                                uint stepNO, uint *Particle_runtime_error_dev_pnt, uint NUMParticlesInTotal,
+                                                                                bool If_completeMixing);
 template __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel<float>(unsigned long seed,
                                                                                float delta_T_,
                                                                                float Dispersion_local,
@@ -776,4 +795,4 @@ template __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel<float>(u
                                                                                float outletcoordinate,
                                                                                int count,
                                                                                int numElements,
-                                                                               uint stepNO, uint *Particle_runtime_error_dev_pnt, uint NUMParticlesInTotal);
+                                                                               uint stepNO, uint *Particle_runtime_error_dev_pnt, uint NUMParticlesInTotal, bool If_completeMixing);

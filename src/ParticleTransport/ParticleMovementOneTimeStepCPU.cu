@@ -556,6 +556,7 @@ void cuDFNsys::ParticleMovementOneTimeStepCPU(unsigned long seed,
                 //printf("EdgesSharedEle_DEV[GlobalEdgeNO].EleID[p]: %d, fracid: %d\n", EdgesSharedEle_DEV[GlobalEdgeNO].EleID[p], EleToFracID_ptr[EdgesSharedEle_DEV[GlobalEdgeNO].EleID[p] - 1]);
 
                 bool ifAllsharedEdgeVelocityPositive = false;
+                bool If_completeMixing = true;
                 cuDFNsys::WhichElementToGo<T>(EleID,
                                               NumOfElesSharedEdge,
                                               Dispersion_local,
@@ -569,7 +570,7 @@ void cuDFNsys::ParticleMovementOneTimeStepCPU(unsigned long seed,
                                               newELEID_,
                                               newFracID_,
                                               IndexLocal,
-                                              ifAllsharedEdgeVelocityPositive);
+                                              ifAllsharedEdgeVelocityPositive, If_completeMixing);
                 // printf("ifAllsharedEdgeVelocityPositive: %d\n", ifAllsharedEdgeVelocityPositive);
 
                 if (ifAllsharedEdgeVelocityPositive == false && (newELEID_ == -1 || newFracID_ == -1 || IndexLocal == -1))

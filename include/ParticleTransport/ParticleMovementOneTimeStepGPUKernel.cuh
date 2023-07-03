@@ -66,5 +66,5 @@ __global__ void ParticleMovementOneTimeStepGPUKernel(unsigned long seed,
                                                      int count,
                                                      int numElements,
                                                      uint stepNO,
-                                                     uint *Particle_runtime_error_dev_pnt, uint NUMParticlesInTotal);
+                                                     uint *Particle_runtime_error_dev_pnt, uint NUMParticlesInTotal, bool If_completeMixing);
 }; // namespace cuDFNsys

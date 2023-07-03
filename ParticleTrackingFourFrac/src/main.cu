@@ -173,16 +173,34 @@ int main(int argc, char *argv[])
                            Frac_verts_host, mesh, L, true, "MHFEM_" + to_string(i + 1));
             //---------------
             lk.OutputFractures("FracturesForParticle.h5", Frac_verts_host, L);
-            return 0;
+            // return 0;
             cout << "Particle transport ing ...\n";
 
-            cuDFNsys::ParticleTransport<_DataType_> p{atoi(argv[1]),             // number of particle
-                                                      atoi(argv[2]),             // number of time steps
-                                                      (_DataType_)atof(argv[3]), // delta T
-                                                      (_DataType_)atof(argv[4]), // molecular diffusion
-                                                      Frac_verts_host, mesh, fem, (uint)perco_dir, -0.5f * L,
-                                                      "Particle_tracking", "Flux-weighted"};
-            p.MatlabPlot("MHFEM_" + to_string(i + 1) + ".h5", "ParticleTracking.m", mesh, fem, L, true, "particlePy");
+            int NumTimeStep = atoi(argv[1]);
+            int NumParticles = atoi(argv[2]);
+            _DataType_ DeltaT = 1.1813e5;
+            _DataType_ DiffusionMole = 0.0;
+
+            double3 DomainDimensionRatio = make_double3(1, 1, 1);
+
+            cuDFNsys::ParticleTransport<_DataType_> p{NumTimeStep,                                     // number of time steps
+                                                      Frac_verts_host,                                 // fractures
+                                                      mesh,                                            // mesh
+                                                      fem,                                             // fem
+                                                      (uint)perco_dir,                                 // percolation direction
+                                                      -0.5 * (&DomainDimensionRatio.x)[perco_dir] * L, // the target plane, z = -0.5 * L; it could be changed if the percolation direction is not along the z axis
+                                                      NumParticles,                                    // number of particles
+                                                      DeltaT,                                          // delta t
+                                                      DiffusionMole,                                   // molecular diffusion
+                                                      "Particle_tracking",                             // use particle tracking algorithm
+                                                      "Flux-weighted",                                 // injection mode
+                                                      "OutputAll",                                     // output all information
+                                                      false,                                           // if use CPU?
+                                                      0,                                               // number of CPU processors
+                                                      false,                                           // if record run time
+                                                      50};                                             // the spacing of the linear distance of control planes
+
+            p.MatlabPlot("MHFEM_" + to_string(i + 1) + ".h5", "ParticleTracking.m", mesh, fem, L, DomainDimensionRatio, true, "particlePy");
         }
         //cudaDeviceReset();
         double ielaps = cuDFNsys::CPUSecond() - istart;

@@ -39,7 +39,7 @@ __host__ __device__ void cuDFNsys::WhichElementToGo(uint currentEleID,
                                                     int &NextElementID,
                                                     int &NextFracID,
                                                     int &IndexInLocal,
-                                                    bool &ifAllsharedEdgeVelocityPositive)
+                                                    bool &ifAllsharedEdgeVelocityPositive, bool If_completeMixing)
 {
     T TotalVeloc = 0;
     T veloc_vec[_NumOfSharedEleAtMost];
@@ -108,7 +108,7 @@ __host__ __device__ void cuDFNsys::WhichElementToGo(uint currentEleID,
 
     //printf("Dispersion_local: %.40f, TotalVeloc: %.40f\n", Dispersion_local,TotalVeloc);
     if (/*Dispersion_local == 0 &&*/ // commented Apr-13-2023 // particle tracking
-        TotalVeloc == 0)         // all element normal velocities are positive
+        TotalVeloc == 0)             // all element normal velocities are positive
     {
         ifAllsharedEdgeVelocityPositive = true;
         return;
@@ -168,17 +168,17 @@ __host__ __device__ void cuDFNsys::WhichElementToGo(uint currentEleID,
     // equal probability !!!!!!
     // equal probability !!!!!!
     // I do not want to use it
-    //if (Dispersion_local > 0)
-    //{
-    //    //printf("ds\n");
-    //    // for (uint i = 0; i < NumSharedEle - 1; ++i)
-    //    // veloc_vec[i] = 1.0 / (NumSharedEle - 1) + (i > 0 ? veloc_vec[i - 1] : 0);
-    //}
+    if (!If_completeMixing)
+    {
+        // printf("ds\n");
+        for (uint i = 0; i < NumSharedEle - 1; ++i)
+            veloc_vec[i] = 1.0 / (NumSharedEle - 1) + (i > 0 ? veloc_vec[i - 1] : 0);
+    }
 
     //printf("element velocity weight 2: ");
-    //for (uint i = 0; i < NumSharedEle - 1; ++i)
-    //   printf("%.40f, ", veloc_vec[i]);
-    //printf("\n\n");
+    // for (uint i = 0; i < NumSharedEle - 1; ++i)
+    //     printf("%.40f, ", veloc_vec[i]);
+    // printf("\n\n");
 
     for (uint i = 0; i < NumSharedEle - 1; ++i)
     {
@@ -220,7 +220,7 @@ template __host__ __device__ void cuDFNsys::WhichElementToGo<double>(uint curren
                                                                      int &NextElementID,
                                                                      int &NextFracID,
                                                                      int &IndexInLocal,
-                                                                     bool &ifAllsharedEdgeVelocityPositive);
+                                                                     bool &ifAllsharedEdgeVelocityPositive, bool If_completeMixing);
 template __host__ __device__ void cuDFNsys::WhichElementToGo<float>(uint currentEleID,
                                                                     uint NumSharedEle,
                                                                     float Dispersion_local,
@@ -234,4 +234,4 @@ template __host__ __device__ void cuDFNsys::WhichElementToGo<float>(uint current
                                                                     int &NextElementID,
                                                                     int &NextFracID,
                                                                     int &IndexInLocal,
-                                                                    bool &ifAllsharedEdgeVelocityPositive);
+                                                                    bool &ifAllsharedEdgeVelocityPositive, bool If_completeMixing);

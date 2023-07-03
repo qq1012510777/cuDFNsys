@@ -152,7 +152,8 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(const int &NumTimeStep,
                                                   T SpacingOfControlPlanes,
                                                   bool IfOutputMSD_,
                                                   bool IfInitCenterDomain,
-                                                  T InjectionPlane)
+                                                  T InjectionPlane,
+                                                  bool If_completeMixing)
 {
     //cuDFNsys::MatlabAPI M1;
     // if (recordMode != "OutputAll" && recordMode != "FPTCurve")
@@ -302,7 +303,7 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(const int &NumTimeStep,
                                    delta_T_, Dispersion_local,
                                    Particle_mode,
                                    Injection_mode,
-                                   Fracs, mesh, fem, outletcoordinate);
+                                   Fracs, mesh, fem, outletcoordinate, If_completeMixing);
         else
             this->ParticleMovementCPU(ExistingNumsteps + 1, NumTimeStep, delta_T_, Dispersion_local, Particle_mode,
                                       Injection_mode, Fracs, mesh, fem, outletcoordinate, Nproc);
@@ -342,7 +343,7 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(const int &NumTimeStep,
                                    Particle_mode_ii,
                                    Injection_mode_ii,
                                    Fracs, mesh, fem,
-                                   outletcoordinate);
+                                   outletcoordinate, If_completeMixing);
         else
             this->ParticleMovementCPU(1, NumTimeStep, delta_T_ii,
                                       Dispersion_local_ii,
@@ -365,7 +366,8 @@ template cuDFNsys::ParticleTransport<double>::ParticleTransport(const int &NumTi
                                                                 string Injection_mode_ii,
                                                                 string recordMode,
                                                                 bool if_cpu, int Nproc, bool record_time, double SpacingOfControlPlanes, bool IfOutputMSD_, bool IfInitCenterDomain,
-                                                                double InjectionPlane);
+                                                                double InjectionPlane,
+                                                                bool If_completeMixing);
 template cuDFNsys::ParticleTransport<float>::ParticleTransport(const int &NumTimeStep,
                                                                thrust::host_vector<cuDFNsys::Fracture<float>> Fracs,
                                                                cuDFNsys::Mesh<float> mesh,
@@ -379,7 +381,8 @@ template cuDFNsys::ParticleTransport<float>::ParticleTransport(const int &NumTim
                                                                string Injection_mode_ii,
                                                                string recordMode,
                                                                bool if_cpu, int Nproc, bool record_time, float SpacingOfControlPlanes, bool IfOutputMSD_, bool IfInitCenterDomain,
-                                                               float InjectionPlane);
+                                                               float InjectionPlane,
+                                                               bool If_completeMixing);
 
 // ====================================================
 // NAME:        ParticleMovement
@@ -397,7 +400,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(const int &init_NO_STEP,
                                                       thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
                                                       cuDFNsys::Mesh<T> mesh,
                                                       const cuDFNsys::MHFEM<T> &fem,
-                                                      T outletcoordinate)
+                                                      T outletcoordinate, bool If_completeMixing)
 {
     thrust::device_vector<cuDFNsys::Particle<T>> ParticlePlumes_DEV = this->ParticlePlumes;
     thrust::device_vector<cuDFNsys::Fracture<T>> Fracsvec_DEV = Fracs;
@@ -455,7 +458,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(const int &init_NO_STEP,
                                                                                     mesh.Element3D.size(),
                                                                                     i,
                                                                                     Particle_runtime_error_dev_pnt,
-                                                                                    this->NumParticles);
+                                                                                    this->NumParticles, If_completeMixing);
         cudaDeviceSynchronize();
 
         Particle_runtime_error = Particle_runtime_error_dev;
@@ -607,7 +610,8 @@ template void cuDFNsys::ParticleTransport<double>::ParticleMovement(const int &i
                                                                     thrust::host_vector<cuDFNsys::Fracture<double>> Fracs,
                                                                     cuDFNsys::Mesh<double> mesh,
                                                                     const cuDFNsys::MHFEM<double> &fem,
-                                                                    double outletcoordinate);
+                                                                    double outletcoordinate,
+                                                                    bool If_completeMixing);
 template void cuDFNsys::ParticleTransport<float>::ParticleMovement(const int &init_NO_STEP,
                                                                    const int &NumTimeStep,
                                                                    float delta_T_,
@@ -617,7 +621,8 @@ template void cuDFNsys::ParticleTransport<float>::ParticleMovement(const int &in
                                                                    thrust::host_vector<cuDFNsys::Fracture<float>> Fracs,
                                                                    cuDFNsys::Mesh<float> mesh,
                                                                    const cuDFNsys::MHFEM<float> &fem,
-                                                                   float outletcoordinate);
+                                                                   float outletcoordinate,
+                                                                   bool If_completeMixing);
 // ====================================================
 // NAME:        IfReachControlPlane
 // DESCRIPTION: If particles reached the control plane

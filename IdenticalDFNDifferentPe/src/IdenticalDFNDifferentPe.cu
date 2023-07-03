@@ -48,6 +48,7 @@ int main(int argc, char *argv[])
         string OutputMode = argv[7];    // OutputAll or FPTCurve
         bool IfInjectAt_Center = (atoi(argv[8]) == 0 ? false : true);
         _DataType_ InjectionPlane = atof(argv[9]); 
+        bool IfComplexMixing = (atoi(argv[10]) == 0 ? false : true);
 
         int perco_dir = 2;
 
@@ -242,7 +243,7 @@ int main(int argc, char *argv[])
                                                       "Particle_tracking",
                                                       injectionMode, // Flux-weighted or Resident
                                                       OutputMode,
-                                                      false, 1, false, 10000, true, IfInjectAt_Center, InjectionPlane};
+                                                      false, 1, false, 10000, true, IfInjectAt_Center, InjectionPlane, IfComplexMixing};
             p.MatlabPlot("MHFEM_.h5", "particlesDFNMatlab.m", mesh, fem, L, DomainDimensionRatio, true, "particlesDFN");
         }
     }

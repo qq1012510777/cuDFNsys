@@ -49,5 +49,5 @@ __host__ __device__ void WhichElementToGo(uint currentEleID,
                                           int &NextElementID,
                                           int &NextFracID,
                                           int &IndexInLocal,
-                                          bool &ifAllsharedEdgeVelocityPositive);
+                                          bool &ifAllsharedEdgeVelocityPositive, bool If_completeMixing);
 }; // namespace cuDFNsys
