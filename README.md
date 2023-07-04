@@ -15,7 +15,7 @@ _cuDFNsys_ does not support the GUI and can only run on Ubuntu. _cuDFNsys_ is no
   <img width="500" src="https://github.com/qq1012510777/cuDFNsys/blob/main/moive_particles_Diffusion_dominated.gif">
 </p>
 <p align="center">
-    <em>Figure 2. Diffusiondominated dispersion in a DFN with 300 000 particles. The Peclet number is 0.01. The length scale in the Peclet number is the mean value of fractures. Left: the DFN and hydraulic head field. Right: the particle spreading. The particles initialize at a plane with z = 0. </em>
+    <em>Figure 2. Diffusion-dominated dispersion in a DFN with 300 000 particles. The Peclet number is 0.01. The length scale in the Peclet number is the mean value of fracture sizes. Left: the DFN and hydraulic head field. Right: the particle spreading. The particles initialize at a plane with z = 0. </em>
 </p>
 
 # Authors

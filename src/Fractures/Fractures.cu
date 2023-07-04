@@ -602,7 +602,7 @@ template __global__ void cuDFNsys::FracturesBeta50Beta60<float>(cuDFNsys::Fractu
 
 // ====================================================
 // NAME:        FracturesIncomplete
-// DESCRIPTION: two incomplet fractures
+// DESCRIPTION: two incomplete fractures
 // AUTHOR:      Tingchang YIN
 // DATE:        20/04/2022
 // ====================================================

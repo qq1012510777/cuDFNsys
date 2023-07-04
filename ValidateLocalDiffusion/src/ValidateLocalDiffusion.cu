@@ -249,7 +249,7 @@ int main(int argc, char *argv[])
                                                       1,
                                                       false,
                                                       1000,
-                                                      true, true, 2, false};
+                                                      true, false, 0, false};
 
             p.MatlabPlot("MHFEM_" + to_string(i + 1) + ".h5", "particle.m", mesh, fem, L);
         }

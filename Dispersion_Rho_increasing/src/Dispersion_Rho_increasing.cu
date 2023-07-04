@@ -99,6 +99,7 @@ int main(int argc, char *argv[])
     _DataType_ InjectionPlane = atof(argv[31]);
     bool If_ReRun_ = atoi(argv[32]) == 0 ? false : true;
     string LogFile = argv[33];
+    bool IfComplexeMixing = atoi(argv[34]) == 0 ? false : true;
 
     string recordMode = IfoutputParticleInfoAllsteps == false ? "FPTCurve" : "OutputAll";
     _DataType_ P_in = L, P_out = 0;
@@ -127,6 +128,7 @@ int main(int argc, char *argv[])
     oss << "injectionMode: " << injectionMode << endl;
     oss << "InjectionPlane: " << (IfInjectAt_Center ? InjectionPlane : 0.5 * L) << endl;
     oss << "If_ReRun_: " << (If_ReRun_ ? "true" : "false") << endl;
+    oss << "IfComplexeMixing: " << (IfComplexeMixing ? "true" : "false") << endl;
     oss.close();
 
     int perco_dir = 2;
@@ -455,7 +457,7 @@ int main(int argc, char *argv[])
                                                               recordMode,
                                                               false, 1, false, ControlPlaneSpacing, IfoutputMsd,
                                                               IfInjectAt_Center,
-                                                              InjectionPlane};
+                                                              InjectionPlane, IfComplexeMixing};
                     p.MatlabPlot("MHFEM_.h5", "ParticlesDFNMatlab.m", mesh, fem, L, DomainDimensionRatio, true, "ParticlesDFN");
                 }
                 else
@@ -487,7 +489,7 @@ int main(int argc, char *argv[])
                     j = 0;
                 }
                 else
-                {
+                { // re-run
                     string vccy = "result=$(grep \"Loop times is too large!\" ../" + LogFile + ")";
                     int status = system(vccy.c_str());
 

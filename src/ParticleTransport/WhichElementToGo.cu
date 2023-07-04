@@ -90,7 +90,7 @@ __host__ __device__ void cuDFNsys::WhichElementToGo(uint currentEleID,
             T b_aperture = pow(conductivity_k * 12.0, 1.0 / 3.0);
             Veloc_p.x /= b_aperture, Veloc_p.y /= b_aperture;
 
-            // printf("velocity (LT^{-1}) center: %.40f, %.40f;\n", Veloc_p.x, Veloc_p.y);
+            // printf("EleID: (%d)velocity (LT^{-1}) center: %.40f, %.40f;\n", EleID, Veloc_p.x, Veloc_p.y);
 
             T norm_veloc = sqrt(Veloc_p.x * Veloc_p.x + Veloc_p.y * Veloc_p.y);
 
@@ -108,7 +108,8 @@ __host__ __device__ void cuDFNsys::WhichElementToGo(uint currentEleID,
 
     //printf("Dispersion_local: %.40f, TotalVeloc: %.40f\n", Dispersion_local,TotalVeloc);
     if (/*Dispersion_local == 0 &&*/ // commented Apr-13-2023 // particle tracking
-        TotalVeloc == 0)             // all element normal velocities are positive
+            TotalVeloc == 0 &&
+        If_completeMixing) // all element normal velocities are positive
     {
         ifAllsharedEdgeVelocityPositive = true;
         return;

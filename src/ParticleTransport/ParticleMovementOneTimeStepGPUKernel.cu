@@ -75,13 +75,13 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
     T z1 = curand_normal(&state),
       z2 = curand_normal(&state);
 
-    // if (i != 0)
+    // if (i != 198330 - 1)
     //     return;
     // // z1 = -3.7111978819675952578904798428993672132492;
     // // z2 = 3.4964017884433467031612963182851672172546;
-    // InitPos.x = 0.6448155532070993789517387995147146284580;
-    // InitPos.y = -1.5630180558642439159200421272544190287590;
-    // EleID = 52528;
+    // InitPos.x = -3.3104237629680173249369090626714751124382;
+    // InitPos.y = 2.0156160755666983064315900264773517847061;
+    // EleID = 233397;
 
     bool IfUpdateTrajectoryLastStep = true;
     bool HaveRandomWalkerBeenThroughTrace = false;
@@ -123,6 +123,7 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
             Veloc_p = cuDFNsys::ReconstructVelocityGrid<T>(InitPos,
                                                            Vertex_Triangle_ForVelocity,
                                                            Veloc_triangle);
+
             conductivity_k = Frac_DEV[FracID].Conductivity;
             b_aperture = pow(conductivity_k * 12.0, 1.0 / 3.0);
             Veloc_p.x /= b_aperture, Veloc_p.y /= b_aperture;
@@ -156,7 +157,7 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
             // TargPos3D.x += Frac_DEV[FracID].Center.x;
             // TargPos3D.y += Frac_DEV[FracID].Center.y;
             // TargPos3D.z += Frac_DEV[FracID].Center.z;
-            // printf("Trajectory3D of ParticleID %d, FracID: %d:\n\t%.40f, %.40f, %.40f\n\t%.40f, %.40f, %.40f\n",
+            // printf("Trajectory3D of ParticleID %d, [ FracID ]: %d:\n\t%.40f, %.40f, %.40f\n\t%.40f, %.40f, %.40f\n",
             //        i + 1, FracID,
             //        InitiPos3D.x,
             //        InitiPos3D.y,
@@ -164,6 +165,7 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
             //        TargPos3D.x,
             //        TargPos3D.y,
             //        TargPos3D.z);
+            // printf("Veloc_p: %.40f, %.40f\n", Veloc_p.x, Veloc_p.y);
         }
         //---------------------------
 
@@ -436,8 +438,9 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
 
             // P_DEV[i].AccumDisplacement += norm_FinishedTrajec;
 
+            // ttry to update when the random walker is purely advection-driven, but this is not good
             if ((HaveRandomWalkerBeenThroughTrace || HaveRandomWalkerBeenReflected) && Dispersion_local == 0)
-                IfUpdateTrajectoryLastStep = true;
+                IfUpdateTrajectoryLastStep = true; // so I change this to false
 
             continue;
         }
@@ -710,10 +713,17 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(unsigned long see
 
             // P_DEV[i].AccumDisplacement += norm_FinishedTrajec;
 
-            IfUpdateTrajectoryLastStep = false;
+            /// if the randomw walker is purely advection-driven, then the trajectory is updated.
+            if (Dispersion_local == 0)
+                IfUpdateTrajectoryLastStep = true;
+            else
+                IfUpdateTrajectoryLastStep = false;
+
             HaveRandomWalkerBeenThroughTrace = true;
             // printf("\nHaveRandomWalkerBeenThroughTrace: true\n");
-            normLastTrajectory = pow((TargPos.x - InitPos.x) * (TargPos.x - InitPos.x) + (TargPos.y - InitPos.y) * (TargPos.y - InitPos.y), 0.5);
+            if (Dispersion_local != 0)
+                normLastTrajectory = pow((TargPos.x - InitPos.x) * (TargPos.x - InitPos.x) + (TargPos.y - InitPos.y) * (TargPos.y - InitPos.y), 0.5);
+
             continue;
         }
     };
