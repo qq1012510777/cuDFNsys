@@ -4,7 +4,7 @@ close all
 
 syms x
 % ----------sin gamma
-kappaVec = [0];
+kappaVec = [0; 15; 7.5];
 PreFactor = []; % sin gamma
 
 for i = 1:size(kappaVec, 1)
@@ -69,6 +69,31 @@ for i = 1:size(RVec, 1)
         Vex_mono = [Vex_mono; PreFactor(i) * 8 * 2 ^ 0.5 * R .^ 3];
         
         meanR_mono = [meanR_mono; R];
+
+        m = m + 1;
+    end
+
+end
+
+% ---------uniform
+Rmin=[1];
+Rmax=[15];
+m = 1;
+
+V_ex_ufm = [];
+meanR_ufm = [];
+
+for i = 1:size(kappaVec, 1)
+
+    for j = 1:size(Rmin, 1)
+
+        f = 1 / (Rmax(j) - Rmin(j));
+        
+        R_cubic = eval(int(x ^ 3 * f, x, min_, max_));
+        
+        V_ex_ufm = [V_ex_ufm; PreFactor(i) * 8 * 2 ^ 0.5 * R_cubic];
+        
+        meanR_ufm = [meanR_ufm; eval(int(x ^ 1 * f, x, min_, max_))];
 
         m = m + 1;
     end

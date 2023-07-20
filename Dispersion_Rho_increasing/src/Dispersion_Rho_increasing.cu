@@ -28,6 +28,7 @@
 #include <fstream>
 #include <iostream>
 #include <limits.h>
+#include <numeric>
 #include <unistd.h>
 #ifdef USE_DOUBLES
 typedef double _DataType_;
@@ -101,6 +102,24 @@ int main(int argc, char *argv[])
     string LogFile = argv[33];
     bool IfComplexeMixing = atoi(argv[34]) == 0 ? false : true;
 
+    bool IfStopAtFirstArrival = false;
+    if (argv[35] != NULL)
+        IfStopAtFirstArrival = (atoi(argv[35]) == 0 ? false : true);
+    else
+        IfStopAtFirstArrival = false;
+
+    bool IfUseMeanV_or_DarcianQ_toCalculatedPe = true;
+    if (argv[36] != NULL)
+        IfUseMeanV_or_DarcianQ_toCalculatedPe = (atoi(argv[36]) == 0 ? false : true);
+    else
+        IfUseMeanV_or_DarcianQ_toCalculatedPe = true;
+
+    uint ReRunMaxTime = 0;
+    if (argv[37] != NULL)
+        ReRunMaxTime = atoi(argv[37]);
+    else
+        ReRunMaxTime = 5;
+
     string recordMode = IfoutputParticleInfoAllsteps == false ? "FPTCurve" : "OutputAll";
     _DataType_ P_in = L, P_out = 0;
 
@@ -128,7 +147,10 @@ int main(int argc, char *argv[])
     oss << "injectionMode: " << injectionMode << endl;
     oss << "InjectionPlane: " << (IfInjectAt_Center ? InjectionPlane : 0.5 * L) << endl;
     oss << "If_ReRun_: " << (If_ReRun_ ? "true" : "false") << endl;
-    oss << "IfComplexeMixing: " << (IfComplexeMixing ? "true" : "false") << endl;
+    oss << "IfComplexeMixing: " << (IfComplexeMixing ? "Outlet-flux-weighted" : "Equal-probability") << endl;
+    oss << "IfUseMeanV_or_DarcianQ_toCalculatedPe: " << (IfUseMeanV_or_DarcianQ_toCalculatedPe ? "MeanV" : "DarcianQ") << endl;
+    oss << "ReRunMaxTime: " << ReRunMaxTime << endl;
+    oss << "IfStopAtFirstArrival: " <<  (IfStopAtFirstArrival ? "true" : "false") << endl;
     oss.close();
 
     int perco_dir = 2;
@@ -156,8 +178,10 @@ int main(int argc, char *argv[])
         Start_i = "echo \"" + Start_i + "\" >> ../recordTime_and_Error.log";
         system(Start_i.c_str());
 
+        uint countReRunTime = 0; // ReRunMaxTime
         for (uint j = 0; j < MaxTranLoopTimes; j++)
         {
+
             try
             {
                 string GGF = "echo \" \" > ../" + LogFile;
@@ -201,10 +225,25 @@ int main(int argc, char *argv[])
                             system("echo \"Too many particles left from the inlet\n\n\" >> ../recordTime_and_Error.log");
                             throw cuDFNsys::ExceptionsIgnore("Too many particles left from the inlet!\n");
                         }
+
+                        if (IfStopAtFirstArrival)
+                        {
+                            cuDFNsys::HDF5API hg;
+                            std::vector<double> DF = hg.ReadDataset<double>("ParticlePositionResult/ParticlePosition_WhichStepDoesTheParticleReached.h5", "N",
+                                                                            "WhichStepDoesTheParticleReached");
+                            double resusdslt = accumulate(DF.begin(), DF.end(), 0);
+
+                            if (resusdslt != -1.0 * DF.size())
+                            {
+                                system("echo $(date +%d-%m-%y---%T) >> ../recordTime_and_Error.log");
+                                system("echo \"Finished\n\n\" >> ../recordTime_and_Error.log");
+                                break; // get enough particles arrived  }
+                            }
+                        }
                     }
 
                     //----------amend MSD data
-                    system("python ../scripts/DelDataSet.py");
+                    system("python3 ../scripts/DelDataSet.py");
                 }
 
                 //------------need more simulations
@@ -405,15 +444,29 @@ int main(int argc, char *argv[])
                         // do nothing
                     }
 
+                    if (!IfUseMeanV_or_DarcianQ_toCalculatedPe)
+                        DiffusionLocal = LengthScale_Over_Pe * fem.Permeability; //meanV; // change to Darcian q
+                    else
+                        DiffusionLocal = LengthScale_Over_Pe * meanV;
+
+                    if (IfComplexeMixing) // advection dominated
+                    {
+                        cout << "** advection dominated **\n";
+                        double meanTime = pow(mean_grid_area, 0.5) / maxV;
+                        DeltaT = meanTime / Factor_mean_time_in_grid;
+                    }
+                    else
+                    {
+                        cout << "** diffusion dominated **\n";
+                        DeltaT = pow(mean_grid_area, 0.5) / (pow(2 * DiffusionLocal, 0.5) * Factor_mean_time_in_grid);   
+                        DeltaT = DeltaT * DeltaT;
+                    }
+
                     cout << "The maximum velocity of all elements is " << maxV << endl;
                     cout << "The mean velocity of all elements is " << meanV << endl;
 
-                    double meanTime = pow(mean_grid_area, 0.5) / maxV;
-
-                    DeltaT = meanTime / Factor_mean_time_in_grid;
                     cout << "\nThe delta T is set to be " << ("\033[1;33m") << DeltaT << ("\033[0m") << "\n\n";
 
-                    DiffusionLocal = LengthScale_Over_Pe * meanV;
                     cout << "\nThe DiffusionLocal is set to be " << ("\033[1;33m") << DiffusionLocal << ("\033[0m") << "\n\n";
                     //-----------------
 
@@ -495,9 +548,22 @@ int main(int argc, char *argv[])
 
                     if (status == 0)
                     {
-                        system("echo $(date +%d-%m-%y---%T) >> ../recordTime_and_Error.log");
-                        string ERDS = "echo \"ReRunTheSameDFN_Transport\" >> ../recordTime_and_Error.log";
-                        system(ERDS.c_str());
+                        countReRunTime++;
+
+                        if (countReRunTime <= ReRunMaxTime)
+                        {
+                            system("echo $(date +%d-%m-%y---%T) >> ../recordTime_and_Error.log");
+                            string ERDS = "echo \"ReRunTheSameDFN_Transport\" >> ../recordTime_and_Error.log";
+                            system(ERDS.c_str());
+                        }
+                        else
+                        {
+                            string ERDS = "echo \"ReRunTimes reached the maximum\" >> ../recordTime_and_Error.log";
+                            system(ERDS.c_str());
+
+                            system("rm -rf *.h5 ParticlePositionResult");
+                            j = 0;
+                        }
                         //exit(0);
                     }
                     else

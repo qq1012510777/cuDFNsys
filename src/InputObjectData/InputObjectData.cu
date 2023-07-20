@@ -30,6 +30,7 @@ void cuDFNsys::InputObjectData<T>::InputFractures(const string &filename,
                                                   T &L, double3 &DomainDimensionRatio)
 {
     //
+
     try
     {
         H5::Exception::dontPrint();
@@ -144,6 +145,7 @@ void cuDFNsys::InputObjectData<T>::InputFractures(const string &filename,
     {
         string groupname = "Fracture_" + to_string(i + 1);
         Group group = file.openGroup(groupname);
+        //cout << "Dsize = " << Dsize << ", " << groupname << endl;
         vector<string> dataset_string_vec = {"Conductivity",
                                              "Verts3D",
                                              "Center",
@@ -237,6 +239,7 @@ void cuDFNsys::InputObjectData<T>::InputFractures(const string &filename,
     }
 
     file.close();
+
 }; // InputFractures
 template void cuDFNsys::InputObjectData<double>::InputFractures(const string &filename,
                                                                 thrust::host_vector<cuDFNsys::Fracture<double>> &Frac_verts_host,

@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
         _DataType_ maxGrid = 0;
 
         L = 30;
-        DSIZE = 2; //------------------------------------------
+        DSIZE = 1; //------------------------------------------
         minGrid = 1;
         maxGrid = 2;
 
@@ -249,7 +249,7 @@ int main(int argc, char *argv[])
                                                       1,
                                                       false,
                                                       1000,
-                                                      true, false, 0, false};
+                                                      true, true, 13, false};
 
             p.MatlabPlot("MHFEM_" + to_string(i + 1) + ".h5", "particle.m", mesh, fem, L);
         }

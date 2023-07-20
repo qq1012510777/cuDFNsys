@@ -8,7 +8,7 @@ deltaT = h5read([currentPath, ...
 Dispersion_local = h5read([currentPath, ...
     '/ParticlePositionResult/DispersionInfo.h5'], "/Dispersion_local");
 NumSteps = h5read([currentPath, '/ParticlePositionResult/DispersionInfo.h5'], "/NumOfSteps");
-
+NumSteps = 64
 Mean_cMSD_MSD = [];
 for i = 1:NumSteps
     try
@@ -35,5 +35,6 @@ hold on
 plot([min_, max_], [min_, max_] .* cfun.a + cfun.c, 'r-');
 
 disp(['goodness.rsquare=', num2str(goodness.rsquare)]);
-disp(['cfun.a=', num2str(cfun.a)]);
-disp(['Dispersion_local=', num2str(Dispersion_local)]);
+disp(['slope =', num2str(cfun.a)]);
+disp(['Dm=', num2str(Dispersion_local)]);
+disp(['slope / Dm = ', num2str(cfun.a/Dispersion_local)])

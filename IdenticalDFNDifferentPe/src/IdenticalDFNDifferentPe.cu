@@ -88,8 +88,9 @@ int main(int argc, char *argv[])
 
         double3 DomainDimensionRatio;
         _DataType_ L;
-
+        cout << "load fractures\n";
         lk.InputFractures("Fractures.h5", Frac_verts_host, L, DomainDimensionRatio);
+        //cout << "load fractures\n";
         Frac_verts_host.shrink_to_fit();
         Frac_verts_device = Frac_verts_host;
         Frac_verts_device_ptr = thrust::raw_pointer_cast(Frac_verts_device.data());
