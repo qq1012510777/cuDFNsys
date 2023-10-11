@@ -42,12 +42,94 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# Prerequisites
+# Prerequisites and installation
 _cuDFNsys_ should be installed and run on Ubuntu.
 
 _cuDFNsys_ relies on several open packages: OpenMP, CUDA, Eigen, Gmsh, UMFPACK and HDF5.
 
 The Gmsh C++ API that _cuDFNsys_ relies on should support the OCC mode, meaning that the occt library is required.
+
+The following is the Ubuntu command lines to install the relying packages:
+```
+# first update the package repository information
+cd ~
+sudo apt-get update
+sudo apt-get install build-essential
+sudo apt-get install cmake 
+# note that the version of cmake should be 3.10 or higher
+# if the version is not satisfied, try to install cmake from source
+
+# cuda
+sudo apt-get install nvidia-cuda-dev
+sudo apt-get install nvidia-cuda-toolkit 
+
+# openMP
+sudo apt-get install libomp-dev
+
+# install Eigen
+sudo apt-get install libeigen3-dev
+# create link (optional)
+sudo ln -s /usr/include/eigen3/Eigen/  /usr/include/Eigen
+
+# install blas, lapack and umfpack (suitesparse)
+sudo apt-get install libblas-dev liblapack-dev
+sudo apt-get install libsuitesparse-dev
+
+# install HDF5
+sudo apt-get install libhdf5-dev
+
+# install occt for gmsh
+sudo apt-get install libocct-foundation-dev libocct-data-exchange-dev
+
+# install fltk for gmsh
+sudo apt-get install libfltk1.3-dev
+
+# now install gmsh from source
+git clone http://gitlab.onelab.info/gmsh/gmsh.git
+cd gmsh
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=path-to-install-gmsh  ..
+make
+sudo make install  
+
+# change the path-to-install-gmsh to where you want to install the gmsh
+
+```
+After the installation of these relying packages (by `sudo apt-get install`, they are install at default locations), the _cuDFNsys_ package can be installed by the following steps:
+```
+cd ~/cuDFNsys/lib
+# here I put the cuDFNsys source code under HOME
+```
+Open `CMakeLists.txt`, find Line 28: `set (CMAKE_CUDA_COMPILER "/usr/local/cuda/bin/nvcc")`, change `"/usr/local/cuda/bin/nvcc"` to the path of `nvcc` in your computer.
+
+Then, open `SetPaths.cmake`, you will see
+```
+# Eigen include directory
+SET(EIGEN_INCLUDE_SEARCH_PATH   $ENV{HOME}/somewhere)
+
+# Gmsh include directory
+SET(GMSH_INCLUDE_SEARCH_PATH    $ENV{HOME}/somewhere)
+
+# Gmsh lib directory
+SET(GMSH_LIBRARY_SEARCH_PATH    $ENV{HOME}/somewhere)
+
+# umfpack include directory
+SET(UMFPACK_INCLUDE_SEARCH_PATH $ENV{HOME}/somewhere)
+
+# umfpack lib directory
+SET(UMFPACK_LIBRARY_SEARCH_PATH $ENV{HOME}/somewhere)
+```
+Again, change these paths like `$ENV{HOME}/somewhere` to the path of the packages in your computer, e.g., `/usr/include/eigen3`.
+
+Now, you can compile the _cuDFNsys_:
+```
+cd ~/cuDFNsys/lib
+bash compileCode.sh
+```
+If this script is finished without errors, then the file `libcuDFNsys.a` appears in `~/cuDFNsys/lib`.
+
+More details about the installation of the relying packages:
 
 * [Installation of CUDA](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html)
 
@@ -57,29 +139,25 @@ The Gmsh C++ API that _cuDFNsys_ relies on should support the OCC mode, meaning 
 
 * [Installation of UMFPACK](https://github.com/DrTimothyAldenDavis/SuiteSparse)
 
-Installations of OpenMP, Eigen and HDF5 are not difficult. Just google.
-
-# Environment setup
-After installations of above-mentioned packages, _cuDFNsys_ should be linked to them. In the directory 'Modules', .cmake files can be found, where the path of corresponding packages should be added/set/changed.
-
-For example, in the 'Modules/FindGMSH.cmake', you'll see
-
-    SET(GMSH_INCLUDE_SEARCH_PATH
-        $ENV{HOME}/pkg/gmsh-4.8.4-source/MY_GMSH/include
-    )
-    
-    SET(GMSH_LIBRARY_SEARCH_PATH
-        $ENV{HOME}/pkg/gmsh-4.8.4-source/MY_GMSH/lib
-    )
-
-The two user-set variables are paths of the Gmsh header file and library, respectively. You have to change them because you are bound to have different paths for them.
-
-In the cuDFNsys/lib directory, the static cuDFNsys library can be installed by running compileCode.sh.
-
-Then, you can link the library to your user's interface code. For instance, in the 'QuickStartGuide', you can run
-
-    make
-
+# Compile a quickstart example
+By `cd ~/cuDFNsys/QuickStartGuide`, a `Makefile` can be seen there. Open it, you can see
+```
+# NVCC path
+NVCC=/usr/local/cuda/bin/nvcc
+# include paths for headers
+Hdf5IncludePath=/usr/lib/x86_64-linux-gnu/hdf5/serial/include
+GmshIncludePath=$(HOME)/pkg/gmsh-4.8.4-source/MY_GMSH/include
+EigenIncludePath=$(HOME)/pkg/eigen
+UmfpackIncludePath=$(HOME)/pkg/SuiteSparse-master/include
+# library paths
+GmshLibraryPath=$(HOME)/pkg/gmsh-4.8.4-source/MY_GMSH/lib
+UmfpackLibraryPath=$(HOME)/pkg/SuiteSparse-master/lib
+Hdf5LibraryPath=/usr/lib/x86_64-linux-gnu/hdf5/serial
+```
+Change the paths of the headers and libraries, and compile the QuickStartGuide.cu just by
+```
+make
+```
 
 # Visualization
 

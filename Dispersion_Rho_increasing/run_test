@@ -1,0 +1,41 @@
+#!/bin/bash
+source ~/.bashrc
+
+./main 1#InitLoop \
+            0#FinalLoop \
+            420#InitDensity \
+            40#DensityIncreament \
+            1000#MaxTranLoopTimes \
+            75#Lm \
+            0.0#kappa_ \
+            0.1#beta_ \
+            5.1e-4#gamma \
+            3#fractureSizeMode \
+            7.5#fracturesize_para1 \
+            0#fracturesize_para2 \
+            0#fracturesize_para3 \
+            0#fracture_size_para4 \
+            1#Domain_ratio_3 \
+            0#IfremoveDeadEnd \
+            1#minGridSize \
+            2#maxGridSize \
+            200#NumStepsDispersion \
+            100000#NumRandomWalkers____________________change_this \
+            0.3#FactorRelatedToDeltaT \
+            7.5#LengthScale \
+            1000#PecletNumber____________________change_this \
+            1125#ControlPlaneSpacing \
+            1#IfOutputMSD \
+            0#IfOutputAllInformation_ \
+            2000#ThresholdOfArrivedParticlesToStop \
+            2000#ThresholdOfLeftParticlesFromInletToStop \
+            Flux-weighted#InjectionMode \
+            1#IfInjectAtSpecificPlane \
+            35#ThePlaneInjectedRandomWalkers \
+            1#IfReRunTheSimulationIfErrorHappens \
+            log.txt#NameOfLogFile \
+            1#IfComplexMixingIsOutgoingFluxWeighted \
+            1#IfStopAtFirstArrival \
+            1#IfUseMeanVToCalculatePecletNumber \
+            5#ReRunTimeIfRerunIsAllowed \
+    tee log.txt

@@ -84,7 +84,7 @@ cuDFNsys::Mesh<T>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
 
             //int SurfaceID = gmsh::model::occ::addPlaneSurface({CurveLoopID});
             int SurfaceID = gmsh::model::occ::addSurfaceFilling(CurveLoopID);
-
+            // cout << "SurfaceID: " << SurfaceID << endl;
             Corre_Tag.insert(std::make_pair(FracID, SurfaceID));
             Fracs_ss[i] = Fracs[FracID];
         }
@@ -116,41 +116,58 @@ cuDFNsys::Mesh<T>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
             }
             cout << "\t\tadded object-tool pairs; running time: " << cuDFNsys::CPUSecond() - istart1 << " sec\n";
 
-            double istart2 = cuDFNsys::CPUSecond();
-            std::vector<std::pair<int, int>> out;
-            gmsh::model::occ::fragment(object_entity, tool_entity, out, outmap);
-            gmsh::model::occ::synchronize();
-            // gmsh::write("exod.brep");
-            cout << "\t\tfragmented entities, running time: " << cuDFNsys::CPUSecond() - istart2 << " sec\n";
+            //bool IfFrag = IntersectionPair_percol.size() == 0 ? false : true;
 
+            if (IntersectionPair_percol.size() != 0)
+            {
+                double istart2 = cuDFNsys::CPUSecond();
+                std::vector<std::pair<int, int>> out;
+
+                gmsh::model::occ::fragment(object_entity, tool_entity, out, outmap);
+                gmsh::model::occ::synchronize();
+                // gmsh::write("exod.brep");
+                cout << "\t\tfragmented entities, running time: " << cuDFNsys::CPUSecond() - istart2 << " sec\n";
+                std::set<gmsh::vectorpair> set_map;
+                pair<std::set<gmsh::vectorpair>::iterator, bool> kkit;
+
+                for (size_t i = 0; i < outmap.size(); ++i)
+                    kkit = set_map.insert(outmap[i]);
+                outmap.clear();
+                outmap.assign(set_map.begin(), set_map.end());
+            }
+            else
+            {
+                gmsh::vectorpair IO;
+                gmsh::model::getEntities(IO,
+                                         2);
+                outmap.resize(IO.size());
+                for (int u = 0; u < IO.size(); ++u)
+                {
+                    outmap[u].resize(1);
+                    outmap[u][0] = IO[u];
+                }
+            }
             // cout << "outDimTags\n";
             // for (size_t i = 0; i < out.size(); ++i)
             //     cout << out[i].first << ",  " << out[i].second << endl;
             // cout << "\n NUM_frac, size = " << NUM_frac << "\n";
             // cout << "\noutDimTagsMap, size = " << outmap.size() << "\n";
-            // for (size_t i = 0; i < outmap.size(); ++i)
-            // {
-            //     for (size_t j = 0; j < outmap[i].size(); ++j)
-            //         cout << outmap[i][j].first << ",  " << outmap[i][j].second << "; ";
-            //     cout << endl;
-            // }
-
-            std::set<gmsh::vectorpair> set_map;
-            pair<std::set<gmsh::vectorpair>::iterator, bool> kkit;
-
-            for (size_t i = 0; i < outmap.size(); ++i)
-                kkit = set_map.insert(outmap[i]);
-            outmap.clear();
-            outmap.assign(set_map.begin(), set_map.end());
+            //for (size_t i = 0; i < outmap.size(); ++i)
+            //{
+            //    for (size_t j = 0; j < outmap[i].size(); ++j)
+            //        cout << outmap[i][j].first << ",  " << outmap[i][j].second << "; ";
+            //    cout << endl;
+            //}
 
             // cout << "\nafter erase, outDimTagsMap, size = " << outmap.size() << "\n";
             // for (size_t i = 0; i < outmap.size(); ++i)
             // {
             //     for (size_t j = 0; j < outmap[i].size(); ++j)
             //         cout << outmap[i][j].first << ",  " << outmap[i][j].second << "; ";
-            //     cout << endl;
+            //     cout << endl
+            //          << endl;
             // }
-
+            // exit(0);
             // gmsh::fltk::run();
         }
         else
@@ -302,8 +319,8 @@ double cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
         ptr_element_3D[i + ele_num * 2] = this->Element3D[i].z;
 
         Area_characteristic += double(cuDFNsys::Triangle3DArea<T>(this->Coordinate3D[this->Element3D[i].x - 1],
-                                                                 this->Coordinate3D[this->Element3D[i].y - 1],
-                                                                 this->Coordinate3D[this->Element3D[i].z - 1]));
+                                                                  this->Coordinate3D[this->Element3D[i].y - 1],
+                                                                  this->Coordinate3D[this->Element3D[i].z - 1]));
     };
     Area_characteristic = Area_characteristic / ele_num;
 

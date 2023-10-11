@@ -44,6 +44,8 @@ int main(int argc, char *argv[])
         double Factor_mean_time_in_grid = atof(argv[2]);
         double LengthScale_Over_Pe = atof(argv[3]) / atof(argv[4]);
         uint NUMstep = atoi(argv[5]);
+        bool IfSetOtherInjectPlane = (atoi(argv[6]) == 0 ? false : true);
+        _DataType_ InjectPlane = atof(argv[7]);
 
         double istart = cuDFNsys::CPUSecond();
 
@@ -55,10 +57,10 @@ int main(int argc, char *argv[])
         _DataType_ minGrid = 0;
         _DataType_ maxGrid = 0;
 
-        L = 30;
-        DSIZE = 1; //------------------------------------------
+        L = 60;
+        DSIZE = 800; //------------------------------------------
         minGrid = 1;
-        maxGrid = 2;
+        maxGrid = 3;
 
         int perco_dir = 2;
 
@@ -85,18 +87,38 @@ int main(int argc, char *argv[])
             //                                                                     (unsigned long)t,
             //                                                                     DSIZE,
             //                                                                     L);
+            // cuDFNsys::FractureTwoIntersectOrNot<_DataType_><<<DSIZE / 256 + 1, 256>>>(Frac_verts_device_ptr,
+            //                                                                           (unsigned long)t,
+            //                                                                           DSIZE,
+            //                                                                           L,
+            //                                                                           true);
         }
-        else
+        else if (DSIZE == 2)
             cuDFNsys::FractureTwoIntersectOrNot<_DataType_><<<DSIZE / 256 + 1, 256>>>(Frac_verts_device_ptr,
                                                                                       (unsigned long)t,
                                                                                       DSIZE,
                                                                                       L,
                                                                                       true);
+        else
+            cuDFNsys::FracturesParallel<_DataType_><<<DSIZE / 256 + 1, 256>>>(Frac_verts_device_ptr,
+                                                                              DSIZE,
+                                                                              (unsigned long)(t * t),
+                                                                              L);
 
         cudaDeviceSynchronize();
 
         Frac_verts_host = Frac_verts_device;
+
+        thrust::host_vector<cuDFNsys::Fracture<_DataType_>> Frac_verts_host_II;
+
+        for (int i = 0; i < Frac_verts_host.size(); ++i)
+            if (Frac_verts_host[i].ConnectModelSurf[4] && Frac_verts_host[i].ConnectModelSurf[5])
+                Frac_verts_host_II.push_back(Frac_verts_host[i]);
+
+        Frac_verts_host = Frac_verts_host_II;
+
         DSIZE = Frac_verts_host.size();
+        cout << "DSIZE: " << DSIZE << endl;
         std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<_DataType_>, cuDFNsys::Vector3<_DataType_>>> Intersection_map;
         // cout << "Frac_verts_host.size(): " << Frac_verts_host.size() << endl;
         // cout << Frac_verts_host[0].Verts3D[0].x << ", " << Frac_verts_host[0].Verts3D[0].y << ", " << Frac_verts_host[0].Verts3D[0].z << endl;
@@ -131,6 +153,8 @@ int main(int argc, char *argv[])
             cuDFNsys::IdentifyPercolationCluster<_DataType_> IdentiClu2{ListClusters,
                                                                         Frac_verts_host, perco_dir,
                                                                         Percolation_cluster};
+            // for (auto e : Percolation_cluster)
+            // cout << e << endl;
         }
 
         cuDFNsys::MatlabPlotDFN<_DataType_> As2{"DFN_II.h5",
@@ -145,6 +169,7 @@ int main(int argc, char *argv[])
         Frac_verts_device.clear();
         Frac_verts_device.shrink_to_fit();
         //-----------
+        //exit(0);
 
         cuDFNsys::OutputObjectData<_DataType_> lk;
         if (Percolation_cluster.size() > 0)
@@ -155,7 +180,7 @@ int main(int argc, char *argv[])
             std::vector<size_t> Fracs_percol;
             std::vector<pair<int, int>> IntersectionPair_percol;
 
-            if (DSIZE > 1)
+            if (DSIZE == 2)
             {
                 cuDFNsys::GetAllPercolatingFractures GetPer{Percolation_cluster,
                                                             ListClusters,
@@ -172,10 +197,31 @@ int main(int argc, char *argv[])
                 IntersectionPair_percol.resize(1);
                 IntersectionPair_percol[0] = std::make_pair(0, 1);
             }
-            else
+            else if (DSIZE == 1)
             {
                 Fracs_percol = Percolation_cluster;
                 IntersectionPair_percol.resize(0);
+            }
+            else
+            {
+                cuDFNsys::GetAllPercolatingFractures GetPer{Percolation_cluster,
+                                                            ListClusters,
+                                                            Fracs_percol};
+
+                cuDFNsys::RemoveDeadEndFrac<_DataType_> RDEF{Fracs_percol,
+                                                             IntersectionPair_percol,
+                                                             (size_t)perco_dir,
+                                                             Frac_verts_host,
+                                                             Intersection_map,
+                                                             false};
+                //Fracs_percol.resize(Frac_verts_host.size());
+
+                IntersectionPair_percol.resize(0);
+                // for (int e = 0; e < IntersectionPair_percol.size(); ++e)
+                // {
+                //     //Fracs_percol[e] = e;
+                //     IntersectionPair_percol[e] = std::make_pair(Fracs_percol[e], Fracs_percol[e]);
+                // }
             }
 
             cout << "meshing ..." << endl;
@@ -189,7 +235,7 @@ int main(int argc, char *argv[])
 
             cout << "MHFEM ing ..." << endl;
 
-            cuDFNsys::MHFEM<_DataType_> fem{mesh, Frac_verts_host, 100, 79.999, perco_dir, L};
+            cuDFNsys::MHFEM<_DataType_> fem{mesh, Frac_verts_host, L, 0.0, perco_dir, L};
             cout << "Fluxes: " << fem.QIn << ", ";
             cout << fem.QOut << ", Permeability: ";
             cout << fem.Permeability << endl;
@@ -232,7 +278,7 @@ int main(int argc, char *argv[])
             }
 
             cout << "Particle transport ing ...\n";
-            // return 0;
+
             cuDFNsys::ParticleTransport<_DataType_> p{(int)NUMstep, // number of time step
                                                       Frac_verts_host,
                                                       mesh,
@@ -243,13 +289,15 @@ int main(int argc, char *argv[])
                                                       DeltaT,       // delta_T_ii
                                                       DiffusionLocal,
                                                       "Particle_tracking",
-                                                      "Flux-weighted",
+                                                      "Resident",
                                                       "OutputAll",
                                                       false,
                                                       1,
                                                       false,
                                                       1000,
-                                                      true, true, 13, false};
+                                                      true,
+                                                      IfSetOtherInjectPlane,
+                                                      InjectPlane, false};
 
             p.MatlabPlot("MHFEM_" + to_string(i + 1) + ".h5", "particle.m", mesh, fem, L);
         }

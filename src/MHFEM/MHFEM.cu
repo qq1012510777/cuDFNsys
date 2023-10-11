@@ -249,7 +249,7 @@ double2 cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
     //
     std::vector<T> ElementAperture(ElementFracTag.size());
     for (uint i = 0; i < ElementAperture.size(); ++i)
-        ElementAperture[i] = pow(Fracs[ElementFracTag[i]].Conductivity / 12.0, 1.0 / 3.0);
+        ElementAperture[i] = pow(Fracs[ElementFracTag[i]].Conductivity * 12.0, 1.0 / 3.0);
     h5gg.AddDataset(mat_key, "N", "ElementAperture", ElementAperture.data(), dim_fqsc);
 
     if (1)

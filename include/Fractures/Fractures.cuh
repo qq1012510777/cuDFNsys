@@ -120,4 +120,10 @@ __global__ void FractureTwoIntersectOrNot(cuDFNsys::Fracture<T> *verts,
                                           int count,
                                           T model_L,
                                           bool IfIntersect);
+
+template <typename T>
+__global__ void FracturesParallel(cuDFNsys::Fracture<T> *verts,
+                                  int count,
+                                  unsigned long seed,
+                                  T model_L);
 }; // namespace cuDFNsys

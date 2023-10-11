@@ -947,38 +947,59 @@ void cuDFNsys::ParticleTransport<T>::OutputMSD(const uint &StepNO,
     /// cudaDeviceSynchronize();
     thrust::host_vector<T> Position3D = this->Get3DParticlePositions(Fracs, mesh); //Position3D_dev;
 
-    std::vector<double> Position3D_zz1(Position3D.begin() + this->ParticlePlumes.size() * 2, Position3D.end());
+    //----------------------
+    vector<double> Variance_of_xyz(3);
+    for (uint k = 0; k < 3; ++k)
+    {
+        Eigen::VectorXd Position3D_oneD;
+        Position3D_oneD.resize(this->ParticlePlumes.size());
+        std::copy(Position3D.begin() + this->ParticlePlumes.size() * k, Position3D.begin() + this->ParticlePlumes.size() * (k + 1), Position3D_oneD.data());
 
-    Eigen::Map<Eigen::VectorXd> Position3D_zz(Position3D_zz1.data(), Position3D_zz1.size());
-    // cout << "size: " << Position3D_zz.rows() << endl;
-    // for (uint i = 0; i < this->ParticlePlumes.size(); ++i)
-    //     if (Position3D_zz[i] - Position3D[this->ParticlePlumes.size() * 2 + i] != 0)
-    //         cout << i << ": " << Position3D_zz[i] - Position3D[this->ParticlePlumes.size() * 2 + i] << endl;
+        // std::vector<double> Position3D_oneD(Position3D.begin() + this->ParticlePlumes.size() * k, Position3D.begin() + this->ParticlePlumes.size() * (k + 1));
+        // Eigen::Map<Eigen::VectorXd> Position3D_oneDEigen(Position3D_oneD.data(), Position3D_oneD.size());
+        // Position3D_oneD.clear();
+        // Position3D_oneD.reserve(0);
 
-    Position3D_zz1.clear();
-    Position3D_zz1.reserve(0);
-    Position3D.clear();
-    Position3D.reserve(0);
-
-    Position3D_zz = Position3D_zz - Eigen::VectorXd::Ones(Position3D_zz.rows()) * HalfDomainSize_PercoDirection;
-    Position3D_zz = Position3D_zz.cwiseAbs(); // the linear displacement of particles
-    double mean_z = Position3D_zz.mean();
-    Eigen::VectorXd Position3D_zz_dd = Position3D_zz - Eigen::VectorXd::Ones(Position3D_zz.rows()) * mean_z;
-    double cMSD_g = Position3D_zz_dd.dot(Position3D_zz_dd) / Position3D_zz_dd.rows(); // center mean square displacement
-    double MSD_gs = Position3D_zz.dot(Position3D_zz) / Position3D_zz.rows();          // mean square displacement
-
-    vector<double> Mean_MSD_cMSD = {mean_z, cMSD_g, MSD_gs};
-    // I made a mistake, which, however, is not serious
-    // Mean_MSD_cMSD[1] is cMSD; Mean_MSD_cMSD[2] is MSD
-
-    // h5g.AddDataset(MSD_file, "N", "cMSD_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
-    //                &cMSD_g, dim_scalar);
-    // h5g.AddDataset(MSD_file, "N", "MD_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
-    //                &mean_z, dim_scalar);
-
+        Variance_of_xyz[k] = Position3D_oneD.dot(Position3D_oneD) / Position3D_oneD.rows() - pow(Position3D_oneD.mean(), 2.0);
+    }
     uint2 dimoo = make_uint2(1, 3);
-    h5g.AddDataset(MSD_file, "N", "Mean_MSD_cMSD_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
-                   Mean_MSD_cMSD.data(), dimoo);
+    h5g.AddDataset(MSD_file, "N", "Variance_of_xyz_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
+                   Variance_of_xyz.data(), dimoo);
+
+    //------------------------
+
+    // std::vector<double> Position3D_zz1(Position3D.begin() + this->ParticlePlumes.size() * 2, Position3D.end());
+    //
+    // Eigen::Map<Eigen::VectorXd> Position3D_zz(Position3D_zz1.data(), Position3D_zz1.size());
+    // // cout << "size: " << Position3D_zz.rows() << endl;
+    // // for (uint i = 0; i < this->ParticlePlumes.size(); ++i)
+    // //     if (Position3D_zz[i] - Position3D[this->ParticlePlumes.size() * 2 + i] != 0)
+    // //         cout << i << ": " << Position3D_zz[i] - Position3D[this->ParticlePlumes.size() * 2 + i] << endl;
+    //
+    // Position3D_zz1.clear();
+    // Position3D_zz1.reserve(0);
+    // Position3D.clear();
+    // Position3D.reserve(0);
+    //
+    // Position3D_zz = Position3D_zz - Eigen::VectorXd::Ones(Position3D_zz.rows()) * HalfDomainSize_PercoDirection;
+    // Position3D_zz = Position3D_zz.cwiseAbs(); // the linear displacement of particles
+    // double mean_z = Position3D_zz.mean();
+    // Eigen::VectorXd Position3D_zz_dd = Position3D_zz - Eigen::VectorXd::Ones(Position3D_zz.rows()) * mean_z;
+    // double cMSD_g = Position3D_zz_dd.dot(Position3D_zz_dd) / Position3D_zz_dd.rows(); // center mean square displacement
+    // double MSD_gs = Position3D_zz.dot(Position3D_zz) / Position3D_zz.rows();          // mean square displacement
+    //
+    // vector<double> Mean_MSD_cMSD = {mean_z, cMSD_g, MSD_gs};
+    // // I made a mistake, which, however, is not serious
+    // // Mean_MSD_cMSD[1] is cMSD; Mean_MSD_cMSD[2] is MSD
+    //
+    // // h5g.AddDataset(MSD_file, "N", "cMSD_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
+    // //                &cMSD_g, dim_scalar);
+    // // h5g.AddDataset(MSD_file, "N", "MD_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
+    // //                &mean_z, dim_scalar);
+    //
+    // uint2 dimoo = make_uint2(1, 3);
+    // h5g.AddDataset(MSD_file, "N", "Mean_MSD_cMSD_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
+    //                Mean_MSD_cMSD.data(), dimoo);
     //------------
 };
 template void cuDFNsys::ParticleTransport<double>::OutputMSD(const uint &StepNO,

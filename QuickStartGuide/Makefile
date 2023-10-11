@@ -1,4 +1,5 @@
 ExeName=QuickStartGuide
+# NVCC path
 NVCC=/usr/local/cuda/bin/nvcc
 # include paths for headers
 Hdf5IncludePath=/usr/lib/x86_64-linux-gnu/hdf5/serial/include

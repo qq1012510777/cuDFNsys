@@ -29,7 +29,10 @@
 #include <iostream>
 #include <limits.h>
 #include <numeric>
+#include <sstream>
+#include <string>
 #include <unistd.h>
+#include <vector>
 #ifdef USE_DOUBLES
 typedef double _DataType_;
 #else
@@ -37,6 +40,7 @@ typedef float _DataType_;
 #endif
 
 int GetRowsOfDataset(string Filename, string Datasetname);
+string GetArgvWithoutComment(const string &A, const char &B);
 
 int main(int argc, char *argv[])
 {
@@ -54,69 +58,71 @@ int main(int argc, char *argv[])
     cudaDeviceSynchronize();
 
     //------------Density increases
-    uint InitLoop = atoi(argv[1]);
-    uint FinalLoop = atoi(argv[2]);
-    uint InitDensity = atoi(argv[3]);
-    uint DensityIncreament = atoi(argv[4]);
-    uint MaxTranLoopTimes = atoi(argv[5]);
+    char split_char = '#';
+
+    uint InitLoop = atoi(GetArgvWithoutComment(argv[1], split_char).c_str());
+    uint FinalLoop = atoi(GetArgvWithoutComment(argv[2], split_char).c_str());
+    uint InitDensity = atoi(GetArgvWithoutComment(argv[3], split_char).c_str());
+    uint DensityIncreament = atoi(GetArgvWithoutComment(argv[4], split_char).c_str());
+    uint MaxTranLoopTimes = atoi(GetArgvWithoutComment(argv[5], split_char).c_str());
 
     uint LoopTimes = FinalLoop - InitLoop + 1;
 
     //------------ other inputs
-    _DataType_ L = atof(argv[6]);
-    _DataType_ kappa_ = atof(argv[7]),
-               beta_ = atof(argv[8]),
-               gamma_ = atof(argv[9]);
-    int size_frac_mode = atoi(argv[10]); // mode of fracture size distributions
+    _DataType_ L = atof(GetArgvWithoutComment(argv[6], split_char).c_str());
+    _DataType_ kappa_ = atof(GetArgvWithoutComment(argv[7], split_char).c_str()),
+               beta_ = atof(GetArgvWithoutComment(argv[8], split_char).c_str()),
+               gamma_ = atof(GetArgvWithoutComment(argv[9], split_char).c_str());
+    int size_frac_mode = atoi(GetArgvWithoutComment(argv[10], split_char).c_str()); // mode of fracture size distributions
     cuDFNsys::Vector4<_DataType_> ParaSizeDistri =
-        cuDFNsys::MakeVector4((_DataType_)atof(argv[11]),
-                              (_DataType_)atof(argv[12]),
-                              (_DataType_)atof(argv[13]),
-                              (_DataType_)atof(argv[14]));
-    double3 DomainDimensionRatio = make_double3(1, 1, atof(argv[15]));
-    int IfRemoveDeadEnd = atoi(argv[16]);
-    _DataType_ minGridSize = atof(argv[17]);
-    _DataType_ maxGridSize = atof(argv[18]);
+        cuDFNsys::MakeVector4((_DataType_)atof(GetArgvWithoutComment(argv[11], split_char).c_str()),
+                              (_DataType_)atof(GetArgvWithoutComment(argv[12], split_char).c_str()),
+                              (_DataType_)atof(GetArgvWithoutComment(argv[13], split_char).c_str()),
+                              (_DataType_)atof(GetArgvWithoutComment(argv[14], split_char).c_str()));
+    double3 DomainDimensionRatio = make_double3(1, 1, atof(GetArgvWithoutComment(argv[15], split_char).c_str()));
+    int IfRemoveDeadEnd = atoi(GetArgvWithoutComment(argv[16], split_char).c_str());
+    _DataType_ minGridSize = atof(GetArgvWithoutComment(argv[17], split_char).c_str());
+    _DataType_ maxGridSize = atof(GetArgvWithoutComment(argv[18], split_char).c_str());
 
-    int NumTimeSteps_Dispersion = atoi(argv[19]);
-    int NumParticlesRandomWalk = atoi(argv[20]);
+    int NumTimeSteps_Dispersion = atoi(GetArgvWithoutComment(argv[19], split_char).c_str());
+    int NumParticlesRandomWalk = atoi(GetArgvWithoutComment(argv[20], split_char).c_str());
     _DataType_ DeltaT = 0;
-    _DataType_ Factor_mean_time_in_grid = atof(argv[21]);
+    _DataType_ Factor_mean_time_in_grid = atof(GetArgvWithoutComment(argv[21], split_char).c_str());
     // the mean time (a characteristic grid length over the mean velocity (m/s)) for a random walk to cross a characteristic grid length
     // but this mean time was reduced, i.e., dividing by a factor (> 1)
     // then the mean time is DeltaT
     _DataType_ DiffusionLocal = 0;
     _DataType_ LengthScale_Over_Pe = 0;
-    _DataType_ LengthScale = atof(argv[22]);
-    _DataType_ Pe = atof(argv[23]);
-    _DataType_ ControlPlaneSpacing = atof(argv[24]);
-    bool IfoutputMsd = atoi(argv[25]) == 0 ? false : true;
-    bool IfoutputParticleInfoAllsteps = atoi(argv[26]) == 0 ? false : true;
-    int ThresholdToStop = atoi(argv[27]);
-    int ThresholdForMaximumLeftParticles = atoi(argv[28]);
+    _DataType_ LengthScale = atof(GetArgvWithoutComment(argv[22], split_char).c_str());
+    _DataType_ Pe = atof(GetArgvWithoutComment(argv[23], split_char).c_str());
+    _DataType_ ControlPlaneSpacing = atof(GetArgvWithoutComment(argv[24], split_char).c_str());
+    bool IfoutputMsd = atoi(GetArgvWithoutComment(argv[25], split_char).c_str()) == 0 ? false : true;
+    bool IfoutputParticleInfoAllsteps = atoi(GetArgvWithoutComment(argv[26], split_char).c_str()) == 0 ? false : true;
+    int ThresholdToStop = atoi(GetArgvWithoutComment(argv[27], split_char).c_str());
+    int ThresholdForMaximumLeftParticles = atoi(GetArgvWithoutComment(argv[28], split_char).c_str());
 
-    string injectionMode = argv[29]; // Flux-weighted or Resident
-    bool IfInjectAt_Center = (atoi(argv[30]) == 0 ? false : true);
-    _DataType_ InjectionPlane = atof(argv[31]);
-    bool If_ReRun_ = atoi(argv[32]) == 0 ? false : true;
-    string LogFile = argv[33];
-    bool IfComplexeMixing = atoi(argv[34]) == 0 ? false : true;
+    string injectionMode = GetArgvWithoutComment(argv[29], split_char).c_str(); // Flux-weighted or Resident
+    bool IfInjectAt_Center = (atoi(GetArgvWithoutComment(argv[30], split_char).c_str()) == 0 ? false : true);
+    _DataType_ InjectionPlane = atof(GetArgvWithoutComment(argv[31], split_char).c_str());
+    bool If_ReRun_ = atoi(GetArgvWithoutComment(argv[32], split_char).c_str()) == 0 ? false : true;
+    string LogFile = GetArgvWithoutComment(argv[33], split_char).c_str();
+    bool IfComplexeMixing = atoi(GetArgvWithoutComment(argv[34], split_char).c_str()) == 0 ? false : true;
 
     bool IfStopAtFirstArrival = false;
-    if (argv[35] != NULL)
-        IfStopAtFirstArrival = (atoi(argv[35]) == 0 ? false : true);
+    if (GetArgvWithoutComment(argv[35], split_char).c_str() != NULL)
+        IfStopAtFirstArrival = (atoi(GetArgvWithoutComment(argv[35], split_char).c_str()) == 0 ? false : true);
     else
         IfStopAtFirstArrival = false;
 
     bool IfUseMeanV_or_DarcianQ_toCalculatedPe = true;
-    if (argv[36] != NULL)
-        IfUseMeanV_or_DarcianQ_toCalculatedPe = (atoi(argv[36]) == 0 ? false : true);
+    if (GetArgvWithoutComment(argv[36], split_char).c_str() != NULL)
+        IfUseMeanV_or_DarcianQ_toCalculatedPe = (atoi(GetArgvWithoutComment(argv[36], split_char).c_str()) == 0 ? false : true);
     else
         IfUseMeanV_or_DarcianQ_toCalculatedPe = true;
 
     uint ReRunMaxTime = 0;
-    if (argv[37] != NULL)
-        ReRunMaxTime = atoi(argv[37]);
+    if (GetArgvWithoutComment(argv[37], split_char).c_str() != NULL)
+        ReRunMaxTime = atoi(GetArgvWithoutComment(argv[37], split_char).c_str());
     else
         ReRunMaxTime = 5;
 
@@ -150,7 +156,7 @@ int main(int argc, char *argv[])
     oss << "IfComplexeMixing: " << (IfComplexeMixing ? "Outlet-flux-weighted" : "Equal-probability") << endl;
     oss << "IfUseMeanV_or_DarcianQ_toCalculatedPe: " << (IfUseMeanV_or_DarcianQ_toCalculatedPe ? "MeanV" : "DarcianQ") << endl;
     oss << "ReRunMaxTime: " << ReRunMaxTime << endl;
-    oss << "IfStopAtFirstArrival: " <<  (IfStopAtFirstArrival ? "true" : "false") << endl;
+    oss << "IfStopAtFirstArrival: " << (IfStopAtFirstArrival ? "true" : "false") << endl;
     oss.close();
 
     int perco_dir = 2;
@@ -200,23 +206,26 @@ int main(int argc, char *argv[])
                 //------ let's check it
                 if (If_percolative)
                 {
-                    std::ifstream FileYe("ParticlePositionResult/ParticlePositionLastStep.h5");
+                    std::ifstream FileYe("ParticlePositionResult/ParticlePosition_WhichStepDoesTheParticleReached.h5");
                     bool DFSW = FileYe.good();
 
                     if (DFSW) // that means the simulation has been conducted
                     {
-
-                        std::vector<uint> NUMsTEPS = h5g.ReadDataset<uint>("ParticlePositionResult/DispersionInfo.h5",
-                                                                           "N", "NumOfSteps");
-
-                        int rows_ = GetRowsOfDataset("ParticlePositionResult/ParticlePositionLastStep.h5",
-                                                     "Step_" + cuDFNsys::ToStringWithWidth<int>(NUMsTEPS[0], 10));
-                        if (rows_ <= ThresholdToStop)
+                        std::vector<double> DF = h5g.ReadDataset<double>("ParticlePositionResult/ParticlePosition_WhichStepDoesTheParticleReached.h5", "N",
+                                                                         "WhichStepDoesTheParticleReached");
+                        //----------------------
+                        if (IfStopAtFirstArrival)
                         {
-                            system("echo $(date +%d-%m-%y---%T) >> ../recordTime_and_Error.log");
-                            system("echo \"Finished\n\n\" >> ../recordTime_and_Error.log");
-                            break; // get enough particles arrived
+                            double resusdslt = accumulate(DF.begin(), DF.end(), 0);
+                            if (resusdslt != -1.0 * DF.size())
+                            {
+                                system("echo $(date +%d-%m-%y---%T) >> ../recordTime_and_Error.log");
+                                system("echo \"Finished\n\n\" >> ../recordTime_and_Error.log");
+                                break; // get enough particles arrived  }
+                            }
                         }
+
+                        //-----------------------------------
                         std::vector<uint> NumPaLeft = h5g.ReadDataset<uint>("ParticlePositionResult/DispersionInfo.h5",
                                                                             "N", "NumParticlesLeftFromInlet");
                         if (NumPaLeft[0] > ThresholdForMaximumLeftParticles)
@@ -226,18 +235,33 @@ int main(int argc, char *argv[])
                             throw cuDFNsys::ExceptionsIgnore("Too many particles left from the inlet!\n");
                         }
 
-                        if (IfStopAtFirstArrival)
+                        //-----------------------------------
+                        if (!IfoutputParticleInfoAllsteps)
                         {
-                            cuDFNsys::HDF5API hg;
-                            std::vector<double> DF = hg.ReadDataset<double>("ParticlePositionResult/ParticlePosition_WhichStepDoesTheParticleReached.h5", "N",
-                                                                            "WhichStepDoesTheParticleReached");
-                            double resusdslt = accumulate(DF.begin(), DF.end(), 0);
+                            std::vector<uint> NUMsTEPS = h5g.ReadDataset<uint>("ParticlePositionResult/DispersionInfo.h5",
+                                                                               "N", "NumOfSteps");
 
-                            if (resusdslt != -1.0 * DF.size())
+                            int rows_ = GetRowsOfDataset("ParticlePositionResult/ParticlePositionLastStep.h5",
+                                                         "Step_" + cuDFNsys::ToStringWithWidth<int>(NUMsTEPS[0], 10));
+                            if (rows_ <= ThresholdToStop)
                             {
                                 system("echo $(date +%d-%m-%y---%T) >> ../recordTime_and_Error.log");
                                 system("echo \"Finished\n\n\" >> ../recordTime_and_Error.log");
-                                break; // get enough particles arrived  }
+                                break; // get enough particles arrived
+                            }
+                        }
+                        else
+                        {
+                            int NumParticles = DF.size() / 2;
+                            // NumPaLeft
+
+                            int NumParArrival = NumParticles - count(DF.begin(), DF.begin() + NumParticles, -1);
+
+                            if ((NumParticles - NumParArrival - NumPaLeft[0]) <= ThresholdToStop)
+                            {
+                                system("echo $(date +%d-%m-%y---%T) >> ../recordTime_and_Error.log");
+                                system("echo \"Finished\n\n\" >> ../recordTime_and_Error.log");
+                                break; // get enough particles arrived
                             }
                         }
                     }
@@ -449,18 +473,36 @@ int main(int argc, char *argv[])
                     else
                         DiffusionLocal = LengthScale_Over_Pe * meanV;
 
-                    if (IfComplexeMixing) // advection dominated
+                    //-----------------------------------advction time to cross a grid
+                    _DataType_ DeltaT_Advection = pow(mean_grid_area, 0.5) / maxV;
+                    DeltaT_Advection = DeltaT_Advection / Factor_mean_time_in_grid;
+                    //-----------------------------------diffusion time to cross a grid
+                    _DataType_ DeltaT_Diffusion = pow(mean_grid_area, 0.5) / (pow(2 * DiffusionLocal, 0.5) * 4);
+                    DeltaT_Diffusion = DeltaT_Diffusion * DeltaT_Diffusion / Factor_mean_time_in_grid;
+                    cout << "DeltaT_Advection: " << DeltaT_Advection << ", DeltaT_Diffusion: " << DeltaT_Diffusion << endl;
+                    if (DeltaT_Advection < DeltaT_Diffusion)
                     {
-                        cout << "** advection dominated **\n";
-                        double meanTime = pow(mean_grid_area, 0.5) / maxV;
-                        DeltaT = meanTime / Factor_mean_time_in_grid;
+                        cout << "\n** ADVEction Time is smaller **\n\n";
+                        DeltaT = DeltaT_Advection;
                     }
                     else
                     {
-                        cout << "** diffusion dominated **\n";
-                        DeltaT = pow(mean_grid_area, 0.5) / (pow(2 * DiffusionLocal, 0.5) * Factor_mean_time_in_grid);   
-                        DeltaT = DeltaT * DeltaT;
+                        cout << "\n** DIFFusion Time is smaller **\n\n";
+                        DeltaT = DeltaT_Diffusion;
                     }
+
+                    // if (IfComplexeMixing) // advection dominated
+                    // {
+                    //     cout << "** advection dominated **\n";
+                    //     double meanTime = pow(mean_grid_area, 0.5) / maxV;
+                    //     DeltaT = meanTime / Factor_mean_time_in_grid;
+                    // }
+                    // else
+                    // {
+                    //     cout << "** diffusion dominated **\n";
+                    //     DeltaT = pow(mean_grid_area, 0.5) / (pow(2 * DiffusionLocal, 0.5) * Factor_mean_time_in_grid);
+                    //     DeltaT = DeltaT * DeltaT;
+                    // }
 
                     cout << "The maximum velocity of all elements is " << maxV << endl;
                     cout << "The mean velocity of all elements is " << meanV << endl;
@@ -625,4 +667,18 @@ int GetRowsOfDataset(string Filename, string Datasetname)
     file.close();
 
     return int(dims[1]);
+};
+
+string GetArgvWithoutComment(const string &A, const char &B)
+{
+    std::stringstream test(A);
+    std::string segment;
+    std::vector<std::string> seglist;
+
+    while (std::getline(test, segment, B))
+    {
+        seglist.push_back(segment);
+    }
+
+    return seglist[0];
 };

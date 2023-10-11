@@ -16,25 +16,17 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.    #
 #***************************************************************************#
 
-# SET(GMSH_INCLUDE_SEARCH_PATH
-#     $ENV{HOME}/pkg/gmsh-4.8.4-source/MY_GMSH/include
-# )
-# SET(GMSH_LIBRARY_SEARCH_PATH
-#     $ENV{HOME}/pkg/gmsh-4.8.4-source/MY_GMSH/lib
-# )
+# Eigen include directory
+SET(EIGEN_INCLUDE_SEARCH_PATH   $ENV{HOME}/pkg)
 
-FIND_PATH(GMSH_H    gmsh.h    ${GMSH_INCLUDE_SEARCH_PATH})
-FIND_LIBRARY(GMSH_L    NAMES gmsh    PATHS ${GMSH_LIBRARY_SEARCH_PATH})
+# Gmsh include directory
+SET(GMSH_INCLUDE_SEARCH_PATH    $ENV{HOME}/pkg/gmsh-4.8.4-source/MY_GMSH/include)
 
-SET(GMSH_FOUND 1)
+# Gmsh lib directory
+SET(GMSH_LIBRARY_SEARCH_PATH    $ENV{HOME}/pkg/gmsh-4.8.4-source/MY_GMSH/lib)
 
-FOREACH(var GMSH_H GMSH_L)
-    IF(NOT ${var})
-    SET(GMSH_FOUND 0)
-    ENDIF(NOT ${var})
-ENDFOREACH(var)
+# umfpack include directory
+SET(UMFPACK_INCLUDE_SEARCH_PATH $ENV{HOME}/pkg/SuiteSparse-master/include)
 
-IF(GMSH_FOUND)
-  SET(GMSH_INCLUDE_DIR  ${GMSH_H})
-  SET(GMSH_LIBRARIES    ${GMSH_L})
-ENDIF(GMSH_FOUND)
+# umfpack lib directory
+SET(UMFPACK_LIBRARY_SEARCH_PATH $ENV{HOME}/pkg/SuiteSparse-master/lib)

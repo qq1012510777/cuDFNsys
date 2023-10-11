@@ -17,14 +17,14 @@
 #***************************************************************************#
 
 
-SET(UMFPACK_INCLUDE_SEARCH_PATH
-  $ENV{HOME}/pkg/SuiteSparse-master/include
-)
-
-SET(UMFPACK_LIBRARY_SEARCH_PATH
-  $ENV{HOME}/pkg/SuiteSparse-master/lib
-  $ENV{HOME}/pkg/SuiteSparse-master/lib
-)
+# SET(UMFPACK_INCLUDE_SEARCH_PATH
+#   $ENV{HOME}/pkg/SuiteSparse-master/include
+# )
+# 
+# SET(UMFPACK_LIBRARY_SEARCH_PATH
+#   $ENV{HOME}/pkg/SuiteSparse-master/lib
+#   $ENV{HOME}/pkg/SuiteSparse-master/lib
+# )
 
 FIND_PATH(UMFPACK_AMD_H      amd.h      ${UMFPACK_INCLUDE_SEARCH_PATH})
 FIND_PATH(UMFPACK_UMFPACK_H  umfpack.h  ${UMFPACK_INCLUDE_SEARCH_PATH})

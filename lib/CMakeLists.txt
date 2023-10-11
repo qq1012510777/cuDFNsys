@@ -29,6 +29,8 @@ if(NOT CMAKE_CUDA_COMPILER)
 ENDIF()
 enable_language(CUDA)
 
+INCLUDE(${PROJECT_SOURCE_DIR}/SetPaths.cmake)
+
 set (CUDFNSYS_ROOT $ENV{HOME}/cuDFNsys)
 
 include_directories(${CUDFNSYS_ROOT}/include)

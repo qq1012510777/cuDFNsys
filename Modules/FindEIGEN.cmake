@@ -16,8 +16,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.    #
 #***************************************************************************#
 
-SET(EIGEN_INCLUDE_SEARCH_PATH
-  $ENV{HOME}/pkg)
+#SET(EIGEN_INCLUDE_SEARCH_PATH
+#  $ENV{HOME}/pkg)
 
 FIND_PATH(EIGEN_DENSE Eigen ${EIGEN_INCLUDE_SEARCH_PATH})
 
