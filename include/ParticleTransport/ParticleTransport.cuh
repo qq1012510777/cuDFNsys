@@ -42,6 +42,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <thrust/host_vector.h>
+#include <thrust/device_vector.h>
+#include <thrust/sort.h>
+#include <thrust/remove.h>
 
 namespace cuDFNsys
 {

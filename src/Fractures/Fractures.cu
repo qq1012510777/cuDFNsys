@@ -34,7 +34,8 @@ __global__ void cuDFNsys::Fractures(cuDFNsys::Fracture<T> *verts,
                                     cuDFNsys::Vector1<T> kappa,
                                     cuDFNsys::Vector1<T> conductivity_powerlaw_exponent,
                                     T Gamma_constant,
-                                    double3 DimensionRatio)
+                                    double3 DimensionRatio,
+                                    cuDFNsys::Vector3<T> MeanOrientation)
 {
     int i = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -123,6 +124,30 @@ __global__ void cuDFNsys::Fractures(cuDFNsys::Fracture<T> *verts,
     verts[i].NormalVec.y /= norm_f;
     verts[i].NormalVec.z /= norm_f;
 
+    //---------------------- if the mean orientation is not (0, 0, 1)
+    if (!(MeanOrientation.x == (T)0. && MeanOrientation.y == (T)0. && MeanOrientation.z == (T)1.))
+    {
+        //rotate the orientation of this fracture
+        T angle_fs = acos(MeanOrientation.z);
+        cuDFNsys::Vector3<T> Ori_Rotate = cuDFNsys::CrossProductVector3<T>(cuDFNsys::MakeVector3((T)0., (T)0., (T)1.),
+                                                                           MeanOrientation);
+
+        cuDFNsys::Quaternion<T> qua;
+        qua = qua.DescribeRotation(Ori_Rotate, angle_fs);
+
+        verts[i].NormalVec = qua.Rotate(verts[i].NormalVec);
+
+        norm_f = sqrt(verts[i].NormalVec.x * verts[i].NormalVec.x +
+                      verts[i].NormalVec.y * verts[i].NormalVec.y +
+                      verts[i].NormalVec.z * verts[i].NormalVec.z);
+        verts[i].NormalVec.x /= norm_f;
+        verts[i].NormalVec.y /= norm_f;
+        verts[i].NormalVec.z /= norm_f;
+
+        if (verts[i].NormalVec.z < 0)
+            verts[i].NormalVec.x *= -1, verts[i].NormalVec.y *= -1, verts[i].NormalVec.z *= -1;
+    }
+
     cuDFNsys::Vector1<T> *normal_fff = &verts[i].NormalVec.x;
     cuDFNsys::Vector1<T> *verts_3D_ptr = &verts[i].Verts3D[0].x;
     for (int j = 0; j < 3; ++j)
@@ -196,7 +221,8 @@ template __global__ void cuDFNsys::Fractures<double>(cuDFNsys::Fracture<double> 
                                                      uint ModeSizeDistri,                      // 1 = power law; 2 = lognormal; 3 = uniform; 4 = monosize
                                                      cuDFNsys::Vector4<double> ParaSizeDistri, // when mode = 1, ;
                                                      cuDFNsys::Vector1<double> kappa,
-                                                     cuDFNsys::Vector1<double> conductivity_powerlaw_exponent, double Gamma_constant, double3 DimensionRatio);
+                                                     cuDFNsys::Vector1<double> conductivity_powerlaw_exponent, double Gamma_constant, double3 DimensionRatio,
+                                                     cuDFNsys::Vector3<double> MeanOrientation);
 template __global__ void cuDFNsys::Fractures<float>(cuDFNsys::Fracture<float> *verts,
                                                     unsigned long seed,
                                                     int count,
@@ -204,7 +230,8 @@ template __global__ void cuDFNsys::Fractures<float>(cuDFNsys::Fracture<float> *v
                                                     uint ModeSizeDistri,                     // 1 = power law; 2 = lognormal; 3 = uniform; 4 = monosize
                                                     cuDFNsys::Vector4<float> ParaSizeDistri, // when mode = 1, ;
                                                     cuDFNsys::Vector1<float> kappa,
-                                                    cuDFNsys::Vector1<float> conductivity_powerlaw_exponent, float Gamma_constant, double3 DimensionRatio);
+                                                    cuDFNsys::Vector1<float> conductivity_powerlaw_exponent, float Gamma_constant, double3 DimensionRatio,
+                                                    cuDFNsys::Vector3<float> MeanOrientation);
 
 // ====================================================
 // NAME:        Fractures

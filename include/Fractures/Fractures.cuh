@@ -51,7 +51,8 @@ __global__ void Fractures(cuDFNsys::Fracture<T> *verts,
                           cuDFNsys::Vector1<T> kappa,
                           cuDFNsys::Vector1<T> conductivity_powerlaw_exponent,
                           T Gamma_constant = 5.0e-4,
-                          double3 DomainDimensionRatio = make_double3(1, 1, 1));
+                          double3 DomainDimensionRatio = make_double3(1, 1, 1),
+                          cuDFNsys::Vector3<T> MeanOrientation = cuDFNsys::MakeVector3((T)0., (T)0., (T)1.));
 
 // Generate some fractures in a DFN
 template <typename T>

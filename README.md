@@ -55,6 +55,7 @@ The following is the Ubuntu command lines to install the relying packages:
 cd ~
 sudo apt-get update
 sudo apt-get install build-essential
+sudo apt-get install gfortran
 sudo apt-get install cmake 
 # note that the version of cmake should be 3.10 or higher
 # if the version is not satisfied, try to install cmake from source
@@ -62,6 +63,7 @@ sudo apt-get install cmake
 # cuda
 sudo apt-get install nvidia-cuda-dev
 sudo apt-get install nvidia-cuda-toolkit 
+# better to restart your computer now ...
 
 # openMP
 sudo apt-get install libomp-dev
@@ -89,13 +91,15 @@ git clone http://gitlab.onelab.info/gmsh/gmsh.git
 cd gmsh
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=path-to-install-gmsh  ..
+cmake -DENABLE_BUILD_DYNAMIC=1 -DCMAKE_INSTALL_PREFIX=path-to-install-gmsh  ..
 make
 sudo make install  
 
 # change the path-to-install-gmsh to where you want to install the gmsh
-
 ```
+
+During the installations of these relying packages, errors may occur. Those errors are generally related to the lack of other dependencies. Check the error information, and install the lacking denpendencies. 
+
 After the installation of these relying packages (by `sudo apt-get install`, they are install at default locations), the _cuDFNsys_ package can be installed by the following steps:
 ```
 cd ~/cuDFNsys/lib
@@ -125,7 +129,9 @@ Again, change these paths like `$ENV{HOME}/somewhere` to the path of the package
 Now, you can compile the _cuDFNsys_:
 ```
 cd ~/cuDFNsys/lib
-bash compileCode.sh
+mkdir build 
+cd build 
+cmake -DCMAKE_CUDA_ARCHITECTURES=60  ..
 ```
 If this script is finished without errors, then the file `libcuDFNsys.a` appears in `~/cuDFNsys/lib`.
 

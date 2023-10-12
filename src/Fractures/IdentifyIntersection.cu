@@ -317,11 +317,11 @@ cuDFNsys::IdentifyIntersection<T>::IdentifyIntersection(const size_t &Fracsize,
     };
     //cout << "IdentifyIntersection GPU finished\n";
 }; // IdentifyIntersection
-template cuDFNsys::IdentifyIntersection<double>::IdentifyIntersection<double>(const size_t &Fracsize,
-                                                                              cuDFNsys::Fracture<double> *Frac_verts_device_ptr,
-                                                                              const bool &if_trucncated,
-                                                                              std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<double>, cuDFNsys::Vector3<double>>> &Intersection_map);
-template cuDFNsys::IdentifyIntersection<float>::IdentifyIntersection<float>(const size_t &Fracsize,
-                                                                            cuDFNsys::Fracture<float> *Frac_verts_device_ptr,
-                                                                            const bool &if_trucncated,
-                                                                            std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<float>, cuDFNsys::Vector3<float>>> &Intersection_map);
+template cuDFNsys::IdentifyIntersection<double>::IdentifyIntersection(const size_t &Fracsize,
+                                                                      cuDFNsys::Fracture<double> *Frac_verts_device_ptr,
+                                                                      const bool &if_trucncated,
+                                                                      std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<double>, cuDFNsys::Vector3<double>>> &Intersection_map);
+template cuDFNsys::IdentifyIntersection<float>::IdentifyIntersection(const size_t &Fracsize,
+                                                                     cuDFNsys::Fracture<float> *Frac_verts_device_ptr,
+                                                                     const bool &if_trucncated,
+                                                                     std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<float>, cuDFNsys::Vector3<float>>> &Intersection_map);
