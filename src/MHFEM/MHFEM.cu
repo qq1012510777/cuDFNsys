@@ -226,6 +226,10 @@ double2 cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
     // now it is the maximum velocity
     double maxV = NormOfVelocity.maxCoeff(); //NormOfVelocity.sum() / mesh.Element3D.size();
     double meanV = NormOfVelocity.sum() / mesh.Element3D.size();
+
+    h5gg.AddDataset<double>(mat_key, "N", "maxV", &maxV, make_uint2(1, 0));
+    h5gg.AddDataset<double>(mat_key, "N", "meanV", &meanV, make_uint2(1, 0));
+
     double2 JKLDSF = make_double2(meanV, maxV);
 
     // M1.WriteMat(mat_key, "u", mesh.Element3D.size() * 3,

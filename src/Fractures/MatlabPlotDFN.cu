@@ -77,6 +77,9 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
     T modelsize[1] = {L};
     h5gg.AddDataset(mat_key, "N", "L_m", modelsize, dim_f);
 
+    int NumCLusters = ListClusters.size();
+    h5gg.AddDataset(mat_key, "N", "NumClusters", &NumCLusters, dim_f);
+
     //------------
     uint2 dim_ds = make_uint2(3, 1);
     double DomainDimensionRatio[3] = {DomainDimensionRatio_d.x, DomainDimensionRatio_d.y, DomainDimensionRatio_d.z};
@@ -147,7 +150,7 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
     {
         int NUM_intersections = Intersection_host.size();
 
-        T *Intersections_ = new T[NUM_intersections * 6];
+        T *Intersections_ = new T[NUM_intersections * 8];
         if (Intersections_ == NULL)
         {
             string AS = "Alloc error in MatlabPlotDFN!";
@@ -164,11 +167,12 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
             Intersections_[tmp_jj + NUM_intersections * 3] = i->second.second.x;
             Intersections_[tmp_jj + NUM_intersections * 4] = i->second.second.y;
             Intersections_[tmp_jj + NUM_intersections * 5] = i->second.second.z;
-
+            Intersections_[tmp_jj + NUM_intersections * 6] = i->first.first;
+            Intersections_[tmp_jj + NUM_intersections * 7] = i->first.second;
             tmp_jj++;
         }
 
-        dim_f = make_uint2(6, NUM_intersections);
+        dim_f = make_uint2(8, NUM_intersections);
         h5gg.AddDataset(mat_key, "N", "intersections", Intersections_, dim_f);
         //M1.WriteMat(mat_key, "u", NUM_intersections * 6, NUM_intersections, 6,
         // Intersections_, "intersections");
@@ -403,7 +407,7 @@ cuDFNsys::MatlabPlotDFN<T>::MatlabPlotDFN(string mat_key,                       
         oss << "pbaspect([DomainDimensionRatio]); hold on\n";
         if (If_show_cluster == true && Intersection_host.size() >= 1)
         {
-            oss << "\nListClusters = h5read([currentPath, '/" << mat_key << "'], '/ListClusters');\n";
+            oss << "\nListClusters = h5read([currentPath, '/" << mat_key << "'], '/ListClusters'); ListClusters = ListClusters';\n";
             oss << "PercolationClusters = h5read([currentPath, '/" << mat_key << "'], '/PercolationClusters');\n";
             oss << "if (size(PercolationClusters, 2) == 1 && size(PercolationClusters, 1) == 1); ListClusters=ListClusters'; end;\n";
             oss << "figure(2); title('DFN highlighting clusters'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); view(3); hold on\n";

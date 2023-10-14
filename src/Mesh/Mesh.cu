@@ -324,6 +324,8 @@ double cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
     };
     Area_characteristic = Area_characteristic / ele_num;
 
+    h5gg.AddDataset<double>(mat_key, "N", "mean_grid_area", &Area_characteristic, make_uint2(1, 0));
+
     //M1.WriteMat(mat_key, "u", ele_num * 3,
     //            ele_num, 3, ptr_element_3D, "element_3D");
     dim_f = make_uint2(3, ele_num);

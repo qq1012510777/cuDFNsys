@@ -165,6 +165,25 @@ Change the paths of the headers and libraries, and compile the QuickStartGuide.c
 make
 ```
 
+After the compulation of QuickStartGuide, run it by
+```
+./QuickStartGuide
+```
+If errors happen, e.g., `error while loading shared libraries: libgmsh.so: cannot open shared object file: No such file or directory`, just add two enviromental variables to `~/.bashrc` as follows:
+```
+vim ~/.bashrc
+```
+add the following content to `~/.bashrc`
+```
+export LD_LIBRARY_PATH=path-to-gmsh-library:$LD_LIBRARY_PATH
+export LIBRARY_PATH=path-to-gmsh-library:$LIBRARY_PATH
+# change path-to-gmsh-library to the dynamic gmsh library in the computer
+```
+then update `~/.bashrc` by
+```
+source ~/.bashrc
+```
+
 # Visualization
 
 After simulation, _cuDFNsys_ outputs .h5 and .m (and/or .py) files, and you can visualize them by the generated .m or .py file. 

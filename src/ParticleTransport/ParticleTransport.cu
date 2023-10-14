@@ -1499,7 +1499,7 @@ void cuDFNsys::ParticleTransport<T>::MatlabPlot(const string &mat_key,
         oss << endl;
         oss << "pbaspect([DomainDimensionRatio]); hold on\n";
 
-        oss << "figure(2); subplot(1, 2, 2); \nfor i = 0:N_steps\n";
+        oss << "figure(2); subplot(1, 2, 2); \nfor i = 0:ceil(N_steps/100):N_steps\n";
         oss << "\ttitle(['Step NO = ', num2str(i)]);\n";
         oss << "\tH5name = []; H5name_2D = [];\n";
         oss << "\tif (i == 0); H5name = [currentPath, '/ParticlePositionResult/ParticlePositionInit_3D.h5']; else; H5name = [currentPath, '/ParticlePositionResult/ParticlePositionBlock', num2str(ceil(double(i) / double(SizeOfDataBlock)), '%010d'), '_3D.h5']; end;\n";

@@ -180,6 +180,11 @@ void cuDFNsys::OutputObjectData<T>::OutputMesh(const string &filename_,
     uint NumOutletEdge[1] = {(uint)mesh.OutletEdgeNOLen.size()};
     h5_.AddDataset(filename_, "N", "NumOutletEdges", NumOutletEdge, dim_e);
 
+    std::vector<uint> Fracs_percol_II(Fracs_percol.size());
+    std::copy(Fracs_percol.begin(), Fracs_percol.end(), Fracs_percol_II.data());
+
+    h5_.AddDataset<uint>(filename_, "N", "Fracs_percol", Fracs_percol_II.data(), make_uint2(Fracs_percol.size(), 0));
+
     vector<string> datasetname = {
         "MeshSuccess",
         "FracID",
