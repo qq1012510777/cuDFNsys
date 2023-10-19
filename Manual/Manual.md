@@ -141,12 +141,34 @@ source ~/.bashrc
 This is a runtime error, that the computer does not know where the library `gmsh` is when running `./main`.
 
 ## 2. Documented _cuDFNsys_ functions/classes 
-Here I document some _cuDFNsys_ functions/classes. I'll do it with an introduction of a quickstart example, which is in `~/cuDFNsys/QuickStartGuide/src/QuickStartGuide.cu`.
+Here I document some _cuDFNsys_ functions/classes (which are directly related to the generation of DFNs, flow and transport simulations). I'll do it with an introduction of a quickstart example, which is in `~/cuDFNsys/QuickStartGuide/src/QuickStartGuide.cu`.
 
 I will explain this code line by line, accompanying by the description of _cuDFNsys_ functions/classes.
 
-In this code, a stochastic DFN with one group of fractures is generated. The number of fractures is 500, the orientations of fracture follow the Fisher distribution, but the parameter $\kappa = 0$, meaning that the distribution is actually uniform. The sizes of fractures follow a power-law distribution, with $\alpha = 1.5$, the minimum and maximum sizes of fractures are 1 and 15, respectively. Note that the size of fractures is described by the circumscribed circle of the square fractures.
+In this code, a stochastic DFN with one group of fractures is generated. The number of fractures is `500`, the orientations of fracture follow the Fisher distribution, but the parameter $\kappa = 0$, meaning that the distribution is actually uniform. The sizes of fractures follow a power-law distribution, with $\alpha = 1.5$, the minimum and maximum sizes of fractures are 1 and 15, respectively. Note that the size of fractures is described by the radius $R$ of circumscribed circles of the square fractures.
+
+The condutivity of fractures is related to $R$. The aperture $b$ of fractures is 
+$$b = \gamma R ^\beta,$$
+where $\gamma $ and $\beta$ are a constant and an exponent, respectively. The conductivity $k_f$ of fractures is
+$$k_f = \frac{b^3}{12}$$.
+Therefore, the conductivity of fractures depends on the size of fractures.
+
+We set $\gamma = 5.5e-4, \beta = 0.25$. Therefore, the following variables describe the fracture parameters
+
 ```
-int NumFractures = 500;
+    int NumFractures = 500;
+    double kappa = 0;
+    double beta = 0.25, gamma = 5.5e-4;
+    int ModeSizeDistri = 0;
+    cuDFNsys::Vector4<double> ParaSizeDistri =
+        cuDFNsys::MakeVector4(1.5,
+                              1.,
+                              15.,
+                              0.);
 ```
+The variable `ModeSizeDistri` (an integer) is an indicator for the size distributions: 0 for power-law, 1 for lognormal, 2 for uniform, 3 for mono-sized. 
+
+The variable `ParaSizeDistri` (type: `cuDFNsys::Vector4<double>`) is a vector of four elements. It is equivalent to `double4` or `float4` in cuda, depending on the template you set. Here the template is `<double>`, so `ParaSizeDistri` is actually a `double4` with elements that can be accessed by `ParaSizeDistri.x`, `ParaSizeDistri.y`, `ParaSizeDistri.z` and `ParaSizeDistri.w`. To create a `cuDFNsys::Vector4<double>`, we can use a _cuDFNsys_ function: `cuDFNsys::MakeVector4(double, double, double, double)`.
+
+When `ModeSizeDistri = 0`, `ParaSizeDistri.x` is $\alpha$, `ParaSizeDistri.y` is the minimum $R$, `ParaSizeDistri.z` is the maximum $R$, `ParaSizeDistri.w` means nothing.
 
