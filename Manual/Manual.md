@@ -438,7 +438,7 @@ public:
 
 A matlab script named "DFN.m" will be generated in the current working directory. We can run it in Matlab. We can get the visualization of the DFN:
 <p align="center">
-  <img width="500" src="https://github.com/qq1012510777/cuDFNsys/blob/main/moive_particlesII.gif">
+  <img width="500" src="https://github.com/qq1012510777/cuDFNsys/blob/main/Manual/VISUALIZE_DFNs.png">
 </p>
 <p align="center">
     <em>Visualization of a DFN. From left to right: the DFN, the DFN with clusters in different colors, and the distribution of orientations. </em>
