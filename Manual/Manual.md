@@ -149,8 +149,8 @@ In this code, a stochastic DFN with one group of fractures is generated. The num
 
 The condutivity of fractures is related to $R$. The aperture $b$ of fractures is 
 $$b = \gamma R ^\beta,$$
-where $\gamma $ and $\beta$ are a constant and an exponent, respectively. The conductivity $k_f$ of fractures is
-$$k_f = \frac{b^3}{12}$$.
+where $\gamma$ and $\beta$ are a constant and an exponent, respectively. The conductivity $k_f$ of fractures is
+$$k_f = \frac{b^3}{12}.$$
 Therefore, the conductivity of fractures depends on the size of fractures.
 
 We set $\gamma = 5.5e-4, \beta = 0.25$. Therefore, the following variables describe the fracture parameters
@@ -168,7 +168,115 @@ We set $\gamma = 5.5e-4, \beta = 0.25$. Therefore, the following variables descr
 ```
 The variable `ModeSizeDistri` (an integer) is an indicator for the size distributions: 0 for power-law, 1 for lognormal, 2 for uniform, 3 for mono-sized. 
 
-The variable `ParaSizeDistri` (type: `cuDFNsys::Vector4<double>`) is a vector of four elements. It is equivalent to `double4` or `float4` in cuda, depending on the template you set. Here the template is `<double>`, so `ParaSizeDistri` is actually a `double4` with elements that can be accessed by `ParaSizeDistri.x`, `ParaSizeDistri.y`, `ParaSizeDistri.z` and `ParaSizeDistri.w`. To create a `cuDFNsys::Vector4<double>`, we can use a _cuDFNsys_ function: `cuDFNsys::MakeVector4(double, double, double, double)`.
+The variable `ParaSizeDistri` (type: `cuDFNsys::Vector4<double>`) is a vector of four elements. It is equivalent to `double4` or `float4` in cuda, depending on the template you set. That is to say, the template can be `double` or `float`. Here the template is `<double>`, so `ParaSizeDistri` is actually a `double4` with elements that can be accessed by `ParaSizeDistri.x`, `ParaSizeDistri.y`, `ParaSizeDistri.z` and `ParaSizeDistri.w`. To create a `cuDFNsys::Vector4<double>`, we can use a _cuDFNsys_ function: `cuDFNsys::MakeVector4(double, double, double, double)`.
 
-When `ModeSizeDistri = 0`, `ParaSizeDistri.x` is $\alpha$, `ParaSizeDistri.y` is the minimum $R$, `ParaSizeDistri.z` is the maximum $R$, `ParaSizeDistri.w` means nothing.
+When `ModeSizeDistri = 0`, the size distribution is a power-law. `ParaSizeDistri.x` is $\alpha$, `ParaSizeDistri.y` is the minimum $R$, `ParaSizeDistri.z` is the maximum $R$, `ParaSizeDistri.w` means nothing.
+
+When `ModeSizeDistri = 1`, the size distribution is lognormal `ParaSizeDistri.x` is the mean of logarithmic values, `ParaSizeDistri.y` is the standard deviation of logarithmic values, `ParaSizeDistri.z` is the minimum $R$, `ParaSizeDistri.w` is the maximum $R$.
+
+When `ModeSizeDistri = 2`, the size distribution is uniform. ``ParaSizeDistri.x` is the minimum $R$, `ParaSizeDistri.y` is the maximum $R$, `ParaSizeDistri.z` and `ParaSizeDistri.w` mean nothing.
+
+When `ModeSizeDistri = 3`, the size distribution is mono-sized. `ParaSizeDistri.x` is $R$, `ParaSizeDistri.y`, `ParaSizeDistri.z` and `ParaSizeDistri.w` mean nothing.
+
+Then, I want the domain be a cuboid column. The domain size in x is 30, size in y is 30, size in z is 60. The parameters for domain are as follows:
+```
+    double DomainSize_X = 30;
+    double3 DomainDimensionRatio = make_double3(1, 1, 2);
+    int perco_dir = 2;
+```
+`DomainDimensionRatio` is a `double3` variable (that is a built-in data-type in cuda, also the function `make_double3` is a built-in function in cuda), and it clarifies the dimension ratio with respect to the size in x. Here the ratio is `(1, 30/30 = 1, 60 / 30 = 2)`. `perco_dir` defines the percolation direction, i.e., the mean flow direction. We later check the percolation state in the z directon. So, `perco_dir = 0` means the x direction, `perco_dir = 1` means the y direction, and `perco_dir = 2` means the z direction.
+
+Next, I create an empty vector of structs (the fracture) by
+```
+thrust::host_vector<cuDFNsys::Fracture<double>> Frac_verts_host(NumFractures);
+```
+`thrust::host_vector<type>` is a built-in container in cuda, which creates a vector of something on the host side (manipulations on CPU). `cuDFNsys::Fracture<double>` is a _cuDFNsys_ struct, with templates (`double` or `float`). A `cuDFNsys::Fracture<double>` has several member variables:
+```
+template <typename T>
+struct Fracture
+{
+public:
+    // conductivity of the fracture
+    T Conductivity;
+
+    // 3D verts
+    cuDFNsys::Vector3<T> Verts3D[4];
+
+    // center
+    cuDFNsys::Vector3<T> Center;
+
+    // verts of 3D square/fracture
+    cuDFNsys::Vector3<T> Verts3DTruncated[8];
+
+    // number of verts of truncated fractures
+    int NumVertsTruncated;
+
+    // radius of circumscribe circle
+    T Radius;
+
+    // if the fracture intersects the six faces of cubic model?
+    bool ConnectModelSurf[6]; // x_min, x_max, y_min, y_max, z_min, z_max,
+
+    // normal vec (normalized)
+    cuDFNsys::Vector3<T> NormalVec;
+}
+```  
+`cuDFNsys::Vector3<T>` is `double3` or `float3`, depending on the template you set. `Conductivity` is $k_f$. `Verts3D` is the four vertices of the square fractures. `center` is the center of the fracture. `Verts3DTruncated` is the vertices of square fractures after the fracture is truncated by the domain. `NumVertsTruncated` is the number of vertices after truncation, so its maximum number is eight.  `Radius` is the radius of fractures. `ConnectModelSurf` denotes if the fracture intersects the six surfaces of the domain, `true` means intersected. `NormalVec` is a `double3` or `float3`, denoting the normal vector (always pointing up) of a fracture. 
+
+The fracture vector is named `Frac_verts_host` with size of `NumFractures`. To generate fractures on GPU side, I create a device vector and a pointer to this device vector.
+```
+    thrust::device_vector<cuDFNsys::Fracture<double>> Frac_verts_device(NumFractures);
+    cuDFNsys::Fracture<double> *Frac_verts_device_ptr;
+    Frac_verts_device_ptr = thrust::raw_pointer_cast(Frac_verts_device.data());
+```
+`thrust::raw_pointer_cast` is a built-in function in the `thrust` function in cuda. It links the address of a thrust vector to a pointer. For more details, one can google it.
+
+Now, we have all parameter defined in different variables. Let's generate a stochastic DFN.
+```
+    time_t t;
+    time(&t);
+    cuDFNsys::Fractures<double><<<NumFractures / 256 + 1, 256>>>(Frac_verts_device_ptr,
+                                                                 (unsigned long)t,
+                                                                 NumFractures,
+                                                                 DomainSize_X,
+                                                                 ModeSizeDistri,
+                                                                 ParaSizeDistri,
+                                                                 kappa,
+                                                                 beta,
+                                                                 gamma,
+                                                                 DomainDimensionRatio);
+
+    cudaDeviceSynchronize();
+    Frac_verts_host = Frac_verts_device;
+```
+`time_t t;` and `time(&t);` are used to address random seeds. `t` is now the random seed. `cuDFNsys::Fractures<double>` is a global function to generate fractures on GPU, with template of `double`. `<<<NumFractures / 256 + 1, 256>>>` is a configuration of the execution parameters for a CUDA kernel launch:
+```
+template <typename T>
+__global__ void Fractures(cuDFNsys::Fracture<T> *verts,
+                          unsigned long seed,
+                          int count,
+                          T model_L,
+                          uint ModeSizeDistri,                 
+                          cuDFNsys::Vector4<T> ParaSizeDistri,
+                          T kappa,
+                          T beta,
+                          T gamma,
+                          double3 DomainDimensionRatio = make_double3(1, 1, 1),
+                          cuDFNsys::Vector3<T> MeanOrientation = cuDFNsys::MakeVector3((T)0., (T)0., (T)1.));
+```
+* `*verts` is the pointer to the device fracture vector.
+* `seed` is a random seed, with type casting to `unsigned long`
+* `count` is a integer, which is the number of fractures
+* `model_L` is the domain size in x direction
+* `ModeSizeDistri` is a integer, which is an indicator for fractur size distributions
+* `ParaSizeDistri` is a `cuDFNsys::Vector4<double>` here, meaning the parameters for the size distribution
+* `kappa` is a double, meaning the $\kappa$ value for the Fisher distribution
+* `beta` is a double, meaning the $\beta$ value for conductivity
+* `gamma` is a double, meaning the $\gamma$ value for conductivity
+* `DomainDimensionRatio` is a `cuDFNsys::Vector3<double>` here, denoting the dimension ratio of the domain size, the default value is `(1, 1, 1)`
+* `MeanOrientation` is the mean orientation of the Fisher distribution, the defauly value is `(0, 0, 1)`
+
+`cudaDeviceSynchronize()` is a CUDA runtime API function used in CUDA C/C++ programming to ensure that all previously issued CUDA kernel launches have completed and that the GPU device has synchronized with the host CPU. In other words, it's used to make sure that all GPU work is finished before proceeding with further CPU operations.
+
+After the kernel function, we copy data from device to host by `Frac_verts_host = Frac_verts_device;`. Now the generate of fracture networks is finished.
 
