@@ -70,6 +70,7 @@ int main(int argc, char *argv[])
                                                           Frac_verts_device_ptr,
                                                           true,
                                                           Intersection_map};
+                                                          
     std::vector<std::vector<size_t>> ListClusters;
     std::vector<size_t> Percolation_cluster;
     cuDFNsys::Graph<double> G{(size_t)NumFractures, Intersection_map};
@@ -78,6 +79,21 @@ int main(int argc, char *argv[])
                                                            Frac_verts_host,
                                                            perco_dir,
                                                            Percolation_cluster};
+    cuDFNsys::MatlabPlotDFN<double> PlotDFN_{"DFN.h5",
+                                             "DFN.m",
+                                             Frac_verts_host,
+                                             Intersection_map,
+                                             ListClusters,
+                                             Percolation_cluster,
+                                             false,
+                                             true,
+                                             true,
+                                             true,
+                                             DomainSize_X,
+                                             perco_dir,
+                                             true,
+                                             "DFN",
+                                             DomainDimensionRatio};
 
     if (Percolation_cluster.size() > 0)
     {

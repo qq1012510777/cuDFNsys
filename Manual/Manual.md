@@ -443,3 +443,200 @@ A matlab script named "DFN.m" will be generated in the current working directory
 <p align="center">
     <em>Visualization of a DFN. From left to right: the DFN, the DFN with clusters in different colors, and the distribution of orientations. </em>
 </p>
+
+## 2.5 Mesh generation
+If this is a percolative cluster, then we can do mesh generation and then flow and transport simulation. This can be checked by
+```
+if (Percolation_cluster.size() > 0)
+```
+
+Before mesh, we get all percolative fractures first:
+```
+        std::vector<size_t> Fracs_percol;
+        cuDFNsys::GetAllPercolatingFractures GetPer{Percolation_cluster,
+                                                    ListClusters,
+                                                    Fracs_percol};
+```
+`Fracs_percol` is an empty vector that will store the IDs of fractures of all percolative fractures.
+`GetPer` is a class of `cuDFNsys::GetAllPercolatingFractures`:
+```
+class GetAllPercolatingFractures
+{
+public:
+    GetAllPercolatingFractures(const std::vector<size_t> &Percolation_cluster,
+                               const std::vector<std::vector<size_t>> &ListClusters,
+                               std::vector<size_t> &Fracs_percol);
+};
+```
+* `Percolation_cluster` stores the IDs of percolative cluster
+* `ListClusters` stores the clusters in DFNs.
+* `Fracs_percol` is a vector that store the IDs of fractures of all percolative fractures
+
+Then, we will remove dead ends (non-percolative fracture from the DFNs) because they have no contributions to flow.
+```
+        std::vector<pair<int, int>> IntersectionPair_percol;
+        cuDFNsys::RemoveDeadEndFrac<double> RDEF{Fracs_percol,
+                                                 IntersectionPair_percol,
+                                                 (size_t)perco_dir,
+                                                 Frac_verts_host,
+                                                 Intersection_map,
+                                                 false};
+```
+`IntersectionPair_percol` is an empty `std::vector` of pairs of the IDs of intersecting fractures. In this step, some fractures will be removed from the host fracture vector, and the IDs of fractures will be re-sorted.
+
+`RDEF` is a class of `cuDFNsys::RemoveDeadEndFrac<double>` which require six parameters:
+```
+template <typename T>
+class RemoveDeadEndFrac
+{
+public:
+    RemoveDeadEndFrac(std::vector<size_t> &Fracs_percol,
+                      std::vector<pair<int, int>> &IntersectionPair_percol,
+                      const size_t &Perco_dir,
+                      thrust::host_vector<cuDFNsys::Fracture<T>> &Frac_verts_host,
+                      std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<T>, cuDFNsys::Vector3<T>>> Intersection_map,
+                      bool IfRemoveDeadEndsInPercolationCluster);
+};
+```
+* `Fracs_percol` is a vector that store the IDs of fractures of all percolative fractures, before removal of fractures. After removal, the values will be changed
+* `IntersectionPair_percol` is an empty `std::vector` of pairs of the IDs of intersecting fractures.
+* `Perco_dir` is the pre-defined percolation direction
+* `Frac_verts_host` is the host vector of fractures
+* `Intersection_map` is the map to store intersection pairs and intersection coordinates
+* `IfRemoveDeadEndsInPercolationCluster` is a bool variable. `true` means that even dead-end-fractures (only connect to one another fracture) in percolation cluster will be removed. Normally it should be `false`!!!
+
+Now, we can generate mesh by
+```
+        cuDFNsys::Mesh<double> mesh{Frac_verts_host,
+                                    IntersectionPair_percol,
+                                    &Fracs_percol,
+                                    1,
+                                    3,
+                                    perco_dir,
+                                    DomainSize_X,
+                                    DomainDimensionRatio};
+```
+`mesh` is a class of `cuDFNsys::Mesh<double>`:
+```
+template <typename T>
+class Mesh
+{
+    // constructor
+    Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Frac_verts_host,
+         const std::vector<pair<int, int>> &IntersectionPair_percol,
+         std::vector<size_t> *Fracs_percol,
+         const T &min_ele_edge,
+         const T &max_ele_edge,
+         const int &perco_dir,
+         const T &DomainSize_X,
+         double3 DomainDimensionRatio = make_double3(1, 1, 1));
+};
+```
+* `Frac_verts_host` is a host vector of fractures (only containning percolative fractures)
+* `IntersectionPair_percol` is a `std::vector` of pairs of the IDs of intersecting fractures
+* `Fracs_percol` is a vector that store the IDs of fractures of all percolative fractures
+* `min_ele_edge` is the user-defined minimum size of finite elements
+* `max_ele_edge` is the user-defined maximum size of finite elements
+* `perco_dir` is the pre-defined percolation direction
+* `DomainSize_X` is the domain size in x direction
+* `DomainDimensionRatio` is a `cuDFNsys::Vector3<double>` here, denoting the dimension ratio of the domain size, the default value is `(1, 1, 1)`
+
+This mesh generator uses Gmsh C++ API. It has some member variables:
+```
+template <typename T>
+class Mesh
+{
+public:
+    // if mesh generates successfully or not?
+    bool MeshSuccess = true;
+
+    // 3D coordinates
+    thrust::host_vector<cuDFNsys::Vector3<T>> Coordinate3D;
+    // 2D elements of each fracture
+    thrust::host_vector<thrust::host_vector<uint3>> Element2D;
+    // 3D elements of whole DFN
+    thrust::host_vector<uint3> Element3D;
+    // 2D coordinates of elements
+    thrust::host_vector<cuDFNsys::EleCoor<T>> Coordinate2D;
+    // Frac Tag of each element
+    thrust::host_vector<uint> ElementFracTag; // from 0
+
+    // edge attributes
+    thrust::host_vector<cuDFNsys::EleEdgeAttri> EdgeAttri;
+    // length values of inlet edges
+    thrust::host_vector<cuDFNsys::Vector2<T>> InletEdgeNOLen;
+    // length values of outlet edges
+    thrust::host_vector<cuDFNsys::Vector2<T>> OutletEdgeNOLen;
+
+    // number of interior edges
+    uint NumInteriorEdges;
+    // number of inlet edges
+    uint NumInletEdges;
+    // number of outlet edges
+    uint NumOutletEdges;
+    // number of neaumann edges
+    uint NumNeumannEdges;
+};
+```
+* `MeshSuccess` denotes if the mesh generation is successful or not
+* `Coordinate3D` denotes the coordinates of each node
+* `Element2D` is a `host_vector` of `host_vector`, containing the finite elements in each fractures. Hence the size of `Element2D` is equal to the size of `Frac_verts_host`
+* `Element3D` is a `host_vector` storing the elements in 3D. It actually is a flatten version of `Element2D`
+* `Coordinate2D` is a `host_vector` storing the 2D coodinates of the nodes in each element.
+* `ElementFracTag` is a `host_vector` storing the fracture ID for each finite element
+* `EdgeAttri` is a `host_vector` storing the attribute Tag of each edge in each finite element
+* `InletEdgeNOLen` is a `host_vector`storing the Edge No. and the length of each inlet edge 
+* `OutletEdgeNOLen` is a `host_vector`storing the Edge No. and the length of each outlet edge 
+* `NumInteriorEdges` is the number of interior edges
+* `NumInletEdges` is the number of inlet edges
+* `NumOutletEdges` is the number of outlet edges
+* `NumNeumannEdges` is the number of Neumann edges (fracture contours that are not at inlet and outlet)
+
+The visualization of mesh can be done by
+```
+        double mean_grid_area = mesh.MatlabPlot("DFN_mesh.h5",
+                                                "DFN_mesh.m",
+                                                Frac_verts_host,
+                                                DomainSize_X,
+                                                true,
+                                                true,
+                                                true,
+                                                "DFN_mesh",
+                                                DomainDimensionRatio);
+```
+`mean_grid_area` is a return parameter of the member function `MatlabPlot` of `mesh`. It is the mean size of finite elements.
+
+`mesh.MatlabPlot` needs nine parameters:
+```
+template <typename T>
+class Mesh
+{
+public:
+    double MatlabPlot(const string &h5_file_name,
+                      const string &m_file_name,
+                      thrust::host_vector<cuDFNsys::Fracture<T>> Frac_verts_host,
+                      const T &DomainSize_X,
+                      const bool &If_check_2D_coordinates,
+                      const bool &If_check_edge_Numbering,
+                      bool If_python_visualization = false,
+                      string PythonName_Without_suffix = "DFN_mesh_py",
+                      double3 DomainDimensionRatio = make_double3(1, 1, 1));
+};
+```
+* `h5_file_name` denotes the name of the `.h5` file, the suffix '.h5' is needed.
+* `m_file_name` denotes the name of the `.m` file. It is a matlab script that will be generated in the working directory. The suffix '.m' is needed
+* `Frac_verts_host` is the host vector of fractures
+* `DomainSize_X` is the domain size in x direction
+* `If_check_2D_coordinates` denotes if the 2D coordinates are checked 
+* `If_check_edge_Numbering` denotes if the numbering of edges are checked
+* `if_python_visualization` is a bool variable. `true` means outputting python script to visualize the DFN.
+* `PythonName_Without_suffix` denotes the name of the python script, without the suffix `.py`
+* `DomainDimensionRatio` is a `cuDFNsys::Vector3<double>` here, denoting the dimension ratio of the domain size, the default value is `(1, 1, 1)`
+
+The mesh result can be seen by running `DFN_mesh.m` in Matlab.
+<p align="center">
+  <img width="500" src="https://github.com/qq1012510777/cuDFNsys/blob/main/Manual/VISUAL_DFNMESH.png">
+</p>
+<p align="center">
+    <em>Visualization of a DFN mesh. From left to right: the mesh, and the mesh with edge atttributes highlighted in colors. </em>
+</p>
