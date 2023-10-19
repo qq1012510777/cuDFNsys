@@ -1438,7 +1438,7 @@ void cuDFNsys::ParticleTransport<T>::MatlabPlot(const string &mat_key,
 
         oss << "show_trajector_whole = false;\n";
         oss << "if (show_trajector_whole == true)\n";
-        oss << "\tfor i = 0 : ceil(N_steps / delta_t2)\n";
+        oss << "\tfor i = 0 : ceil(N_steps / delta_t2) : N_steps\n";
         oss << "\t\tinit_ = final_; final_ = init_ + delta_t2;\n";
         oss << "\t\tif (final_ > N_steps)\n";
         oss << "\t\t\tfinal_ = N_steps;\n";

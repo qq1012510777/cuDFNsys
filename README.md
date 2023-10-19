@@ -193,15 +193,7 @@ The visulization with MATLAB is simple, you just need the license of MATLAB.
 With Python, you need to install the _mayavi_ Python package. _mayavi_ is a very good visualization engine. The Matplotlib package is not good at 3D visualizations, see [Why my 3D plot doesn’t look right at certain viewing angles](https://matplotlib.org/2.2.2/mpl_toolkits/mplot3d/faq.html).
 
 # Manual
-Right now, I provide a quickstart guide to explain how can one do simulations with _cuDFNsys_ functions. See QuickStartGuide/src/QuickStartGuide.cu.
-
-To compile and run QuickStartGuide example, run `make` in the directory-'QuickStartGuide'.
-
-Then, run the command in your shell: `./QuickStartGuide 10000`
-
-The number `10000` above means that 10000 particles are injected.
-
-Note that the particles' information (e.g., positions) are 2D. You have to transform them into 3D data with the command `./Transform2DH5ParticleDataTo3D 0 DFN_mesh.h5`.
+Manual for _cuDFNsys_ is [here](Manual/Manual.md).
 
 # Directories
 
