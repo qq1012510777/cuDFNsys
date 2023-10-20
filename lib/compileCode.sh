@@ -1,6 +1,6 @@
 #/bin/bash
 
 cd build 
-cmake ..
+cmake -DCMAKE_CUDA_ARCHITECTURES=60 ..
 make
 cd ..

@@ -86,45 +86,38 @@ sudo apt-get install libocct-foundation-dev libocct-data-exchange-dev
 # install fltk for gmsh
 sudo apt-get install libfltk1.3-dev
 
-# now install gmsh from source
-git clone http://gitlab.onelab.info/gmsh/gmsh.git
-cd gmsh
-mkdir build
-cd build
-cmake -DENABLE_BUILD_DYNAMIC=1 -DCMAKE_INSTALL_PREFIX=path-to-install-gmsh  ..
-make
-sudo make install  
-
-# change the path-to-install-gmsh to where you want to install the gmsh
+# now install gmsh
+sudo apt-get install libgmsh-dev
 ```
-
-During the installations of these relying packages, errors may occur. Those errors are generally related to the lack of other dependencies. Check the error information, and install the lacking denpendencies. 
 
 After the installation of these relying packages (by `sudo apt-get install`, they are install at default locations), the _cuDFNsys_ package can be installed by the following steps:
 ```
 cd ~/cuDFNsys/lib
 # here I put the cuDFNsys source code under HOME
 ```
-Open `CMakeLists.txt`, find Line 28: `set (CMAKE_CUDA_COMPILER "/usr/local/cuda/bin/nvcc")`, change `"/usr/local/cuda/bin/nvcc"` to the path of `nvcc` in your computer.
-
-Then, open `SetPaths.cmake`, you will see
+Open `SetPaths.cmake`, you will see
 ```
+# NVCC directory
+SET(NVCC_PATH                   /usr/lib/nvidia-cuda-toolkit/bin/nvcc)
+
 # Eigen include directory
-SET(EIGEN_INCLUDE_SEARCH_PATH   $ENV{HOME}/somewhere)
+SET(EIGEN_INCLUDE_SEARCH_PATH   /usr/include)
 
 # Gmsh include directory
-SET(GMSH_INCLUDE_SEARCH_PATH    $ENV{HOME}/somewhere)
+SET(GMSH_INCLUDE_SEARCH_PATH    /usr/include)
 
 # Gmsh lib directory
-SET(GMSH_LIBRARY_SEARCH_PATH    $ENV{HOME}/somewhere)
+SET(GMSH_LIBRARY_SEARCH_PATH    /usr/lib/x86_64-linux-gnu)
 
 # umfpack include directory
-SET(UMFPACK_INCLUDE_SEARCH_PATH $ENV{HOME}/somewhere)
+SET(UMFPACK_INCLUDE_SEARCH_PATH /usr/include/suitesparse)
 
 # umfpack lib directory
-SET(UMFPACK_LIBRARY_SEARCH_PATH $ENV{HOME}/somewhere)
+SET(UMFPACK_LIBRARY_SEARCH_PATH /usr/lib/x86_64-linux-gnu)
 ```
-Again, change these paths like `$ENV{HOME}/somewhere` to the path of the packages in your computer, e.g., `/usr/include/eigen3`.
+The above script of CMake shows that paths of the dependencies in **my** computer (Ubuntu 23.04). Generally these paths do not need to be changed.
+
+But, if you install these dependencies in different paths, change these paths, e.g., `/usr/include` to the path of the packages in your computer, e.g., `/path/in/your/computer`.
 
 Now, you can compile the _cuDFNsys_:
 ```
@@ -149,18 +142,18 @@ More details about the installation of the relying packages:
 By `cd ~/cuDFNsys/QuickStartGuide`, a `Makefile` can be seen there. Open it, you can see
 ```
 # NVCC path
-NVCC=/usr/local/cuda/bin/nvcc
+NVCC=/usr/lib/nvidia-cuda-toolkit/bin/nvcc
 # include paths for headers
-Hdf5IncludePath=/usr/lib/x86_64-linux-gnu/hdf5/serial/include
-GmshIncludePath=$(HOME)/pkg/gmsh-4.8.4-source/MY_GMSH/include
-EigenIncludePath=$(HOME)/pkg/eigen
-UmfpackIncludePath=$(HOME)/pkg/SuiteSparse-master/include
+Hdf5IncludePath=/usr/include/hdf5/serial
+GmshIncludePath=usr/include
+EigenIncludePath=/usr/include
+UmfpackIncludePath=/usr/include/suitesparse
 # library paths
-GmshLibraryPath=$(HOME)/pkg/gmsh-4.8.4-source/MY_GMSH/lib
-UmfpackLibraryPath=$(HOME)/pkg/SuiteSparse-master/lib
+GmshLibraryPath=/usr/lib/x86_64-linux-gnu
+UmfpackLibraryPath=/usr/lib/x86_64-linux-gnu
 Hdf5LibraryPath=/usr/lib/x86_64-linux-gnu/hdf5/serial
 ```
-Change the paths of the headers and libraries, and compile the QuickStartGuide.cu just by
+Change the paths of the headers and libraries (if necessary), and compile the QuickStartGuide.cu just by
 ```
 make
 ```

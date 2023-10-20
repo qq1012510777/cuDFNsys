@@ -16,20 +16,20 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.    #
 #***************************************************************************#
 
-cmake_minimum_required (VERSION 3.7)
+cmake_minimum_required (VERSION 3.10)
 
 project (generate_lib)
+
+INCLUDE(${PROJECT_SOURCE_DIR}/SetPaths.cmake)
 
 # find_package(CUDA)
 # if (NOT CUDA_FOUND)
 #     message(STATUS "CUDA not found. Project will not be built.")
 # endif(NOT CUDA_FOUND)
 if(NOT CMAKE_CUDA_COMPILER)
-    set (CMAKE_CUDA_COMPILER "/usr/local/cuda/bin/nvcc")
+    set (CMAKE_CUDA_COMPILER ${NVCC_PATH})
 ENDIF()
 enable_language(CUDA)
-
-INCLUDE(${PROJECT_SOURCE_DIR}/SetPaths.cmake)
 
 set (CUDFNSYS_ROOT $ENV{HOME}/cuDFNsys)
 

@@ -1,15 +1,16 @@
 ExeName=CompilationTest
-NVCC=/usr/local/cuda/bin/nvcc
+# NVCC path
+NVCC=/usr/lib/nvidia-cuda-toolkit/bin/nvcc
 # include paths for headers
 cuDFNsysIncludePath=$(HOME)/cuDFNsys/include
-Hdf5IncludePath=/usr/lib/x86_64-linux-gnu/hdf5/serial/include
-GmshIncludePath=$(HOME)/pkg/gmsh-4.8.4-source/MY_GMSH/include
-EigenIncludePath=$(HOME)/pkg/eigen
-UmfpackIncludePath=$(HOME)/pkg/SuiteSparse-master/include
+Hdf5IncludePath=/usr/include/hdf5/serial
+GmshIncludePath=usr/include
+EigenIncludePath=/usr/include
+UmfpackIncludePath=/usr/include/suitesparse
 # library paths
 cuDFNsysLibraryPath=$(HOME)/cuDFNsys/lib
-GmshLibraryPath=$(HOME)/pkg/gmsh-4.8.4-source/MY_GMSH/lib
-UmfpackLibraryPath=$(HOME)/pkg/SuiteSparse-master/lib
+GmshLibraryPath=/usr/lib/x86_64-linux-gnu
+UmfpackLibraryPath=/usr/lib/x86_64-linux-gnu
 Hdf5LibraryPath=/usr/lib/x86_64-linux-gnu/hdf5/serial
 
 INCDIRS=-I $(cuDFNsysIncludePath) \

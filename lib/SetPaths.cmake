@@ -16,17 +16,21 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.    #
 #***************************************************************************#
 
+
+# NVCC directory
+SET(NVCC_PATH                   /usr/lib/nvidia-cuda-toolkit/bin/nvcc)
+
 # Eigen include directory
-SET(EIGEN_INCLUDE_SEARCH_PATH   $ENV{HOME}/pkg)
+SET(EIGEN_INCLUDE_SEARCH_PATH   /usr/include)
 
 # Gmsh include directory
-SET(GMSH_INCLUDE_SEARCH_PATH    $ENV{HOME}/pkg/gmsh-4.8.4-source/MY_GMSH/include)
+SET(GMSH_INCLUDE_SEARCH_PATH    /usr/include)
 
 # Gmsh lib directory
-SET(GMSH_LIBRARY_SEARCH_PATH    $ENV{HOME}/pkg/gmsh-4.8.4-source/MY_GMSH/lib)
+SET(GMSH_LIBRARY_SEARCH_PATH    /usr/lib/x86_64-linux-gnu)
 
 # umfpack include directory
-SET(UMFPACK_INCLUDE_SEARCH_PATH $ENV{HOME}/pkg/SuiteSparse-master/include)
+SET(UMFPACK_INCLUDE_SEARCH_PATH /usr/include/suitesparse)
 
 # umfpack lib directory
-SET(UMFPACK_LIBRARY_SEARCH_PATH $ENV{HOME}/pkg/SuiteSparse-master/lib)
+SET(UMFPACK_LIBRARY_SEARCH_PATH /usr/lib/x86_64-linux-gnu)

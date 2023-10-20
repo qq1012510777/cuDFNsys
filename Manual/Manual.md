@@ -6,7 +6,7 @@
 
 * Date: Oct. 19, 2023
 
-* Update date: Oct. 19, 2023 
+* Update date: Oct. 20, 2023 
 
 * Email: yintingchang@foxmail.com
 
@@ -42,17 +42,18 @@ The above code just generates a vector (type: `cuDFNsys::Vector4<double>`) named
 To compile this code with `libcuDFNsys.a`, we can copy the following `Make` script to `~/cuDFNsys/CompilationTest/Makefile`:
 ```
 ExeName=CompilationTest
-NVCC=/usr/local/cuda/bin/nvcc
+# NVCC path
+NVCC=/usr/lib/nvidia-cuda-toolkit/bin/nvcc
 # include paths for headers
 cuDFNsysIncludePath=$(HOME)/cuDFNsys/include
-Hdf5IncludePath=/usr/lib/x86_64-linux-gnu/hdf5/serial/include
-GmshIncludePath=$(HOME)/pkg/gmsh-4.8.4-source/MY_GMSH/include
-EigenIncludePath=$(HOME)/pkg/eigen
-UmfpackIncludePath=$(HOME)/pkg/SuiteSparse-master/include
+Hdf5IncludePath=/usr/include/hdf5/serial
+GmshIncludePath=usr/include
+EigenIncludePath=/usr/include
+UmfpackIncludePath=/usr/include/suitesparse
 # library paths
 cuDFNsysLibraryPath=$(HOME)/cuDFNsys/lib
-GmshLibraryPath=$(HOME)/pkg/gmsh-4.8.4-source/MY_GMSH/lib
-UmfpackLibraryPath=$(HOME)/pkg/SuiteSparse-master/lib
+GmshLibraryPath=/usr/lib/x86_64-linux-gnu
+UmfpackLibraryPath=/usr/lib/x86_64-linux-gnu
 Hdf5LibraryPath=/usr/lib/x86_64-linux-gnu/hdf5/serial
 
 INCDIRS=-I $(cuDFNsysIncludePath) \
@@ -94,17 +95,18 @@ clean:
 
 Note that some variables of this script should be changed for your Ubuntu, namely,
 ```
-NVCC=/usr/local/cuda/bin/nvcc
+# NVCC path
+NVCC=/usr/lib/nvidia-cuda-toolkit/bin/nvcc
 # include paths for headers
 cuDFNsysIncludePath=$(HOME)/cuDFNsys/include
-Hdf5IncludePath=/usr/lib/x86_64-linux-gnu/hdf5/serial/include
-GmshIncludePath=$(HOME)/pkg/gmsh-4.8.4-source/MY_GMSH/include
-EigenIncludePath=$(HOME)/pkg/eigen
-UmfpackIncludePath=$(HOME)/pkg/SuiteSparse-master/include
+Hdf5IncludePath=/usr/include/hdf5/serial
+GmshIncludePath=usr/include
+EigenIncludePath=/usr/include
+UmfpackIncludePath=/usr/include/suitesparse
 # library paths
 cuDFNsysLibraryPath=$(HOME)/cuDFNsys/lib
-GmshLibraryPath=$(HOME)/pkg/gmsh-4.8.4-source/MY_GMSH/lib
-UmfpackLibraryPath=$(HOME)/pkg/SuiteSparse-master/lib
+GmshLibraryPath=/usr/lib/x86_64-linux-gnu
+UmfpackLibraryPath=/usr/lib/x86_64-linux-gnu
 Hdf5LibraryPath=/usr/lib/x86_64-linux-gnu/hdf5/serial
 ```
 The above variables are the paths to different tools, CXX head files, and CXX libraries that _cuDFNsys_ depends. For example, you can change the variable `GmshIncludePath` like
