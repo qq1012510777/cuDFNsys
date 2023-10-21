@@ -1569,6 +1569,30 @@ home/tingchangyin/cuDFNsys/src/Warmup/Warmup.cu.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchangyin/cuDFNsys/src/Warmup/Warmup.cu.s
 .PHONY : home/tingchangyin/cuDFNsys/src/Warmup/Warmup.cu.s
 
+home/tingchangyin/cuDFNsys/src/cuDFNsys.o: home/tingchangyin/cuDFNsys/src/cuDFNsys.cu.o
+.PHONY : home/tingchangyin/cuDFNsys/src/cuDFNsys.o
+
+# target to build an object file
+home/tingchangyin/cuDFNsys/src/cuDFNsys.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchangyin/cuDFNsys/src/cuDFNsys.cu.o
+.PHONY : home/tingchangyin/cuDFNsys/src/cuDFNsys.cu.o
+
+home/tingchangyin/cuDFNsys/src/cuDFNsys.i: home/tingchangyin/cuDFNsys/src/cuDFNsys.cu.i
+.PHONY : home/tingchangyin/cuDFNsys/src/cuDFNsys.i
+
+# target to preprocess a source file
+home/tingchangyin/cuDFNsys/src/cuDFNsys.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchangyin/cuDFNsys/src/cuDFNsys.cu.i
+.PHONY : home/tingchangyin/cuDFNsys/src/cuDFNsys.cu.i
+
+home/tingchangyin/cuDFNsys/src/cuDFNsys.s: home/tingchangyin/cuDFNsys/src/cuDFNsys.cu.s
+.PHONY : home/tingchangyin/cuDFNsys/src/cuDFNsys.s
+
+# target to generate assembly for a file
+home/tingchangyin/cuDFNsys/src/cuDFNsys.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchangyin/cuDFNsys/src/cuDFNsys.cu.s
+.PHONY : home/tingchangyin/cuDFNsys/src/cuDFNsys.cu.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -1758,6 +1782,9 @@ help:
 	@echo "... home/tingchangyin/cuDFNsys/src/Warmup/Warmup.o"
 	@echo "... home/tingchangyin/cuDFNsys/src/Warmup/Warmup.i"
 	@echo "... home/tingchangyin/cuDFNsys/src/Warmup/Warmup.s"
+	@echo "... home/tingchangyin/cuDFNsys/src/cuDFNsys.o"
+	@echo "... home/tingchangyin/cuDFNsys/src/cuDFNsys.i"
+	@echo "... home/tingchangyin/cuDFNsys/src/cuDFNsys.s"
 .PHONY : help
 
 

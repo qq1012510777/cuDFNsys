@@ -434,9 +434,9 @@ void cuDFNsys::MHFEM<T>::Implementation(const cuDFNsys::Mesh<T> &mesh,
     size_t NUM_sep_edges = mesh.Element3D.size() * 3,
            NUM_eles = mesh.Element3D.size(),
            NUM_glob_interior_edges = mesh.NumInteriorEdges;
-    // cout << "NUM_sep_edges: " << NUM_sep_edges << endl;
-    // cout << "NUM_eles: " << NUM_eles << endl;
-    // cout << "NUM_glob_interior_edges: " << NUM_glob_interior_edges << endl;
+    //cout << "NUM_sep_edges: " << NUM_sep_edges << endl;
+    //cout << "NUM_eles: " << NUM_eles << endl;
+    //cout << "NUM_glob_interior_edges: " << NUM_glob_interior_edges << endl;
     pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> II_K;
 
     if (!if_CPU)
@@ -447,8 +447,8 @@ void cuDFNsys::MHFEM<T>::Implementation(const cuDFNsys::Mesh<T> &mesh,
     Eigen::SparseMatrix<double> A(NUM_sep_edges, NUM_sep_edges);
     Eigen::SparseMatrix<double> B(NUM_eles, NUM_sep_edges);
     Eigen::SparseMatrix<double> C(NUM_glob_interior_edges, NUM_sep_edges);
-    // cout << "K:\n"
-    //      << MatrixXd(II_K.first) << endl;
+    //cout << "K:\n"
+    //     << MatrixXd(II_K.first) << endl;
     // cout << "\n\n-----------\n\nb:\n"
     //      << MatrixXd(II_K.second) << endl;
     A = II_K.first.block(0, 0, NUM_sep_edges, NUM_sep_edges);
@@ -605,7 +605,7 @@ pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> cuDFNsys::MHFEM<T
         NUM_OUTLET_EDGES = mesh.NumOutletEdges;
 
     int Dim = NUM_sep_edges + NUM_eles + NUM_glob_interior_edges;
-    // cout << "NUM_sep_edges: " << NUM_sep_edges << ", NUM_eles: " << NUM_eles << ", NUM_glob_interior_edges: " << NUM_glob_interior_edges << endl;
+    //cout << "NUM_sep_edges: " << NUM_sep_edges << ", NUM_eles: " << NUM_eles << ", NUM_glob_interior_edges: " << NUM_glob_interior_edges << endl;
 
     int Frac_NUM = mesh.Element2D.size();
 

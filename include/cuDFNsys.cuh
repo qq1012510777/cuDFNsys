@@ -70,9 +70,8 @@
 #include "./ParticleTransport/Roate2DPositionTo3D.cuh"
 #include "./ParticleTransport/WhichElementToGo.cuh"
 
-#include "./OutputObjectData/OutputObjectData.cuh"
-
 #include "./InputObjectData/InputObjectData.cuh"
+#include "./OutputObjectData/OutputObjectData.cuh"
 
 //#include "./CPUSecond/CPUSecond.cuh"
 //#include "./Exceptions/Exceptions.cuh"
@@ -96,3 +95,135 @@
 //#include "./Quaternion/Quaternion.cuh"
 //#include "./ToStringWithWidth/ToStringWithWidth.cuh"
 //#include "./Warmup/Warmup.cuh"
+
+namespace cuDFNsys
+{
+    template <typename T>
+    class DFN
+    {
+    public:
+        // member variables
+        std::vector<int> NumFractures;
+        std::vector<T> Kappa;
+        std::vector<cuDFNsys::Vector3<T>> MeanOrientationOfFisherDistribution;
+        T DomainSizeX;
+        double3 DomainDimensionRatio;
+        std::vector<T> Beta;
+        std::vector<T> Gamma;
+        std::vector<int> ModeOfSizeDistribution;
+        std::vector<cuDFNsys::Vector4<T>> SizeDistributionParameters;
+        int PercoDir;
+        int NumFracturesTotal;
+        unsigned long RandomSeed;
+
+        thrust::host_vector<cuDFNsys::Fracture<T>> FracturesHost;
+        thrust::device_vector<cuDFNsys::Fracture<T>> FracturesDevice;
+        cuDFNsys::Fracture<T> *FracturesDevicePtr;
+        std::map<pair<size_t, size_t>,
+                 pair<cuDFNsys::Vector3<T>, cuDFNsys::Vector3<T>>>
+            IntersectionMap;
+        std::vector<std::vector<size_t>> ListClusters;
+        std::vector<size_t> PercolationCluster;
+
+    public:
+        // member functions
+        DFN(){};
+        void FractureGeneration();
+        void IdentifyIntersectionsClusters(const bool &IfTruncatedFractures);
+        void Visualization(const string &MatlabScriptName,
+                           const string &PythonScriptName,
+                           const string &HDF5FileName,
+                           const bool &IfShowTruncatedFractures,
+                           const bool &IfShowIntersections,
+                           const bool &IfHightlighAllClusters,
+                           const bool &IfShowOrientationDistribution);
+        void StoreInH5(const string &ClassNameH5);
+        void LoadClassFromH5(const string &ClassNameH5);
+    };
+}; // namespace cuDFNsys
+
+namespace cuDFNsys
+{
+    template <typename T>
+    class MeshDFN
+    {
+    public:
+        cuDFNsys::Mesh<T> MeshData;
+        T MinElementSize;
+        T MaxElementSize;
+        T MeanGridSize;
+        std::vector<size_t> FracsPercol;
+
+    public:
+        MeshDFN(){};
+        void MeshGeneration(cuDFNsys::DFN<T> &my_dfn);
+        void Visualization(cuDFNsys::DFN<T> my_dfn,
+                           const string &MatlabScriptName,
+                           const string &PythonScriptName,
+                           const string &HDF5FileName,
+                           const bool &IfCheck2DCoordinatesOfMesh,
+                           const bool &IfCheckEdgeAttributes);
+    };
+}; // namespace cuDFNsys
+
+namespace cuDFNsys
+{
+    template <typename T>
+    class FlowDFN
+    {
+    public:
+        T InletHead;
+        T OutletHead;
+        T MaxVelocity;
+        T MeanVelocity;
+        cuDFNsys::MHFEM<T> FlowData;
+
+    public:
+        FlowDFN(){};
+        void FlowSimulation(cuDFNsys::DFN<T> my_dfn,
+                            cuDFNsys::MeshDFN<T> my_mesh);
+        void Visualization(cuDFNsys::DFN<T> my_dfn,
+                           cuDFNsys::MeshDFN<T> my_mesh,
+                           const string &MatlabScriptName,
+                           const string &PythonScriptName,
+                           const string &HDF5FileName);
+    };
+}; // namespace cuDFNsys
+
+namespace cuDFNsys
+{
+    template <typename T>
+    class PTDFN
+    {
+    public:
+        int NumParticles;
+        int NumTimeSteps;
+        T PecletNumber;
+        T LengthScalePe;
+        T VelocityScalePe;
+        T MolecularDiffusion;
+        T FactorTimeScaleCrossElement;
+        T DeltaT;
+        T TimeScaleCrossElement;
+        bool FluexWeightedOrUniformInjection;
+        bool IfUseFluxWeightedOrEqualProbableMixingIntersection;
+        T SpacingOfControlPlanes;
+        bool IfOutputVarianceOfDisplacementsEachStep;
+        bool IfInjectAtCustomedPlane;
+        T CustomedPlaneInjection;
+        bool OutputAllPTInformationOrFPTCurve;
+        cuDFNsys::ParticleTransport<T> PTData;
+
+    public:
+        PTDFN(){};
+        void ParticleTracking(cuDFNsys::DFN<T> my_dfn,
+                             cuDFNsys::MeshDFN<T> my_mesh,
+                             cuDFNsys::FlowDFN<T> my_flow);
+        void Visualization(cuDFNsys::DFN<T> my_dfn,
+                           cuDFNsys::MeshDFN<T> my_mesh,
+                           cuDFNsys::FlowDFN<T> my_flow,
+                           const string &MatlabScriptName,
+                           const string &PythonScriptName,
+                           const string &HDF5FileNameOfFlowDFN);
+    };
+}; // namespace cuDFNsys

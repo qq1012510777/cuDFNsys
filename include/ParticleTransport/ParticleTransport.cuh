@@ -73,6 +73,7 @@ private:
     string DispersionInfo = "ParticlePositionResult/DispersionInfo";
 
 public:
+    ParticleTransport(){};
     ///   ParticleTransport(const int &NumOfParticles,
     ///                     const int &NumTimeStep,
     ///                     T delta_T_,

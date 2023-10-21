@@ -50,8 +50,18 @@ Lib_= -Xcompiler=-fopenmp \
 # -l/usr/lib/x86_64-linux-gnu/libdl.so  
 
 all: 
-	$(NVCC) -DUSE_DOUBLES ./src/$(ExeName).cu ../lib/libcuDFNsys.a \
-	-o ./$(ExeName) $(INCDIRS) $(Lib_) \
+
+# $(NVCC) -DUSE_DOUBLES ./src/$(ExeName)_new.cu ../lib/libcuDFNsys.a \
+# -o ./$(ExeName)_new $(INCDIRS) $(Lib_) \
+# -Xcudafe --display_error_number -Xcudafe --diag_suppress=3057 \
+# -Xcudafe --diag_suppress=1301 \
+# -Xcudafe --diag_suppress=3059 \
+# -Xcudafe --diag_suppress=3060 \
+# -Xcudafe --diag_suppress=3058 \
+# -arch=sm_60 -std=c++17 -rdc=true
+
+	$(NVCC) -DUSE_DOUBLES ./src/$(ExeName)_DFN_I.cu ../lib/libcuDFNsys.a \
+	-o ./$(ExeName)_DFN_I $(INCDIRS) $(Lib_) \
 	-Xcudafe --display_error_number -Xcudafe --diag_suppress=3057 \
 	-Xcudafe --diag_suppress=1301 \
 	-Xcudafe --diag_suppress=3059 \
@@ -59,48 +69,12 @@ all:
 	-Xcudafe --diag_suppress=3058 \
 	-arch=sm_60 -std=c++17 -rdc=true
 
-	$(NVCC) -DUSE_DOUBLES ./src/$(ExeName)_I.cu ../lib/libcuDFNsys.a \
-	-o ./$(ExeName)_I $(INCDIRS) $(Lib_) \
-	-Xcudafe --display_error_number -Xcudafe --diag_suppress=3057 \
-	-Xcudafe --diag_suppress=1301 \
-	-Xcudafe --diag_suppress=3059 \
-	-Xcudafe --diag_suppress=3060 \
-	-Xcudafe --diag_suppress=3058 \
-	-arch=sm_60 -std=c++17 -rdc=true
-
-	$(NVCC) -DUSE_DOUBLES ./src/$(ExeName)_II.cu ../lib/libcuDFNsys.a \
-	-o ./$(ExeName)_II $(INCDIRS) $(Lib_) \
-	-Xcudafe --display_error_number -Xcudafe --diag_suppress=3057 \
-	-Xcudafe --diag_suppress=1301 \
-	-Xcudafe --diag_suppress=3059 \
-	-Xcudafe --diag_suppress=3060 \
-	-Xcudafe --diag_suppress=3058 \
-	-arch=sm_60 -std=c++17 -rdc=true
-
-	$(NVCC) -DUSE_DOUBLES ./src/$(ExeName)_III.cu ../lib/libcuDFNsys.a \
-	-o ./$(ExeName)_III $(INCDIRS) $(Lib_) \
-	-Xcudafe --display_error_number -Xcudafe --diag_suppress=3057 \
-	-Xcudafe --diag_suppress=1301 \
-	-Xcudafe --diag_suppress=3059 \
-	-Xcudafe --diag_suppress=3060 \
-	-Xcudafe --diag_suppress=3058 \
-	-arch=sm_60 -std=c++17 -rdc=true
-
-	$(NVCC) -DUSE_DOUBLES ./src/$(ExeName)_IV.cu ../lib/libcuDFNsys.a \
-	-o ./$(ExeName)_IV $(INCDIRS) $(Lib_) \
-	-Xcudafe --display_error_number -Xcudafe --diag_suppress=3057 \
-	-Xcudafe --diag_suppress=1301 \
-	-Xcudafe --diag_suppress=3059 \
-	-Xcudafe --diag_suppress=3060 \
-	-Xcudafe --diag_suppress=3058 \
-	-arch=sm_60 -std=c++17 -rdc=true
-
-	$(NVCC) -DUSE_DOUBLES ../Transform2DH5ParticleDataTo3D/src/Transform2DH5ParticleDataTo3D.cu ../lib/libcuDFNsys.a \
-	-o ./Transform2DH5ParticleDataTo3D $(INCDIRS) $(Lib_) \
-	-Xcudafe --display_error_number -Xcudafe --diag_suppress=3057 \
-	-Xcudafe --diag_suppress=1301 \
-	-Xcudafe --diag_suppress=3059 \
-	-Xcudafe --diag_suppress=3060 \
-	-Xcudafe --diag_suppress=3058 \
-	-arch=sm_60 -std=c++17 -rdc=true
+# $(NVCC) -DUSE_DOUBLES ../Transform2DH5ParticleDataTo3D/src/Transform2DH5ParticleDataTo3D.cu ../lib/libcuDFNsys.a \
+# -o ./Transform2DH5ParticleDataTo3D $(INCDIRS) $(Lib_) \
+# -Xcudafe --display_error_number -Xcudafe --diag_suppress=3057 \
+# -Xcudafe --diag_suppress=1301 \
+# -Xcudafe --diag_suppress=3059 \
+# -Xcudafe --diag_suppress=3060 \
+# -Xcudafe --diag_suppress=3058 \
+# -arch=sm_60 -std=c++17 -rdc=true
 clean:
