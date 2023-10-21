@@ -181,9 +181,16 @@ source ~/.bashrc
 
 After simulation, _cuDFNsys_ outputs .h5 and .m (and/or .py) files, and you can visualize them by the generated .m or .py file. 
 
-The visulization with MATLAB is simple, you just need the license of MATLAB. 
+The visulization with MATLAB is simple, you just need a MATLAB installed, and run the `.m` file. 
 
 With Python, you need to install the _mayavi_ Python package. _mayavi_ is a very good visualization engine. The Matplotlib package is not good at 3D visualizations, see [Why my 3D plot doesn’t look right at certain viewing angles](https://matplotlib.org/2.2.2/mpl_toolkits/mplot3d/faq.html).
+
+Installation of _mayavi_ can be done by the following commands (I've test them in Ubuntu 23.04):
+```
+sudo apt install python3-vtk9 python3-pip python3-pyqt5 python3-traits python3-traitsui python3-numpy python3-matplotlib python3-setuptools python3-pyqt5.qtopengl
+# Please note that package names and dependencies may change over time, so make sure to check for any updates or changes in package names specific to your Ubuntu version.
+sudo apt-get install mayavi2
+```
 
 # Manual
 Manual for _cuDFNsys_ is [here](Manual/Manual.md).
