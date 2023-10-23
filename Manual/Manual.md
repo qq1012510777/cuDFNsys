@@ -496,14 +496,105 @@ flowDFN.StoreInH5("Class_FLOW");
 ```
 The DFN data is loaded by `my_dfn.LoadClassFromH5`. The mesh data is loaded by `meshGen.LoadClassFromH5`.
 
-## 2.4. Particle tracking
-The class `cuDFNsys::PTDFN` is used to run particle tracking in a DFN.
+### 2.4. Particle tracking
+The class `cuDFNsys::PTDFN` is used to run particle tracking in a DFN. This class requires a lot of set-ups. The Peclet number $Pe$ is defined as
+$$Pe = \frac{V_c \times l_c}{D_m}$$
+where $V_c$ is the characteristic length scale in DFNs, $l_c$ is the characteristic length scale, and $D_m$ is the molecular diffusion coefficient for random walkers. Before the particle tracking, the values of $Pe$, $V_c$ and $l_c$ should be pre-defined, and $D_m$ can be then determined. In the code `QuickStartGuide.cu` or `QuickStartGuide_DFN_IV_PT.cu`, $V_c$ is set to be the average fracture velocity.
 
+#### 2.4.1. Member variables of `cuDFNsys::PTDFN`
+The member variables of `cuDFNsys::PTDFN` includes:
+* **`int NumParticles`**: it is the number of particles that will be injected into the DFN.
+* **`int NumTimeSteps`**: it is the number of time steps one wants to run.
+* **`T PecletNumber`**: it is a `double`/`float`, denoting the value of $Pe$.
+* **`T LengthScalePe`**: it is a `double`/`float`, denoting the value of $l_c$.
+* **`T VelocityScalePe`**: it is a `double`/`float`, denoting the value of $V_c$.
+* **`T MolecularDiffusion`**: it is a `double`/`float`, denoting the value of $D_m$.
+* **`T TimeScaleCrossElement`**: it is a `double`/`float`, denoting that the time scale in a DFN for a random walker to cross a finite element.
+* **`T FactorTimeScaleCrossElement`**: it is a `double`/`float`, which is a reduction factor to reduce the `TimeScaleCrossElement`.
+* **`T DeltaT`**: it is a `double`/`float`, denoting $\delta t$ for a time step.
+* **`bool FluexWeightedOrUniformInjection`**: it is a `bool`. `true` means the use of flux-weighted injection. `false` means the use of resident injection.
+* **`bool IfUseFluxWeightedOrEqualProbableMixingIntersection`**: it is a `bool`. `true` means the use of outgoing-flux-weighted mixing rule at intersections. `false` means the use of equiprobable mixing rule at intersections.
+* **`T SpacingOfControlPlanes`**: it is a `double` or `float`, denoting the spacing of control planes in the DFN. A control plane means that once random particles is cross the plane for the first time, the travel time and other information will be recorded.
+* **`bool IfOutputVarianceOfDisplacementsEachStep`**: it is a `bool`. `true` means that the variance of solute particle displacements are recorded for each time step.
+* **`bool IfInjectAtCustomedPlane`**: it is a `bool`. `true` means that the injection plane is not at the inlet, but at `CustomedPlaneInjection`.
+* **`T CustomedPlaneInjection`**: it is a `double` or `float`. By using it, one can set the injection plane at any location.
+* **`bool OutputAllPTInformationOrFPTCurve`**: it is a `bool`. `true` means that the particles' coodinates for each step will be stored in HDF5 files. `false` means that only the spatial information at last step is output, and the first passage times are recorded.
 
+#### 2.4.2. Member functions of `cuDFNsys::PTDFN`
+The member functions of `cuDFNsys::PTDFN` includes:
+```
+PTDFN(){};
+void ParticleTracking(cuDFNsys::DFN<T> my_dfn,
+                      cuDFNsys::MeshDFN<T> my_mesh,
+                      cuDFNsys::FlowDFN<T> my_flow);
+void Visualization(cuDFNsys::DFN<T> my_dfn,
+                   cuDFNsys::MeshDFN<T> my_mesh,
+                   cuDFNsys::FlowDFN<T> my_flow,
+                   const string &MatlabScriptName,
+                   const string &PythonScriptName,
+                   const string &HDF5FileNameOfFlowDFN);
+```
+* **`PTDFN()`**: it is an empty constructor to generate an empty class of `cuDFNsys::PTDFN`
+* **`ParticleTracking()`** is called to do particle tracking. It required some inputs: `my_dfn` is a class of `cuDFNsys::DFN`, `my_mesh` is a class of `cuDFNsys::MeshDFN<T>`, and `my_flow` is a class of `cuDFNsys::FlowDFN<T> `.
+* **`Visualization()`** is called to do visualizations. Input parameters are required. `my_dfn` is a class of `cuDFNsys::DFN`. `my_mesh` is a class of `cuDFNsys::MeshDFN`, `my_flow` is a class of `cuDFNsys::FlowDFN<T>`. `MatlabScriptName`: name of the matlab script, without the suffix `.m`. `PythonScriptName`: name of the python script. `HDF5FileName`: name of the HDF5 file storing the visualization of **FLOW** data.
 
+#### 2.4.3. Examples of `cuDFNsys::PTDFN`
+In the code `cuDFNsys/QuickStartGuide/src/QuickStartGuide.cu`, the relevant code is:
+```
+cuDFNsys::PTDFN<double> particleTracking;
+particleTracking.NumParticles = 20000;
+particleTracking.NumTimeSteps = 200;
+particleTracking.PecletNumber = 300;
+particleTracking.LengthScalePe = 30;
+particleTracking.VelocityScalePe = flowDFN.MeanVelocity;
+particleTracking.MolecularDiffusion = particleTracking.LengthScalePe /
+                                      particleTracking.PecletNumber *
+                                      particleTracking.VelocityScalePe;
+particleTracking.FactorTimeScaleCrossElement = 2;
+particleTracking.TimeScaleCrossElement =
+    pow(meshGen.MeanGridSize, 0.5) / flowDFN.MaxVelocity;
+particleTracking.DeltaT = particleTracking.TimeScaleCrossElement /
+                          particleTracking.FactorTimeScaleCrossElement;
+particleTracking.FluexWeightedOrUniformInjection = true;
+particleTracking.OutputAllPTInformationOrFPTCurve = true;
+particleTracking.SpacingOfControlPlanes = 30;
+particleTracking.IfOutputVarianceOfDisplacementsEachStep = true;
+particleTracking.IfInjectAtCustomedPlane = true;
+particleTracking.CustomedPlaneInjection = 23;
+particleTracking.IfUseFluxWeightedOrEqualProbableMixingIntersection = true;
+particleTracking.ParticleTracking(my_dfn, meshGen, flowDFN);
+particleTracking.Visualization(my_dfn, meshGen, flowDFN,
+                               "DFN_DISPERSION_VISUAL",
+                               "DFN_DISPERSION_VISUAL", "DFN_FLOW_VISUAL");
+```
+An empty class of `cuDFNsys::PTDFN<double>` named `particleTracking` is generated firstly. The number of particles `particleTracking.NumParticles` is 20000. The number of time step `particleTracking.NumTimeSteps` is 200. The value of $Pe$ `particleTracking.PecletNumber` is 300. 
 
+The length scale here `particleTracking.LengthScalePe` is the size of the domain in the $x$ direction (one can also define it as the expection of fracture sizes $R$). The velocity scale `particleTracking.VelocityScalePe` is the mean fracture velocity. The $D_m$ value `particleTracking.MolecularDiffusion` is then calculated based on these scales.
 
+The time scale for a random walker to cross a finite element `particleTracking.TimeScaleCrossElement` is the square root of the mean size of finite elements over the maximum fracture velocity. The $\delta t$ value `particleTracking.DeltaT` is set to be `particleTracking.TimeScaleCrossElement` over a reduction factor `particleTracking.FactorTimeScaleCrossElement`.
 
+The injection method `particleTracking.FluexWeightedOrUniformInjection = true` is flux-weighted. The spatial information of particles for each time step is wanted, and hence `particleTracking.OutputAllPTInformationOrFPTCurve = true.` Also, the variace of displacements of particles for each step is output by setting `particleTracking.IfOutputVarianceOfDisplacementsEachStep = true`.
 
+The spacing of control planes is 30 by setting `particleTracking.SpacingOfControlPlanes = 30`.
 
+Because molecular diffusion exists, the injection plane is better to be not at inlet, otherwise, particles will leave the domain from inlet. Therefore `particleTracking.IfInjectAtCustomedPlane = true` and `particleTracking.CustomedPlaneInjection = 23`, meaning that the injection plane is at $z = 23$ as the percolation direction is along the $z$ axis.
 
+Finally, for the mixing rule at intersections, we set outgoing-flux-weighted mixing rule, so `particleTracking.IfUseFluxWeightedOrEqualProbableMixingIntersection = true`.
+
+After the set-up of these member variables, we can run particle tracking by `particleTracking.ParticleTracking(my_dfn, meshGen, flowDFN)`. Note that if one wants to run more time steps in the same DFN, it is possible. The codes `QuickStartGuide_DFN_I_DFN.cu`, `QuickStartGuide_DFN_II_MESH.cu`, `QuickStartGuide_DFN_III_FLOW.cu` and `QuickStartGuide_DFN_IV_PT.cu` show us that each class can be implemented and stored in HDF5 files, and then these classes can be recovered by loading data in these HDF5 files. For example, to run more time steps, one just run the executable files `QuickStartGuide_DFN_I_DFN`, `QuickStartGuide_DFN_II_MESH` and `QuickStartGuide_DFN_III_FLOW` in order, then, run `QuickStartGuide_DFN_IV_PT` repeatly to obtain particle tracking results for longer time. 
+
+The visualization scripts are output by `particleTracking.Visualization()`. One can run `DFN_DISPERSION_VISUAL.py` or `DFN_DISPERSION_VISUAL.m` to see the animation. But before that, the particle data should be addressed by an executable file, to transform the data to 3D. Just run `./Transform2DH5ParticleDataTo3D 0 DFN_MESH_VISUAL.h5` in ubuntu terminal. Then run `DFN_DISPERSION_VISUAL.py` or `DFN_DISPERSION_VISUAL.m`. 
+
+One example is shown in the figure below.
+
+<p align="center">
+  <img width="500" src="https://github.com/qq1012510777/cuDFNsys/blob/main/Manual/A_DFN_PT.png">
+</p>
+<p align="center">
+    <em>Visualization of a DFN particle tracking result (by matlab). The color and color bar denote the $z$ value of finite elements. </em>
+</p>
+
+#### 2.4.4. Particle tracking results (HDF5)
+The results are stored in a directory named `ParticlePositionResult` under the current working directory. 
+
+The file `DispersionInfo.h5` record the input parameters like molecular diffusion coefficient, $\delta t$, and so on.
