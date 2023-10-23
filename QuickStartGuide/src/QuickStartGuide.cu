@@ -1,3 +1,6 @@
+// more details of this code is shown in the manual
+// more details of this code is shown in the manual
+// more details of this code is shown in the manual
 #include "cuDFNsys.cuh"
 int main()
 {

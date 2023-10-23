@@ -2,7 +2,7 @@
 
 _cuDFNsys_ is an open-source CUDA library (under the GPL license) for DFN generations. It is also able to simulate flow (steady-state) and particle transport in DFNs, based on the mixed hybrid finite element method and particle tracking algorithm. _cuDFNsys_ contains around 10 000 lines of codes (counted on June 29th, 2023).
 
-_cuDFNsys_ does not support the GUI and can only run on Ubuntu. _cuDFNsys_ is not friendly to users unfamiliar with Linux, C++, Make and CMake.
+_cuDFNsys_ does not support the GUI and can only run on Ubuntu.
 
 <p align="center">
   <img width="500" src="https://github.com/qq1012510777/cuDFNsys/blob/main/moive_particlesII.gif">
@@ -47,10 +47,9 @@ _cuDFNsys_ should be installed and run on Ubuntu.
 
 _cuDFNsys_ relies on several open packages: OpenMP, CUDA, Eigen, Gmsh, UMFPACK and HDF5.
 
-The Gmsh C++ API that _cuDFNsys_ relies on should support the OCC mode, meaning that the occt library is required.
-
 The following is the Ubuntu command lines to install the relying packages:
 ```
+# run the following command one by one to install dependencies
 # first update the package repository information
 cd ~
 sudo apt-get update
@@ -63,7 +62,6 @@ sudo apt-get install cmake
 # cuda
 sudo apt-get install nvidia-cuda-dev
 sudo apt-get install nvidia-cuda-toolkit 
-# better to restart your computer now ...
 
 # openMP
 sudo apt-get install libomp-dev
@@ -125,8 +123,10 @@ cd ~/cuDFNsys/lib
 mkdir build 
 cd build 
 cmake -DCMAKE_CUDA_ARCHITECTURES=60  ..
+make
+cd ..
 ```
-If this script is finished without errors, then the file `libcuDFNsys.a` appears in `~/cuDFNsys/lib`.
+If these commands are finished without errors, then the file `libcuDFNsys.a` should appear in `~/cuDFNsys/lib`.
 
 More details about the installation of the relying packages:
 
@@ -144,11 +144,13 @@ By `cd ~/cuDFNsys/QuickStartGuide`, a `Makefile` can be seen there. Open it, you
 # NVCC path
 NVCC=/usr/lib/nvidia-cuda-toolkit/bin/nvcc
 # include paths for headers
+cuDFNsysIncludePath=$(HOME)/cuDFNsys/include
 Hdf5IncludePath=/usr/include/hdf5/serial
 GmshIncludePath=usr/include
 EigenIncludePath=/usr/include
 UmfpackIncludePath=/usr/include/suitesparse
 # library paths
+cuDFNsysLibraryPath=$(HOME)/cuDFNsys/lib
 GmshLibraryPath=/usr/lib/x86_64-linux-gnu
 UmfpackLibraryPath=/usr/lib/x86_64-linux-gnu
 Hdf5LibraryPath=/usr/lib/x86_64-linux-gnu/hdf5/serial
@@ -176,6 +178,7 @@ then update `~/.bashrc` by
 ```
 source ~/.bashrc
 ```
+This quickstart example can be run by `./QuickStartGuide`, where a DFN is generated in which the flow is solved by a mixed hybrid finite element method and the particle tracking is implement for a not-very-long time. To run more steps for particle tracking, please see other codes (i.e., `QuickStartGuide_DFN_I_DFN.cu`, `QuickStartGuide_DFN_III_FLOW.cu`, `QuickStartGuide_DFN_II_MESH.cu` and `QuickStartGuide_DFN_IV_PT.cu`) and the [manual](Manual/Manual.md)
 
 # Visualization
 
@@ -191,6 +194,7 @@ sudo apt install python3-vtk9 python3-pip python3-pyqt5 python3-traits python3-t
 # Please note that package names and dependencies may change over time, so make sure to check for any updates or changes in package names specific to your Ubuntu version.
 sudo apt-get install mayavi2
 ```
+To run python visualization script, just run `python3 NameOfScript.py`.
 
 # Manual
 Manual for _cuDFNsys_ is [here](Manual/Manual.md).
