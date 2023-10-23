@@ -1286,11 +1286,16 @@ void cuDFNsys::ParticleTransport<T>::MatlabPlot(const string &mat_key,
         oss << "f3.close()\n";
         oss << "del Matrx3D_pso\n";
         oss << "del ParticleID\n";
+        oss << "NumPictures=100\n";
+        oss << "STEPNO = np.arange(1, int(N_steps/NumPictures) * NumPictures + 1, int(N_steps/NumPictures))\n";
+        oss << "NumPictures=NumPictures-1\n";
         oss << "@ML.animate(delay=10)\n";
-        oss << "def anim(N_steps):\n";
+        //oss << "NumPictures=100\n";
+        oss << "def anim(NumPictures):\n";
         oss << "    fe = ML.gcf() \n";
-        oss << "    for i in range(1, N_steps + 1):\n";
-        oss << "        print('step', i, '/', N_steps)          \n";
+        oss << "    for j in range(1, NumPictures):\n";
+        oss << "        i = STEPNO[j-1]\n";
+        oss << "        print('step', i, '/', N_steps)\n";
         oss << "        H5name = \"./ParticlePositionResult/ParticlePositionBlock\" + str(math.ceil(float(i) / float(SizeOfDataBlock))).zfill(10) + \"_3D.h5\"\n";
         oss << "        H5name_2D = \"./ParticlePositionResult/ParticlePositionBlock\" + str(math.ceil(float(i) / float(SizeOfDataBlock))).zfill(10) + \".h5\"\n";
         oss << "        f4 = h5py.File(H5name)\n";
@@ -1308,7 +1313,7 @@ void cuDFNsys::ParticleTransport<T>::MatlabPlot(const string &mat_key,
         oss << "        del S\n";
         oss << "        yield\n";
         oss << "        gc.collect(generation=1)\n";
-        oss << "anim(N_steps)\n";
+        oss << "anim(NumPictures)\n";
         oss << "ML.show()\n";
         oss.close();
 

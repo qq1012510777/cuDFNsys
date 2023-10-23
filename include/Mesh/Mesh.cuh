@@ -86,6 +86,9 @@ public:
     // number of neaumann edges
     uint NumNeumannEdges;
 
+    // MeanGridSize
+    double MeanGridSize;
+
 public:
     // checked percolation direction
     int Dir = 2;

@@ -194,6 +194,9 @@ void cuDFNsys::DFN<T>::StoreInH5(const string &ClassNameH5)
                         Intersections_, dim_f);
         delete[] Intersections_;
         Intersections_ = NULL;
+
+        h5gg.AddDataset(ClassNameH5 + ".h5", "N", "PercoDir", &this->PercoDir,
+                        make_uint2(1, 0));
     }
     {
         size_t Max_cluster_size = 0;
@@ -312,6 +315,10 @@ void cuDFNsys::DFN<T>::LoadClassFromH5(const string &ClassNameH5)
                                    Temp_Variable[i + NumIntersections * 3],
                                    Temp_Variable[i + NumIntersections * 4],
                                    Temp_Variable[i + NumIntersections * 5]))));
+        //------------
+        std::vector<int> UO =
+            hdf5Class.ReadDataset<int>(ClassNameH5 + ".h5", "N", "PercoDir");
+        this->PercoDir = UO[0];
     };
 };
 template void cuDFNsys::DFN<double>::LoadClassFromH5(const string &ClassNameH5);
@@ -344,6 +351,7 @@ void cuDFNsys::MeshDFN<T>::MeshGeneration(DFN<T> &my_dfn)
         my_dfn.FracturesHost, IntersectionPair_percol,    &(this->FracsPercol),
         this->MinElementSize, this->MaxElementSize,       my_dfn.PercoDir,
         my_dfn.DomainSizeX,   my_dfn.DomainDimensionRatio};
+    this->MeanGridSize = this->MeshData.MeanGridSize;
 };
 template void cuDFNsys::MeshDFN<double>::MeshGeneration(DFN<double> &my_dfn);
 template void cuDFNsys::MeshDFN<float>::MeshGeneration(DFN<float> &my_dfn);
@@ -383,6 +391,46 @@ template void cuDFNsys::MeshDFN<float>::Visualization(
     DFN<float> my_dfn, const string &MatlabScriptName,
     const string &PythonScriptName, const string &HDF5FileName,
     const bool &IfCheck2DCoordinatesOfMesh, const bool &IfCheckEdgeAttributes);
+
+// ====================================================
+// NAME:        cuDFNsys::MeshDFN<T>::StoreInH5
+// DESCRIPTION: store this class in .h5
+// AUTHOR:      Tingchang YIN
+// DATE:        23/10/2023
+// ====================================================
+template <typename T>
+void cuDFNsys::MeshDFN<T>::StoreInH5(const string &ClassNameH5)
+{
+    cuDFNsys::OutputObjectData<T> lk_out;
+    lk_out.OutputMesh(ClassNameH5 + ".h5", this->MeshData, this->FracsPercol);
+}; // cuDFNsys::MeshDFN<T>::StoreInH5
+template void cuDFNsys::MeshDFN<double>::StoreInH5(const string &ClassNameH5);
+template void cuDFNsys::MeshDFN<float>::StoreInH5(const string &ClassNameH5);
+
+// ====================================================
+// NAME:        cuDFNsys::MeshDFN<T>::LoadClassFromH5
+// DESCRIPTION: Load class data from a h5 file
+// AUTHOR:      Tingchang YIN
+// DATE:        23/10/2023
+// ====================================================
+template <typename T>
+void cuDFNsys::MeshDFN<T>::LoadClassFromH5(const string &ClassNameH5)
+{
+    cuDFNsys::HDF5API hdf5Class;
+    std::vector<uint> Fracs_percol_II =
+        hdf5Class.ReadDataset<uint>(ClassNameH5 + ".h5", "N", "Fracs_percol");
+    this->FracsPercol.resize(Fracs_percol_II.size());
+    std::copy(Fracs_percol_II.begin(), Fracs_percol_II.end(),
+              this->FracsPercol.data());
+    cuDFNsys::InputObjectData<T> lk;
+    lk.InputMesh(ClassNameH5 + ".h5", this->MeshData, &this->FracsPercol);
+
+    this->MeanGridSize = this->MeshData.MeanGridSize;
+}; // cuDFNsys::MeshDFN<T>::LoadClassFromH5
+template void
+cuDFNsys::MeshDFN<double>::LoadClassFromH5(const string &ClassNameH5);
+template void
+cuDFNsys::MeshDFN<float>::LoadClassFromH5(const string &ClassNameH5);
 
 // ====================================================
 // NAME:        cuDFNsys::FlowDFN<T>::FlowSimulation
@@ -457,6 +505,43 @@ template void cuDFNsys::FlowDFN<float>::Visualization(
     cuDFNsys::DFN<float> my_dfn, cuDFNsys::MeshDFN<float> my_mesh,
     const string &MatlabScriptName, const string &PythonScriptName,
     const string &HDF5FileName);
+
+// ====================================================
+// NAME:        cuDFNsys::FlowDFN<T>::StoreInH5
+// DESCRIPTION: store this class in .h5
+// AUTHOR:      Tingchang YIN
+// DATE:        23/10/2023
+// ====================================================
+template <typename T>
+void cuDFNsys::FlowDFN<T>::StoreInH5(const string &ClassNameH5)
+{
+    cuDFNsys::OutputObjectData<T> lk_out;
+    lk_out.OutputMHFEM(ClassNameH5 + ".h5", this->FlowData);
+
+    this->MaxVelocity = this->FlowData.MaxVelocity;
+    this->MeanVelocity = this->FlowData.MeanVelocity;
+}; // cuDFNsys::FlowDFN<T>::StoreInH5
+template void cuDFNsys::FlowDFN<double>::StoreInH5(const string &ClassNameH5);
+template void cuDFNsys::FlowDFN<float>::StoreInH5(const string &ClassNameH5);
+
+// ====================================================
+// NAME:        cuDFNsys::FlowDFN<T>::LoadClassFromH5
+// DESCRIPTION: Load class data from a h5 file
+// AUTHOR:      Tingchang YIN
+// DATE:        23/10/2023
+// ====================================================
+template <typename T>
+void cuDFNsys::FlowDFN<T>::LoadClassFromH5(const string &ClassNameH5)
+{
+    cuDFNsys::InputObjectData<T> lk;
+    lk.InputMHFEM(ClassNameH5 + ".h5", this->FlowData);
+    this->InletHead = this->FlowData.InletP;
+    this->OutletHead = this->FlowData.OutletP;
+}; // cuDFNsys::FlowDFN<T>::LoadClassFromH5
+template void
+cuDFNsys::FlowDFN<double>::LoadClassFromH5(const string &ClassNameH5);
+template void
+cuDFNsys::FlowDFN<float>::LoadClassFromH5(const string &ClassNameH5);
 
 // ====================================================
 // NAME:        cuDFNsys::PTDFN<T>::ParticleTracking
@@ -539,13 +624,6 @@ void cuDFNsys::PTDFN<T>::Visualization(cuDFNsys::DFN<T> my_dfn,
         HDF5FileNameOfFlowDFN + ".h5", MatlabScriptName + ".m",
         my_mesh.MeshData, my_flow.FlowData, my_dfn.DomainSizeX,
         my_dfn.DomainDimensionRatio, true, PythonScriptName);
-
-    cout << "*** Right now the particle data are two-dimensional. Use "
-         << "the executable `Transform2DH5ParticleDataTo3D` to "
-         << "transform "
-         << "them to 3D!  ***" << endl;
-    cout << "*** just run: ./Transform2DH5ParticleDataTo3D 0 "
-         << "DFN_MESH_VISUAL.h5 ***" << std::endl;
 };
 template void cuDFNsys::PTDFN<double>::Visualization(
     cuDFNsys::DFN<double> my_dfn, cuDFNsys::MeshDFN<double> my_mesh,

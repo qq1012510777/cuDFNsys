@@ -57,6 +57,8 @@ public:
     T InletP = 100;
     T OutletP = 20;
     double TripletTime = 0;
+    double MaxVelocity;
+    double MeanVelocity;
 
 public:
     int Dir = 2;

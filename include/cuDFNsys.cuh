@@ -102,7 +102,6 @@ namespace cuDFNsys
     class DFN
     {
     public:
-        // member variables
         std::vector<int> NumFractures;
         std::vector<T> Kappa;
         std::vector<cuDFNsys::Vector3<T>> MeanOrientationOfFisherDistribution;
@@ -126,7 +125,6 @@ namespace cuDFNsys
         std::vector<size_t> PercolationCluster;
 
     public:
-        // member functions
         DFN(){};
         void FractureGeneration();
         void IdentifyIntersectionsClusters(const bool &IfTruncatedFractures);
@@ -163,6 +161,8 @@ namespace cuDFNsys
                            const string &HDF5FileName,
                            const bool &IfCheck2DCoordinatesOfMesh,
                            const bool &IfCheckEdgeAttributes);
+        void StoreInH5(const string &ClassNameH5);
+        void LoadClassFromH5(const string &ClassNameH5);
     };
 }; // namespace cuDFNsys
 
@@ -187,6 +187,8 @@ namespace cuDFNsys
                            const string &MatlabScriptName,
                            const string &PythonScriptName,
                            const string &HDF5FileName);
+        void StoreInH5(const string &ClassNameH5);
+        void LoadClassFromH5(const string &ClassNameH5);
     };
 }; // namespace cuDFNsys
 
@@ -217,8 +219,8 @@ namespace cuDFNsys
     public:
         PTDFN(){};
         void ParticleTracking(cuDFNsys::DFN<T> my_dfn,
-                             cuDFNsys::MeshDFN<T> my_mesh,
-                             cuDFNsys::FlowDFN<T> my_flow);
+                              cuDFNsys::MeshDFN<T> my_mesh,
+                              cuDFNsys::FlowDFN<T> my_flow);
         void Visualization(cuDFNsys::DFN<T> my_dfn,
                            cuDFNsys::MeshDFN<T> my_mesh,
                            cuDFNsys::FlowDFN<T> my_flow,

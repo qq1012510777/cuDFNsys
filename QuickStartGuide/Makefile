@@ -36,32 +36,10 @@ Lib_= -Xcompiler=-fopenmp \
 	-L$(GmshLibraryPath) \
 	-L$(UmfpackLibraryPath) \
 	-L$(Hdf5LibraryPath)
-# -L/usr/lib/x86_64-linux-gnu 
-# -L"/usr/local/cuda-11.0/targets/x86_64-linux/lib/stubs" \
-# -L"/usr/local/cuda-11.0/targets/x86_64-linux/lib"
-
-# -l$(HOME)/pkg/gmsh-4.8.4-source/MY_GMSH/lib/libgmsh.so \
-# -l$(HOME)/pkg/SuiteSparse-master/lib/libumfpack.so \
-# -l$(HOME)/pkg/SuiteSparse-master/lib/libamd.so \
-# -l/usr/lib/x86_64-linux-gnu/hdf5/serial/libhdf5_cpp.a \
-# -l/usr/lib/x86_64-linux-gnu/hdf5/serial/libhdf5.so \
-# -l/usr/lib/x86_64-linux-gnu/libsz.so \
-# -l/usr/lib/x86_64-linux-gnu/libz.so \
-# -l/usr/lib/x86_64-linux-gnu/libdl.so  
 
 all: 
-
-# $(NVCC) -DUSE_DOUBLES ./src/$(ExeName)_new.cu ../lib/libcuDFNsys.a \
-# -o ./$(ExeName)_new $(INCDIRS) $(Lib_) \
-# -Xcudafe --display_error_number -Xcudafe --diag_suppress=3057 \
-# -Xcudafe --diag_suppress=1301 \
-# -Xcudafe --diag_suppress=3059 \
-# -Xcudafe --diag_suppress=3060 \
-# -Xcudafe --diag_suppress=3058 \
-# -arch=sm_60 -std=c++17 -rdc=true
-
-	$(NVCC) -DUSE_DOUBLES ./src/$(ExeName)_DFN_I.cu ../lib/libcuDFNsys.a \
-	-o ./$(ExeName)_DFN_I $(INCDIRS) $(Lib_) \
+	$(NVCC) -DUSE_DOUBLES ./src/$(ExeName).cu ../lib/libcuDFNsys.a \
+	-o ./$(ExeName) $(INCDIRS) $(Lib_) \
 	-Xcudafe --display_error_number -Xcudafe --diag_suppress=3057 \
 	-Xcudafe --diag_suppress=1301 \
 	-Xcudafe --diag_suppress=3059 \
@@ -69,12 +47,50 @@ all:
 	-Xcudafe --diag_suppress=3058 \
 	-arch=sm_60 -std=c++17 -rdc=true
 
-# $(NVCC) -DUSE_DOUBLES ../Transform2DH5ParticleDataTo3D/src/Transform2DH5ParticleDataTo3D.cu ../lib/libcuDFNsys.a \
-# -o ./Transform2DH5ParticleDataTo3D $(INCDIRS) $(Lib_) \
-# -Xcudafe --display_error_number -Xcudafe --diag_suppress=3057 \
-# -Xcudafe --diag_suppress=1301 \
-# -Xcudafe --diag_suppress=3059 \
-# -Xcudafe --diag_suppress=3060 \
-# -Xcudafe --diag_suppress=3058 \
-# -arch=sm_60 -std=c++17 -rdc=true
+	$(NVCC) -DUSE_DOUBLES ./src/$(ExeName)_DFN_I_DFN.cu ../lib/libcuDFNsys.a \
+	-o ./$(ExeName)_DFN_I_DFN $(INCDIRS) $(Lib_) \
+	-Xcudafe --display_error_number -Xcudafe --diag_suppress=3057 \
+	-Xcudafe --diag_suppress=1301 \
+	-Xcudafe --diag_suppress=3059 \
+	-Xcudafe --diag_suppress=3060 \
+	-Xcudafe --diag_suppress=3058 \
+	-arch=sm_60 -std=c++17 -rdc=true
+
+	$(NVCC) -DUSE_DOUBLES ./src/$(ExeName)_DFN_II_MESH.cu ../lib/libcuDFNsys.a \
+	-o ./$(ExeName)_DFN_II_MESH $(INCDIRS) $(Lib_) \
+	-Xcudafe --display_error_number -Xcudafe --diag_suppress=3057 \
+	-Xcudafe --diag_suppress=1301 \
+	-Xcudafe --diag_suppress=3059 \
+	-Xcudafe --diag_suppress=3060 \
+	-Xcudafe --diag_suppress=3058 \
+	-arch=sm_60 -std=c++17 -rdc=true
+
+	$(NVCC) -DUSE_DOUBLES ./src/$(ExeName)_DFN_III_FLOW.cu ../lib/libcuDFNsys.a \
+	-o ./$(ExeName)_DFN_III_FLOW $(INCDIRS) $(Lib_) \
+	-Xcudafe --display_error_number -Xcudafe --diag_suppress=3057 \
+	-Xcudafe --diag_suppress=1301 \
+	-Xcudafe --diag_suppress=3059 \
+	-Xcudafe --diag_suppress=3060 \
+	-Xcudafe --diag_suppress=3058 \
+	-arch=sm_60 -std=c++17 -rdc=true
+
+	$(NVCC) -DUSE_DOUBLES ./src/$(ExeName)_DFN_IV_PT.cu ../lib/libcuDFNsys.a \
+	-o ./$(ExeName)_DFN_IV_PT $(INCDIRS) $(Lib_) \
+	-Xcudafe --display_error_number -Xcudafe --diag_suppress=3057 \
+	-Xcudafe --diag_suppress=1301 \
+	-Xcudafe --diag_suppress=3059 \
+	-Xcudafe --diag_suppress=3060 \
+	-Xcudafe --diag_suppress=3058 \
+	-arch=sm_60 -std=c++17 -rdc=true
+
+	$(NVCC) -DUSE_DOUBLES ../Transform2DH5ParticleDataTo3D/src/Transform2DH5ParticleDataTo3D.cu ../lib/libcuDFNsys.a \
+	-o ./Transform2DH5ParticleDataTo3D $(INCDIRS) $(Lib_) \
+	-Xcudafe --display_error_number -Xcudafe --diag_suppress=3057 \
+	-Xcudafe --diag_suppress=1301 \
+	-Xcudafe --diag_suppress=3059 \
+	-Xcudafe --diag_suppress=3060 \
+	-Xcudafe --diag_suppress=3058 \
+	-arch=sm_60 -std=c++17 -rdc=true
+
 clean:
+	gio trash -f ./*.h5 ./*.py ./*.m ./ParticlePositionResult

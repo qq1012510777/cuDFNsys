@@ -272,6 +272,10 @@ void cuDFNsys::InputObjectData<T>::InputMesh(const string &filename,
         throw ExceptionsPause(AS);
     };
 
+    HDF5API h5g;
+    std::vector<double> TMP_U = h5g.ReadDataset<double>(filename, "N", "MeanGridSize");
+    mesh.MeanGridSize = TMP_U[0];
+
     H5File file(filename, H5F_ACC_RDONLY);
 
     vector<string> datasetname = {
@@ -605,6 +609,12 @@ void cuDFNsys::InputObjectData<T>::InputMHFEM(const string &filename,
 
     vector<double> value_2 = h5g.ReadDataset<double>(filename, "N", "TripletTime");
     MHFEM.TripletTime = value_2[0];
+
+    value_2 = h5g.ReadDataset<double>(filename, "N", "MeanVelocity");
+    MHFEM.MeanVelocity = value_2[0];
+
+    value_2 = h5g.ReadDataset<double>(filename, "N", "MaxVelocity");
+    MHFEM.MaxVelocity = value_2[0];
 
     vector<int> value_3 = h5g.ReadDataset<int>(filename, "N", "Dir");
     MHFEM.Dir = value_3[0];

@@ -25,14 +25,12 @@
 // DATE:        08/04/2022
 // ====================================================
 template <typename T>
-cuDFNsys::Mesh<T>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
-                        const std::vector<pair<int, int>> &IntersectionPair_percol,
-                        std::vector<size_t> *Fracs_percol,
-                        const T &min_ele_edge,
-                        const T &max_ele_edge,
-                        const int &dir_,
-                        const T &L,
-                        double3 DomainDimensionRatio)
+cuDFNsys::Mesh<T>::Mesh(
+    const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
+    const std::vector<pair<int, int>> &IntersectionPair_percol,
+    std::vector<size_t> *Fracs_percol, const T &min_ele_edge,
+    const T &max_ele_edge, const int &dir_, const T &L,
+    double3 DomainDimensionRatio)
 {
     this->Dir = dir_;
     this->FracID = Fracs_percol;
@@ -70,15 +68,15 @@ cuDFNsys::Mesh<T>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
             std::vector<int> Pointloop(NUM_Points);
 
             for (int k = 0; k < NUM_Points; ++k)
-                Pointloop[k] = gmsh::model::occ::addPoint(Fracs[FracID].Verts3DTruncated[k].x,
-                                                          Fracs[FracID].Verts3DTruncated[k].y,
-                                                          Fracs[FracID].Verts3DTruncated[k].z,
-                                                          0);
+                Pointloop[k] = gmsh::model::occ::addPoint(
+                    Fracs[FracID].Verts3DTruncated[k].x,
+                    Fracs[FracID].Verts3DTruncated[k].y,
+                    Fracs[FracID].Verts3DTruncated[k].z, 0);
             std::vector<int> curveloop(NUM_Points);
 
             for (int k = 0; k < NUM_Points; ++k)
-                curveloop[k] = gmsh::model::occ::addLine(Pointloop[k],
-                                                         Pointloop[(k + 1) % NUM_Points]);
+                curveloop[k] = gmsh::model::occ::addLine(
+                    Pointloop[k], Pointloop[(k + 1) % NUM_Points]);
 
             int CurveLoopID = gmsh::model::occ::addCurveLoop(curveloop);
 
@@ -89,11 +87,13 @@ cuDFNsys::Mesh<T>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
             Fracs_ss[i] = Fracs[FracID];
         }
         gmsh::model::occ::synchronize();
-        cout << "\t\tadded entities, running time: " << cuDFNsys::CPUSecond() - istart << " sec\n";
+        cout << "\t\tadded entities, running time: "
+             << cuDFNsys::CPUSecond() - istart << " sec\n";
 
         //cout << "mesh fragment" << endl;
         size_t pair_size = IntersectionPair_percol.size();
-        std::vector<std::pair<int, int>> object_entity(pair_size), tool_entity(pair_size);
+        std::vector<std::pair<int, int>> object_entity(pair_size),
+            tool_entity(pair_size);
 
         istart = cuDFNsys::CPUSecond();
 
@@ -110,11 +110,14 @@ cuDFNsys::Mesh<T>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
                 object_entity[i].first = 2;
                 tool_entity[i].first = 2;
 
-                object_entity[i].second = Corre_Tag[IntersectionPair_percol[i].first];
-                tool_entity[i].second = Corre_Tag[IntersectionPair_percol[i].second];
+                object_entity[i].second =
+                    Corre_Tag[IntersectionPair_percol[i].first];
+                tool_entity[i].second =
+                    Corre_Tag[IntersectionPair_percol[i].second];
                 // cout << IntersectionPair_percol[i].first << ", " << IntersectionPair_percol[i].second << endl;
             }
-            cout << "\t\tadded object-tool pairs; running time: " << cuDFNsys::CPUSecond() - istart1 << " sec\n";
+            cout << "\t\tadded object-tool pairs; running time: "
+                 << cuDFNsys::CPUSecond() - istart1 << " sec\n";
 
             //bool IfFrag = IntersectionPair_percol.size() == 0 ? false : true;
 
@@ -123,10 +126,12 @@ cuDFNsys::Mesh<T>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
                 double istart2 = cuDFNsys::CPUSecond();
                 std::vector<std::pair<int, int>> out;
 
-                gmsh::model::occ::fragment(object_entity, tool_entity, out, outmap);
+                gmsh::model::occ::fragment(object_entity, tool_entity, out,
+                                           outmap);
                 gmsh::model::occ::synchronize();
                 // gmsh::write("exod.brep");
-                cout << "\t\tfragmented entities, running time: " << cuDFNsys::CPUSecond() - istart2 << " sec\n";
+                cout << "\t\tfragmented entities, running time: "
+                     << cuDFNsys::CPUSecond() - istart2 << " sec\n";
                 std::set<gmsh::vectorpair> set_map;
                 pair<std::set<gmsh::vectorpair>::iterator, bool> kkit;
 
@@ -138,8 +143,7 @@ cuDFNsys::Mesh<T>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
             else
             {
                 gmsh::vectorpair IO;
-                gmsh::model::getEntities(IO,
-                                         2);
+                gmsh::model::getEntities(IO, 2);
                 outmap.resize(IO.size());
                 for (int u = 0; u < IO.size(); ++u)
                 {
@@ -185,7 +189,8 @@ cuDFNsys::Mesh<T>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
         cout << "\tmesh ing" << endl;
         gmsh::model::mesh::generate(2);
         /// gmsh::fltk::run();
-        cout << "\t\tmeshing finished, running time: " << cuDFNsys::CPUSecond() - istart << " sec\n";
+        cout << "\t\tmeshing finished, running time: "
+             << cuDFNsys::CPUSecond() - istart << " sec\n";
 
         //gmsh::write("exod.msh");
 
@@ -197,11 +202,38 @@ cuDFNsys::Mesh<T>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
         cout << "\t\tNumbering edges\n";
         istart = cuDFNsys::CPUSecond();
         this->NumberingEdges(L, DomainDimensionRatio /*, Fracs*/);
-        cout << "\t\tFinished! Running time: " << cuDFNsys::CPUSecond() - istart << " sec\n";
+        cout << "\t\tFinished! Running time: " << cuDFNsys::CPUSecond() - istart
+             << " sec\n";
 
         gmsh::model::mesh::clear();
         gmsh::clear();
         gmsh::finalize();
+
+        //--------------
+        //----------------
+        //---------------
+        size_t ele_num = this->Element3D.size();
+        T *ptr_element_3D = new T[ele_num * 3];
+        if (ptr_element_3D == NULL)
+        {
+            string AS = "Alloc error in Mesh::MatlabPlot\n";
+            throw cuDFNsys::ExceptionsPause(AS);
+        }
+        double Area_characteristic = 0;
+        for (size_t i = 0; i < ele_num; ++i)
+        {
+            ptr_element_3D[i] = this->Element3D[i].x;
+            ptr_element_3D[i + ele_num] = this->Element3D[i].y;
+            ptr_element_3D[i + ele_num * 2] = this->Element3D[i].z;
+
+            Area_characteristic += double(cuDFNsys::Triangle3DArea<T>(
+                this->Coordinate3D[this->Element3D[i].x - 1],
+                this->Coordinate3D[this->Element3D[i].y - 1],
+                this->Coordinate3D[this->Element3D[i].z - 1]));
+        };
+        Area_characteristic = Area_characteristic / ele_num;
+        this->MeanGridSize = Area_characteristic;
+
     }
     catch (cuDFNsys::ExceptionsIgnore &e)
     {
@@ -213,8 +245,7 @@ cuDFNsys::Mesh<T>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
     }
     catch (cuDFNsys::ExceptionsPause &e)
     {
-        cout << "\tPause now!\n"
-             << e.what() << endl;
+        cout << "\tPause now!\n" << e.what() << endl;
         MeshSuccess = false;
         gmsh::clear();
         gmsh::finalize();
@@ -229,20 +260,18 @@ cuDFNsys::Mesh<T>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
         throw;
     };
 }; // Mesh
-template cuDFNsys::Mesh<double>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs,
-                                      const std::vector<pair<int, int>> &IntersectionPair_percol,
-                                      std::vector<size_t> *Fracs_percol,
-                                      const double &min_ele_edge,
-                                      const double &max_ele_edge,
-                                      const int &dir_,
-                                      const double &L, double3 DomainDimensionRatio);
-template cuDFNsys::Mesh<float>::Mesh(const thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs,
-                                     const std::vector<pair<int, int>> &IntersectionPair_percol,
-                                     std::vector<size_t> *Fracs_percol,
-                                     const float &min_ele_edge,
-                                     const float &max_ele_edge,
-                                     const int &dir_,
-                                     const float &L, double3 DomainDimensionRatio);
+template cuDFNsys::Mesh<double>::Mesh(
+    const thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs,
+    const std::vector<pair<int, int>> &IntersectionPair_percol,
+    std::vector<size_t> *Fracs_percol, const double &min_ele_edge,
+    const double &max_ele_edge, const int &dir_, const double &L,
+    double3 DomainDimensionRatio);
+template cuDFNsys::Mesh<float>::Mesh(
+    const thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs,
+    const std::vector<pair<int, int>> &IntersectionPair_percol,
+    std::vector<size_t> *Fracs_percol, const float &min_ele_edge,
+    const float &max_ele_edge, const int &dir_, const float &L,
+    double3 DomainDimensionRatio);
 
 // ====================================================
 // NAME:        MatlabPlot
@@ -252,14 +281,12 @@ template cuDFNsys::Mesh<float>::Mesh(const thrust::host_vector<cuDFNsys::Fractur
 // DATE:        08/04/2022
 // ====================================================
 template <typename T>
-double cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
-                                     const string &command_key,
-                                     thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
-                                     const T &L,
-                                     const bool &if_check_2D_coordinates,
-                                     const bool &if_check_edge_Numbering,
-                                     bool if_python_visualization,
-                                     string PythonName_Without_suffix, double3 DomainDimensionRatio)
+double cuDFNsys::Mesh<T>::MatlabPlot(
+    const string &mat_key, const string &command_key,
+    thrust::host_vector<cuDFNsys::Fracture<T>> Fracs, const T &L,
+    const bool &if_check_2D_coordinates, const bool &if_check_edge_Numbering,
+    bool if_python_visualization, string PythonName_Without_suffix,
+    double3 DomainDimensionRatio)
 {
     //cuDFNsys::MatlabAPI M1;
 
@@ -298,9 +325,11 @@ double cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
     ptr_coordinates_3D = NULL;
 
     uint2 dim_ds = make_uint2(3, 1);
-    double DomainDimensionRatio_D[3] = {DomainDimensionRatio.x, DomainDimensionRatio.y, DomainDimensionRatio.z};
+    double DomainDimensionRatio_D[3] = {
+        DomainDimensionRatio.x, DomainDimensionRatio.y, DomainDimensionRatio.z};
 
-    h5gg.AddDataset(mat_key, "N", "DomainDimensionRatio", DomainDimensionRatio_D, dim_ds);
+    h5gg.AddDataset(mat_key, "N", "DomainDimensionRatio",
+                    DomainDimensionRatio_D, dim_ds);
 
     size_t ele_num = this->Element3D.size();
     T *ptr_element_3D = new T[ele_num * 3];
@@ -318,13 +347,15 @@ double cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
         ptr_element_3D[i + ele_num] = this->Element3D[i].y;
         ptr_element_3D[i + ele_num * 2] = this->Element3D[i].z;
 
-        Area_characteristic += double(cuDFNsys::Triangle3DArea<T>(this->Coordinate3D[this->Element3D[i].x - 1],
-                                                                  this->Coordinate3D[this->Element3D[i].y - 1],
-                                                                  this->Coordinate3D[this->Element3D[i].z - 1]));
+        Area_characteristic += double(cuDFNsys::Triangle3DArea<T>(
+            this->Coordinate3D[this->Element3D[i].x - 1],
+            this->Coordinate3D[this->Element3D[i].y - 1],
+            this->Coordinate3D[this->Element3D[i].z - 1]));
     };
     Area_characteristic = Area_characteristic / ele_num;
 
-    h5gg.AddDataset<double>(mat_key, "N", "mean_grid_area", &Area_characteristic, make_uint2(1, 0));
+    h5gg.AddDataset<double>(mat_key, "N", "mean_grid_area",
+                            &Area_characteristic, make_uint2(1, 0));
 
     //M1.WriteMat(mat_key, "u", ele_num * 3,
     //            ele_num, 3, ptr_element_3D, "element_3D");
@@ -351,7 +382,8 @@ double cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
         //M1.WriteMat(mat_key, "u", frac_tag_num * 1,
         //            frac_tag_num, 1, ptr_element_Frac_Tag, "element_Frac_Tag");
         dim_f = make_uint2(1, frac_tag_num);
-        h5gg.AddDataset(mat_key, "N", "element_Frac_Tag", ptr_element_Frac_Tag, dim_f);
+        h5gg.AddDataset(mat_key, "N", "element_Frac_Tag", ptr_element_Frac_Tag,
+                        dim_f);
 
         delete[] ptr_element_Frac_Tag;
         ptr_element_Frac_Tag = NULL;
@@ -388,7 +420,8 @@ double cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
         // std::vector<size_t> *Frac_ID
         T *fracs = new T[(*this->FracID).size() * 4 * 2];
         int vb = 0;
-        for (std::vector<size_t>::iterator it = this->FracID->begin(); it != this->FracID->end(); it++)
+        for (std::vector<size_t>::iterator it = this->FracID->begin();
+             it != this->FracID->end(); it++)
         {
             size_t tag = *(it);
 
@@ -467,9 +500,17 @@ double cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
         oss << "DomainDimensionRatio = f['DomainDimensionRatio'][:]\n";
 
         oss << "f.close()\n";
-        oss << "ML.triangular_mesh(coordinate_3D[0, :], coordinate_3D[1, :], coordinate_3D[2, :], np.transpose(element_3D - 1), scalars=coordinate_3D[2, :], opacity=0.8)\n";
-        oss << "ML.triangular_mesh(coordinate_3D[0, :], coordinate_3D[1, :], coordinate_3D[2, :], np.transpose(element_3D-1), representation='wireframe', color=(0, 0, 0), line_width=1.0)\n";
-        oss << "ML.outline(extent=[-0.5 * DomainDimensionRatio[0] * L_m, 0.5 * DomainDimensionRatio[0] * L_m, -0.5 * DomainDimensionRatio[1] * L_m, 0.5 * DomainDimensionRatio[1] * L_m, -0.5 * DomainDimensionRatio[2] * L_m, 0.5 * DomainDimensionRatio[2] * L_m])\n";
+        oss << "ML.triangular_mesh(coordinate_3D[0, :], coordinate_3D[1, :], "
+               "coordinate_3D[2, :], np.transpose(element_3D - 1), "
+               "scalars=coordinate_3D[2, :], opacity=0.8)\n";
+        oss << "ML.triangular_mesh(coordinate_3D[0, :], coordinate_3D[1, :], "
+               "coordinate_3D[2, :], np.transpose(element_3D-1), "
+               "representation='wireframe', color=(0, 0, 0), line_width=1.0)\n";
+        oss << "ML.outline(extent=[-0.5 * DomainDimensionRatio[0] * L_m, 0.5 * "
+               "DomainDimensionRatio[0] * L_m, -0.5 * DomainDimensionRatio[1] "
+               "* L_m, 0.5 * DomainDimensionRatio[1] * L_m, -0.5 * "
+               "DomainDimensionRatio[2] * L_m, 0.5 * DomainDimensionRatio[2] * "
+               "L_m])\n";
         oss << "ML.axes()\n";
         oss << "ML.colorbar(orientation='vertical')\n";
         oss << "ML.xlabel('x (m)')\n";
@@ -479,40 +520,66 @@ double cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
         if (if_check_edge_Numbering == true)
         {
             oss << "kk = np.zeros([edge_attri.shape[0] * 3, 3], dtype=int)\n";
-            oss << "kk[[list(range(0, kk.shape[0], 3))], :] = np.concatenate((edge_attri[:, [0, 1]], edge_attri[:, [3]]), axis=1)\n";
-            oss << "kk[[list(range(1, kk.shape[0], 3))], :] = np.concatenate((edge_attri[:, [1, 2]], edge_attri[:, [4]]), axis=1)\n";
-            oss << "kk[[list(range(2, kk.shape[0], 3))], :] = np.concatenate((edge_attri[:, [2, 0]], edge_attri[:, [5]]), axis=1)\n";
+            oss << "kk[[list(range(0, kk.shape[0], 3))], :] = "
+                   "np.concatenate((edge_attri[:, [0, 1]], edge_attri[:, "
+                   "[3]]), axis=1)\n";
+            oss << "kk[[list(range(1, kk.shape[0], 3))], :] = "
+                   "np.concatenate((edge_attri[:, [1, 2]], edge_attri[:, "
+                   "[4]]), axis=1)\n";
+            oss << "kk[[list(range(2, kk.shape[0], 3))], :] = "
+                   "np.concatenate((edge_attri[:, [2, 0]], edge_attri[:, "
+                   "[5]]), axis=1)\n";
             oss << "inlet_loc = np.where(kk[:, 2] == 0)\n";
             oss << "outlet_loc = np.where(kk[:, 2] == 1)\n";
             oss << "neumann_loc = np.where(kk[:, 2] == 2)\n";
             oss << "interior_loc = np.where(kk[:, 2] == 3)\n";
-            oss << "ML.triangular_mesh(coordinate_3D[0, :], coordinate_3D[1, :], coordinate_3D[2, :], np.transpose(element_3D - 1), representation='wireframe', color=(0, 0, 0), line_width=1.0)\n";
-            oss << "ML.outline(extent=[-0.5 * DomainDimensionRatio[0] * L_m, 0.5 * DomainDimensionRatio[0] * L_m, -0.5 * DomainDimensionRatio[1] * L_m, 0.5 * DomainDimensionRatio[1] * L_m, -0.5 * DomainDimensionRatio[2] * L_m, 0.5 * DomainDimensionRatio[2] * L_m])\n";
+            oss << "ML.triangular_mesh(coordinate_3D[0, :], coordinate_3D[1, "
+                   ":], coordinate_3D[2, :], np.transpose(element_3D - 1), "
+                   "representation='wireframe', color=(0, 0, 0), "
+                   "line_width=1.0)\n";
+            oss << "ML.outline(extent=[-0.5 * DomainDimensionRatio[0] * L_m, "
+                   "0.5 * DomainDimensionRatio[0] * L_m, -0.5 * "
+                   "DomainDimensionRatio[1] * L_m, 0.5 * "
+                   "DomainDimensionRatio[1] * L_m, -0.5 * "
+                   "DomainDimensionRatio[2] * L_m, 0.5 * "
+                   "DomainDimensionRatio[2] * L_m])\n";
             oss << "ML.axes()\n";
             oss << "ML.colorbar(orientation='vertical')\n";
             oss << "ML.xlabel('x (m)')\n";
             oss << "ML.ylabel('y (m)')\n";
             oss << "ML.zlabel('z (m)')\n";
-            oss << "src1 = ML.pipeline.scalar_scatter(coordinate_3D[0, :], coordinate_3D[1, :], coordinate_3D[2, :])\n";
-            oss << "src1.mlab_source.dataset.lines = (kk[inlet_loc, 0:2][0] - 1).tolist()\n";
+            oss << "src1 = ML.pipeline.scalar_scatter(coordinate_3D[0, :], "
+                   "coordinate_3D[1, :], coordinate_3D[2, :])\n";
+            oss << "src1.mlab_source.dataset.lines = (kk[inlet_loc, 0:2][0] - "
+                   "1).tolist()\n";
             oss << "src1.update()\n";
             oss << "lines = ML.pipeline.stripper(src1)\n";
-            oss << "ML.pipeline.surface(lines, color=(1, 0, 0), line_width=1.2, opacity=1)\n";
-            oss << "src2 = ML.pipeline.scalar_scatter(coordinate_3D[0, :], coordinate_3D[1, :], coordinate_3D[2, :])\n";
-            oss << "src2.mlab_source.dataset.lines = (kk[outlet_loc, 0:2][0] - 1).tolist()\n";
+            oss << "ML.pipeline.surface(lines, color=(1, 0, 0), "
+                   "line_width=1.2, opacity=1)\n";
+            oss << "src2 = ML.pipeline.scalar_scatter(coordinate_3D[0, :], "
+                   "coordinate_3D[1, :], coordinate_3D[2, :])\n";
+            oss << "src2.mlab_source.dataset.lines = (kk[outlet_loc, 0:2][0] - "
+                   "1).tolist()\n";
             oss << "src2.update()\n";
             oss << "lines = ML.pipeline.stripper(src2)\n";
-            oss << "ML.pipeline.surface(lines, color=(1, 0, 0), line_width=1.2, opacity=1)\n";
-            oss << "src3 = ML.pipeline.scalar_scatter(coordinate_3D[0, :], coordinate_3D[1, :], coordinate_3D[2, :])\n";
-            oss << "src3.mlab_source.dataset.lines = (kk[neumann_loc, 0:2][0] - 1).tolist()\n";
+            oss << "ML.pipeline.surface(lines, color=(1, 0, 0), "
+                   "line_width=1.2, opacity=1)\n";
+            oss << "src3 = ML.pipeline.scalar_scatter(coordinate_3D[0, :], "
+                   "coordinate_3D[1, :], coordinate_3D[2, :])\n";
+            oss << "src3.mlab_source.dataset.lines = (kk[neumann_loc, 0:2][0] "
+                   "- 1).tolist()\n";
             oss << "src3.update()\n";
             oss << "lines = ML.pipeline.stripper(src3)\n";
-            oss << "ML.pipeline.surface(lines, color=(0, 0, 1), line_width=1.2, opacity=1)\n";
-            oss << "src4 = ML.pipeline.scalar_scatter(coordinate_3D[0, :], coordinate_3D[1, :], coordinate_3D[2, :])\n";
-            oss << "src4.mlab_source.dataset.lines = (kk[interior_loc, 0:2][0] - 1).tolist()\n";
+            oss << "ML.pipeline.surface(lines, color=(0, 0, 1), "
+                   "line_width=1.2, opacity=1)\n";
+            oss << "src4 = ML.pipeline.scalar_scatter(coordinate_3D[0, :], "
+                   "coordinate_3D[1, :], coordinate_3D[2, :])\n";
+            oss << "src4.mlab_source.dataset.lines = (kk[interior_loc, 0:2][0] "
+                   "- 1).tolist()\n";
             oss << "src4.update()\n";
             oss << "lines = ML.pipeline.stripper(src4)\n";
-            oss << "ML.pipeline.surface(lines, color=(0, 1, 0), line_width=1.2, opacity=1)\n";
+            oss << "ML.pipeline.surface(lines, color=(0, 1, 0), "
+                   "line_width=1.2, opacity=1)\n";
             oss << "ML.show()\n";
         }
 
@@ -520,7 +587,8 @@ double cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
 
         if (if_check_2D_coordinates)
         {
-            std::ofstream oss("CHECK_2D_fac_" + PythonName_Without_suffix + ".py", ios::out);
+            std::ofstream oss(
+                "CHECK_2D_fac_" + PythonName_Without_suffix + ".py", ios::out);
             oss << "import numpy as np\n";
             oss << "import matplotlib.pyplot as plt\n";
             oss << "import h5py\n";
@@ -532,7 +600,8 @@ double cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
             oss << "print('Number of fracures is', NumFracs)\n";
             oss << "f.close()\n";
             oss << "\n";
-            oss << "NumFrac_show = input('How many fractures and the associating meshes you want to visualize?\n')\n";
+            oss << "NumFrac_show = input('How many fractures and the "
+                   "associating meshes you want to visualize?\n')\n";
             oss << "NumFrac_show = int(NumFrac_show)\n";
             oss << "if (NumFrac_show > NumFracs):\n";
             oss << "    NumFrac_show = NumFracs;\n";
@@ -541,11 +610,16 @@ double cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
             oss << "for i in range(NumFrac_show):\n";
             oss << "    a = np.where(element_Frac_Tag == i + 1)\n";
             oss << "    vertsLocal = coordinate_2D[:, a[1]]\n";
-            oss << "    vertsLocal = np.concatenate((vertsLocal[[0, 1], :], vertsLocal[[2, 3], :], vertsLocal[[4, 5], :]), axis=1)\n";
+            oss << "    vertsLocal = np.concatenate((vertsLocal[[0, 1], :], "
+                   "vertsLocal[[2, 3], :], vertsLocal[[4, 5], :]), axis=1)\n";
             oss << "    NUM_ele_local = int(vertsLocal.shape[1] / 3)\n";
-            oss << "    element_local = np.transpose(np.array([range(0, NUM_ele_local, 1)]))\n";
-            oss << "    element_local = np.concatenate((element_local, element_local + NUM_ele_local, element_local + 2 * NUM_ele_local), axis=1)\n";
-            oss << "    plt.triplot(vertsLocal[0, :], vertsLocal[1, :], element_local, 'g-')\n";
+            oss << "    element_local = np.transpose(np.array([range(0, "
+                   "NUM_ele_local, 1)]))\n";
+            oss << "    element_local = np.concatenate((element_local, "
+                   "element_local + NUM_ele_local, element_local + 2 * "
+                   "NUM_ele_local), axis=1)\n";
+            oss << "    plt.triplot(vertsLocal[0, :], vertsLocal[1, :], "
+                   "element_local, 'g-')\n";
             oss << "    tmy = [i * 4 + j for j in range(4)]\n";
             oss << "    tmy = tmy + [tmy[0]]\n";
             oss << "    plt.plot(fracs_2D[0, tmy], fracs_2D[1, tmy], 'k-')\n";
@@ -562,41 +636,87 @@ double cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
         oss << "clc;\nclose all;\nclear all;\n";
         //oss << "load('" << mat_key << "');\n";
         oss << "currentPath = fileparts(mfilename('fullpath'));\n";
-        oss << "coordinate_3D = h5read([currentPath, '/" << mat_key << "'], '/coordinate_3D');\n";
-        oss << "element_3D = h5read([currentPath, '/" << mat_key << "'], '/element_3D');\n";
+        oss << "coordinate_3D = h5read([currentPath, '/" << mat_key
+            << "'], '/coordinate_3D');\n";
+        oss << "element_3D = h5read([currentPath, '/" << mat_key
+            << "'], '/element_3D');\n";
         oss << "L = h5read([currentPath, '/" << mat_key << "'], '/L_m');\n";
-        oss << "DomainDimensionRatio = h5read([currentPath, '/" << mat_key << "'], '/DomainDimensionRatio');\n";
-        oss << "cube_frame = [-L, -L, L; -L, L, L; L, L, L; L -L, L; -L, -L, -L; -L, L, -L; L, L, -L; L -L, -L; -L, L, L; -L, L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L, -L; L, -L, -L; L, -L, L; L, -L, L; L, -L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L,-L; -L, L, -L; -L,L, L];\n";
-        oss << "cube_frame(:, 1) = 0.5 .* cube_frame(:, 1) .* DomainDimensionRatio(1); ";
-        oss << "cube_frame(:, 2) = 0.5 .* cube_frame(:, 2) .* DomainDimensionRatio(2); ";
-        oss << "cube_frame(:, 3) = 0.5 .* cube_frame(:, 3) .* DomainDimensionRatio(3);\n";
+        oss << "DomainDimensionRatio = h5read([currentPath, '/" << mat_key
+            << "'], '/DomainDimensionRatio');\n";
+        oss << "cube_frame = [-L, -L, L; -L, L, L; L, L, L; L -L, L; -L, -L, "
+               "-L; -L, L, -L; L, L, -L; L -L, -L; -L, L, L; -L, L, -L; -L, "
+               "-L, -L; -L, -L, L; L, L, L; L, L, -L; L, -L, -L; L, -L, L; L, "
+               "-L, L; L, -L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L,-L; -L, "
+               "L, -L; -L,L, L];\n";
+        oss << "cube_frame(:, 1) = 0.5 .* cube_frame(:, 1) .* "
+               "DomainDimensionRatio(1); ";
+        oss << "cube_frame(:, 2) = 0.5 .* cube_frame(:, 2) .* "
+               "DomainDimensionRatio(2); ";
+        oss << "cube_frame(:, 3) = 0.5 .* cube_frame(:, 3) .* "
+               "DomainDimensionRatio(3);\n";
 
-        oss << "figure(1); view(3); title('DFN mesh'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
-        oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
-        oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, 'FaceVertexCData', coordinate_3D(:, 3), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 1); hold on\n";
+        oss << "figure(1); view(3); title('DFN mesh'); xlabel('x (m)'); "
+               "ylabel('y (m)'); zlabel('z (m)'); hold on\n";
+        oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 "
+               "10 11 12; 13 14 15 16], 'FaceVertexCData', "
+               "zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', "
+               "'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
+        oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, "
+               "'FaceVertexCData', coordinate_3D(:, 3), 'FaceColor', 'interp', "
+               "'EdgeAlpha', 1, 'facealpha', 1); hold on\n";
 
-        oss << "axis([-1.1 / 2 * DomainDimensionRatio(1) * L,  1.1 / 2 * DomainDimensionRatio(1) * L, -1.1 / 2 * DomainDimensionRatio(2) * L, 1.1 / 2 * DomainDimensionRatio(2) * L, -1.1 / 2 * DomainDimensionRatio(3) * L, 1.1 / 2 * DomainDimensionRatio(3) * L]);\n";
+        oss << "axis([-1.1 / 2 * DomainDimensionRatio(1) * L,  1.1 / 2 * "
+               "DomainDimensionRatio(1) * L, -1.1 / 2 * "
+               "DomainDimensionRatio(2) * L, 1.1 / 2 * DomainDimensionRatio(2) "
+               "* L, -1.1 / 2 * DomainDimensionRatio(3) * L, 1.1 / 2 * "
+               "DomainDimensionRatio(3) * L]);\n";
         oss << "pbaspect([DomainDimensionRatio]); hold on\n";
 
         if (if_check_edge_Numbering == true)
         {
-            oss << "edge_attri = h5read([currentPath, '/" << mat_key << "'], '/edge_attri');\n";
-            oss << "figure(2); view(3); title('check edge numbering'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
-            oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
+            oss << "edge_attri = h5read([currentPath, '/" << mat_key
+                << "'], '/edge_attri');\n";
+            oss << "figure(2); view(3); title('check edge numbering'); "
+                   "xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold "
+                   "on\n";
+            oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 "
+                   "8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', "
+                   "zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', "
+                   "'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
 
-            oss << "axis([-1.1 / 2 * DomainDimensionRatio(1) * L,  1.1 / 2 * DomainDimensionRatio(1) * L, -1.1 / 2 * DomainDimensionRatio(2) * L, 1.1 / 2 * DomainDimensionRatio(2) * L, -1.1 / 2 * DomainDimensionRatio(3) * L, 1.1 / 2 * DomainDimensionRatio(3) * L]);\n";
+            oss << "axis([-1.1 / 2 * DomainDimensionRatio(1) * L,  1.1 / 2 * "
+                   "DomainDimensionRatio(1) * L, -1.1 / 2 * "
+                   "DomainDimensionRatio(2) * L, 1.1 / 2 * "
+                   "DomainDimensionRatio(2) * L, -1.1 / 2 * "
+                   "DomainDimensionRatio(3) * L, 1.1 / 2 * "
+                   "DomainDimensionRatio(3) * L]);\n";
             oss << "pbaspect([DomainDimensionRatio]); hold on\n";
 
-            oss << "kk = zeros(size(edge_attri, 1) * 3, 3);kk([1:3:end], :) = [edge_attri(:, [1, 2]), edge_attri(:, 4)];kk([2:3:end], :) = [edge_attri(:, [2, 3]), edge_attri(:, 5)];kk([3:3:end], :) = [edge_attri(:, [3, 1]), edge_attri(:, 6)];\n\n";
+            oss << "kk = zeros(size(edge_attri, 1) * 3, 3);kk([1:3:end], :) = "
+                   "[edge_attri(:, [1, 2]), edge_attri(:, 4)];kk([2:3:end], :) "
+                   "= [edge_attri(:, [2, 3]), edge_attri(:, 5)];kk([3:3:end], "
+                   ":) = [edge_attri(:, [3, 1]), edge_attri(:, 6)];\n\n";
 
             oss << "\ninlet_loc = find(kk(:, 3)==0);\n";
-            oss << "patch('Vertices', coordinate_3D, 'Faces', kk(inlet_loc, [1, 2]), 'FaceVertexCData', zeros(size(coordinate_3D, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0, 'edgecolor', 'b'); hold on\n";
+            oss << "patch('Vertices', coordinate_3D, 'Faces', kk(inlet_loc, "
+                   "[1, 2]), 'FaceVertexCData', zeros(size(coordinate_3D, 1), "
+                   "1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0, "
+                   "'edgecolor', 'b'); hold on\n";
             oss << "outlet_loc = find(kk(:, 3)==1);\n";
-            oss << "patch('Vertices', coordinate_3D, 'Faces', kk(outlet_loc, [1, 2]), 'FaceVertexCData', zeros(size(coordinate_3D, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0, 'edgecolor', 'b'); hold on\n";
+            oss << "patch('Vertices', coordinate_3D, 'Faces', kk(outlet_loc, "
+                   "[1, 2]), 'FaceVertexCData', zeros(size(coordinate_3D, 1), "
+                   "1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0, "
+                   "'edgecolor', 'b'); hold on\n";
             oss << "neumann_loc = find(kk(:, 3)==2);\n";
-            oss << "patch('Vertices', coordinate_3D, 'Faces', kk(neumann_loc, [1, 2]), 'FaceVertexCData', zeros(size(coordinate_3D, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0, 'edgecolor', 'r'); hold on\n";
+            oss << "patch('Vertices', coordinate_3D, 'Faces', kk(neumann_loc, "
+                   "[1, 2]), 'FaceVertexCData', zeros(size(coordinate_3D, 1), "
+                   "1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0, "
+                   "'edgecolor', 'r'); hold on\n";
             oss << "interior_loc = find(kk(:, 3)==3);\n";
-            oss << "patch('Vertices', coordinate_3D, 'Faces', kk(interior_loc, [1, 2]), 'FaceVertexCData', zeros(size(coordinate_3D, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0, 'edgecolor', 'k'); hold on\n";
+            oss << "patch('Vertices', coordinate_3D, 'Faces', kk(interior_loc, "
+                   "[1, 2]), 'FaceVertexCData', zeros(size(coordinate_3D, 1), "
+                   "1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0, "
+                   "'edgecolor', 'k'); hold on\n";
         }
         oss.close();
 
@@ -606,9 +726,12 @@ double cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
             oss_e << "clc;\nclose all;\nclear all;\n";
             //oss_e << "load('" << mat_key << "');\n";
             oss_e << "currentPath = fileparts(mfilename('fullpath'));\n";
-            oss_e << "element_Frac_Tag = h5read([currentPath, '/" << mat_key << "'], '/element_Frac_Tag');\n";
-            oss_e << "fracs_2D = h5read([currentPath, '/" << mat_key << "'], '/fracs_2D');\n";
-            oss_e << "coordinate_2D = h5read([currentPath, '/" << mat_key << "'], '/coordinate_2D');\n";
+            oss_e << "element_Frac_Tag = h5read([currentPath, '/" << mat_key
+                  << "'], '/element_Frac_Tag');\n";
+            oss_e << "fracs_2D = h5read([currentPath, '/" << mat_key
+                  << "'], '/fracs_2D');\n";
+            oss_e << "coordinate_2D = h5read([currentPath, '/" << mat_key
+                  << "'], '/coordinate_2D');\n";
             oss_e << "num_frac = " << this->Element2D.size() << ";\n\n";
 
             oss_e << "tmp_cc = 1;\n";
@@ -619,11 +742,20 @@ double cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
             oss_e << "\ta = find(element_Frac_Tag == i);\n";
             oss_e << "\tfigure(1); view(2);\n";
             oss_e << "\tvertsLocal = coordinate_2D([a], :);\n";
-            oss_e << "\tvertsLocal = [vertsLocal(:, [1 2]); vertsLocal(:, [3 4]); vertsLocal(:, [5 6])];\n";
+            oss_e << "\tvertsLocal = [vertsLocal(:, [1 2]); vertsLocal(:, [3 "
+                     "4]); vertsLocal(:, [5 6])];\n";
             oss_e << "\tNUM_ele_local = size(vertsLocal, 1) / 3;\n";
-            oss_e << "\telement_local = [[1:NUM_ele_local]', [1:NUM_ele_local]' + NUM_ele_local, [1:NUM_ele_local]' + 2 * NUM_ele_local];\n";
-            oss_e << "\tpatch('Vertices', vertsLocal, 'Faces', element_local, 'FaceVertexCData', zeros(size(vertsLocal, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0, 'edgecolor', 'k'); hold on\n";
-            oss_e << "\tpatch('Vertices', fracs_2D, 'Faces', [1 2 3 4] + (i - 1) * 4, 'FaceVertexCData', zeros(size(fracs_2D, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0, 'edgecolor', 'r'); hold on\n";
+            oss_e << "\telement_local = [[1:NUM_ele_local]', "
+                     "[1:NUM_ele_local]' + NUM_ele_local, [1:NUM_ele_local]' + "
+                     "2 * NUM_ele_local];\n";
+            oss_e << "\tpatch('Vertices', vertsLocal, 'Faces', element_local, "
+                     "'FaceVertexCData', zeros(size(vertsLocal, 1), 1), "
+                     "'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0, "
+                     "'edgecolor', 'k'); hold on\n";
+            oss_e << "\tpatch('Vertices', fracs_2D, 'Faces', [1 2 3 4] + (i - "
+                     "1) * 4, 'FaceVertexCData', zeros(size(fracs_2D, 1), 1), "
+                     "'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0, "
+                     "'edgecolor', 'r'); hold on\n";
 
             oss_e << "\tdisp(i);\n";
             oss_e << "\tpause();\n";
@@ -634,22 +766,18 @@ double cuDFNsys::Mesh<T>::MatlabPlot(const string &mat_key,
     }
     return Area_characteristic;
 }; // MatlabPlot
-template double cuDFNsys::Mesh<double>::MatlabPlot(const string &mat_key,
-                                                   const string &command_key,
-                                                   thrust::host_vector<cuDFNsys::Fracture<double>> Fracs,
-                                                   const double &L,
-                                                   const bool &if_check_2D_coordinates,
-                                                   const bool &if_check_edge_Numbering,
-                                                   bool if_python_visualization,
-                                                   string PythonName_Without_suffix, double3 DomainDimensionRatio);
-template double cuDFNsys::Mesh<float>::MatlabPlot(const string &mat_key,
-                                                  const string &command_key,
-                                                  thrust::host_vector<cuDFNsys::Fracture<float>> Fracs,
-                                                  const float &L,
-                                                  const bool &if_check_2D_coordinates,
-                                                  const bool &if_check_edge_Numbering,
-                                                  bool if_python_visualization,
-                                                  string PythonName_Without_suffix, double3 DomainDimensionRatio);
+template double cuDFNsys::Mesh<double>::MatlabPlot(
+    const string &mat_key, const string &command_key,
+    thrust::host_vector<cuDFNsys::Fracture<double>> Fracs, const double &L,
+    const bool &if_check_2D_coordinates, const bool &if_check_edge_Numbering,
+    bool if_python_visualization, string PythonName_Without_suffix,
+    double3 DomainDimensionRatio);
+template double cuDFNsys::Mesh<float>::MatlabPlot(
+    const string &mat_key, const string &command_key,
+    thrust::host_vector<cuDFNsys::Fracture<float>> Fracs, const float &L,
+    const bool &if_check_2D_coordinates, const bool &if_check_edge_Numbering,
+    bool if_python_visualization, string PythonName_Without_suffix,
+    double3 DomainDimensionRatio);
 
 // ====================================================
 // NAME:        GetCoordinates
@@ -668,9 +796,8 @@ void cuDFNsys::Mesh<T>::GetCoordinates()
     this->Coordinate3D.resize(NUM_nodes);
 
     for (size_t i = 0; i < coord.size(); i += 3)
-        Coordinate3D[i / 3] = cuDFNsys::MakeVector3((T)coord[i],
-                                                    (T)coord[i + 1],
-                                                    (T)coord[i + 2]);
+        Coordinate3D[i / 3] = cuDFNsys::MakeVector3(
+            (T)coord[i], (T)coord[i + 1], (T)coord[i + 2]);
 }; // GetCoordinates
 template void cuDFNsys::Mesh<double>::GetCoordinates();
 template void cuDFNsys::Mesh<float>::GetCoordinates();
@@ -682,7 +809,9 @@ template void cuDFNsys::Mesh<float>::GetCoordinates();
 // DATE:        08/04/2022
 // ====================================================
 template <typename T>
-void cuDFNsys::Mesh<T>::GetElements(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs_s, const std::vector<std::vector<std::pair<int, int>>> &outmap)
+void cuDFNsys::Mesh<T>::GetElements(
+    const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs_s,
+    const std::vector<std::vector<std::pair<int, int>>> &outmap)
 {
     thrust::host_vector<thrust::host_vector<uint3>> elementEntities_2D;
     thrust::host_vector<uint> Largest_ele;
@@ -702,7 +831,8 @@ void cuDFNsys::Mesh<T>::GetElements(const thrust::host_vector<cuDFNsys::Fracture
         //cout << One_entity_one_ele[i].x << ", " << One_entity_one_ele[i].y << ", " << One_entity_one_ele[i].z << endl;
     }
 
-    thrust::device_vector<uint3> One_entity_one_ele_dev(elementEntities_2D.size());
+    thrust::device_vector<uint3> One_entity_one_ele_dev(
+        elementEntities_2D.size());
     thrust::device_vector<cuDFNsys::Vector3<T>> coordinate_3D_dev;
     thrust::device_vector<int> Elements_Frac_dev(elementEntities_2D.size());
     thrust::host_vector<int> Elements_Frac_host;
@@ -710,22 +840,23 @@ void cuDFNsys::Mesh<T>::GetElements(const thrust::host_vector<cuDFNsys::Fracture
     One_entity_one_ele_dev = One_entity_one_ele;
     coordinate_3D_dev = this->Coordinate3D;
 
-    int *Elements_Frac_dev_ptr = thrust::raw_pointer_cast(Elements_Frac_dev.data());
+    int *Elements_Frac_dev_ptr =
+        thrust::raw_pointer_cast(Elements_Frac_dev.data());
 
-    uint3 *One_entity_one_ele_dev_ptr = thrust::raw_pointer_cast(One_entity_one_ele_dev.data());
-    cuDFNsys::Vector3<T> *coordinate_3D_dev_ptr = thrust::raw_pointer_cast(coordinate_3D_dev.data());
+    uint3 *One_entity_one_ele_dev_ptr =
+        thrust::raw_pointer_cast(One_entity_one_ele_dev.data());
+    cuDFNsys::Vector3<T> *coordinate_3D_dev_ptr =
+        thrust::raw_pointer_cast(coordinate_3D_dev.data());
 
     thrust::device_vector<cuDFNsys::Fracture<T>> Fracss;
     Fracss = Fracs_s;
-    cuDFNsys::Fracture<T> *Fracturesss_vert_dev_ptr = thrust::raw_pointer_cast(Fracss.data());
+    cuDFNsys::Fracture<T> *Fracturesss_vert_dev_ptr =
+        thrust::raw_pointer_cast(Fracss.data());
 
-    cuDFNsys::IdentifyEleFrac<T><<<elementEntities_2D.size() / 256 + 1, 256>>>(One_entity_one_ele_dev_ptr,
-                                                                               coordinate_3D_dev_ptr,
-                                                                               Fracturesss_vert_dev_ptr,
-                                                                               Elements_Frac_dev_ptr,
-                                                                               elementEntities_2D.size(),
-                                                                               Fracs_s.size(),
-                                                                               _TOL_IdentifyEleFrac);
+    cuDFNsys::IdentifyEleFrac<T><<<elementEntities_2D.size() / 256 + 1, 256>>>(
+        One_entity_one_ele_dev_ptr, coordinate_3D_dev_ptr,
+        Fracturesss_vert_dev_ptr, Elements_Frac_dev_ptr,
+        elementEntities_2D.size(), Fracs_s.size(), _TOL_IdentifyEleFrac);
     cudaDeviceSynchronize();
     cout << "\t\t\tIdentified element's fracID" << endl;
     //------------------------------------------------------------------------------------------
@@ -740,7 +871,8 @@ void cuDFNsys::Mesh<T>::GetElements(const thrust::host_vector<cuDFNsys::Fracture
         if (Elements_Frac_host[i] == -1)
         {
             string AS = "entity: " + std::to_string(i) + ", ";
-            AS += "cannot find which fracture that the enetity is belonging to!\n";
+            AS += "cannot find which fracture that the enetity is belonging "
+                  "to!\n";
             //cout << AS;
             throw cuDFNsys::ExceptionsIgnore(AS);
         }
@@ -770,11 +902,9 @@ void cuDFNsys::Mesh<T>::GetElements(const thrust::host_vector<cuDFNsys::Fracture
                                this->Element2D[i].begin(),
                                this->Element2D[i].end());
 
-        thrust::host_vector<uint> KK(this->Element2D[i].size(),
-                                     i);
+        thrust::host_vector<uint> KK(this->Element2D[i].size(), i);
 
-        this->ElementFracTag.insert(this->ElementFracTag.end(),
-                                    KK.begin(),
+        this->ElementFracTag.insert(this->ElementFracTag.end(), KK.begin(),
                                     KK.end());
     };
     //------------------
@@ -793,25 +923,29 @@ void cuDFNsys::Mesh<T>::GetElements(const thrust::host_vector<cuDFNsys::Fracture
     element_3D_dev = this->Element3D;
     uint3 *element_3D_dev_ptr = thrust::raw_pointer_cast(element_3D_dev.data());
 
-    thrust::device_vector<cuDFNsys::EleCoor<T>> coordinate_2D_dev(this->Element3D.size());
-    cuDFNsys::EleCoor<T> *coordinate_2D_dev_ptr = thrust::raw_pointer_cast(coordinate_2D_dev.data());
+    thrust::device_vector<cuDFNsys::EleCoor<T>> coordinate_2D_dev(
+        this->Element3D.size());
+    cuDFNsys::EleCoor<T> *coordinate_2D_dev_ptr =
+        thrust::raw_pointer_cast(coordinate_2D_dev.data());
 
     thrust::device_vector<uint> element_Frac_Tag_dev;
     element_Frac_Tag_dev = ElementFracTag;
-    uint *element_Frac_Tag_dev_ptr = thrust::raw_pointer_cast(element_Frac_Tag_dev.data());
+    uint *element_Frac_Tag_dev_ptr =
+        thrust::raw_pointer_cast(element_Frac_Tag_dev.data());
 
-    cuDFNsys::GetLocalCoordiates<T><<<this->Element3D.size() / 256 + 1, 256>>>(element_3D_dev_ptr,
-                                                                               Fracturesss_vert_dev_ptr,
-                                                                               element_Frac_Tag_dev_ptr,
-                                                                               coordinate_2D_dev_ptr,
-                                                                               coordinate_3D_dev_ptr,
-                                                                               this->Element3D.size());
+    cuDFNsys::GetLocalCoordiates<T><<<this->Element3D.size() / 256 + 1, 256>>>(
+        element_3D_dev_ptr, Fracturesss_vert_dev_ptr, element_Frac_Tag_dev_ptr,
+        coordinate_2D_dev_ptr, coordinate_3D_dev_ptr, this->Element3D.size());
     cudaDeviceSynchronize();
     this->Element3D = element_3D_dev;
     this->Coordinate2D = coordinate_2D_dev;
 }; // GetElements
-template void cuDFNsys::Mesh<double>::GetElements(const thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs_s, const std::vector<std::vector<std::pair<int, int>>> &outmap);
-template void cuDFNsys::Mesh<float>::GetElements(const thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs_s, const std::vector<std::vector<std::pair<int, int>>> &outmap);
+template void cuDFNsys::Mesh<double>::GetElements(
+    const thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs_s,
+    const std::vector<std::vector<std::pair<int, int>>> &outmap);
+template void cuDFNsys::Mesh<float>::GetElements(
+    const thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs_s,
+    const std::vector<std::vector<std::pair<int, int>>> &outmap);
 
 // ====================================================
 // NAME:        NumberingEdges
@@ -857,7 +991,8 @@ void cuDFNsys::Mesh<T>::NumberingEdges(const T L, double3 DomainDimensionRatio)
 
         //istart = cuDFNsys::CPUSecond();
 
-        UMapEdge node2element_local = this->SparseMatEdgeAttri(i, if_change_ori);
+        UMapEdge node2element_local =
+            this->SparseMatEdgeAttri(i, if_change_ori);
 
         //cout << "i: " << i << " gen Matrix " << cuDFNsys::CPUSecond() - istart << " sec\n";
 
@@ -893,13 +1028,16 @@ void cuDFNsys::Mesh<T>::NumberingEdges(const T L, double3 DomainDimensionRatio)
                 size_t node1 = element_list_e[k],
                        node2 = element_list_e[(k + 1) % 3];
 
-                pair<size_t, size_t> key_ = make_pair(node1 < node2 ? node1 : node2, node1 > node2 ? node1 : node2);
+                pair<size_t, size_t> key_ =
+                    make_pair(node1 < node2 ? node1 : node2,
+                              node1 > node2 ? node1 : node2);
 
                 if (node2element_local[key_] > 0)
                 {
                     this->EdgeAttri[tmp_ele_NO].e[k] = 3; // interior
 
-                    if (Shared_edge_global_NO.find(key_) == Shared_edge_global_NO.end())
+                    if (Shared_edge_global_NO.find(key_) ==
+                        Shared_edge_global_NO.end())
                     {
                         this->EdgeAttri[tmp_ele_NO].no[k] = edge_shared;
                         Shared_edge_global_NO[key_] = edge_shared;
@@ -911,7 +1049,8 @@ void cuDFNsys::Mesh<T>::NumberingEdges(const T L, double3 DomainDimensionRatio)
                     }
                     else
                     {
-                        this->EdgeAttri[tmp_ele_NO].no[k] = Shared_edge_global_NO[key_]; // Sep_NO;
+                        this->EdgeAttri[tmp_ele_NO].no[k] =
+                            Shared_edge_global_NO[key_]; // Sep_NO;
 
                         //cout << "compare !!! ";
                         //printf("len: %lf, pre: %lf, error: %lf%\n", len, shared_edge_len.coeffRef(node1 - 1, node2 - 1), abs(len - shared_edge_len.coeffRef(node1 - 1, node2 - 1)) * 100);
@@ -919,24 +1058,27 @@ void cuDFNsys::Mesh<T>::NumberingEdges(const T L, double3 DomainDimensionRatio)
                 }
                 else
                 {
-                    pair<bool, string> if_d = this->IfTwoEndsDirchlet(node1,
-                                                                      node2,
-                                                                      L, DomainDimensionRatio);
+                    pair<bool, string> if_d = this->IfTwoEndsDirchlet(
+                        node1, node2, L, DomainDimensionRatio);
 
                     if (if_d.first == true)
                     {
-                        cuDFNsys::Vector3<T> vert1 = this->Coordinate3D[node1 - 1];
-                        cuDFNsys::Vector3<T> vert2 = this->Coordinate3D[node2 - 1];
-                        cuDFNsys::Vector3<T> vect = cuDFNsys::MakeVector3(vert1.x - vert2.x,
-                                                                          vert1.y - vert2.y,
-                                                                          vert1.z - vert2.z);
-                        T len = sqrt(vect.x * vect.x + vect.y * vect.y + vect.z * vect.z);
+                        cuDFNsys::Vector3<T> vert1 =
+                            this->Coordinate3D[node1 - 1];
+                        cuDFNsys::Vector3<T> vert2 =
+                            this->Coordinate3D[node2 - 1];
+                        cuDFNsys::Vector3<T> vect = cuDFNsys::MakeVector3(
+                            vert1.x - vert2.x, vert1.y - vert2.y,
+                            vert1.z - vert2.z);
+                        T len = sqrt(vect.x * vect.x + vect.y * vect.y +
+                                     vect.z * vect.z);
 
                         if (if_d.second == "in")
                         {
                             this->EdgeAttri[tmp_ele_NO].e[k] = 0;
                             this->EdgeAttri[tmp_ele_NO].no[k] = Sep_NO;
-                            this->InletEdgeNOLen.push_back(cuDFNsys::MakeVector2((T)Sep_NO, len));
+                            this->InletEdgeNOLen.push_back(
+                                cuDFNsys::MakeVector2((T)Sep_NO, len));
 
                             Sep_edge_NO_in++;
                         }
@@ -944,7 +1086,8 @@ void cuDFNsys::Mesh<T>::NumberingEdges(const T L, double3 DomainDimensionRatio)
                         {
                             this->EdgeAttri[tmp_ele_NO].e[k] = 1;
                             this->EdgeAttri[tmp_ele_NO].no[k] = Sep_NO;
-                            this->OutletEdgeNOLen.push_back(cuDFNsys::MakeVector2((T)Sep_NO, len));
+                            this->OutletEdgeNOLen.push_back(
+                                cuDFNsys::MakeVector2((T)Sep_NO, len));
 
                             Sep_edge_NO_out++;
                         }
@@ -1067,8 +1210,14 @@ void cuDFNsys::Mesh<T>::NumberingEdges(const T L, double3 DomainDimensionRatio)
     NumOutletEdges = Sep_edge_NO_out - 1;
     NumNeumannEdges = Sep_edge_NO_neumann - 1;
 }; // NumberingEdges
-template void cuDFNsys::Mesh<double>::NumberingEdges(const double L, double3 DomainDimensionRatio /*, const thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs*/);
-template void cuDFNsys::Mesh<float>::NumberingEdges(const float L, double3 DomainDimensionRatio /*, const thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs*/);
+template void cuDFNsys::Mesh<double>::NumberingEdges(
+    const double L,
+    double3
+        DomainDimensionRatio /*, const thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs*/);
+template void cuDFNsys::Mesh<float>::NumberingEdges(
+    const float L,
+    double3
+        DomainDimensionRatio /*, const thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs*/);
 
 // ====================================================
 // NAME:        GetEntitiesElements
@@ -1077,8 +1226,10 @@ template void cuDFNsys::Mesh<float>::NumberingEdges(const float L, double3 Domai
 // DATE:        08/04/2022
 // ====================================================
 template <typename T>
-void cuDFNsys::Mesh<T>::GetEntitiesElements(thrust::host_vector<thrust::host_vector<uint3>> &elementEntities_2D,
-                                            thrust::host_vector<uint> &Largest_ele, const std::vector<std::vector<std::pair<int, int>>> &outmap)
+void cuDFNsys::Mesh<T>::GetEntitiesElements(
+    thrust::host_vector<thrust::host_vector<uint3>> &elementEntities_2D,
+    thrust::host_vector<uint> &Largest_ele,
+    const std::vector<std::vector<std::pair<int, int>>> &outmap)
 {
     elementEntities_2D.resize(outmap.size());
     Largest_ele.resize(outmap.size());
@@ -1094,9 +1245,11 @@ void cuDFNsys::Mesh<T>::GetEntitiesElements(thrust::host_vector<thrust::host_vec
         {
             std::vector<int> elemTypes;
             std::vector<std::vector<std::size_t>> elemTags, elemNodeTags_hh;
-            gmsh::model::mesh::getElements(elemTypes, elemTags, elemNodeTags_hh, 2, outmap[i][j].second);
+            gmsh::model::mesh::getElements(elemTypes, elemTags, elemNodeTags_hh,
+                                           2, outmap[i][j].second);
 
-            elemNodeTags.insert(elemNodeTags.end(), elemNodeTags_hh[0].begin(), elemNodeTags_hh[0].end());
+            elemNodeTags.insert(elemNodeTags.end(), elemNodeTags_hh[0].begin(),
+                                elemNodeTags_hh[0].end());
         }
         size_t NUM_ele = elemNodeTags.size() / 3;
 
@@ -1107,19 +1260,20 @@ void cuDFNsys::Mesh<T>::GetEntitiesElements(thrust::host_vector<thrust::host_vec
             int node2 = (size_t)elemNodeTags[j + 1];
             int node3 = (size_t)elemNodeTags[j + 2];
 
-            bool skinny_if = cuDFNsys::If3DTriangleSkinny<T>(this->Coordinate3D[node1 - 1],
-                                                             this->Coordinate3D[node2 - 1],
-                                                             this->Coordinate3D[node3 - 1],
-                                                             _TOL_If3DTriangleSkinny);
+            bool skinny_if = cuDFNsys::If3DTriangleSkinny<T>(
+                this->Coordinate3D[node1 - 1], this->Coordinate3D[node2 - 1],
+                this->Coordinate3D[node3 - 1], _TOL_If3DTriangleSkinny);
 
             if (skinny_if == false)
             {
-                elementEntities_2D[i].push_back(make_uint3(node1, node2, node3));
+                elementEntities_2D[i].push_back(
+                    make_uint3(node1, node2, node3));
                 //cout << "YY " << area << "; node " << RowVector3d(node1, node2, node3) << endl;
 
-                T area = cuDFNsys::Triangle3DArea<T>(this->Coordinate3D[node1 - 1],
-                                                     this->Coordinate3D[node2 - 1],
-                                                     this->Coordinate3D[node3 - 1]);
+                T area =
+                    cuDFNsys::Triangle3DArea<T>(this->Coordinate3D[node1 - 1],
+                                                this->Coordinate3D[node2 - 1],
+                                                this->Coordinate3D[node3 - 1]);
                 if (area > area_ll)
                 {
                     area_ll = area;
@@ -1139,13 +1293,17 @@ void cuDFNsys::Mesh<T>::GetEntitiesElements(thrust::host_vector<thrust::host_vec
 
     if (Zero_element_entityNO.size() > 0)
     {
-        cout << "\t\t\033[33mFound zero element entities! I am removing these entities\033[0m\n";
-        thrust::host_vector<thrust::host_vector<uint3>> tmp_e(elementEntities_2D.size() - Zero_element_entityNO.size());
-        thrust::host_vector<uint> tmp_l(elementEntities_2D.size() - Zero_element_entityNO.size());
+        cout << "\t\t\033[33mFound zero element entities! I am removing these "
+                "entities\033[0m\n";
+        thrust::host_vector<thrust::host_vector<uint3>> tmp_e(
+            elementEntities_2D.size() - Zero_element_entityNO.size());
+        thrust::host_vector<uint> tmp_l(elementEntities_2D.size() -
+                                        Zero_element_entityNO.size());
 
         for (int i = 0, j = 0; i < elementEntities_2D.size(); ++i)
         {
-            if (find(Zero_element_entityNO.begin(), Zero_element_entityNO.end(), i) == Zero_element_entityNO.end())
+            if (find(Zero_element_entityNO.begin(), Zero_element_entityNO.end(),
+                     i) == Zero_element_entityNO.end())
             {
                 tmp_e[j] = elementEntities_2D[i];
                 tmp_l[j] = Largest_ele[i];
@@ -1162,10 +1320,14 @@ void cuDFNsys::Mesh<T>::GetEntitiesElements(thrust::host_vector<thrust::host_vec
         Largest_ele = tmp_l;
     }
 }; // GetEntitiesElements
-template void cuDFNsys::Mesh<double>::GetEntitiesElements(thrust::host_vector<thrust::host_vector<uint3>> &elementEntities_2D,
-                                                          thrust::host_vector<uint> &Largest_ele, const std::vector<std::vector<std::pair<int, int>>> &outmap);
-template void cuDFNsys::Mesh<float>::GetEntitiesElements(thrust::host_vector<thrust::host_vector<uint3>> &elementEntities_2D,
-                                                         thrust::host_vector<uint> &Largest_ele, const std::vector<std::vector<std::pair<int, int>>> &outmap);
+template void cuDFNsys::Mesh<double>::GetEntitiesElements(
+    thrust::host_vector<thrust::host_vector<uint3>> &elementEntities_2D,
+    thrust::host_vector<uint> &Largest_ele,
+    const std::vector<std::vector<std::pair<int, int>>> &outmap);
+template void cuDFNsys::Mesh<float>::GetEntitiesElements(
+    thrust::host_vector<thrust::host_vector<uint3>> &elementEntities_2D,
+    thrust::host_vector<uint> &Largest_ele,
+    const std::vector<std::vector<std::pair<int, int>>> &outmap);
 
 // ====================================================
 // NAME:        SparseMatEdgeAttri
@@ -1208,7 +1370,8 @@ UMapEdge cuDFNsys::Mesh<T>::SparseMatEdgeAttri(uint i, bool if_change_ori)
             size_t node1 = node_list_e[k];
             size_t node2 = node_list_e[(k + 1) % 3];
 
-            pair<size_t, size_t> key_ = make_pair(node1 < node2 ? node1 : node2, node1 > node2 ? node1 : node2);
+            pair<size_t, size_t> key_ = make_pair(
+                node1 < node2 ? node1 : node2, node1 > node2 ? node1 : node2);
 
             if (umap_s.find(key_) == umap_s.end())
                 umap_s[key_] = 0;
@@ -1219,8 +1382,10 @@ UMapEdge cuDFNsys::Mesh<T>::SparseMatEdgeAttri(uint i, bool if_change_ori)
 
     return umap_s;
 }; // SparseMatEdgeAttri
-template UMapEdge cuDFNsys::Mesh<double>::SparseMatEdgeAttri(uint i, bool if_change_ori);
-template UMapEdge cuDFNsys::Mesh<float>::SparseMatEdgeAttri(uint i, bool if_change_ori);
+template UMapEdge
+cuDFNsys::Mesh<double>::SparseMatEdgeAttri(uint i, bool if_change_ori);
+template UMapEdge cuDFNsys::Mesh<float>::SparseMatEdgeAttri(uint i,
+                                                            bool if_change_ori);
 
 // ====================================================
 // NAME:        GetElementID
@@ -1251,9 +1416,9 @@ template size_t cuDFNsys::Mesh<float>::GetElementID(size_t i, size_t j);
 // DATE:        08/04/2022
 // ====================================================
 template <typename T>
-pair<bool, string> cuDFNsys::Mesh<T>::IfTwoEndsDirchlet(const size_t node1,
-                                                        const size_t node2,
-                                                        const T L, double3 DomainDimensionRatio)
+pair<bool, string>
+cuDFNsys::Mesh<T>::IfTwoEndsDirchlet(const size_t node1, const size_t node2,
+                                     const T L, double3 DomainDimensionRatio)
 {
     pair<bool, string> kk = std::make_pair(false, "N");
 
@@ -1267,16 +1432,20 @@ pair<bool, string> cuDFNsys::Mesh<T>::IfTwoEndsDirchlet(const size_t node1,
 
     double *DomainDimensionRatio_rr = &DomainDimensionRatio.x;
 
-    if (abs(coord_1[this->Dir] - DomainDimensionRatio_rr[this->Dir] * L * 0.5) < _TOL_IfTwoEndsDirchlet &&
-        abs(coord_2[this->Dir] - DomainDimensionRatio_rr[this->Dir] * L * 0.5) < _TOL_IfTwoEndsDirchlet)
+    if (abs(coord_1[this->Dir] - DomainDimensionRatio_rr[this->Dir] * L * 0.5) <
+            _TOL_IfTwoEndsDirchlet &&
+        abs(coord_2[this->Dir] - DomainDimensionRatio_rr[this->Dir] * L * 0.5) <
+            _TOL_IfTwoEndsDirchlet)
     {
         kk.first = true;
         kk.second = "in";
         return kk;
     }
 
-    if (abs(coord_1[this->Dir] - DomainDimensionRatio_rr[this->Dir] * L * (-0.5)) < _TOL_IfTwoEndsDirchlet &&
-        abs(coord_2[this->Dir] - DomainDimensionRatio_rr[this->Dir] * L * (-0.5)) < _TOL_IfTwoEndsDirchlet)
+    if (abs(coord_1[this->Dir] - DomainDimensionRatio_rr[this->Dir] * L *
+                                     (-0.5)) < _TOL_IfTwoEndsDirchlet &&
+        abs(coord_2[this->Dir] - DomainDimensionRatio_rr[this->Dir] * L *
+                                     (-0.5)) < _TOL_IfTwoEndsDirchlet)
     {
         kk.first = true;
         kk.second = "out";
@@ -1285,9 +1454,11 @@ pair<bool, string> cuDFNsys::Mesh<T>::IfTwoEndsDirchlet(const size_t node1,
 
     return kk;
 }; // IfTwoEndsDirchlet
-template pair<bool, string> cuDFNsys::Mesh<double>::IfTwoEndsDirchlet(const size_t node1,
-                                                                      const size_t node2,
-                                                                      const double L, double3 DomainDimensionRatio);
-template pair<bool, string> cuDFNsys::Mesh<float>::IfTwoEndsDirchlet(const size_t node1,
-                                                                     const size_t node2,
-                                                                     const float L, double3 DomainDimensionRatio);
+template pair<bool, string>
+cuDFNsys::Mesh<double>::IfTwoEndsDirchlet(const size_t node1,
+                                          const size_t node2, const double L,
+                                          double3 DomainDimensionRatio);
+template pair<bool, string>
+cuDFNsys::Mesh<float>::IfTwoEndsDirchlet(const size_t node1, const size_t node2,
+                                         const float L,
+                                         double3 DomainDimensionRatio);

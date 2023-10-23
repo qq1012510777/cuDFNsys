@@ -168,6 +168,8 @@ void cuDFNsys::OutputObjectData<T>::OutputMesh(const string &filename_,
     uint NumFractures[1] = {(uint)Fracs_percol.size()};
     h5_.AddDataset(filename_, "N", "NumFractures", NumFractures, dim_e);
 
+    h5_.AddDataset(filename_, "N", "MeanGridSize", &mesh.MeanGridSize, dim_e);
+
     uint NumNodes[1] = {(uint)mesh.Coordinate3D.size()};
     h5_.AddDataset(filename_, "N", "NumNodes", NumNodes, dim_e);
 
@@ -408,6 +410,9 @@ void cuDFNsys::OutputObjectData<T>::OutputMHFEM(const string &filename_,
 
     double Value2[1] = {mhfem.TripletTime};
     h5_.AddDataset(filename_, "N", "TripletTime", Value2, dim_e);
+
+    h5_.AddDataset(filename_, "N", "MeanVelocity", &mhfem.MeanVelocity, dim_e);
+    h5_.AddDataset(filename_, "N", "MaxVelocity", &mhfem.MaxVelocity, dim_e);
 
     int Value3[1] = {mhfem.Dir};
     h5_.AddDataset(filename_, "N", "Dir", Value3, dim_e);

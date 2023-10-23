@@ -6,7 +6,7 @@
 
 * Date: Oct. 19, 2023
 
-* Update date: Oct. 20, 2023 
+* Update date: Oct. 23, 2023 
 
 * Email: yintingchang@foxmail.com
 
@@ -37,7 +37,7 @@ int main()
     return 0;
 }
 ```
-The above code just generates a vector (type: `cuDFNsys::Vector4<double>`) named `vec4` of four elements (double precision), which can be accessed by `vec4.x`, `vec4.y`, `vec4.z` and `vec4.w`. More details about `cuDFNsys::Vector4<double>` are discussed later.
+The above code just generates a vector (type: `cuDFNsys::Vector4<double>`) named `vec4` of four elements (double precision), which can be accessed by `vec4.x`, `vec4.y`, `vec4.z` and `vec4.w`. More details about `cuDFNsys::Vector4<double>` are discussed later. This vector is actually `double3` in cuda.
 
 To compile this code with `libcuDFNsys.a`, we can copy the following `Make` script to `~/cuDFNsys/CompilationTest/Makefile`:
 ```
@@ -130,7 +130,7 @@ cuDFNsys::Vector4: 1.5, 1, 15, 0,
 ```
 printed on the terminal window.
 
-If errors happen when you run `./main`, e.g., `error while loading shared libraries: libgmsh.so: cannot open shared object file: No such file or directory`, we just add two enviromental variables to `~/.bashrc` as follows:
+If errors happen when you run `./main`, e.g., `error while loading shared libraries: libgmsh.so: cannot open shared object file: No such file or directory`, two enviromental variables should be added to `~/.bashrc` as follows:
 ```
 export LD_LIBRARY_PATH=path-to-gmsh-library:$LD_LIBRARY_PATH
 export LIBRARY_PATH=path-to-gmsh-library:$LIBRARY_PATH
@@ -142,503 +142,120 @@ source ~/.bashrc
 ```
 This is a runtime error, that the computer does not know where the library `gmsh` is when running `./main`.
 
-## 2. Documented _cuDFNsys_ functions/classes 
-Here I document some _cuDFNsys_ functions/classes (which are directly related to the generation of DFNs, flow and transport simulations). I'll do it with an introduction of a quickstart example, which is in `~/cuDFNsys/QuickStartGuide/src/QuickStartGuide.cu`.
+## 2. Documented _cuDFNsys_ classes 
 
-I will explain this code line by line, accompanying by the description of _cuDFNsys_ functions/classes.
+_cuDFNsys_ is an object-oriented library. Flow and transport in DFNs can be simulated by **four** `CUDA C++` classes, i.e. `cuDFNsys::DFN<Data_type>`, `cuDFNsys::MeshDFN<Data_type>`, `cuDFNsys::FlowDFN<Data_type>` and `cuDFNsys::PTDFN<Data_type>`. The `Data_type` can be `double` or `float`, but the latter is not recommended, because it may lead to wrong results. The header file of the four classes is in `cuDFNsys/include/cuDFNsys.cuh`. The source file is in `cuDFNsys/src/cuDFNsys.cu`.
 
-## 2.1 DFN generation
-In this code, a stochastic DFN with one group of fractures is generated. The number of fractures is `500`, the orientations of fracture follow the Fisher distribution, but the parameter $\kappa = 0$, meaning that the distribution is actually uniform. The sizes of fractures follow a power-law distribution, with $\alpha = 1.5$, the minimum and maximum sizes of fractures are 1 and 15, respectively. Note that the size of fractures is described by the radius $R$ of circumscribed circles of the square fractures.
+To use these classes, the steps are (1) establish an empty class; (2) setup the member variables; and (3) call member functions. 
 
-The condutivity of fractures is related to $R$. The aperture $b$ of fractures is 
-$$b = \gamma R ^\beta,$$
-where $\gamma$ and $\beta$ are a constant and an exponent, respectively. The conductivity $k_f$ of fractures is
-$$k_f = \frac{b^3}{12}.$$
-Therefore, the conductivity of fractures depends on the size of fractures.
+### 2.1. DFN generation
+To generate a DFN, some input parameters are required. For instance,two groups of fractures $g_1$ and $g_2$ are expected with
+* Domain. A cuboid of $30 \times 30 \times 60$m.
+* Fracture orientations. ($g_1$): $\kappa = 20$. ($g_2$): $\kappa = 10$. The orientations are described by the Fisher distribution with a Fisher constant $\kappa$. The mean orientations for the two groups are $(0, 0, 1)$ and $(1, 0, 0)$, respectively.
+* Fracture sizes. Note that in _cuDFNsys_, the size of fractures is the radius $R$ of circumscribed circles of square fractures. ($g_1$): power-law, where the exponent $\alpha$ is 1.5, the minimum $R$ is 1, maximum $R$ is 15. ($g_2$): lognormal: the mean of logarithmic values is 8.5, the standard deviation of logarithmic values is 5.5, the minimum $R$ is 1, the maximum $R$ is 15.
+* Fracture conductivity. In _cuDFNsys_, the conductivity $k_f$ of fractures is related to $R$ and the aperture $b$ of fractures. The relationship is $k_f = b^3 / 12 =  \left[(\gamma R ^\beta) \right] ^ 3 / 12$, where $\gamma$ and $\beta$ are a constant and an exponent, respectively. For $g_1$, $\gamma = 2\times 10^{-5}$, $\beta = 0.2$. For $g_2$, $\gamma = 3\times 10^{-5}$, $\beta = 0.3$.
+* Number of fractures. ($g_1$): 70. ($g_2$): 80.
 
-We set $\gamma = 5.5e-4, \beta = 0.25$. Therefore, the following variables describe the fracture parameters
+The _cuDFNsys_ class to generate a DFN is `cuDFNsys::DFN<T>` where `T` is a template (`double` or `float`).  The member variables includes
+* `std::vector<int> NumFractures`: it is a `std::vector` of integers, denoting the number of fractures in each group
+* `std::vector<T> Kappa`: it is a `std::vector` of `double`/`float` (depending on `T`), denoting the $\kappa$ value for each group.
+* `std::vector<cuDFNsys::Vector3<T>> MeanOrientationOfFisherDistribution`: it is a `std::vector` of `double3`/`float3`, denoting the mean orientation for each group.
+* `T DomainSizeX`: it is a `double`/`float`, denoteing the size of a domain in the `x` direction.
+* `double3 DomainDimensionRatio`: it is a `double3`, denoteing the dimension ratio of the domain.
+* `std::vector<T> Beta`: it is a `std::vector` of `double`/`float`, denoting the $\beta$ value for each group.
+* `std::vector<T> Gamma`: it is a `std::vector` of `double`/`float`, denoting the $\gamma$ value for each group.
+* `std::vector<int> ModeOfSizeDistribution`: it is a `std::vector` of integers, denoting the distribution pattern of fracture sizes for each group. When one element `= 0`, the size distribution is a power-law. When one element `= 1`, the size distribution is lognormal. When one element `= 2`, the size distribution is uniform. When one element `= 3`, the size distribution is mono-sized.
+* `std::vector<cuDFNsys::Vector4<T>> SizeDistributionParameters`: it is a `std::vector` of `double4` or `float4`. For instance, there is only one fracture group. When `ModeOfSizeDistribution[0] = 0`, the size distribution is a power-law. `SizeDistributionParameters[0].x` is $\alpha$, `SizeDistributionParameters[0].y` is the minimum $R$, `SizeDistributionParameters[0].z` is the maximum $R$, `SizeDistributionParameters[0].w` means nothing. When `ModeOfSizeDistribution[0] = 1`, the size distribution is lognormal `SizeDistributionParameters[0].x` is the mean of logarithmic values, `SizeDistributionParameters[0].y` is the standard deviation of logarithmic values, `SizeDistributionParameters[0].z` is the minimum $R$, `SizeDistributionParameters[0].w` is the maximum $R$. When `ModeOfSizeDistribution[0] = 2`, the size distribution is uniform. `SizeDistributionParameters[0].x` is the minimum $R$, `SizeDistributionParameters[0].y` is the maximum $R$, `SizeDistributionParameters[0].z` and `SizeDistributionParameters[0].w` mean nothing. When `ModeOfSizeDistribution[0] = 3`, the size distribution is mono-sized. `SizeDistributionParameters[0].x` is $R$, `SizeDistributionParameters[0].y`, `SizeDistributionParameters[0].z` and `SizeDistributionParameters[0].w` mean nothing.
 
-```
-    int NumFractures = 500;
-    double kappa = 0;
-    double beta = 0.25, gamma = 5.5e-4;
-    int ModeSizeDistri = 0;
-    cuDFNsys::Vector4<double> ParaSizeDistri =
-        cuDFNsys::MakeVector4(1.5,
-                              1.,
-                              15.,
-                              0.);
-```
-The variable `ModeSizeDistri` (an integer) is an indicator for the size distributions: 0 for power-law, 1 for lognormal, 2 for uniform, 3 for mono-sized. 
+* `int PercoDir`: it is a integer in the range of $[0, 2]$, denoting the pre-defined percolation direction to be checked. 0: $x$ direction; 1: $y$ direction. 2: $z$ direction.
+* `int NumFracturesTotal`: it is a integer, denoting the total number of fractures in the DFN.
+* `unsigned long RandomSeed`: it is a unsigned long integer, denoting the random seed to be used to generated stochastic fractures.
+* `thrust::host_vector<cuDFNsys::Fracture<T>> FracturesHost`: a `thrust::host_vector` of the struct `cuDFNsys::Fracture<T>`, denoting the data of fractures. The struct `cuDFNsys::Fracture<T>` will be described later.
+* `thrust::device_vector<cuDFNsys::Fracture<T>> FracturesDevice`: a `thrust::device_vector` of the struct `cuDFNsys::Fracture<T>`, denoting the data of fractures. The struct `cuDFNsys::Fracture<T>` will be described later.
+* `cuDFNsys::Fracture<T> *FracturesDevicePtr`: a pointer to `thrust::device_vector<cuDFNsys::Fracture<T>> FracturesDevice`
+* `std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<T>, cuDFNsys::Vector3<T>>> IntersectionMap`: a `C++ `map. The key of `IntersectionMap` is a pair of `size_t`, which is the pair of IDs of fractures that intersect with each other. The value of the map is also a pair, which is a pair of `double3`/`float3`, denoting the coordinates of two ends of the intersections.
+* `std::vector<std::vector<size_t>> ListClusters`: it is a `std::vector` of `std::vector`. It will store the clusters in DFNs. For instance, `ListClusters[0]`, `ListClusters[1]` and so on are clusters in a DFN. `ListClusters[0][0]`, `ListClusters[0][1]` and so on are IDs of fractures that belong to the same cluster.
+* `std::vector<size_t> PercolationCluster`: a `std::vector` of `size_t`. It will store the ID of the CLUSTERs that are percolative. For example, if `Percolation_cluster[0] = 0`, it means `ListClusters[0]` is a percolative cluster.
 
-The variable `ParaSizeDistri` (type: `cuDFNsys::Vector4<double>`) is a vector of four elements. It is equivalent to `double4` or `float4` in cuda, depending on the template you set. That is to say, the template can be `double` or `float`. Here the template is `<double>`, so `ParaSizeDistri` is actually a `double4` with elements that can be accessed by `ParaSizeDistri.x`, `ParaSizeDistri.y`, `ParaSizeDistri.z` and `ParaSizeDistri.w`. To create a `cuDFNsys::Vector4<double>`, we can use a _cuDFNsys_ function: `cuDFNsys::MakeVector4(double, double, double, double)`.
+The member functions of `cuDFNsys::DFN<T>`:
+```
+DFN(){};
+void FractureGeneration();
+void IdentifyIntersectionsClusters(const bool &IfTruncatedFractures);
+void Visualization(const string &MatlabScriptName,
+                   const string &PythonScriptName,
+                   const string &HDF5FileName,
+                   const bool &IfShowTruncatedFractures,
+                   const bool &IfShowIntersections,
+                   const bool &IfHightlighAllClusters,
+                   const bool &IfShowOrientationDistribution);
+void StoreInH5(const string &ClassNameH5);
+void LoadClassFromH5(const string &ClassNameH5);
+```
+* `DFN` is an empty constructor of `cuDFNsys::DFN<T>`.
+* `FractureGeneration` is called to generate fractures based on the member variables (if they are set properly). It does not require any inputs. This function will assign values to `FracturesHost` and `FracturesDevice`.
+* `IdentifyIntersectionsClusters` is a function to be called to identify intersections of fractures. Intersections are stored in `IntersectionMap`.
+* `Visualization` is called to do visualizations. Input parameters are required. `MatlabScriptName`: name of the matlab script, without the suffix `.m`. `PythonScriptName`: name of the python script. `HDF5FileName`: name of the HDF5 file storing the data. `IfShowTruncatedFractures`: if show the truncated fractures. `IfShowIntersections`: if show intersections. `IfHightlighAllClusters`: if highlight clusters in different color. `IfShowOrientationDistribution`: if show the distribution of orientations.
+* `StoreInH5` is used to store the class data in a HDF5 file. `ClassNameH5`: the name of the HDF5 file.
+* `LoadClassFromH5`: is used to generate a class by loading data from a HDF5 file (generated by `StoreInH5`).
 
-When `ModeSizeDistri = 0`, the size distribution is a power-law. `ParaSizeDistri.x` is $\alpha$, `ParaSizeDistri.y` is the minimum $R$, `ParaSizeDistri.z` is the maximum $R$, `ParaSizeDistri.w` means nothing.
+Examples of `cuDFNsys::DFN<T>` can be seen in `cuDFNsys/QuickStartGuide/src/QuickStartGuide.cu` and `cuDFNsys/QuickStartGuide/src/QuickStartGuide_DFN_I_DFN.cu`.
 
-When `ModeSizeDistri = 1`, the size distribution is lognormal `ParaSizeDistri.x` is the mean of logarithmic values, `ParaSizeDistri.y` is the standard deviation of logarithmic values, `ParaSizeDistri.z` is the minimum $R$, `ParaSizeDistri.w` is the maximum $R$.
+In `cuDFNsys/QuickStartGuide/src/QuickStartGuide.cu`, the relevant code is:
+```
+time_t t;
+time(&t);
+cuDFNsys::DFN<double> my_dfn;
+my_dfn.NumFractures = {70, 80};
+my_dfn.Kappa = {20, 10};
+my_dfn.MeanOrientationOfFisherDistribution = {make_double3(0., 0., 1.),
+                                              make_double3(1., 0., 0.)};
+my_dfn.DomainSizeX = 30;
+my_dfn.DomainDimensionRatio = make_double3(1., 1., 2.);
+my_dfn.Beta = {0.2, 0.3};
+my_dfn.Gamma = {2.0e-5, 3.0e-6};
+my_dfn.ModeOfSizeDistribution = {0, 1};
+my_dfn.SizeDistributionParameters = {make_double4(1.5, 1., 15., 0.),
+                                     make_double4(8.5, 5.5, 1., 15.)};
+my_dfn.PercoDir = 2;
+my_dfn.RandomSeed = (unsigned long)t;
+my_dfn.FractureGeneration();
+my_dfn.IdentifyIntersectionsClusters(true);
+my_dfn.Visualization("DFN_VISUAL", "DFN_VISUAL", "DFN_VISUAL", true, true,
+                     true, true);
+```
+In this code, `t` is generated as a random seed. An empty class of `cuDFNsys::DFN<double>` is firstly generated. Then the member variables, e.g., `NumFractures` and `RandomSeed`, are set. Those variables match with the parameters stated in the first paragraph in this subsection. Then, member functions `FractureGeneration`, `IdentifyIntersectionsClusters` and `Visualization` are called in order. Visualization scripts, e.g., `DFN_VISUAL.m` and `DFN_VISUAL.py` are generated in the current working directory. We can see the DFN by running the `DFN_VISUAL.m` is MATLAB, or by running the command `python3 DFN_VISUAL.py` in Ubuntu terminal (`mayavi` is required). One DFN is shown below.
 
-When `ModeSizeDistri = 2`, the size distribution is uniform. `ParaSizeDistri.x` is the minimum $R$, `ParaSizeDistri.y` is the maximum $R$, `ParaSizeDistri.z` and `ParaSizeDistri.w` mean nothing.
-
-When `ModeSizeDistri = 3`, the size distribution is mono-sized. `ParaSizeDistri.x` is $R$, `ParaSizeDistri.y`, `ParaSizeDistri.z` and `ParaSizeDistri.w` mean nothing.
-
-Then, I want the domain be a cuboid column. The domain size in x is 30, size in y is 30, size in z is 60. The parameters for domain are as follows:
-```
-    double DomainSize_X = 30;
-    double3 DomainDimensionRatio = make_double3(1, 1, 2);
-    int perco_dir = 2;
-```
-`DomainDimensionRatio` is a `double3` variable (that is a built-in data-type in cuda, also the function `make_double3` is a built-in function in cuda), and it clarifies the dimension ratio with respect to the size in x. Here the ratio is `(1, 30/30 = 1, 60 / 30 = 2)`. `perco_dir` defines the percolation direction, i.e., the mean flow direction. We later check the percolation state in the z directon. So, `perco_dir = 0` means the x direction, `perco_dir = 1` means the y direction, and `perco_dir = 2` means the z direction.
-
-Next, I create an empty vector of structs (the fracture) by
-```
-thrust::host_vector<cuDFNsys::Fracture<double>> Frac_verts_host(NumFractures);
-```
-`thrust::host_vector<type>` is a built-in container in cuda, which creates a vector of something on the host side (manipulations on CPU). `cuDFNsys::Fracture<double>` is a _cuDFNsys_ struct, with templates (`double` or `float`). A `cuDFNsys::Fracture<double>` has several member variables:
-```
-template <typename T>
-struct Fracture
-{
-public:
-    // conductivity of the fracture
-    T Conductivity;
-
-    // 3D verts
-    cuDFNsys::Vector3<T> Verts3D[4];
-
-    // center
-    cuDFNsys::Vector3<T> Center;
-
-    // verts of 3D square/fracture
-    cuDFNsys::Vector3<T> Verts3DTruncated[8];
-
-    // number of verts of truncated fractures
-    int NumVertsTruncated;
-
-    // radius of circumscribe circle
-    T Radius;
-
-    // if the fracture intersects the six faces of cubic model?
-    bool ConnectModelSurf[6]; // x_min, x_max, y_min, y_max, z_min, z_max,
-
-    // normal vec (normalized)
-    cuDFNsys::Vector3<T> NormalVec;
-}
-```  
-`cuDFNsys::Vector3<T>` is `double3` or `float3`, depending on the template you set. `Conductivity` is $k_f$. `Verts3D` is the four vertices of the square fractures. `center` is the center of the fracture. `Verts3DTruncated` is the vertices of square fractures after the fracture is truncated by the domain. `NumVertsTruncated` is the number of vertices after truncation, so its maximum number is eight.  `Radius` is the radius of fractures. `ConnectModelSurf` denotes if the fracture intersects the six surfaces of the domain, `true` means intersected. `NormalVec` is a `double3` or `float3`, denoting the normal vector (always pointing up) of a fracture. 
-
-The fracture vector is named `Frac_verts_host` with size of `NumFractures`. To generate fractures on GPU side, I create a device vector and a pointer to this device vector.
-```
-    thrust::device_vector<cuDFNsys::Fracture<double>> Frac_verts_device(NumFractures);
-    cuDFNsys::Fracture<double> *Frac_verts_device_ptr;
-    Frac_verts_device_ptr = thrust::raw_pointer_cast(Frac_verts_device.data());
-```
-`thrust::raw_pointer_cast` is a built-in function in the `thrust` function in cuda. It links the address of a thrust vector to a pointer. For more details, one can google it.
-
-Now, we have all parameter defined in different variables. Let's generate a stochastic DFN.
-```
-    time_t t;
-    time(&t);
-    cuDFNsys::Fractures<double><<<NumFractures / 256 + 1, 256>>>(Frac_verts_device_ptr,
-                                                                 (unsigned long)t,
-                                                                 NumFractures,
-                                                                 DomainSize_X,
-                                                                 ModeSizeDistri,
-                                                                 ParaSizeDistri,
-                                                                 kappa,
-                                                                 beta,
-                                                                 gamma,
-                                                                 DomainDimensionRatio);
-
-    cudaDeviceSynchronize();
-    Frac_verts_host = Frac_verts_device;
-```
-`time_t t;` and `time(&t);` are used to address random seeds. `t` is now the random seed. `cuDFNsys::Fractures<double>` is a global function to generate fractures on GPU, with template of `double`. `<<<NumFractures / 256 + 1, 256>>>` is a configuration of the execution parameters for a CUDA kernel launch:
-```
-template <typename T>
-__global__ void Fractures(cuDFNsys::Fracture<T> *verts,
-                          unsigned long seed,
-                          int count,
-                          T model_L,
-                          uint ModeSizeDistri,                 
-                          cuDFNsys::Vector4<T> ParaSizeDistri,
-                          T kappa,
-                          T beta,
-                          T gamma,
-                          double3 DomainDimensionRatio = make_double3(1, 1, 1),
-                          cuDFNsys::Vector3<T> MeanOrientation = cuDFNsys::MakeVector3((T)0., (T)0., (T)1.));
-```
-* `*verts` is the pointer to the device fracture vector.
-* `seed` is a random seed, with type casting to `unsigned long`
-* `count` is a integer, which is the number of fractures
-* `model_L` is the domain size in x direction
-* `ModeSizeDistri` is a integer, which is an indicator for fractur size distributions
-* `ParaSizeDistri` is a `cuDFNsys::Vector4<double>` here, meaning the parameters for the size distribution
-* `kappa` is a double, meaning the $\kappa$ value for the Fisher distribution
-* `beta` is a double, meaning the $\beta$ value for conductivity
-* `gamma` is a double, meaning the $\gamma$ value for conductivity
-* `DomainDimensionRatio` is a `cuDFNsys::Vector3<double>` here, denoting the dimension ratio of the domain size, the default value is `(1, 1, 1)`
-* `MeanOrientation` is the mean orientation of the Fisher distribution, the defauly value is `(0, 0, 1)`
-
-`cudaDeviceSynchronize()` is a CUDA runtime API function used in CUDA C/C++ programming to ensure that all previously issued CUDA kernel launches have completed and that the GPU device has synchronized with the host CPU. In other words, it's used to make sure that all GPU work is finished before proceeding with further CPU operations.
-
-After the kernel function, we copy data from device to host by `Frac_verts_host = Frac_verts_device;`. Now the generate of fracture networks is finished.
-
-## 2.2 Identification of fracture intersections
-To identify the intersetion of fractures, we firstly create an empty map:
-```
-    std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<double>, cuDFNsys::Vector3<double>>> Intersection_map;
-```
-The key of `Intersection_map` is a pair of `size_t`, which is the pair of IDs of fractures that intersect with each other. The value of the map is also a pair, which is a pair of `cuDFNsys::Vector3<double>`, denoting the coordinates of two ends of the intersections. The next _cuDFNsys_ class uses this map as an input parameter
-```
-    cuDFNsys::IdentifyIntersection<double> identifyInters{Frac_verts_host.size(),
-                                                          Frac_verts_device_ptr,
-                                                          true,
-                                                          Intersection_map};
-```
-The constructor of this class needs four parameters:
-```
-template <typename T>
-class IdentifyIntersection
-{
-public:
-    // constructor GPU
-    IdentifyIntersection(const size_t &NumOfFractures,
-                         cuDFNsys::Fracture<T> *Frac_verts_device_ptr,
-                         const bool &If_Trucncated,
-                         std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<T>, cuDFNsys::Vector3<T>>> &Intersection_map);
-};
-```
-* `NumOfFractures` is the number of fractures
-* `Frac_verts_device_ptr` is a pointer to the device vector of fractures
-* `If_Trucncated` means that if the trucated fractures or original fractures are considered in identification of intersections
-* `Intersection_map` is the map to store intersection pairs and intersection coordinates.
-
-## 2.3 Identification of fracture clusters
-A cluster means that a number of fractures connect each other one by one. If no other fractures connect to one fracture, then this fracture is also a cluster.
-
-We can identify the cluster in DFNs, and check if there is at least one cluster spanning the domain in the pre-defined percolation direction, i.e., percolation clusters.
-
-Two empty vectors are created:
-```
-    std::vector<std::vector<size_t>> ListClusters;
-    std::vector<size_t> Percolation_cluster;
-```
-Both are `std::vector`. The first one is `std::vector` of `std::vector`. It will store the clusters in DFNs. For instance, `ListClusters[0]`, `ListClusters[1]` and so on are clusters in a DFN. `ListClusters[0][0]`, `ListClusters[0][1]` and so on are IDs of fractures that belong to the same cluster.
-
-`Percolation_cluster` will store the ID of the CLUSTERs that are percolative. For example, if `Percolation_cluster[0] = 0`, it means `ListClusters[0]` is a percolative cluster.
-
-The identification is implement by the following class and functions
-```
-    cuDFNsys::Graph<double> G{(size_t)NumFractures, Intersection_map};
-    G.UseDFS(ListClusters);
-```
-The constructor of class `cuDFNsys::Graph<double>` needs two parameters:
-```
-template <typename T>
-class Graph
-{
-    // constructor
-    Graph(const size_t &NumOfFractures,
-          std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<T>, cuDFNsys::Vector3<T>>> Intersection_map);
-};
-```
-* `NumOfFractures` is the number of fractures
-* `Intersection_map` is the map to store intersection pairs and intersection coordinates
-Then, the member function `UseDFS` needs one parameter:
-```
-template <typename T>
-class Graph
-{
-    void UseDFS(std::vector<std::vector<size_t>> &ListClusters);
-};
-```
-* `ListClusters` is the empty `std::vector` of `std::vector`. It will store the clusters in DFNs.
-
-The percolation cluster can be identified by
-```
-    cuDFNsys::IdentifyPercolationCluster<double> IdentiClu{ListClusters,
-                                                           Frac_verts_host,
-                                                           perco_dir,
-                                                           Percolation_cluster};
-```
-`IdentiClu` is a class of `cuDFNsys::IdentifyPercolationCluster<double>`:
-```
-template <typename T>
-class IdentifyPercolationCluster
-{
-public:
-    // constructor
-    IdentifyPercolationCluster(const std::vector<std::vector<size_t>> &ListClusters,
-                               const thrust::host_vector<cuDFNsys::Fracture<T>> &Frac_verts_host,
-                               const int &Perco_dir,
-                               std::vector<size_t> &Percolation_cluster);
-};
-```
-* `ListClusters` stores the clusters in DFNs.
-* `Frac_verts_host` is the host vector of fractures
-* `Perco_dir` is the pre-defined percolation direction
-* `Percolation_cluster` stores the IDs of percolative cluster
-
-## 2.4 Visualization of DFNs
-The visualization of DFNs can be implemented by:
-```
-    cuDFNsys::MatlabPlotDFN<double> PlotDFN_{"DFN.h5",
-                                             "DFN.m",
-                                             Frac_verts_host,
-                                             Intersection_map,
-                                             ListClusters,
-                                             Percolation_cluster,
-                                             false,
-                                             true,
-                                             true,
-                                             true,
-                                             DomainSize_X,
-                                             perco_dir,
-                                             true,
-                                             "DFN",
-                                             DomainDimensionRatio};
-```
-`PlotDFN_` is a class of `cuDFNsys::MatlabPlotDFN<double>`:
-```
-template <typename T>
-class MatlabPlotDFN
-{
-public:
-    // constructor
-    MatlabPlotDFN(string h5_file_name,                                                                                    
-                  string m_file_name,                                                                                 
-                  thrust::host_vector<cuDFNsys::Fracture<T>> Frac_verts_host,                                         
-                  std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<T>, cuDFNsys::Vector3<T>>> Intersection_map, 
-                  std::vector<std::vector<size_t>> ListClusters,                                                      
-                  std::vector<size_t> Percolation_cluster,                                                            
-                  bool If_show_truncated_frac,                                                                       
-                  bool If_show_intersection,
-                  bool If_show_cluster,
-                  bool If_show_orientation,
-                  T DomainSize_X,
-                  int perco_dir,
-                  bool if_python_visualization = false,
-                  string PythonName_Without_suffix = "DFN_py",
-                  double3 DomainDimensionRatio_d = make_double3(1, 1, 1));
-};
-```
-* `h5_file_name` denotes the name of the `.h5` file, the suffix '.h5' is needed.
-* `m_file_name` denotes the name of the `.m` file. It is a matlab script that will be generated in the working directory. The suffix '.m' is needed
-* `Frac_verts_host` is the host vector of fractures
-* `Intersection_map` is the map to store intersection pairs and intersection coordinates
-* `ListClusters` stores the clusters in DFNs.
-* `Percolation_cluster` stores the IDs of percolative cluster
-* `If_show_truncated_frac` is a bool variable. `true` means displaying truncated fractures.
-* `If_show_intersection` is a bool variable. `true` means displaying intersections.
-* `If_show_cluster` is a bool variable. `true` means displaying clusters in different colors.
-* `If_show_orientation` is a bool variable. `true` means displaying the distribution of fracture orientations.
-* `DomainSize_X` is the domain size in x direction
-* `perco_dir` is the pre-defined percolation direction. It should be `0`, `1` or `2`.
-* `if_python_visualization` is a bool variable. `true` means outputting python script to visualize the DFN.
-* `PythonName_Without_suffix` denotes the name of the python script, without the suffix `.py`
-* `DomainDimensionRatio` is a `cuDFNsys::Vector3<double>` here, denoting the dimension ratio of the domain size, the default value is `(1, 1, 1)`
-
-A matlab script named "DFN.m" will be generated in the current working directory. We can run it in Matlab. We can get the visualization of the DFN:
 <p align="center">
-  <img width="500" src="https://github.com/qq1012510777/cuDFNsys/blob/main/Manual/VISUALIZE_DFNs.png">
+  <img width="500" src="https://github.com/qq1012510777/cuDFNsys/blob/main/Manual/A_DFN.png">
 </p>
 <p align="center">
-    <em>Visualization of a DFN. From left to right: the DFN, the DFN with clusters in different colors, and the distribution of orientations. </em>
+    <em>Visualization of a DFN. The color and color bar denote the $z$ value of fractures. </em>
 </p>
 
-## 2.5 Mesh generation
-If this is a percolative cluster, then we can do mesh generation and then flow and transport simulation. This can be checked by
+In `cuDFNsys/QuickStartGuide/src/QuickStartGuide_DFN_I_DFN.cu`, the code is similar, but it stores the class data in a HDF5 file:
 ```
-if (Percolation_cluster.size() > 0)
+time_t t;
+time(&t);
+cuDFNsys::DFN<double> my_dfn;
+my_dfn.NumFractures = {70, 80};
+my_dfn.Kappa = {20, 10};
+my_dfn.MeanOrientationOfFisherDistribution = {make_double3(0., 0., 1.),
+                                              make_double3(1., 0., 0.)};
+my_dfn.DomainSizeX = 30;
+my_dfn.DomainDimensionRatio = make_double3(1., 1., 2.);
+my_dfn.Beta = {0.2, 0.3};
+my_dfn.Gamma = {2.0e-5, 3.0e-6};
+my_dfn.ModeOfSizeDistribution = {0, 1};
+my_dfn.SizeDistributionParameters = {make_double4(1.5, 1., 15., 0.),
+                                     make_double4(8.5, 5.5, 1., 15.)};
+my_dfn.PercoDir = 2;
+my_dfn.RandomSeed = (unsigned long)t;
+my_dfn.FractureGeneration();
+my_dfn.IdentifyIntersectionsClusters(true);
+my_dfn.Visualization("DFN_VISUAL_I", "DFN_VISUAL_I", "DFN_VISUAL_I", true,
+                     true, true, true);
+my_dfn.StoreInH5("Class_DFN");
 ```
+`my_dfn.StoreInH5("Class_DFN")` outputs a HDF5 file named `Class_DFN.h5`. In `QuickStartGuide_DFN_II_MESH.cu`, the HDF5 file is loaded and then the data is assigned to a class of `cuDFNsys::DFN<double>`.
 
-Before mesh, we get all percolative fractures first:
-```
-        std::vector<size_t> Fracs_percol;
-        cuDFNsys::GetAllPercolatingFractures GetPer{Percolation_cluster,
-                                                    ListClusters,
-                                                    Fracs_percol};
-```
-`Fracs_percol` is an empty vector that will store the IDs of fractures of all percolative fractures.
-`GetPer` is a class of `cuDFNsys::GetAllPercolatingFractures`:
-```
-class GetAllPercolatingFractures
-{
-public:
-    GetAllPercolatingFractures(const std::vector<size_t> &Percolation_cluster,
-                               const std::vector<std::vector<size_t>> &ListClusters,
-                               std::vector<size_t> &Fracs_percol);
-};
-```
-* `Percolation_cluster` stores the IDs of percolative cluster
-* `ListClusters` stores the clusters in DFNs.
-* `Fracs_percol` is a vector that store the IDs of fractures of all percolative fractures
-
-Then, we will remove dead ends (non-percolative fracture from the DFNs) because they have no contributions to flow.
-```
-        std::vector<pair<int, int>> IntersectionPair_percol;
-        cuDFNsys::RemoveDeadEndFrac<double> RDEF{Fracs_percol,
-                                                 IntersectionPair_percol,
-                                                 (size_t)perco_dir,
-                                                 Frac_verts_host,
-                                                 Intersection_map,
-                                                 false};
-```
-`IntersectionPair_percol` is an empty `std::vector` of pairs of the IDs of intersecting fractures. In this step, some fractures will be removed from the host fracture vector, and the IDs of fractures will be re-sorted.
-
-`RDEF` is a class of `cuDFNsys::RemoveDeadEndFrac<double>` which require six parameters:
-```
-template <typename T>
-class RemoveDeadEndFrac
-{
-public:
-    RemoveDeadEndFrac(std::vector<size_t> &Fracs_percol,
-                      std::vector<pair<int, int>> &IntersectionPair_percol,
-                      const size_t &Perco_dir,
-                      thrust::host_vector<cuDFNsys::Fracture<T>> &Frac_verts_host,
-                      std::map<pair<size_t, size_t>, pair<cuDFNsys::Vector3<T>, cuDFNsys::Vector3<T>>> Intersection_map,
-                      bool IfRemoveDeadEndsInPercolationCluster);
-};
-```
-* `Fracs_percol` is a vector that store the IDs of fractures of all percolative fractures, before removal of fractures. After removal, the values will be changed
-* `IntersectionPair_percol` is an empty `std::vector` of pairs of the IDs of intersecting fractures.
-* `Perco_dir` is the pre-defined percolation direction
-* `Frac_verts_host` is the host vector of fractures
-* `Intersection_map` is the map to store intersection pairs and intersection coordinates
-* `IfRemoveDeadEndsInPercolationCluster` is a bool variable. `true` means that even dead-end-fractures (only connect to one another fracture) in percolation cluster will be removed. Normally it should be `false`!!!
-
-Now, we can generate mesh by
-```
-        cuDFNsys::Mesh<double> mesh{Frac_verts_host,
-                                    IntersectionPair_percol,
-                                    &Fracs_percol,
-                                    1,
-                                    3,
-                                    perco_dir,
-                                    DomainSize_X,
-                                    DomainDimensionRatio};
-```
-`mesh` is a class of `cuDFNsys::Mesh<double>`:
-```
-template <typename T>
-class Mesh
-{
-    // constructor
-    Mesh(const thrust::host_vector<cuDFNsys::Fracture<T>> &Frac_verts_host,
-         const std::vector<pair<int, int>> &IntersectionPair_percol,
-         std::vector<size_t> *Fracs_percol,
-         const T &min_ele_edge,
-         const T &max_ele_edge,
-         const int &perco_dir,
-         const T &DomainSize_X,
-         double3 DomainDimensionRatio = make_double3(1, 1, 1));
-};
-```
-* `Frac_verts_host` is a host vector of fractures (only containning percolative fractures)
-* `IntersectionPair_percol` is a `std::vector` of pairs of the IDs of intersecting fractures
-* `Fracs_percol` is a vector that store the IDs of fractures of all percolative fractures
-* `min_ele_edge` is the user-defined minimum size of finite elements
-* `max_ele_edge` is the user-defined maximum size of finite elements
-* `perco_dir` is the pre-defined percolation direction
-* `DomainSize_X` is the domain size in x direction
-* `DomainDimensionRatio` is a `cuDFNsys::Vector3<double>` here, denoting the dimension ratio of the domain size, the default value is `(1, 1, 1)`
-
-This mesh generator uses Gmsh C++ API. It has some member variables:
-```
-template <typename T>
-class Mesh
-{
-public:
-    // if mesh generates successfully or not?
-    bool MeshSuccess = true;
-
-    // 3D coordinates
-    thrust::host_vector<cuDFNsys::Vector3<T>> Coordinate3D;
-    // 2D elements of each fracture
-    thrust::host_vector<thrust::host_vector<uint3>> Element2D;
-    // 3D elements of whole DFN
-    thrust::host_vector<uint3> Element3D;
-    // 2D coordinates of elements
-    thrust::host_vector<cuDFNsys::EleCoor<T>> Coordinate2D;
-    // Frac Tag of each element
-    thrust::host_vector<uint> ElementFracTag; // from 0
-
-    // edge attributes
-    thrust::host_vector<cuDFNsys::EleEdgeAttri> EdgeAttri;
-    // length values of inlet edges
-    thrust::host_vector<cuDFNsys::Vector2<T>> InletEdgeNOLen;
-    // length values of outlet edges
-    thrust::host_vector<cuDFNsys::Vector2<T>> OutletEdgeNOLen;
-
-    // number of interior edges
-    uint NumInteriorEdges;
-    // number of inlet edges
-    uint NumInletEdges;
-    // number of outlet edges
-    uint NumOutletEdges;
-    // number of neaumann edges
-    uint NumNeumannEdges;
-};
-```
-* `MeshSuccess` denotes if the mesh generation is successful or not
-* `Coordinate3D` denotes the coordinates of each node
-* `Element2D` is a `host_vector` of `host_vector`, containing the finite elements in each fractures. Hence the size of `Element2D` is equal to the size of `Frac_verts_host`
-* `Element3D` is a `host_vector` storing the elements in 3D. It actually is a flatten version of `Element2D`
-* `Coordinate2D` is a `host_vector` storing the 2D coodinates of the nodes in each element.
-* `ElementFracTag` is a `host_vector` storing the fracture ID for each finite element
-* `EdgeAttri` is a `host_vector` storing the attribute Tag of each edge in each finite element
-* `InletEdgeNOLen` is a `host_vector`storing the Edge No. and the length of each inlet edge 
-* `OutletEdgeNOLen` is a `host_vector`storing the Edge No. and the length of each outlet edge 
-* `NumInteriorEdges` is the number of interior edges
-* `NumInletEdges` is the number of inlet edges
-* `NumOutletEdges` is the number of outlet edges
-* `NumNeumannEdges` is the number of Neumann edges (fracture contours that are not at inlet and outlet)
-
-The visualization of mesh can be done by
-```
-        double mean_grid_area = mesh.MatlabPlot("DFN_mesh.h5",
-                                                "DFN_mesh.m",
-                                                Frac_verts_host,
-                                                DomainSize_X,
-                                                true,
-                                                true,
-                                                true,
-                                                "DFN_mesh",
-                                                DomainDimensionRatio);
-```
-`mean_grid_area` is a return parameter of the member function `MatlabPlot` of `mesh`. It is the mean size of finite elements.
-
-`mesh.MatlabPlot` needs nine parameters:
-```
-template <typename T>
-class Mesh
-{
-public:
-    double MatlabPlot(const string &h5_file_name,
-                      const string &m_file_name,
-                      thrust::host_vector<cuDFNsys::Fracture<T>> Frac_verts_host,
-                      const T &DomainSize_X,
-                      const bool &If_check_2D_coordinates,
-                      const bool &If_check_edge_Numbering,
-                      bool If_python_visualization = false,
-                      string PythonName_Without_suffix = "DFN_mesh_py",
-                      double3 DomainDimensionRatio = make_double3(1, 1, 1));
-};
-```
-* `h5_file_name` denotes the name of the `.h5` file, the suffix '.h5' is needed.
-* `m_file_name` denotes the name of the `.m` file. It is a matlab script that will be generated in the working directory. The suffix '.m' is needed
-* `Frac_verts_host` is the host vector of fractures
-* `DomainSize_X` is the domain size in x direction
-* `If_check_2D_coordinates` denotes if the 2D coordinates are checked 
-* `If_check_edge_Numbering` denotes if the numbering of edges are checked
-* `if_python_visualization` is a bool variable. `true` means outputting python script to visualize the DFN.
-* `PythonName_Without_suffix` denotes the name of the python script, without the suffix `.py`
-* `DomainDimensionRatio` is a `cuDFNsys::Vector3<double>` here, denoting the dimension ratio of the domain size, the default value is `(1, 1, 1)`
-
-The mesh result can be seen by running `DFN_mesh.m` in Matlab.
-<p align="center">
-  <img width="500" src="https://github.com/qq1012510777/cuDFNsys/blob/main/Manual/VISUAL_DFNMESH.png">
-</p>
-<p align="center">
-    <em>Visualization of a DFN mesh. From left to right: the mesh, and the mesh with edge atttributes highlighted in colors. </em>
-</p>

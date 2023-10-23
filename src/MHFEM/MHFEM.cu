@@ -43,6 +43,56 @@ cuDFNsys::MHFEM<T>::MHFEM(const cuDFNsys::Mesh<T> &mesh,
     double *Rt = &DomainDimensionRatio.x;
 
     this->Permeability = 0.5f * (QOut + QIn) / (L * Rt[this->Dir]) / (inlet_p_ - outlet_p_);
+
+    //--------------------the mean and max velocity of elements
+    //--------------------the mean and max velocity of elements
+    //--------------------the mean and max velocity of elements
+    T *velocity_center_grid = new T[mesh.Element3D.size() * 3];
+    if (velocity_center_grid == NULL)
+    {
+        string AS = "Alloc error in MHFEM::MHFEM\n";
+        throw cuDFNsys::ExceptionsPause(AS);
+    }
+
+    Eigen::VectorXd NormOfVelocity;
+    NormOfVelocity.resize(mesh.Element3D.size(), 1);
+
+    for (uint i = 0; i < mesh.Element3D.size(); ++i)
+    {
+        uint3 EdgeNO = make_uint3((i + 1) * 3 - 3, (i + 1) * 3 - 2, (i + 1) * 3 - 1); // from 0
+        cuDFNsys::Vector3<T> Velocity_ = cuDFNsys ::MakeVector3((T)this->VelocityNormalScalarSepEdges(EdgeNO.x, 0),
+                                                                (T)this->VelocityNormalScalarSepEdges(EdgeNO.y, 0),
+                                                                (T)this->VelocityNormalScalarSepEdges(EdgeNO.z, 0));
+        cuDFNsys::Vector2<T> Vertexes[3];
+        Vertexes[0] = cuDFNsys::MakeVector2(mesh.Coordinate2D[i].x[0], mesh.Coordinate2D[i].y[0]);
+        Vertexes[1] = cuDFNsys::MakeVector2(mesh.Coordinate2D[i].x[1], mesh.Coordinate2D[i].y[1]);
+        Vertexes[2] = cuDFNsys::MakeVector2(mesh.Coordinate2D[i].x[2], mesh.Coordinate2D[i].y[2]);
+
+        cuDFNsys::Vector2<T> Center_p = cuDFNsys::MakeVector2(1.0f / 3.0f * (Vertexes[0].x + Vertexes[1].x + Vertexes[2].x), 1.0f / 3.0f * (Vertexes[0].y + Vertexes[1].y + Vertexes[2].y));
+
+        cuDFNsys::Vector2<T> velocity_p = cuDFNsys::ReconstructVelocityGrid<T>(Center_p, Vertexes, Velocity_);
+
+        cuDFNsys::Vector3<T> velocity_p_3D = cuDFNsys::MakeVector3(velocity_p.x, velocity_p.y, (T)0);
+
+        T R_mat[3][3];
+        cuDFNsys::Fracture<T> FII = Fracs[mesh.ElementFracTag[i]];
+        FII.RoationMatrix(R_mat, 23);
+        velocity_p_3D = cuDFNsys::ProductSquare3Vector3<T>(R_mat, velocity_p_3D);
+
+        velocity_center_grid[i] = velocity_p_3D.x;
+        velocity_center_grid[i + mesh.Element3D.size()] = velocity_p_3D.y;
+        velocity_center_grid[i + 2 * mesh.Element3D.size()] = velocity_p_3D.z;
+
+        NormOfVelocity(i, 0) = pow(velocity_p.x * velocity_p.x + velocity_p.y * velocity_p.y, 0.5) / pow(FII.Conductivity * 12, 1.0 / 3.0);
+    };
+
+    // now it is the maximum velocity
+    this->MaxVelocity = NormOfVelocity.maxCoeff(); //NormOfVelocity.sum() / mesh.Element3D.size();
+    this->MeanVelocity = NormOfVelocity.sum() / mesh.Element3D.size();
+
+    delete[] velocity_center_grid;
+    velocity_center_grid = NULL;
+    
 }; // MHFEM
 template cuDFNsys::MHFEM<double>::MHFEM(const cuDFNsys::Mesh<double> &mesh,
                                         const thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs,
