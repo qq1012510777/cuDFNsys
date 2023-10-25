@@ -207,7 +207,7 @@ namespace cuDFNsys
         T FactorTimeScaleCrossElement;
         T DeltaT;
         T TimeScaleCrossElement;
-        bool FluexWeightedOrUniformInjection;
+        string InjectionMethod;
         bool IfUseFluxWeightedOrEqualProbableMixingIntersection;
         T SpacingOfControlPlanes;
         bool IfOutputVarianceOfDisplacementsEachStep;

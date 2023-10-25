@@ -53,7 +53,7 @@ int main()
         pow(meshGen.MeanGridSize, 0.5) / flowDFN.MaxVelocity;
     particleTracking.DeltaT = particleTracking.TimeScaleCrossElement /
                               particleTracking.FactorTimeScaleCrossElement;
-    particleTracking.FluexWeightedOrUniformInjection = true;
+    particleTracking.InjectionMethod = "Flux-weighted";
     particleTracking.OutputAllPTInformationOrFPTCurve = true;
     particleTracking.SpacingOfControlPlanes = 30;
     particleTracking.IfOutputVarianceOfDisplacementsEachStep = true;
