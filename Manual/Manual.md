@@ -514,7 +514,7 @@ The member variables of `cuDFNsys::PTDFN` includes:
 * **`T TimeScaleCrossElement`**: it is a `double`/`float`, denoting that the time scale in a DFN for a random walker to cross a finite element.
 * **`T FactorTimeScaleCrossElement`**: it is a `double`/`float`, which is a reduction factor to reduce the `TimeScaleCrossElement`.
 * **`T DeltaT`**: it is a `double`/`float`, denoting $\delta t$ for a time step.
-* **`bool FluexWeightedOrUniformInjection`**: it is a `bool`. `true` means the use of flux-weighted injection. `false` means the use of resident injection.
+* **`string InjectionMethod`**: it is a `string`. Three options for that variables: `"Point"`, `"Flux-weighted"`, and `"Resident"`. They means the point-like, flux-weighted, and resident (uniform) initial condition for the distribution of particles, respectively.
 * **`bool IfUseFluxWeightedOrEqualProbableMixingIntersection`**: it is a `bool`. `true` means the use of outgoing-flux-weighted mixing rule at intersections. `false` means the use of equiprobable mixing rule at intersections.
 * **`T SpacingOfControlPlanes`**: it is a `double` or `float`, denoting the spacing of control planes in the DFN. A control plane means that once random particles is cross the plane for the first time, the travel time and other information will be recorded.
 * **`bool IfOutputVarianceOfDisplacementsEachStep`**: it is a `bool`. `true` means that the variance of solute particle displacements are recorded for each time step.
@@ -557,7 +557,7 @@ particleTracking.TimeScaleCrossElement =
     pow(meshGen.MeanGridSize, 0.5) / flowDFN.MaxVelocity;
 particleTracking.DeltaT = particleTracking.TimeScaleCrossElement /
                           particleTracking.FactorTimeScaleCrossElement;
-particleTracking.FluexWeightedOrUniformInjection = true;
+particleTracking.InjectionMethod = "Flux-weighted";
 particleTracking.OutputAllPTInformationOrFPTCurve = true;
 particleTracking.SpacingOfControlPlanes = 30;
 particleTracking.IfOutputVarianceOfDisplacementsEachStep = true;
@@ -575,7 +575,7 @@ The length scale here `particleTracking.LengthScalePe` is the size of the domain
 
 The time scale for a random walker to cross a finite element `particleTracking.TimeScaleCrossElement` is the square root of the mean size of finite elements over the maximum fracture velocity. The $\delta t$ value `particleTracking.DeltaT` is set to be `particleTracking.TimeScaleCrossElement` over a reduction factor `particleTracking.FactorTimeScaleCrossElement`.
 
-The injection method `particleTracking.FluexWeightedOrUniformInjection = true` is flux-weighted. The spatial information of particles for each time step is wanted, and hence `particleTracking.OutputAllPTInformationOrFPTCurve = true.` Also, the variace of displacements of particles for each step is output by setting `particleTracking.IfOutputVarianceOfDisplacementsEachStep = true`.
+The injection method `particleTracking.InjectionMethod = "Flux-weighted"` is flux-weighted. The spatial information of particles for each time step is wanted, and hence `particleTracking.OutputAllPTInformationOrFPTCurve = true.` Also, the variace of displacements of particles for each step is output by setting `particleTracking.IfOutputVarianceOfDisplacementsEachStep = true`.
 
 The spacing of control planes is 30 by setting `particleTracking.SpacingOfControlPlanes = 30`.
 
