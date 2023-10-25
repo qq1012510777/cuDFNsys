@@ -4,6 +4,8 @@ _cuDFNsys_ is an open-source CUDA library (under the GPL license) for DFN genera
 
 _cuDFNsys_ does not support the GUI and can only run on Ubuntu.
 
+_cuDFNsys_ is an easy-implemented, object-oriented CUDA C++ library. The simulation is performed just by establishing CUDA C++ classes, defining member variables and calling member functions. The results are stored in a HDF5 format. At runtime, the fracture, mesh or flow data can be accessed by visting member variables of classes.
+
 <p align="center">
   <img width="500" src="https://github.com/qq1012510777/cuDFNsys/blob/main/moive_particlesII.gif">
 </p>
@@ -42,14 +44,15 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# Prerequisites and installation
+# Prerequisites
 _cuDFNsys_ should be installed and run on Ubuntu.
 
-_cuDFNsys_ relies on several open packages: OpenMP, CUDA, Eigen, Gmsh, UMFPACK and HDF5.
+_cuDFNsys_ relies on several open packages: OpenMP, CUDA, Eigen, Gmsh, UMFPACK and HDF5. These dependencies can be installed by using `sudo apt-get install packageName-dev`.
 
 The following is the Ubuntu command lines to install the relying packages:
 ```
 # run the following command one by one to install dependencies
+# I have tested them on Ubuntu 23.04
 # first update the package repository information
 cd ~
 sudo apt-get update
@@ -88,12 +91,15 @@ sudo apt-get install libfltk1.3-dev
 sudo apt-get install libgmsh-dev
 ```
 
-After the installation of these relying packages (by `sudo apt-get install`, they are install at default locations), the _cuDFNsys_ package can be installed by the following steps:
+# Building _cuDFNsys_
+
+After the installation of dependencies (by `sudo apt-get install`, these relying packages are installed at default locations), and the _cuDFNsys_ library can be installed by the following steps:
 ```
+git clone https://github.com/qq1012510777/cuDFNsys.git
 cd ~/cuDFNsys/lib
 # here I put the cuDFNsys source code under HOME
 ```
-Open `SetPaths.cmake`, you will see
+Open `SetPaths.cmake`, one will see
 ```
 # NVCC directory
 SET(NVCC_PATH                   /usr/lib/nvidia-cuda-toolkit/bin/nvcc)
@@ -113,11 +119,11 @@ SET(UMFPACK_INCLUDE_SEARCH_PATH /usr/include/suitesparse)
 # umfpack lib directory
 SET(UMFPACK_LIBRARY_SEARCH_PATH /usr/lib/x86_64-linux-gnu)
 ```
-The above script of CMake shows that paths of the dependencies in **my** computer (Ubuntu 23.04). Generally these paths do not need to be changed.
+The above script of CMake shows that paths of the dependencies in a computer with Ubuntu 23.04. Generally these paths do not need to be changed.
 
-But, if you install these dependencies in different paths, change these paths, e.g., `/usr/include` to the path of the packages in your computer, e.g., `/path/in/your/computer`.
+But, if one install the dependencies in different paths, change these paths, e.g., `/usr/include` to the path of the packages in your computer, e.g., `/path/in/your/computer`.
 
-Now, you can compile the _cuDFNsys_:
+Now, one can compile _cuDFNsys_ by:
 ```
 cd ~/cuDFNsys/lib
 mkdir build 
@@ -139,7 +145,7 @@ More details about the installation of the relying packages:
 * [Installation of UMFPACK](https://github.com/DrTimothyAldenDavis/SuiteSparse)
 
 # Compile a quickstart example
-By `cd ~/cuDFNsys/QuickStartGuide`, a `Makefile` can be seen there. Open it, you can see
+By `cd ~/cuDFNsys/QuickStartGuide`, a `Makefile` can be seen there. Open it, and one can see
 ```
 # NVCC path
 NVCC=/usr/lib/nvidia-cuda-toolkit/bin/nvcc
@@ -159,8 +165,9 @@ Change the paths of the headers and libraries (if necessary), and compile the Qu
 ```
 make
 ```
+and seversal executable files can be generated.
 
-After the compulation of QuickStartGuide, run it by
+After the compilation of QuickStartGuide, run one executable file by
 ```
 ./QuickStartGuide
 ```
@@ -178,7 +185,9 @@ then update `~/.bashrc` by
 ```
 source ~/.bashrc
 ```
-This quickstart example can be run by `./QuickStartGuide`, where a DFN is generated in which the flow is solved by a mixed hybrid finite element method and the particle tracking is implement for a not-very-long time. To run more steps for particle tracking, please see other codes (i.e., `QuickStartGuide_DFN_I_DFN.cu`, `QuickStartGuide_DFN_III_FLOW.cu`, `QuickStartGuide_DFN_II_MESH.cu` and `QuickStartGuide_DFN_IV_PT.cu`) and the [manual](Manual/Manual.md)
+This quickstart example can be run by `./QuickStartGuide`, where a DFN is generated in which the flow is solved by a mixed hybrid finite element method and the particle tracking is implement for a not-very-long time. 
+
+_cuDFNsys_ runs the flow and transport in DFNs by four cuda c++ classes, and the DFN model and mesh and flow data are reproducable, fo example, to run more steps for particle tracking in one DFN, please see codes (i.e., `QuickStartGuide_DFN_I_DFN.cu`, `QuickStartGuide_DFN_III_FLOW.cu`, `QuickStartGuide_DFN_II_MESH.cu` and `QuickStartGuide_DFN_IV_PT.cu`) and run the corresponding executable files in order. More details are in [manual](Manual/Manual.md)
 
 # Visualization
 
