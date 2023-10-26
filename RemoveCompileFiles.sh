@@ -4,13 +4,14 @@
 
 myArray=("BenchmarkCases" "ParticleTrackingFourFrac" "ClearBadH5FileForPercolationTest" \
   "CompareCPUGPU" "CompareWithAndWithoutDeadEnds" "ContinueParticleTransport" "FracturesFixedChangeDomainSize" \
-  "ParticleTransportValidationSingleFrac" "PercolationTest" "QuickStartGuide" \
+  "ParticleTransportValidationSingleFrac" "PercolationTest" \
   "ReadMatAndOutputH5" "ReadObjectsAndDebug" "TestFunctionsOnlyForDevlopment" "TestResolutionEffect" \
   "Transform2DH5ParticleDataTo3D" "GenMultipleFamilies" "ConnectivityMultipleFamilies"
-  "ColumnLikeDomainForDispersion" "ValidateLocalDiffusion" "ConvertH5Precision" "DispersionAtOneDensityValue" "IdenticalDFNDifferentPe")
+  "ColumnLikeDomainForDispersion" "ValidateLocalDiffusion" "ConvertH5Precision" "DispersionAtOneDensityValue" "IdenticalDFNDifferentPe" \
+  "Dispersion_Rho_increasing")
 
 for str in ${myArray[@]}; do
-  cd $str
+  cd ./SomeApplications/$str
   gio trash -f ./*.h5 ./*.m ./*.py
   gio trash -f ParticlePositionResult
   # cd build
@@ -18,7 +19,21 @@ for str in ${myArray[@]}; do
   # cd ..
   # cd bin
   gio trash -f ./main* ./Transform2DH5ParticleDataTo3D ./ColumnLikeDomainForDispersion ./QuickStartGuide ./QuickStartGuide_* ./ContinueParticleTransport ./ValidateLocalDiffusion ./ConvertH5Precision
-  cd ..
+  cd ../../
+  echo "---------------cleaned "$str
+done
+
+myArray_II=("QuickStartGuide" "CompilationTest")
+for str in ${myArray_II[@]}; do
+  cd  $str
+  gio trash -f ./*.h5 ./*.m ./*.py
+  gio trash -f ParticlePositionResult
+  # cd build
+  # gio trash -f CMakeCache.txt CMakeFiles cmake_install.cmake
+  # cd ..
+  # cd bin
+  gio trash -f ./main* ./Transform2DH5ParticleDataTo3D ./ColumnLikeDomainForDispersion ./QuickStartGuide ./QuickStartGuide_* ./ContinueParticleTransport ./ValidateLocalDiffusion ./ConvertH5Precision
+  cd ../
   echo "---------------cleaned "$str
 done
 
