@@ -1,16 +1,7 @@
 ExeName=Transform2DH5ParticleDataTo3D
-NVCC=/usr/local/cuda/bin/nvcc
-# include paths for headers
-Hdf5IncludePath=/usr/lib/x86_64-linux-gnu/hdf5/serial/include
-GmshIncludePath=$(HOME)/pkg/gmsh-4.8.4-source/MY_GMSH/include
-EigenIncludePath=$(HOME)/pkg/eigen
-UmfpackIncludePath=$(HOME)/pkg/SuiteSparse-master/include
-# library paths
-GmshLibraryPath=$(HOME)/pkg/gmsh-4.8.4-source/MY_GMSH/lib
-UmfpackLibraryPath=$(HOME)/pkg/SuiteSparse-master/lib
-Hdf5LibraryPath=/usr/lib/x86_64-linux-gnu/hdf5/serial
+include ../Path.mk
 
-INCDIRS=-I ../include \
+INCDIRS=-I $(cuDFNsysIncludePath) \
 		-I $(Hdf5IncludePath) \
 		-I $(GmshIncludePath) \
 		-I $(EigenIncludePath) \
@@ -34,22 +25,10 @@ Lib_= -Xcompiler=-fopenmp \
 	-ldl \
 	-L$(GmshLibraryPath) \
 	-L$(UmfpackLibraryPath) \
-	-L$(Hdf5LibraryPath)
-# -L/usr/lib/x86_64-linux-gnu 
-# -L"/usr/local/cuda-11.0/targets/x86_64-linux/lib/stubs" \
-# -L"/usr/local/cuda-11.0/targets/x86_64-linux/lib"
-
-# -l$(HOME)/pkg/gmsh-4.8.4-source/MY_GMSH/lib/libgmsh.so \
-# -l$(HOME)/pkg/SuiteSparse-master/lib/libumfpack.so \
-# -l$(HOME)/pkg/SuiteSparse-master/lib/libamd.so \
-# -l/usr/lib/x86_64-linux-gnu/hdf5/serial/libhdf5_cpp.a \
-# -l/usr/lib/x86_64-linux-gnu/hdf5/serial/libhdf5.so \
-# -l/usr/lib/x86_64-linux-gnu/libsz.so \
-# -l/usr/lib/x86_64-linux-gnu/libz.so \
-# -l/usr/lib/x86_64-linux-gnu/libdl.so  
+	-L$(Hdf5LibraryPath)  
 
 all: 
-	$(NVCC) -DUSE_DOUBLES ./src/$(ExeName).cu ../lib/libcuDFNsys.a \
+	$(NVCC) -DUSE_DOUBLES ./src/$(ExeName).cu $(cuDFNsysLibraryPath)/libcuDFNsys.a \
 	-o ./main $(INCDIRS) $(Lib_) \
 	-Xcudafe --display_error_number -Xcudafe --diag_suppress=3057 \
 	-Xcudafe --diag_suppress=1301 \

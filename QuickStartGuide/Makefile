@@ -85,7 +85,7 @@ all:
 	-Xcudafe --diag_suppress=3058 \
 	-arch=sm_60 -std=c++17 -rdc=true
 
-	$(NVCC) -DUSE_DOUBLES ../Transform2DH5ParticleDataTo3D/src/Transform2DH5ParticleDataTo3D.cu $(cuDFNsysLibraryPath)/libcuDFNsys.a \
+	$(NVCC) -DUSE_DOUBLES ../SomeApplications/Transform2DH5ParticleDataTo3D/src/Transform2DH5ParticleDataTo3D.cu $(cuDFNsysLibraryPath)/libcuDFNsys.a \
 	-o ./Transform2DH5ParticleDataTo3D $(INCDIRS) $(Lib_) \
 	-Xcudafe --display_error_number -Xcudafe --diag_suppress=3057 \
 	-Xcudafe --diag_suppress=1301 \

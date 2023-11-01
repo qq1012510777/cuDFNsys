@@ -188,7 +188,7 @@ cuDFNsys::Mesh<T>::Mesh(
         gmsh::option::setNumber("Mesh.Algorithm", 1);
         cout << "\tmesh ing" << endl;
         gmsh::model::mesh::generate(2);
-        /// gmsh::fltk::run();
+        // gmsh::fltk::run();
         cout << "\t\tmeshing finished, running time: "
              << cuDFNsys::CPUSecond() - istart << " sec\n";
 
@@ -233,7 +233,6 @@ cuDFNsys::Mesh<T>::Mesh(
         };
         Area_characteristic = Area_characteristic / ele_num;
         this->MeanGridSize = Area_characteristic;
-
     }
     catch (cuDFNsys::ExceptionsIgnore &e)
     {
@@ -502,7 +501,7 @@ double cuDFNsys::Mesh<T>::MatlabPlot(
         oss << "f.close()\n";
         oss << "ML.triangular_mesh(coordinate_3D[0, :], coordinate_3D[1, :], "
                "coordinate_3D[2, :], np.transpose(element_3D - 1), "
-               "scalars=coordinate_3D[2, :], opacity=0.8)\n";
+            << "scalars=coordinate_3D[2, :], opacity=0.8)\n";
         oss << "ML.triangular_mesh(coordinate_3D[0, :], coordinate_3D[1, :], "
                "coordinate_3D[2, :], np.transpose(element_3D-1), "
                "representation='wireframe', color=(0, 0, 0), line_width=1.0)\n";

@@ -56,6 +56,9 @@ cuDFNsys::MHFEM<T>::MHFEM(const cuDFNsys::Mesh<T> &mesh,
 
     Eigen::VectorXd NormOfVelocity;
     NormOfVelocity.resize(mesh.Element3D.size(), 1);
+    
+    T area_sum = 0;
+    this->MaxVelocity = 0;
 
     for (uint i = 0; i < mesh.Element3D.size(); ++i)
     {
@@ -83,12 +86,17 @@ cuDFNsys::MHFEM<T>::MHFEM(const cuDFNsys::Mesh<T> &mesh,
         velocity_center_grid[i + mesh.Element3D.size()] = velocity_p_3D.y;
         velocity_center_grid[i + 2 * mesh.Element3D.size()] = velocity_p_3D.z;
 
+        T area_this_element = cuDFNsys::Triangle2DArea<T>(Vertexes[0], Vertexes[1], Vertexes[2]);
+        area_sum += area_this_element;
+
         NormOfVelocity(i, 0) = pow(velocity_p.x * velocity_p.x + velocity_p.y * velocity_p.y, 0.5) / pow(FII.Conductivity * 12, 1.0 / 3.0);
+        this->MaxVelocity = (NormOfVelocity(i, 0) > this->MaxVelocity? NormOfVelocity(i, 0) : this->MaxVelocity);
+        NormOfVelocity(i, 0) *= area_this_element;
     };
 
     // now it is the maximum velocity
-    this->MaxVelocity = NormOfVelocity.maxCoeff(); //NormOfVelocity.sum() / mesh.Element3D.size();
-    this->MeanVelocity = NormOfVelocity.sum() / mesh.Element3D.size();
+    //this->MaxVelocity = NormOfVelocity.maxCoeff(); //NormOfVelocity.sum() / mesh.Element3D.size();
+    this->MeanVelocity = NormOfVelocity.sum() / area_sum; // % mesh.Element3D.size();
 
     delete[] velocity_center_grid;
     velocity_center_grid = NULL;
@@ -245,6 +253,8 @@ double2 cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
     Eigen::VectorXd NormOfVelocity;
     NormOfVelocity.resize(mesh.Element3D.size(), 1);
 
+    T area_sum = 0;
+    double maxV = 0;
     for (uint i = 0; i < mesh.Element3D.size(); ++i)
     {
         uint3 EdgeNO = make_uint3((i + 1) * 3 - 3, (i + 1) * 3 - 2, (i + 1) * 3 - 1); // from 0
@@ -270,12 +280,17 @@ double2 cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
         velocity_center_grid[i + mesh.Element3D.size()] = velocity_p_3D.y;
         velocity_center_grid[i + 2 * mesh.Element3D.size()] = velocity_p_3D.z;
 
-        NormOfVelocity(i, 0) = pow(velocity_p.x * velocity_p.x + velocity_p.y * velocity_p.y, 0.5) / pow(Fracs[mesh.ElementFracTag[i]].Conductivity * 12, 1.0 / 3.0);
+        T area_this_element = cuDFNsys::Triangle2DArea<T>(Vertexes[0], Vertexes[1], Vertexes[2]);
+        area_sum += area_this_element;
+
+        NormOfVelocity(i, 0) = pow(velocity_p.x * velocity_p.x + velocity_p.y * velocity_p.y, 0.5) / pow(Fracs[mesh.ElementFracTag[i]].Conductivity * 12, 1.0 / 3.0); 
+        maxV = (NormOfVelocity(i, 0) > maxV? NormOfVelocity(i, 0) : maxV);
+        NormOfVelocity(i, 0) *= area_this_element;
     };
 
     // now it is the maximum velocity
-    double maxV = NormOfVelocity.maxCoeff(); //NormOfVelocity.sum() / mesh.Element3D.size();
-    double meanV = NormOfVelocity.sum() / mesh.Element3D.size();
+    //double maxV = NormOfVelocity.maxCoeff(); //NormOfVelocity.sum() / mesh.Element3D.size();
+    double meanV = NormOfVelocity.sum() / area_sum;
 
     h5gg.AddDataset<double>(mat_key, "N", "maxV", &maxV, make_uint2(1, 0));
     h5gg.AddDataset<double>(mat_key, "N", "meanV", &meanV, make_uint2(1, 0));
@@ -445,12 +460,12 @@ double2 cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
         oss << "VelocityNorm = vecnorm(velocity_center_grid');\n";
         oss << "ElementAperture = h5read([currentPath, '/" << mat_key << "'], '/ElementAperture');\n";
         oss << "VelocityNorm = [vecnorm(velocity_center_grid')]' ./ ElementAperture;\n";
-        oss << "meanFractureVelocity = mean(VelocityNorm)\n";
-        oss << "edge_attri = h5read([currentPath, '/" << mat_key << "'], '/edge_attri');\n";
-        oss << "inlet_loc = find(edge_attri(:, 4)==0);\n";
-        oss << "inlet_loc = [inlet_loc; find(edge_attri(:, 5)==0)];\n";
-        oss << "inlet_loc = [inlet_loc; find(edge_attri(:, 6)==0)];\n";
-        oss << "meanFractureVelocity_Inlet = mean(VelocityNorm(inlet_loc))\n";
+        oss << "len1=[vecnorm([coordinate_3D(element_3D(:, 1), :) - coordinate_3D(element_3D(:, 2), :)]')]';\n";
+        oss << "len2=[vecnorm([coordinate_3D(element_3D(:, 3), :) - coordinate_3D(element_3D(:, 2), :)]')]';\n";
+        oss << "len3=[vecnorm([coordinate_3D(element_3D(:, 1), :) - coordinate_3D(element_3D(:, 3), :)]')]';\n";
+        oss << "P_ss = (len1+len2+len3)*0.5;\n";
+        oss << "Area_ss = (P_ss .* len1 .* len2 .* len3) .^ 0.5;\n";
+        oss << "meanFractureVelocity = sum(VelocityNorm .* Area_ss) ./ (sum(Area_ss))\n";
         oss.close();
     }
     return JKLDSF;

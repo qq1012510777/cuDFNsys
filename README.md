@@ -218,4 +218,4 @@ _include_: header files containing declarations of functions/classes
 
 _src_: source files containing definitions of functions/classes
 
-Other directories are all about my personal examples (user's interfaces), with different purposes, meanwhile showing that how to call _cuDFNsys_ functions, with `make` and other tools.
+_SomeApplications_: these are all about my personal examples (user's interfaces), with different purposes, meanwhile showing that how to call _cuDFNsys_ functions, with `make` and other tools.

@@ -25,6 +25,7 @@ SizePara = [3, 7.5, 0, 0, 0;
         
 Vex = zeros(size(kappaVec, 1), 1);
 meanR = Vex;
+L_charact = Vex;
 
 for i = 1:size(kappaVec, 1)
     PreFactor = 0;
@@ -54,6 +55,11 @@ for i = 1:size(kappaVec, 1)
         Vex(i) = [PreFactor * 8 * 2 ^ 0.5 * R_cubic];
 
         meanR(i) = [eval(int(x ^ 1 * f, x, min_, max_))];
+
+        meanR_cubic = eval(int(x^3 * f, x, min_, max_));
+        meanR_6 = eval(int(x^6 * f, x, min_, max_)); 
+        L_charact(i) = (2^3 * meanR_6 / (meanR_cubic * 2^1.5))^(1/3);
+
     elseif (Mode == 1)
         max_ = SizePara(i, 5);
         min_ = SizePara(i, 4);
@@ -81,6 +87,12 @@ for i = 1:size(kappaVec, 1)
         R_cubic = S;
 
         Vex(i) = [PreFactor * 8 * 2 ^ 0.5 * R_cubic];
+
+        meanR_cubic = eval(int(x^3 * f, x, min_, max_)) / (F_b - F_a);
+        meanR_6 = eval(int(x^6 * f, x, min_, max_)) / (F_b - F_a); 
+
+        L_charact(i) = (2^3 * meanR_6 / (meanR_cubic * 2^1.5))^(1/3);
+
     elseif (Mode == 2)
         f = 1 / (SizePara(i, 3) - SizePara(i, 2));
 
@@ -89,12 +101,20 @@ for i = 1:size(kappaVec, 1)
         Vex(i) = [PreFactor * 8 * 2 ^ 0.5 * R_cubic];
 
         meanR(i) = [eval(int(x ^ 1 * f, x, SizePara(i, 2), SizePara(i, 3)))];
+        
+        min_ = SizePara(i, 2);
+        max_ = SizePara(i, 3);
+
+        meanR_cubic = eval(int(x^3 * f, x, min_, max_));
+        meanR_6 = eval(int(x^6 * f, x, min_, max_)); 
+        L_charact(i) = (2^3 * meanR_6 / (meanR_cubic * 2^1.5))^(1/3);
 
     elseif (Mode == 3)
         Vex(i) = [PreFactor * 8 * 2 ^ 0.5 * SizePara(i, 2) .^ 3];
 
         meanR(i) = [SizePara(i, 2)];
-
+        
+        L_charact(i) = SizePara(i, 2);
     end
 
 end
