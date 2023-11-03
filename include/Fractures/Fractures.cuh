@@ -40,91 +40,88 @@
 
 namespace cuDFNsys
 {
-// Generate some fractures in a DFN
-template <typename T>
-__global__ void Fractures(cuDFNsys::Fracture<T> *verts,
-                          unsigned long seed,
-                          int count,
-                          cuDFNsys::Vector1<T> model_L,
-                          uint ModeSizeDistri,                 // 0 = power law; 1 = lognormal; 2 = uniform; 3 = monosize
-                          cuDFNsys::Vector4<T> ParaSizeDistri, // when mode = 1, ;
-                          cuDFNsys::Vector1<T> kappa,
-                          cuDFNsys::Vector1<T> conductivity_powerlaw_exponent,
-                          T Gamma_constant = 5.0e-4,
-                          double3 DomainDimensionRatio = make_double3(1, 1, 1),
-                          cuDFNsys::Vector3<T> MeanOrientation = cuDFNsys::MakeVector3((T)0., (T)0., (T)1.));
+    // Generate some fractures in a DFN
+    template <typename T>
+    __global__ void Fractures(
+        cuDFNsys::Fracture<T> *verts, unsigned long seed, int count,
+        cuDFNsys::Vector1<T> model_L,
+        uint
+            ModeSizeDistri, // 0 = power law; 1 = lognormal; 2 = uniform; 3 = monosize
+        cuDFNsys::Vector4<T> ParaSizeDistri, // when mode = 1, ;
+        cuDFNsys::Vector1<T> kappa,
+        cuDFNsys::Vector1<T> conductivity_powerlaw_exponent,
+        T Gamma_constant = 5.0e-4,
+        double3 DomainDimensionRatio = make_double3(1, 1, 1),
+        cuDFNsys::Vector3<T> MeanOrientation = cuDFNsys::MakeVector3((T)0.,
+                                                                     (T)0.,
+                                                                     (T)1.));
 
-// Generate some fractures in a DFN
-template <typename T>
-class FracturesCPU
-{
-public:
-    // constructor
-    FracturesCPU(thrust::host_vector<cuDFNsys::Fracture<T>> &verts,
-                 unsigned long seed,
-                 int count,
-                 T model_L,
-                 uint ModeSizeDistri,                 // 0 = power law; 1 = lognormal; 2 = uniform; 3 = monosize
-                 cuDFNsys::Vector4<T> ParaSizeDistri, // when mode = 1, ;
-                 T kappa,
-                 T conductivity_powerlaw_exponent,
-                 uint Nproc = 10);
-};
+    // Generate some fractures in a DFN
+    template <typename T>
+    class FracturesCPU
+    {
+    public:
+        // constructor
+        FracturesCPU(
+            thrust::host_vector<cuDFNsys::Fracture<T>> &verts,
+            unsigned long seed, int count, T model_L,
+            uint
+                ModeSizeDistri, // 0 = power law; 1 = lognormal; 2 = uniform; 3 = monosize
+            cuDFNsys::Vector4<T> ParaSizeDistri, // when mode = 1, ;
+            T kappa, T conductivity_powerlaw_exponent, uint Nproc = 10);
+    };
 
-// benchmark fracture generator: two vertical crossed fractures
-template <typename T>
-__global__ void FracturesCrossedVertical(cuDFNsys::Fracture<T> *verts,
-                                         unsigned long seed,
-                                         int count,
-                                         T model_L);
+    // benchmark fracture generator: two vertical crossed fractures
+    template <typename T>
+    __global__ void FracturesCrossedVertical(cuDFNsys::Fracture<T> *verts,
+                                             unsigned long seed, int count,
+                                             T model_L);
 
-// benchmark fracture generator: two inclined fractures, with two beta values
-// beta is dip angle here
-template <typename T>
-__global__ void FracturesBeta50Beta60(cuDFNsys::Fracture<T> *verts,
-                                      unsigned long seed,
-                                      int count,
-                                      T model_L);
-
-// two incomplete fractures
-template <typename T>
-__global__ void FracturesIncomplete(cuDFNsys::Fracture<T> *verts,
-                                    unsigned long seed,
-                                    int count,
-                                    T model_L);
-
-// Fractures like 2D sticks
-template <typename T>
-__global__ void Fractures2DLike(cuDFNsys::Fracture<T> *verts,
-                                unsigned long seed,
-                                int count,
-                                T model_L,
-                                T alpha = 1.5,
-                                T minR = 1,
-                                T maxR = 15);
-
-// Four fractures to verify particle tracking
-template <typename T>
-__global__ void FracturesFour(cuDFNsys::Fracture<T> *verts,
-                              unsigned long seed,
-                              int count,
-                              T model_L);
-
-template <typename T>
-__global__ void FracturesChangeDomainSize(cuDFNsys::Fracture<T> *verts,
-                                          int count,
+    // benchmark fracture generator: two inclined fractures, with two beta values
+    // beta is dip angle here
+    template <typename T>
+    __global__ void FracturesBeta50Beta60(cuDFNsys::Fracture<T> *verts,
+                                          unsigned long seed, int count,
                                           T model_L);
 
-template <typename T>
-__global__ void FractureTwoIntersectOrNot(cuDFNsys::Fracture<T> *verts,
-                                          unsigned long seed,
-                                          int count,
-                                          T model_L,
-                                          bool IfIntersect);
+    // two incomplete fractures
+    template <typename T>
+    __global__ void FracturesIncomplete(cuDFNsys::Fracture<T> *verts,
+                                        unsigned long seed, int count,
+                                        T model_L);
 
-template <typename T>
-__global__ void FracturesParallel(cuDFNsys::Fracture<T> *verts,
-                                  int count,
-                                  unsigned long seed,
-                                  T model_L);
+    // Fractures like 2D sticks
+    template <typename T>
+    __global__ void Fractures2DLike(cuDFNsys::Fracture<T> *verts,
+                                    unsigned long seed, int count, T model_L,
+                                    T alpha = 1.5, T minR = 1, T maxR = 15);
+
+    // Four fractures to verify particle tracking
+    template <typename T>
+    __global__ void FracturesFour(cuDFNsys::Fracture<T> *verts,
+                                  unsigned long seed, int count, T model_L);
+
+    template <typename T>
+    __global__ void FracturesChangeDomainSize(cuDFNsys::Fracture<T> *verts,
+                                              int count, T model_L);
+
+    template <typename T>
+    __global__ void FractureTwoIntersectOrNot(cuDFNsys::Fracture<T> *verts,
+                                              unsigned long seed, int count,
+                                              T model_L, bool IfIntersect);
+
+    template <typename T>
+    __global__ void FracturesParallel(cuDFNsys::Fracture<T> *verts, int count,
+                                      unsigned long seed, T model_L);
+
+    template <typename T>
+    __global__ void FracturesForSpatialPeriodicity(
+        cuDFNsys::Fracture<T> *verts, int count, cuDFNsys::Vector1<T> model_L,
+        int PercoDir, double3 DomainDimensionRatio = make_double3(1, 1, 1));
+
+    template <typename T>
+    __global__ void FracturesDeterministic(
+        cuDFNsys::Fracture<T> *verts, unsigned long seed, T *Data_f, int count,
+        T model_L, int PercoDir,
+        double3 DomainDimensionRatio = make_double3(1, 1, 1));
 }; // namespace cuDFNsys

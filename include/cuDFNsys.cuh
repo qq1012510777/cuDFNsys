@@ -73,6 +73,13 @@
 #include "./InputObjectData/InputObjectData.cuh"
 #include "./OutputObjectData/OutputObjectData.cuh"
 
+#include <thrust/count.h>
+
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <vector>
+
 //#include "./CPUSecond/CPUSecond.cuh"
 //#include "./Exceptions/Exceptions.cuh"
 //#include "./Fractures/Fractures.cuh"
@@ -124,6 +131,9 @@ namespace cuDFNsys
         std::vector<std::vector<size_t>> ListClusters;
         std::vector<size_t> PercolationCluster;
 
+    private:
+        bool IfPeriodic = false;
+
     public:
         DFN(){};
         void FractureGeneration();
@@ -137,6 +147,8 @@ namespace cuDFNsys
                            const bool &IfShowOrientationDistribution);
         void StoreInH5(const string &ClassNameH5);
         void LoadClassFromH5(const string &ClassNameH5);
+        void SpatialPeriodicity();
+        void LoadDFNFromCSV(const string &xlsxNameWithoutSuffix);
     };
 }; // namespace cuDFNsys
 
@@ -227,5 +239,6 @@ namespace cuDFNsys
                            const string &MatlabScriptName,
                            const string &PythonScriptName,
                            const string &HDF5FileNameOfFlowDFN);
+        void LoadParametersFromCSV(const string &CSVName);
     };
 }; // namespace cuDFNsys

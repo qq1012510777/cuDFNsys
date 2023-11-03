@@ -86,6 +86,10 @@ template <typename T>
 void cuDFNsys::DFN<T>::IdentifyIntersectionsClusters(
     const bool &IfTruncatedFractures)
 {
+    this->ListClusters.clear();
+    this->PercolationCluster.clear();
+    this->IntersectionMap.clear();
+
     cuDFNsys::IdentifyIntersection<T> identifyInters{
         (size_t)this->NumFracturesTotal, // number of fractures
         this->FracturesDevicePtr, // pointer of device vector of fractures
@@ -253,6 +257,10 @@ void cuDFNsys::DFN<T>::StoreInH5(const string &ClassNameH5)
         int NumberClustersyy = (int)this->ListClusters.size();
         h5gg.AddDataset(ClassNameH5 + ".h5", "N", "NumClusters",
                         &NumberClustersyy, make_uint2(1, 0));
+
+        uint OKLDS = (this->IfPeriodic ? 1 : 0);
+        h5gg.AddDataset(ClassNameH5 + ".h5", "N", "IfPeriodic", &OKLDS,
+                        make_uint2(1, 0));
     }
 
 }; //
@@ -271,58 +279,410 @@ void cuDFNsys::DFN<T>::LoadClassFromH5(const string &ClassNameH5)
     cuDFNsys::InputObjectData<T> lk;
     lk.InputFractures(ClassNameH5 + ".h5", this->FracturesHost,
                       this->DomainSizeX, this->DomainDimensionRatio);
-
+    this->FracturesDevice = this->FracturesHost;
+    this->FracturesDevicePtr =
+        thrust::raw_pointer_cast(this->FracturesDevice.data());
+    this->NumFracturesTotal = this->FracturesHost.size();
     //------
     {
         cuDFNsys::HDF5API hdf5Class;
-        std::vector<int> NumClusters =
-            hdf5Class.ReadDataset<int>(ClassNameH5 + ".h5", "N", "NumClusters");
-
-        this->ListClusters.resize(NumClusters[0]);
-
-        std::vector<T> Temp_Variable =
-            hdf5Class.ReadDataset<T>(ClassNameH5 + ".h5", "N", "ListClusters");
-
-        for (int i = 0; i < NumClusters[0]; ++i)
-            this->ListClusters[i].reserve(Temp_Variable.size() /
-                                          NumClusters[0]);
-        for (int i = 0; i < Temp_Variable.size(); ++i)
-            if (Temp_Variable[i] != -1)
-                this->ListClusters[i % NumClusters[0]].push_back(
-                    Temp_Variable[i] - 1);
-        for (int i = 0; i < NumClusters[0]; ++i)
-            this->ListClusters[i].shrink_to_fit();
-
-        Temp_Variable = hdf5Class.ReadDataset<T>(ClassNameH5 + ".h5", "N",
-                                                 "PercolationClusters");
-        this->PercolationCluster.resize(Temp_Variable.size());
-        for (int i = 0; i < Temp_Variable.size(); ++i)
-            this->PercolationCluster[i] = Temp_Variable[i] - 1;
-
-        //------INTERSECTION PAIR---
-        Temp_Variable =
-            hdf5Class.ReadDataset<T>(ClassNameH5 + ".h5", "N", "Intersections");
-        int NumIntersections = Temp_Variable.size() / 8;
-        for (int i = 0; i < NumIntersections; ++i)
-            this->IntersectionMap.insert(std::make_pair(
-                std::make_pair((uint)Temp_Variable[i + 6 * NumIntersections],
-                               (uint)Temp_Variable[i + 7 * NumIntersections]),
-                std::make_pair(cuDFNsys::MakeVector3(
-                                   Temp_Variable[i],
-                                   Temp_Variable[i + NumIntersections],
-                                   Temp_Variable[i + NumIntersections * 2]),
-                               cuDFNsys::MakeVector3(
-                                   Temp_Variable[i + NumIntersections * 3],
-                                   Temp_Variable[i + NumIntersections * 4],
-                                   Temp_Variable[i + NumIntersections * 5]))));
+        // std::vector<int> NumClusters =
+        //     hdf5Class.ReadDataset<int>(ClassNameH5 + ".h5", "N", "NumClusters");
+        //
+        // this->ListClusters.resize(NumClusters[0]);
+        //
+        // std::vector<T> Temp_Variable =
+        //     hdf5Class.ReadDataset<T>(ClassNameH5 + ".h5", "N", "ListClusters");
+        //
+        // for (int i = 0; i < NumClusters[0]; ++i)
+        //     this->ListClusters[i].reserve(Temp_Variable.size() /
+        //                                   NumClusters[0]);
+        // for (int i = 0; i < Temp_Variable.size(); ++i)
+        //     if (Temp_Variable[i] != -1)
+        //         this->ListClusters[i % NumClusters[0]].push_back(
+        //             Temp_Variable[i] - 1);
+        // for (int i = 0; i < NumClusters[0]; ++i)
+        //     this->ListClusters[i].shrink_to_fit();
+        //
+        // Temp_Variable = hdf5Class.ReadDataset<T>(ClassNameH5 + ".h5", "N",
+        //                                          "PercolationClusters");
+        // this->PercolationCluster.resize(Temp_Variable.size());
+        // for (int i = 0; i < Temp_Variable.size(); ++i)
+        //     this->PercolationCluster[i] = Temp_Variable[i] - 1;
+        //
+        // //------INTERSECTION PAIR---
+        // Temp_Variable =
+        //     hdf5Class.ReadDataset<T>(ClassNameH5 + ".h5", "N", "Intersections");
+        // int NumIntersections = Temp_Variable.size() / 8;
+        // for (int i = 0; i < NumIntersections; ++i)
+        //     this->IntersectionMap.insert(std::make_pair(
+        //         std::make_pair((uint)Temp_Variable[i + 6 * NumIntersections],
+        //                        (uint)Temp_Variable[i + 7 * NumIntersections]),
+        //         std::make_pair(cuDFNsys::MakeVector3(
+        //                            Temp_Variable[i],
+        //                            Temp_Variable[i + NumIntersections],
+        //                            Temp_Variable[i + NumIntersections * 2]),
+        //                        cuDFNsys::MakeVector3(
+        //                            Temp_Variable[i + NumIntersections * 3],
+        //                            Temp_Variable[i + NumIntersections * 4],
+        //                            Temp_Variable[i + NumIntersections * 5]))));
         //------------
         std::vector<int> UO =
             hdf5Class.ReadDataset<int>(ClassNameH5 + ".h5", "N", "PercoDir");
         this->PercoDir = UO[0];
+
+        std::vector<uint> UF =
+            hdf5Class.ReadDataset<uint>(ClassNameH5 + ".h5", "N", "IfPeriodic");
+        this->IfPeriodic = (UF[0] == 0 ? false : true);
     };
 };
 template void cuDFNsys::DFN<double>::LoadClassFromH5(const string &ClassNameH5);
 template void cuDFNsys::DFN<float>::LoadClassFromH5(const string &ClassNameH5);
+
+// ====================================================
+// NAME:        cuDFNsys::DFN<T>::SpatialPeriodicity
+// DESCRIPTION: make the DFN become spatially periodic
+// AUTHOR:      Tingchang YIN
+// DATE:        02/11/2023
+// ====================================================
+template <typename T>
+void cuDFNsys::DFN<T>::SpatialPeriodicity()
+{
+    this->IfPeriodic = true;
+
+    thrust::host_vector<cuDFNsys::Fracture<T>> Fractures_copy =
+        this->FracturesHost;
+
+    Fractures_copy.erase(
+        thrust::remove_if(
+            Fractures_copy.begin(), Fractures_copy.end(),
+            [&](const cuDFNsys::Fracture<T> &x)
+            {
+                return !(x.ConnectModelSurf[0] || x.ConnectModelSurf[1] ||
+                         x.ConnectModelSurf[2] || x.ConnectModelSurf[3] ||
+                         x.ConnectModelSurf[4] || x.ConnectModelSurf[5]);
+            }),
+        Fractures_copy.end());
+
+    if (Fractures_copy.size() == 0)
+    {
+        cout << "cuDFNsys::DFN<T>::SpatialPeriodicity: No fracture intersects "
+                "with any boundary\n";
+        return;
+    }
+
+    Fractures_copy.shrink_to_fit();
+
+    thrust::device_vector<cuDFNsys::Fracture<T>> Fractures_copy_device =
+        Fractures_copy;
+
+    cuDFNsys::Fracture<T> *Frac_device_copy_ptr =
+        thrust::raw_pointer_cast(Fractures_copy_device.data());
+
+    cuDFNsys::FracturesForSpatialPeriodicity<T>
+        <<<Fractures_copy.size() / 256 + 1, 256>>>(
+            Frac_device_copy_ptr, (int)Fractures_copy.size(), this->DomainSizeX,
+            this->PercoDir, this->DomainDimensionRatio);
+    cudaDeviceSynchronize();
+
+    Fractures_copy = Fractures_copy_device;
+
+    // for (int j = 0; j < 4; ++j)
+    // {
+    //     cout << Fractures_copy[0].Verts3D[j].x << ", "
+    //          << Fractures_copy[0].Verts3D[j].y << ", "
+    //          << Fractures_copy[0].Verts3D[j].z << ", " << endl;
+    // }
+
+    this->FracturesHost.insert(this->FracturesHost.end(),
+                               Fractures_copy.begin(), Fractures_copy.end());
+
+    this->FracturesDevice = this->FracturesHost;
+
+    this->FracturesDevicePtr =
+        thrust::raw_pointer_cast(this->FracturesDevice.data());
+
+    cout << "cuDFNsys::DFN<T>::SpatialPeriodicity: The DFN becomes spatially "
+            "periodic now! The total number of "
+            "fracture is changed to "
+         << this->FracturesHost.size() << " from " << this->NumFracturesTotal
+         << endl;
+    this->NumFracturesTotal = this->FracturesHost.size();
+};
+template void cuDFNsys::DFN<double>::SpatialPeriodicity();
+template void cuDFNsys::DFN<float>::SpatialPeriodicity();
+
+// ====================================================
+// NAME:        cuDFNsys::DFN<T>::LoadDFNFromCSV
+// DESCRIPTION: load input parameters of DFNs from .csv file
+// AUTHOR:      Tingchang YIN
+// DATE:        03/11/2023
+// ====================================================
+template <typename T>
+void cuDFNsys::DFN<T>::LoadDFNFromCSV(const string &xlsxNameWithoutSuffix)
+{
+    std::ifstream ifs;
+    ifs.open(xlsxNameWithoutSuffix + ".csv", ios::in);
+
+    if (!ifs.is_open())
+    {
+        ifs.close();
+        throw cuDFNsys::ExceptionsPause("Fail to open " +
+                                        xlsxNameWithoutSuffix + ".csv");
+    }
+
+    vector<string> items(12);
+    for (int i = 0; i < items.size(); ++i)
+    {
+        string temp_k;
+        getline(ifs, temp_k);
+        items[i] = temp_k;
+        //cout << temp_k << endl;
+    }
+    ifs.close();
+
+    string temp_s;
+    //--------line 2
+    istringstream istrss(items[0]);
+    getline(istrss, temp_s, ',');
+    getline(istrss, temp_s, ',');
+    bool IfStochastic = (atoi(temp_s.c_str()) == 1 ? true : false);
+
+    if (IfStochastic)
+    {
+        //--------line 2
+        istringstream istrss(items[1]);
+        getline(istrss, temp_s, ',');
+        getline(istrss, temp_s, ',');
+        this->DomainSizeX = atof(temp_s.c_str());
+
+        //--------line 3
+        istrss.str(items[2]);
+        getline(istrss, temp_s, ',');
+        getline(istrss, temp_s, ',');
+        this->DomainDimensionRatio.x = atof(temp_s.c_str());
+        getline(istrss, temp_s, ',');
+        this->DomainDimensionRatio.y = atof(temp_s.c_str());
+        getline(istrss, temp_s, ',');
+        this->DomainDimensionRatio.z = atof(temp_s.c_str());
+
+        //--------line 4
+        istrss.str(items[3]);
+        getline(istrss, temp_s, ',');
+        getline(istrss, temp_s, ',');
+        this->PercoDir = atoi(temp_s.c_str());
+
+        //--------line 5
+        istrss.str(items[4]);
+        getline(istrss, temp_s, ',');
+        getline(istrss, temp_s, ',');
+        int NumGroups = atoi(temp_s.c_str());
+        this->NumFractures.resize(NumGroups);
+        this->Kappa.resize(NumGroups);
+        this->MeanOrientationOfFisherDistribution.resize(NumGroups);
+        this->Beta.resize(NumGroups);
+        this->Gamma.resize(NumGroups);
+        this->ModeOfSizeDistribution.resize(NumGroups);
+        this->SizeDistributionParameters.resize(NumGroups);
+
+        //--------line 6
+        istrss.str(items[5]);
+        getline(istrss, temp_s, ',');
+        for (int i = 0; i < NumGroups; ++i)
+        {
+            getline(istrss, temp_s, ',');
+            this->NumFractures[i] = atoi(temp_s.c_str());
+        }
+
+        //--------line 7
+        istrss.str(items[6]);
+        getline(istrss, temp_s, ',');
+        for (int i = 0; i < NumGroups; ++i)
+        {
+            getline(istrss, temp_s, ',');
+            this->Kappa[i] = atof(temp_s.c_str());
+        }
+
+        //--------line 8
+        istrss.str(items[7]);
+        getline(istrss, temp_s, ',');
+        for (int i = 0; i < NumGroups; ++i)
+        {
+            getline(istrss, temp_s, ',');
+            this->MeanOrientationOfFisherDistribution[i].x =
+                atof(temp_s.c_str());
+            getline(istrss, temp_s, ',');
+            this->MeanOrientationOfFisherDistribution[i].y =
+                atof(temp_s.c_str());
+            getline(istrss, temp_s, ',');
+            this->MeanOrientationOfFisherDistribution[i].z =
+                atof(temp_s.c_str());
+        }
+
+        //--------line 9
+        istrss.str(items[8]);
+        getline(istrss, temp_s, ',');
+        for (int i = 0; i < NumGroups; ++i)
+        {
+            getline(istrss, temp_s, ',');
+            this->ModeOfSizeDistribution[i] = atoi(temp_s.c_str());
+        }
+
+        //--------line 10
+        istrss.str(items[9]);
+        getline(istrss, temp_s, ',');
+        for (int i = 0; i < NumGroups; ++i)
+        {
+            getline(istrss, temp_s, ',');
+            this->SizeDistributionParameters[i].x = atof(temp_s.c_str());
+            getline(istrss, temp_s, ',');
+            this->SizeDistributionParameters[i].y = atof(temp_s.c_str());
+            getline(istrss, temp_s, ',');
+            this->SizeDistributionParameters[i].z = atof(temp_s.c_str());
+            getline(istrss, temp_s, ',');
+            this->SizeDistributionParameters[i].w = atof(temp_s.c_str());
+        }
+
+        //--------line 11
+        istrss.str(items[10]);
+        getline(istrss, temp_s, ',');
+        for (int i = 0; i < NumGroups; ++i)
+        {
+            getline(istrss, temp_s, ',');
+            this->Beta[i] = atof(temp_s.c_str());
+        }
+
+        //--------line 12
+        istrss.str(items[11]);
+        getline(istrss, temp_s, ',');
+        for (int i = 0; i < NumGroups; ++i)
+        {
+            getline(istrss, temp_s, ',');
+            this->Gamma[i] = atof(temp_s.c_str());
+        }
+
+        cout << "Load input parameters from "
+             << xlsxNameWithoutSuffix + ".csv for a stochastic DFN\n";
+        cout << "Domain size is "
+             << this->DomainSizeX * this->DomainDimensionRatio.x << ", "
+             << this->DomainSizeX * this->DomainDimensionRatio.y << ", "
+             << this->DomainSizeX * this->DomainDimensionRatio.z << "\n";
+        cout << "Percolation direction is " << this->PercoDir << endl;
+
+        for (int i = 0; i < this->NumFractures.size(); ++i)
+        {
+            cout << "For group " << i << ":\n";
+            cout << "\t"
+                 << "NumFractures: " << NumFractures[i] << endl;
+            cout << "\t"
+                 << "Kappa: " << Kappa[i] << endl;
+            cout << "\t"
+                 << "MeanOrientationOfFisherDistribution: "
+                 << MeanOrientationOfFisherDistribution[i].x << ", "
+                 << MeanOrientationOfFisherDistribution[i].y << ", "
+                 << MeanOrientationOfFisherDistribution[i].z << endl;
+            cout << "\t"
+                 << "Beta: " << Beta[i] << endl;
+            cout << "\t"
+                 << "Gamma: " << Gamma[i] << endl;
+            cout << "\t"
+                 << "ModeOfSizeDistribution: " << ModeOfSizeDistribution[i]
+                 << endl;
+            cout << "\t"
+                 << "SizeDistributionParameters: "
+                 << SizeDistributionParameters[i].x << ", "
+                 << SizeDistributionParameters[i].y << ", "
+                 << SizeDistributionParameters[i].z << ", "
+                 << SizeDistributionParameters[i].w << endl;
+        }
+        this->FractureGeneration();
+    }
+    else
+    {
+        //
+        //--------line 2
+        istringstream istrss(items[1]);
+        getline(istrss, temp_s, ',');
+        getline(istrss, temp_s, ',');
+        this->DomainSizeX = atof(temp_s.c_str());
+
+        //--------line 3
+        istrss.str(items[2]);
+        getline(istrss, temp_s, ',');
+        getline(istrss, temp_s, ',');
+        this->DomainDimensionRatio.x = atof(temp_s.c_str());
+        getline(istrss, temp_s, ',');
+        this->DomainDimensionRatio.y = atof(temp_s.c_str());
+        getline(istrss, temp_s, ',');
+        this->DomainDimensionRatio.z = atof(temp_s.c_str());
+
+        //--------line 4
+        istrss.str(items[3]);
+        getline(istrss, temp_s, ',');
+        getline(istrss, temp_s, ',');
+        this->PercoDir = atoi(temp_s.c_str());
+
+        //--------line 5
+        istrss.str(items[4]);
+        getline(istrss, temp_s, ',');
+        getline(istrss, temp_s, ',');
+        this->NumFracturesTotal = atoi(temp_s.c_str());
+
+        int DataNumForOneFracture = 9;
+        thrust::host_vector<T> Data_deterministic(DataNumForOneFracture *
+                                                  this->NumFracturesTotal);
+
+        // -------//--------line > 5
+        for (int i = 0; i < NumFracturesTotal; ++i)
+        {
+            istrss.str(items[5 + i]);
+            getline(istrss, temp_s, ',');
+
+            for (int j = 0; j < DataNumForOneFracture; ++j)
+            {
+                getline(istrss, temp_s, ',');
+                Data_deterministic[i * DataNumForOneFracture + j] =
+                    atof(temp_s.c_str());
+            }
+        }
+
+        this->FracturesHost.resize(this->NumFracturesTotal);
+        this->FracturesDevice = this->FracturesHost;
+        this->FracturesDevicePtr =
+            thrust::raw_pointer_cast(FracturesDevice.data());
+
+        thrust::device_vector<T> Data_deterministic_device = Data_deterministic;
+        T *Data_f = thrust::raw_pointer_cast(Data_deterministic_device.data());
+
+        cuDFNsys::FracturesDeterministic<T>
+            <<<this->NumFracturesTotal / 256 + 1, 256>>>(
+                this->FracturesDevicePtr, this->RandomSeed, Data_f,
+                this->NumFracturesTotal, this->DomainSizeX, this->PercoDir,
+                this->DomainDimensionRatio);
+        cudaDeviceSynchronize();
+
+        this->FracturesHost = this->FracturesDevice;
+        this->FracturesDevicePtr =
+            thrust::raw_pointer_cast(FracturesDevice.data());
+
+        cout << "Load input parameters from "
+             << xlsxNameWithoutSuffix + ".csv for a deterministic DFN with "
+             << this->NumFracturesTotal << " fractures\n";
+
+        cout << "First fracture: ";
+        for (int j = 0; j < DataNumForOneFracture; ++j)
+            cout << Data_deterministic[j] << (j == 8 ? "\n" : ", ");
+        cout << "...\nLast fracture: ";
+        for (int j = 0; j < DataNumForOneFracture; ++j)
+            cout << Data_deterministic[Data_deterministic.size() -
+                                       DataNumForOneFracture + j]
+                 << (j == 8 ? "\n" : ", ");
+    }
+};
+template void
+cuDFNsys::DFN<double>::LoadDFNFromCSV(const string &xlsxNameWithoutSuffix);
+template void
+cuDFNsys::DFN<float>::LoadDFNFromCSV(const string &xlsxNameWithoutSuffix);
 
 // ====================================================
 // NAME:        cuDFNsys::MeshDFN<T>::MeshGeneration
@@ -347,6 +707,12 @@ void cuDFNsys::MeshDFN<T>::MeshGeneration(DFN<T> &my_dfn)
     cuDFNsys::RemoveDeadEndFrac<T> RDEF{
         this->FracsPercol,    IntersectionPair_percol, (size_t)my_dfn.PercoDir,
         my_dfn.FracturesHost, my_dfn.IntersectionMap,  false};
+
+    my_dfn.NumFracturesTotal = my_dfn.FracturesHost.size();
+    my_dfn.FracturesDevice = my_dfn.FracturesHost;
+    my_dfn.FracturesDevicePtr =
+        thrust::raw_pointer_cast(my_dfn.FracturesDevice.data());
+
     this->MeshData = cuDFNsys::Mesh<T>{
         my_dfn.FracturesHost, IntersectionPair_percol,    &(this->FracsPercol),
         this->MinElementSize, this->MaxElementSize,       my_dfn.PercoDir,
@@ -633,3 +999,128 @@ template void cuDFNsys::PTDFN<float>::Visualization(
     cuDFNsys::DFN<float> my_dfn, cuDFNsys::MeshDFN<float> my_mesh,
     cuDFNsys::FlowDFN<float> my_flow, const string &MatlabScriptName,
     const string &PythonScriptName, const string &HDF5FileNameOfFlowDFN);
+
+// ====================================================
+// NAME:        cuDFNsys::PTDFN<T>::LoadParametersFromCSV
+// DESCRIPTION: LoadParametersFromCSV
+// AUTHOR:      Tingchang YIN
+// DATE:        03/11/2023
+// ====================================================
+template <typename T>
+void cuDFNsys::PTDFN<T>::LoadParametersFromCSV(const string &CSVName)
+{
+    std::ifstream ifs;
+    ifs.open(CSVName + ".csv", ios::in);
+
+    if (!ifs.is_open())
+    {
+        ifs.close();
+        throw cuDFNsys::ExceptionsPause("Fail to open " + CSVName + ".csv");
+    }
+
+    vector<string> items(11);
+    for (int i = 0; i < items.size(); ++i)
+    {
+        string temp_k;
+        getline(ifs, temp_k);
+        items[i] = temp_k;
+        //cout << temp_k << endl;
+    }
+    ifs.close();
+
+    string temp_s;
+    //--------line 1
+    istringstream istrss(items[0]);
+    getline(istrss, temp_s, ',');
+    getline(istrss, temp_s, ',');
+    this->NumParticles = atoi(temp_s.c_str());
+
+    //--------line 2
+    istrss.str(items[1]);
+    getline(istrss, temp_s, ',');
+    getline(istrss, temp_s, ',');
+    this->NumTimeSteps = atoi(temp_s.c_str());
+
+    //--------line 3
+    istrss.str(items[2]);
+    getline(istrss, temp_s, ',');
+    getline(istrss, temp_s, ',');
+    this->MolecularDiffusion = atof(temp_s.c_str());
+
+    //--------line 4
+    istrss.str(items[3]);
+    getline(istrss, temp_s, ',');
+    getline(istrss, temp_s, ',');
+    this->DeltaT = atof(temp_s.c_str());
+
+    //--------line 5
+    istrss.str(items[4]);
+    getline(istrss, temp_s, ',');
+    getline(istrss, temp_s, ',');
+    this->InjectionMethod = temp_s;
+
+    //--------line 6
+    istrss.str(items[5]);
+    getline(istrss, temp_s, ',');
+    getline(istrss, temp_s, ',');
+    this->OutputAllPTInformationOrFPTCurve =
+        (atoi(temp_s.c_str()) == 1 ? true : false);
+
+    //--------line 7
+    istrss.str(items[6]);
+    getline(istrss, temp_s, ',');
+    getline(istrss, temp_s, ',');
+    this->SpacingOfControlPlanes = atof(temp_s.c_str());
+
+    //--------line 8
+    istrss.str(items[7]);
+    getline(istrss, temp_s, ',');
+    getline(istrss, temp_s, ',');
+
+    this->IfOutputVarianceOfDisplacementsEachStep =
+        (atoi(temp_s.c_str()) == 1 ? true : false);
+
+    //--------line 9
+    istrss.str(items[8]);
+    getline(istrss, temp_s, ',');
+    getline(istrss, temp_s, ',');
+    this->IfInjectAtCustomedPlane = (atoi(temp_s.c_str()) == 1 ? true : false);
+
+    //--------line 10
+    istrss.str(items[9]);
+    getline(istrss, temp_s, ',');
+    getline(istrss, temp_s, ',');
+    this->CustomedPlaneInjection = atof(temp_s.c_str());
+
+    //--------line 11
+    istrss.str(items[10]);
+    getline(istrss, temp_s, ',');
+    getline(istrss, temp_s, ',');
+    this->IfUseFluxWeightedOrEqualProbableMixingIntersection =
+        (atoi(temp_s.c_str()) == 1 ? true : false);
+
+    cout << "Load PT parameters from " << CSVName << ".csv:\n";
+    cout << "NumParticles: " << (NumParticles) << endl;
+    cout << "NumTimeSteps: " << (NumTimeSteps) << endl;
+    cout << "MolecularDiffusion: " << (MolecularDiffusion) << endl;
+    cout << "DeltaT: " << (DeltaT) << endl;
+    cout << "InjectionMethod: " << (InjectionMethod) << endl;
+    cout << "OutputAllPTInformationOrFPTCurve: "
+         << (OutputAllPTInformationOrFPTCurve ? "OutputAll" : "FPTCurve")
+         << endl;
+    cout << "SpacingOfControlPlanes: " << (SpacingOfControlPlanes) << endl;
+    cout << "IfOutputVarianceOfDisplacementsEachStep: "
+         << (IfOutputVarianceOfDisplacementsEachStep ? "yes" : "no") << endl;
+    cout << "IfInjectAtCustomedPlane: "
+         << (IfInjectAtCustomedPlane ? "yes" : "no") << endl;
+    cout << "CustomedPlaneInjection: " << (CustomedPlaneInjection) << endl;
+    cout << "IfUseFluxWeightedOrEqualProbableMixingIntersection: "
+         << (IfUseFluxWeightedOrEqualProbableMixingIntersection
+                 ? "outgoingfluxweighted"
+                 : "equalproble")
+         << endl;
+};
+template void
+cuDFNsys::PTDFN<double>::LoadParametersFromCSV(const string &CSVName);
+template void
+cuDFNsys::PTDFN<float>::LoadParametersFromCSV(const string &CSVName);

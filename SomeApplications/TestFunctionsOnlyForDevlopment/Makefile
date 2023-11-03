@@ -1,16 +1,7 @@
 ExeName=main
-NVCC=/usr/local/cuda/bin/nvcc
-# include paths for headers
-Hdf5IncludePath=/usr/lib/x86_64-linux-gnu/hdf5/serial/include
-GmshIncludePath=$(HOME)/pkg/gmsh-4.8.4-source/MY_GMSH/include
-EigenIncludePath=$(HOME)/pkg/eigen
-UmfpackIncludePath=$(HOME)/pkg/SuiteSparse-master/include
-# library paths
-GmshLibraryPath=$(HOME)/pkg/gmsh-4.8.4-source/MY_GMSH/lib
-UmfpackLibraryPath=$(HOME)/pkg/SuiteSparse-master/lib
-Hdf5LibraryPath=/usr/lib/x86_64-linux-gnu/hdf5/serial
+include ../Path.mk
 
-INCDIRS=-I ../include \
+INCDIRS=-I $(cuDFNsysIncludePath)\
 		-I $(Hdf5IncludePath) \
 		-I $(GmshIncludePath) \
 		-I $(EigenIncludePath) \
@@ -49,7 +40,7 @@ Lib_= -Xcompiler=-fopenmp \
 # -l/usr/lib/x86_64-linux-gnu/libdl.so  
 
 all: 
-	$(NVCC) -DUSE_DOUBLES ./src/$(ExeName).cu ../lib/libcuDFNsys.a \
+	$(NVCC) -DUSE_DOUBLES ./src/$(ExeName).cu $(cuDFNsysLibraryPath)/libcuDFNsys.a \
 	-o ./$(ExeName) $(INCDIRS) $(Lib_) \
 	-Xcudafe --display_error_number -Xcudafe --diag_suppress=3057 \
 	-Xcudafe --diag_suppress=1301 \
