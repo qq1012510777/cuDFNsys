@@ -37,6 +37,7 @@
 #include "../RandomFunction/RandomFunction.cuh"
 #include "Fracture.cuh"
 #include "TruncateFracture.cuh"
+#include "../Exceptions/Exceptions.cuh"
 
 namespace cuDFNsys
 {

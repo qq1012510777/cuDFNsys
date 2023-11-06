@@ -402,7 +402,7 @@ template __global__ void cuDFNsys::FracturesDeterministic<float>(
 // NAME:        FracturesForSpatialPeriodicity
 // DESCRIPTION: Fractures in a DFN
 // AUTHOR:      Tingchang YIN
-// DATE:        03/11/2023
+// DATE:        06/11/2023
 // ====================================================
 template <typename T>
 __global__ void cuDFNsys::FracturesForSpatialPeriodicity<T>(
@@ -414,72 +414,100 @@ __global__ void cuDFNsys::FracturesForSpatialPeriodicity<T>(
     if (i > count - 1)
         return;
 
-    for (int j = 0; j < 4; ++j)
-    {
-        verts[i].Verts3D[j].x -= verts[i].Center.x;
-        verts[i].Verts3D[j].y -= verts[i].Center.y;
-        verts[i].Verts3D[j].z -= verts[i].Center.z;
-    };
+    T *Center_fff = &verts[i].Center.x;
+    double *Dimensionratio = &DomainDimensionRatio.x;
 
-    if (PercoDir == 0)
-    {
-        if (verts[i].ConnectModelSurf[0]) // connect x_min
-            verts[i].Center.x += model_L * DomainDimensionRatio.x;
-        if (verts[i].ConnectModelSurf[1]) // connect x_max
-            verts[i].Center.x -= model_L * DomainDimensionRatio.x;
-    }
-    else if (PercoDir == 1)
-    {
-        if (verts[i].ConnectModelSurf[2]) // connect y_min
-            verts[i].Center.y += model_L * DomainDimensionRatio.y;
-        if (verts[i].ConnectModelSurf[3]) // connect y_max
-            verts[i].Center.y -= model_L * DomainDimensionRatio.y;
-    }
-    else if (PercoDir == 2)
-    {
-        if (verts[i].ConnectModelSurf[4]) // connect z_min
-            verts[i].Center.z += model_L * DomainDimensionRatio.z;
-        if (verts[i].ConnectModelSurf[5]) // connect z_max
-            verts[i].Center.z -= model_L * DomainDimensionRatio.z;
-    }
+    T Increament_ff = model_L * Dimensionratio[PercoDir] / 2;
+
+    Center_fff[PercoDir] += Increament_ff;
+    verts[i].NumVertsTruncated = 4;
 
     for (int j = 0; j < 4; ++j)
     {
-        verts[i].Verts3D[j].x += verts[i].Center.x;
-        verts[i].Verts3D[j].y += verts[i].Center.y;
-        verts[i].Verts3D[j].z += verts[i].Center.z;
+        T *Vertic_ff = &(verts[i].Verts3D[j].x);
+        Vertic_ff[PercoDir] += Increament_ff;
 
-        verts[i].Verts3DTruncated[j].x = verts[i].Verts3D[j].x;
-        verts[i].Verts3DTruncated[j].y = verts[i].Verts3D[j].y;
+        verts[i].Verts3DTruncated[j].x = verts[i].Verts3D[j].x,
+        verts[i].Verts3DTruncated[j].y = verts[i].Verts3D[j].y,
         verts[i].Verts3DTruncated[j].z = verts[i].Verts3D[j].z;
+    }
+
+    if (i >= count / 2)
+    {
+        Center_fff[PercoDir] = -Center_fff[PercoDir];
+
+        for (int j = 0; j < 4; ++j)
+        {
+            T *Vertic_ff = &(verts[i].Verts3D[j].x);
+            Vertic_ff[PercoDir] = -Vertic_ff[PercoDir];
+
+            verts[i].Verts3DTruncated[j].x = verts[i].Verts3D[j].x,
+            verts[i].Verts3DTruncated[j].y = verts[i].Verts3D[j].y,
+            verts[i].Verts3DTruncated[j].z = verts[i].Verts3D[j].z;
+        }
+
+        cuDFNsys::Vector3<T> D1 = cuDFNsys::MakeVector3(
+                                 verts[i].Verts3D[0].x - verts[i].Center.x,
+                                 verts[i].Verts3D[0].y - verts[i].Center.y,
+                                 verts[i].Verts3D[0].z - verts[i].Center.z),
+                             D2 = cuDFNsys::MakeVector3(
+                                 verts[i].Verts3D[1].x - verts[i].Center.x,
+                                 verts[i].Verts3D[1].y - verts[i].Center.y,
+                                 verts[i].Verts3D[1].z - verts[i].Center.z);
+        verts[i].NormalVec = cuDFNsys::CrossProductVector3<T>(D1, D2);
+
+        cuDFNsys::Vector1<T> norm_f =
+            sqrt(verts[i].NormalVec.x * verts[i].NormalVec.x +
+                 verts[i].NormalVec.y * verts[i].NormalVec.y +
+                 verts[i].NormalVec.z * verts[i].NormalVec.z);
+
+        verts[i].NormalVec.x /= norm_f;
+        verts[i].NormalVec.y /= norm_f;
+        verts[i].NormalVec.z /= norm_f;
+
+        if (verts[i].NormalVec.z < 0)
+            verts[i].NormalVec.x = -verts[i].NormalVec.x,
+            verts[i].NormalVec.y = -verts[i].NormalVec.y,
+            verts[i].NormalVec.z = -verts[i].NormalVec.z;
     }
 
     verts[i].ConnectModelSurf[0] = false, verts[i].ConnectModelSurf[1] = false,
     verts[i].ConnectModelSurf[2] = false, verts[i].ConnectModelSurf[3] = false,
     verts[i].ConnectModelSurf[4] = false, verts[i].ConnectModelSurf[5] = false;
 
+    cuDFNsys::Vector3<T> DomainElongate =
+        cuDFNsys::MakeVector3((T)1., (T)1., (T)1.);
+    T *DomainElongate_ff = &(DomainElongate.x);
+    DomainElongate_ff[PercoDir] = 2;
+
     bool gh = cuDFNsys::TruncateFracture<T>(
-        &verts[i], DomainDimensionRatio.x * model_L, 0, -1);
+        &verts[i], DomainDimensionRatio.x * model_L * DomainElongate_ff[0], 0,
+        -1);
     verts[i].ConnectModelSurf[0] = gh;
 
-    gh = cuDFNsys::TruncateFracture<T>(&verts[i],
-                                       DomainDimensionRatio.x * model_L, 0, 1);
+    gh = cuDFNsys::TruncateFracture<T>(
+        &verts[i], DomainDimensionRatio.x * model_L * DomainElongate_ff[0], 0,
+        1);
     verts[i].ConnectModelSurf[1] = gh;
 
-    gh = cuDFNsys::TruncateFracture<T>(&verts[i],
-                                       DomainDimensionRatio.y * model_L, 1, -1);
+    gh = cuDFNsys::TruncateFracture<T>(
+        &verts[i], DomainDimensionRatio.y * model_L * DomainElongate_ff[1], 1,
+        -1);
     verts[i].ConnectModelSurf[2] = gh;
 
-    gh = cuDFNsys::TruncateFracture<T>(&verts[i],
-                                       DomainDimensionRatio.y * model_L, 1, 1);
+    gh = cuDFNsys::TruncateFracture<T>(
+        &verts[i], DomainDimensionRatio.y * model_L * DomainElongate_ff[1], 1,
+        1);
     verts[i].ConnectModelSurf[3] = gh;
 
-    gh = cuDFNsys::TruncateFracture<T>(&verts[i],
-                                       DomainDimensionRatio.z * model_L, 2, -1);
+    gh = cuDFNsys::TruncateFracture<T>(
+        &verts[i], DomainDimensionRatio.z * model_L * DomainElongate_ff[2], 2,
+        -1);
     verts[i].ConnectModelSurf[4] = gh;
 
-    gh = cuDFNsys::TruncateFracture<T>(&verts[i],
-                                       DomainDimensionRatio.z * model_L, 2, 1);
+    gh = cuDFNsys::TruncateFracture<T>(
+        &verts[i], DomainDimensionRatio.z * model_L * DomainElongate_ff[2], 2,
+        1);
     verts[i].ConnectModelSurf[5] = gh;
 };
 template __global__ void cuDFNsys::FracturesForSpatialPeriodicity<double>(
@@ -507,7 +535,7 @@ cuDFNsys::FracturesCPU<T>::FracturesCPU(
     T kappa, T conductivity_powerlaw_exponent, uint Nproc)
 {
     srand(seed);
-
+    throw cuDFNsys::ExceptionsPause(" `FracturesCPU` is Not recommended!\n");
 #pragma omp parallel for schedule(static) num_threads(Nproc)
     for (int i = 0; i < count; ++i)
     {

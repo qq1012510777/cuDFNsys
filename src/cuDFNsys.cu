@@ -343,71 +343,49 @@ template void cuDFNsys::DFN<float>::LoadClassFromH5(const string &ClassNameH5);
 // NAME:        cuDFNsys::DFN<T>::SpatialPeriodicity
 // DESCRIPTION: make the DFN become spatially periodic
 // AUTHOR:      Tingchang YIN
-// DATE:        02/11/2023
+// DATE:        06/11/2023
 // ====================================================
 template <typename T>
 void cuDFNsys::DFN<T>::SpatialPeriodicity()
 {
+    int O_size = this->FracturesHost.size();
+
     this->IfPeriodic = true;
 
     thrust::host_vector<cuDFNsys::Fracture<T>> Fractures_copy =
         this->FracturesHost;
 
-    Fractures_copy.erase(
-        thrust::remove_if(
-            Fractures_copy.begin(), Fractures_copy.end(),
-            [&](const cuDFNsys::Fracture<T> &x)
-            {
-                return !(x.ConnectModelSurf[0] || x.ConnectModelSurf[1] ||
-                         x.ConnectModelSurf[2] || x.ConnectModelSurf[3] ||
-                         x.ConnectModelSurf[4] || x.ConnectModelSurf[5]);
-            }),
-        Fractures_copy.end());
-
-    if (Fractures_copy.size() == 0)
-    {
-        cout << "cuDFNsys::DFN<T>::SpatialPeriodicity: No fracture intersects "
-                "with any boundary\n";
-        return;
-    }
-
-    Fractures_copy.shrink_to_fit();
-
-    thrust::device_vector<cuDFNsys::Fracture<T>> Fractures_copy_device =
-        Fractures_copy;
-
-    cuDFNsys::Fracture<T> *Frac_device_copy_ptr =
-        thrust::raw_pointer_cast(Fractures_copy_device.data());
-
-    cuDFNsys::FracturesForSpatialPeriodicity<T>
-        <<<Fractures_copy.size() / 256 + 1, 256>>>(
-            Frac_device_copy_ptr, (int)Fractures_copy.size(), this->DomainSizeX,
-            this->PercoDir, this->DomainDimensionRatio);
-    cudaDeviceSynchronize();
-
-    Fractures_copy = Fractures_copy_device;
-
-    // for (int j = 0; j < 4; ++j)
-    // {
-    //     cout << Fractures_copy[0].Verts3D[j].x << ", "
-    //          << Fractures_copy[0].Verts3D[j].y << ", "
-    //          << Fractures_copy[0].Verts3D[j].z << ", " << endl;
-    // }
-
     this->FracturesHost.insert(this->FracturesHost.end(),
                                Fractures_copy.begin(), Fractures_copy.end());
-
+    Fractures_copy.clear();
     this->FracturesDevice = this->FracturesHost;
 
     this->FracturesDevicePtr =
         thrust::raw_pointer_cast(this->FracturesDevice.data());
 
+    this->NumFracturesTotal *= 2;
+
+    cuDFNsys::FracturesForSpatialPeriodicity<T>
+        <<<this->NumFracturesTotal / 256 + 1, 256>>>(
+            this->FracturesDevicePtr, (int)this->NumFracturesTotal,
+            this->DomainSizeX, this->PercoDir, this->DomainDimensionRatio);
+    cudaDeviceSynchronize();
+    this->FracturesHost = this->FracturesDevice;
+    this->FracturesDevicePtr =
+        thrust::raw_pointer_cast(this->FracturesDevice.data());
+
+    if (this->PercoDir == 0)
+        this->DomainSizeX *= 2, this->DomainDimensionRatio.y /= 2,
+            this->DomainDimensionRatio.z /= 2;
+    else if (this->PercoDir == 1)
+        this->DomainDimensionRatio.y *= 2;
+    else
+        this->DomainDimensionRatio.z *= 2;
+
     cout << "cuDFNsys::DFN<T>::SpatialPeriodicity: The DFN becomes spatially "
-            "periodic now! The total number of "
+            "periodic now! The domain is elongated in the percolation direction. The total number of "
             "fracture is changed to "
-         << this->FracturesHost.size() << " from " << this->NumFracturesTotal
-         << endl;
-    this->NumFracturesTotal = this->FracturesHost.size();
+         << this->NumFracturesTotal << " from " << O_size << endl;
 };
 template void cuDFNsys::DFN<double>::SpatialPeriodicity();
 template void cuDFNsys::DFN<float>::SpatialPeriodicity();
@@ -517,6 +495,18 @@ void cuDFNsys::DFN<T>::LoadDFNFromCSV(const string &xlsxNameWithoutSuffix)
             getline(istrss, temp_s, ',');
             this->MeanOrientationOfFisherDistribution[i].z =
                 atof(temp_s.c_str());
+
+            T norm_meanOri =
+                pow(this->MeanOrientationOfFisherDistribution[i].x *
+                            this->MeanOrientationOfFisherDistribution[i].x +
+                        this->MeanOrientationOfFisherDistribution[i].y *
+                            this->MeanOrientationOfFisherDistribution[i].y +
+                        this->MeanOrientationOfFisherDistribution[i].z *
+                            this->MeanOrientationOfFisherDistribution[i].z,
+                    0.5);
+            this->MeanOrientationOfFisherDistribution[i].x /= norm_meanOri,
+                this->MeanOrientationOfFisherDistribution[i].y /= norm_meanOri,
+                this->MeanOrientationOfFisherDistribution[i].z /= norm_meanOri;
         }
 
         //--------line 9
