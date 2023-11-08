@@ -50,3 +50,4 @@ all:
 	-Xcudafe --diag_suppress=3056 \
 	-arch=sm_60 -std=c++17 -rdc=true
 clean:
+	gio trash -f ./$(ExeName) *.h5 *.m *.py   log.txt

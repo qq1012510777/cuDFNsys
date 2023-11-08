@@ -16,8 +16,9 @@ int main(int argc, char *argv[])
                              true, true, true, true);
         my_dfn.StoreInH5("Class_DFN");
 
-        my_dfn.SpatialPeriodicity();
-        my_dfn.IdentifyIntersectionsClusters(true);
+        //my_dfn.SpatialPeriodicity();
+        //my_dfn.IdentifyIntersectionsClusters(true);
+        //my_dfn.StoreInH5("Class_DFN");
 
         cuDFNsys::MeshDFN<double> meshGen;
         meshGen.MinElementSize = 1;
@@ -26,20 +27,23 @@ int main(int argc, char *argv[])
         meshGen.Visualization(my_dfn, "DFN_MESH_VISUAL", "DFN_MESH_VISUAL",
                               "DFN_MESH_VISUAL", true, true);
 
-        double Length_Inlet = 0, Length_Outlet = 0;
-        for (int i = 0; i < meshGen.MeshData.InletEdgeNOLen.size(); ++i)
-            Length_Inlet += meshGen.MeshData.InletEdgeNOLen[i].y;
-        for (int i = 0; i < meshGen.MeshData.OutletEdgeNOLen.size(); ++i)
-            Length_Outlet += meshGen.MeshData.OutletEdgeNOLen[i].y;
-        cout << "Length_Inlet: " << Length_Inlet
-             << ", Length_Outlet: " << Length_Outlet << endl;
+        cout << "Length_Inlet: " << meshGen.MeshData.InletTraceLength
+             << ", Length_Outlet: " << meshGen.MeshData.OutletTraceLength
+             << endl;
 
         cuDFNsys::FlowDFN<double> flowDFN;
-        flowDFN.InletHead = 60;
+
+        flowDFN.MuOverRhoG = 1;
+        flowDFN.InletHead = 100;
         flowDFN.OutletHead = 0;
+        //flowDFN.IfPeriodic = true;
+        //flowDFN.ConsTq = 1e-12;
+
         flowDFN.FlowSimulation(my_dfn, meshGen);
         flowDFN.Visualization(my_dfn, meshGen, "DFN_FLOW_VISUAL",
                               "DFN_FLOW_VISUAL", "DFN_FLOW_VISUAL");
+
+        cout << flowDFN.FlowData.Permeability < < < < endl;
     }
     catch (cuDFNsys::ExceptionsIgnore &e)
     {

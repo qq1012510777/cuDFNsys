@@ -96,15 +96,30 @@ void cuDFNsys::DFN<T>::IdentifyIntersectionsClusters(
         IfTruncatedFractures, // if you want to use truncated fractures? here is false,
         this->IntersectionMap};
 
-    cuDFNsys::Graph<T> G{(size_t)this->NumFracturesTotal,
-                         this->IntersectionMap};
-    G.UseDFS(this->ListClusters);
-    cuDFNsys::IdentifyPercolationCluster<T> IdentiClu{
-        this->ListClusters,        // all clusters
-        this->FracturesHost,       // host vector of fractures
-        this->PercoDir,            // percolation direction / flow direction
-        this->PercolationCluster}; // percolation cluster
-};                                 // IdentifyIntersectionsClusters
+    if (this->IntersectionMap.size() > 0 && this->FracturesHost.size() > 1)
+    {
+        cuDFNsys::Graph<T> G{(size_t)this->NumFracturesTotal,
+                             this->IntersectionMap};
+        G.UseDFS(this->ListClusters);
+        cuDFNsys::IdentifyPercolationCluster<T> IdentiClu{
+            this->ListClusters,        // all clusters
+            this->FracturesHost,       // host vector of fractures
+            this->PercoDir,            // percolation direction / flow direction
+            this->PercolationCluster}; // percolation cluster
+    }
+    else if (this->IntersectionMap.size() == 0)
+    {
+        this->ListClusters.resize(this->FracturesHost.size());
+        for (int i = 0; i < this->FracturesHost.size(); ++i)
+        {
+            this->ListClusters[i].push_back(i);
+
+            if (this->FracturesHost[i].ConnectModelSurf[this->PercoDir * 2] &&
+                this->FracturesHost[i].ConnectModelSurf[this->PercoDir * 2 + 1])
+                this->PercolationCluster.push_back(i);
+        }
+    }
+}; // IdentifyIntersectionsClusters
 template void cuDFNsys::DFN<double>::IdentifyIntersectionsClusters(
     const bool &IfTruncatedFractures);
 template void cuDFNsys::DFN<float>::IdentifyIntersectionsClusters(
@@ -383,7 +398,8 @@ void cuDFNsys::DFN<T>::SpatialPeriodicity()
         this->DomainDimensionRatio.z *= 2;
 
     cout << "cuDFNsys::DFN<T>::SpatialPeriodicity: The DFN becomes spatially "
-            "periodic now! The domain is elongated in the percolation direction. The total number of "
+            "periodic now! The domain is elongated in the percolation "
+            "direction. The total number of "
             "fracture is changed to "
          << this->NumFracturesTotal << " from " << O_size << endl;
 };
@@ -805,6 +821,8 @@ void cuDFNsys::FlowDFN<T>::FlowSimulation(cuDFNsys::DFN<T> my_dfn,
              << endl;
         return;
     }
+
+    // this->IfPeriodic = my_dfn.CheckIfPeriodic();
     // cout << "my_dfn.FracturesHost.size = " << my_dfn.FracturesHost.size()
     //      << endl;
     // cout << "my_dfn.PercoDir: " << my_dfn.PercoDir << endl;
@@ -813,10 +831,19 @@ void cuDFNsys::FlowDFN<T>::FlowSimulation(cuDFNsys::DFN<T> my_dfn,
     // cout << "my_dfn.DomainDimensionRatio: " << my_dfn.DomainDimensionRatio.x
     //      << ", " << my_dfn.DomainDimensionRatio.y << ", "
     //      << my_dfn.DomainDimensionRatio.z << endl;
-    this->FlowData = cuDFNsys::MHFEM<T>{
-        my_mesh.MeshData,           my_dfn.FracturesHost, this->InletHead,
-        this->OutletHead,           my_dfn.PercoDir,      my_dfn.DomainSizeX,
-        my_dfn.DomainDimensionRatio};
+    // cout << "1 this->ConsTq" << this->ConsTq << endl;
+    this->FlowData = cuDFNsys::MHFEM<T>{my_mesh.MeshData,
+                                        my_dfn.FracturesHost,
+                                        this->InletHead,
+                                        this->OutletHead,
+                                        my_dfn.PercoDir,
+                                        my_dfn.DomainSizeX,
+                                        my_dfn.DomainDimensionRatio,
+                                        false,
+                                        0,
+                                        this->IfPeriodic,
+                                        this->MuOverRhoG,
+                                        this->ConsTq};
 };
 template void
 cuDFNsys::FlowDFN<double>::FlowSimulation(cuDFNsys::DFN<double> my_dfn,
@@ -876,6 +903,7 @@ void cuDFNsys::FlowDFN<T>::StoreInH5(const string &ClassNameH5)
 
     this->MaxVelocity = this->FlowData.MaxVelocity;
     this->MeanVelocity = this->FlowData.MeanVelocity;
+    this->ConsTq = this->FlowData.ConsTq;
 }; // cuDFNsys::FlowDFN<T>::StoreInH5
 template void cuDFNsys::FlowDFN<double>::StoreInH5(const string &ClassNameH5);
 template void cuDFNsys::FlowDFN<float>::StoreInH5(const string &ClassNameH5);
@@ -893,6 +921,8 @@ void cuDFNsys::FlowDFN<T>::LoadClassFromH5(const string &ClassNameH5)
     lk.InputMHFEM(ClassNameH5 + ".h5", this->FlowData);
     this->InletHead = this->FlowData.InletP;
     this->OutletHead = this->FlowData.OutletP;
+    this->IfPeriodic = this->FlowData.IfPeriodic;
+    this->MuOverRhoG = this->FlowData.MuOverRhoG;
 }; // cuDFNsys::FlowDFN<T>::LoadClassFromH5
 template void
 cuDFNsys::FlowDFN<double>::LoadClassFromH5(const string &ClassNameH5);

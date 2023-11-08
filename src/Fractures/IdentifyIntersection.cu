@@ -33,7 +33,7 @@ cuDFNsys::IdentifyIntersection<T>::IdentifyIntersection(thrust::host_vector<cuDF
     Intersection_map.clear();
 
     if (verts.size() <= 1)
-        throw cuDFNsys::ExceptionsPause("There is only one fracture!\n");
+        throw cuDFNsys::ExceptionsPause("IdentifyIntersection CPU is not recommended");
 
     for (int i = 1; i < verts.size(); ++i)
     {
@@ -221,7 +221,10 @@ cuDFNsys::IdentifyIntersection<T>::IdentifyIntersection(const size_t &Fracsize,
     Intersection_map.clear();
 
     if (Fracsize <= 1)
-        throw cuDFNsys::ExceptionsPause("There is only one fracture!\n");
+    {    
+        cout << ("There is no intersection~\n"); 
+        return;
+    }
 
     int DSIZE = (int)Fracsize;
     int NUM_frac_pairs = DSIZE * floor((DSIZE - 1) / 2) + (DSIZE - 1) % 2 * DSIZE * 0.5;

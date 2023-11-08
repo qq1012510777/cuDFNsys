@@ -25,24 +25,31 @@
 // DATE:        09/04/2022
 // ====================================================
 template <typename T>
-cuDFNsys::MHFEM<T>::MHFEM(const cuDFNsys::Mesh<T> &mesh,
-                          const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
-                          const T &inlet_p_,
-                          const T &outlet_p_,
-                          const int &dir_,
-                          const T &L, double3 DomainDimensionRatio,
-                          bool if_CPU,
-                          int Nproc)
+cuDFNsys::MHFEM<T>::MHFEM(
+    const cuDFNsys::Mesh<T> &mesh,
+    const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs, const T &inlet_p_,
+    const T &outlet_p_, const int &dir_, const T &L,
+    double3 DomainDimensionRatio, bool if_CPU, int Nproc, bool if_periodic,
+    T muOverRhoG, T constant_qq)
 {
     Eigen::setNbThreads(1);
     this->Dir = dir_;
     this->InletP = inlet_p_;
     this->OutletP = outlet_p_;
+    this->IfPeriodic = if_periodic;
+    this->MuOverRhoG = muOverRhoG;
+    // cout << "constant_qq: " << constant_qq << endl;
+    this->ConsTq = constant_qq;
+    // cout << " this->ConsTq: " << this->ConsTq << endl;
+
+    if (this->IfPeriodic &&
+        (abs(mesh.InletTraceLength - mesh.OutletTraceLength) > 1e-5))
+        throw cuDFNsys::ExceptionsPause("The DFN is not spatially periodic");
+
     this->Implementation(mesh, Fracs, if_CPU, Nproc);
+
     this->QError = (abs(QIn - QOut) / (QIn > QOut ? QIn : QOut)) * 100.0f;
     double *Rt = &DomainDimensionRatio.x;
-
-    this->Permeability = 0.5f * (QOut + QIn) / (L * Rt[this->Dir]) / (inlet_p_ - outlet_p_);
 
     //--------------------the mean and max velocity of elements
     //--------------------the mean and max velocity of elements
@@ -56,69 +63,135 @@ cuDFNsys::MHFEM<T>::MHFEM(const cuDFNsys::Mesh<T> &mesh,
 
     Eigen::VectorXd NormOfVelocity;
     NormOfVelocity.resize(mesh.Element3D.size(), 1);
-    
-    T area_sum = 0;
+
+    T volume_frac_sum = 0;
     this->MaxVelocity = 0;
+
+    T sum_head_times_area = 0;
 
     for (uint i = 0; i < mesh.Element3D.size(); ++i)
     {
-        uint3 EdgeNO = make_uint3((i + 1) * 3 - 3, (i + 1) * 3 - 2, (i + 1) * 3 - 1); // from 0
-        cuDFNsys::Vector3<T> Velocity_ = cuDFNsys ::MakeVector3((T)this->VelocityNormalScalarSepEdges(EdgeNO.x, 0),
-                                                                (T)this->VelocityNormalScalarSepEdges(EdgeNO.y, 0),
-                                                                (T)this->VelocityNormalScalarSepEdges(EdgeNO.z, 0));
+        uint3 EdgeNO = make_uint3((i + 1) * 3 - 3, (i + 1) * 3 - 2,
+                                  (i + 1) * 3 - 1); // from 0
+        cuDFNsys::Vector3<T> Velocity_ = cuDFNsys ::MakeVector3(
+            (T)this->VelocityNormalScalarSepEdges(EdgeNO.x, 0),
+            (T)this->VelocityNormalScalarSepEdges(EdgeNO.y, 0),
+            (T)this->VelocityNormalScalarSepEdges(EdgeNO.z, 0));
         cuDFNsys::Vector2<T> Vertexes[3];
-        Vertexes[0] = cuDFNsys::MakeVector2(mesh.Coordinate2D[i].x[0], mesh.Coordinate2D[i].y[0]);
-        Vertexes[1] = cuDFNsys::MakeVector2(mesh.Coordinate2D[i].x[1], mesh.Coordinate2D[i].y[1]);
-        Vertexes[2] = cuDFNsys::MakeVector2(mesh.Coordinate2D[i].x[2], mesh.Coordinate2D[i].y[2]);
+        Vertexes[0] = cuDFNsys::MakeVector2(mesh.Coordinate2D[i].x[0],
+                                            mesh.Coordinate2D[i].y[0]);
+        Vertexes[1] = cuDFNsys::MakeVector2(mesh.Coordinate2D[i].x[1],
+                                            mesh.Coordinate2D[i].y[1]);
+        Vertexes[2] = cuDFNsys::MakeVector2(mesh.Coordinate2D[i].x[2],
+                                            mesh.Coordinate2D[i].y[2]);
 
-        cuDFNsys::Vector2<T> Center_p = cuDFNsys::MakeVector2(1.0f / 3.0f * (Vertexes[0].x + Vertexes[1].x + Vertexes[2].x), 1.0f / 3.0f * (Vertexes[0].y + Vertexes[1].y + Vertexes[2].y));
+        cuDFNsys::Vector2<T> Center_p = cuDFNsys::MakeVector2(
+            1.0f / 3.0f * (Vertexes[0].x + Vertexes[1].x + Vertexes[2].x),
+            1.0f / 3.0f * (Vertexes[0].y + Vertexes[1].y + Vertexes[2].y));
 
-        cuDFNsys::Vector2<T> velocity_p = cuDFNsys::ReconstructVelocityGrid<T>(Center_p, Vertexes, Velocity_);
+        cuDFNsys::Vector2<T> velocity_p =
+            cuDFNsys::ReconstructVelocityGrid<T>(Center_p, Vertexes, Velocity_);
 
-        cuDFNsys::Vector3<T> velocity_p_3D = cuDFNsys::MakeVector3(velocity_p.x, velocity_p.y, (T)0);
+        cuDFNsys::Vector3<T> velocity_p_3D =
+            cuDFNsys::MakeVector3(velocity_p.x, velocity_p.y, (T)0);
 
         T R_mat[3][3];
         cuDFNsys::Fracture<T> FII = Fracs[mesh.ElementFracTag[i]];
         FII.RoationMatrix(R_mat, 23);
-        velocity_p_3D = cuDFNsys::ProductSquare3Vector3<T>(R_mat, velocity_p_3D);
+        velocity_p_3D =
+            cuDFNsys::ProductSquare3Vector3<T>(R_mat, velocity_p_3D);
 
         velocity_center_grid[i] = velocity_p_3D.x;
         velocity_center_grid[i + mesh.Element3D.size()] = velocity_p_3D.y;
         velocity_center_grid[i + 2 * mesh.Element3D.size()] = velocity_p_3D.z;
 
-        T area_this_element = cuDFNsys::Triangle2DArea<T>(Vertexes[0], Vertexes[1], Vertexes[2]);
-        area_sum += area_this_element;
+        T b_f = pow(FII.Conductivity * 12, 1.0 / 3.0);
 
-        NormOfVelocity(i, 0) = pow(velocity_p.x * velocity_p.x + velocity_p.y * velocity_p.y, 0.5) / pow(FII.Conductivity * 12, 1.0 / 3.0);
-        this->MaxVelocity = (NormOfVelocity(i, 0) > this->MaxVelocity? NormOfVelocity(i, 0) : this->MaxVelocity);
-        NormOfVelocity(i, 0) *= area_this_element;
+        T area_this_element =
+            cuDFNsys::Triangle2DArea<T>(Vertexes[0], Vertexes[1], Vertexes[2]);
+
+        volume_frac_sum += (area_this_element * b_f);
+
+        sum_head_times_area += (PressureEles(i, 0) * area_this_element);
+
+        NormOfVelocity(i, 0) =
+            pow(velocity_p.x * velocity_p.x + velocity_p.y * velocity_p.y,
+                0.5) /
+            b_f; // q / b
+
+        this->MaxVelocity =
+            (NormOfVelocity(i, 0) > this->MaxVelocity ? NormOfVelocity(i, 0)
+                                                      : this->MaxVelocity);
+
+        NormOfVelocity(i, 0) *= (area_this_element * b_f);
     };
+
+    if (!this->IfPeriodic) // K = -Q * (mu / (rho * g)) / (Area_inlet * pressure_gradient)
+    {
+        this->Permeability =
+            -0.5f * (QOut + QIn) * this->MuOverRhoG /
+            (L * L * Rt[(this->Dir + 1) % 3] * Rt[(this->Dir + 2) % 3]) /
+            ((outlet_p_ - inlet_p_) / (L * Rt[this->Dir]));
+        // cout << "Original Permeability (non-periodic): " << this->Permeability
+        //      << endl;
+        // cout << "Q / L^2 = "
+        //      << 0.5f * (QOut + QIn) /
+        //             (L * L * Rt[(this->Dir + 1) % 3] * Rt[(this->Dir + 2) % 3])
+        //      << endl;
+        // cout << "Integrated Darcian V = "
+        //      << NormOfVelocity.sum() /
+        //             (L * L * L * DomainDimensionRatio.x *
+        //              DomainDimensionRatio.y * DomainDimensionRatio.z)
+        //      << endl;
+        // this->Permeability =
+        //     -NormOfVelocity.sum() /
+        //     (L * L * L * DomainDimensionRatio.x * DomainDimensionRatio.y *
+        //      DomainDimensionRatio.z) *
+        //     this->MuOverRhoG /
+        //     (sum_head_times_area /
+        //      (L * L * L * DomainDimensionRatio.x * DomainDimensionRatio.y *
+        //       DomainDimensionRatio.z));
+    }
+
+    if (this->IfPeriodic) // K = -Q * (mu / (rho * g)) / (Area_inlet * pressure_gradient)
+    {
+        this->Permeability =
+            -(0.5f * (QOut + QIn)) * this->MuOverRhoG /
+            (sum_head_times_area /
+             (L * L * L * DomainDimensionRatio.x * DomainDimensionRatio.y *
+              DomainDimensionRatio.z)) /
+            (L * L * Rt[(this->Dir + 1) % 3] * Rt[(this->Dir + 2) % 3]);
+        // this->Permeability =
+        //     -NormOfVelocity.sum() /
+        //     (L * L * L * DomainDimensionRatio.x * DomainDimensionRatio.y *
+        //      DomainDimensionRatio.z) *
+        //     this->MuOverRhoG /
+        //     (sum_head_times_area /
+        //      (L * L * L * DomainDimensionRatio.x * DomainDimensionRatio.y *
+        //       DomainDimensionRatio.z));
+    }
 
     // now it is the maximum velocity
     //this->MaxVelocity = NormOfVelocity.maxCoeff(); //NormOfVelocity.sum() / mesh.Element3D.size();
-    this->MeanVelocity = NormOfVelocity.sum() / area_sum; // % mesh.Element3D.size();
+    this->MeanVelocity =
+        NormOfVelocity.sum() / volume_frac_sum; // % mesh.Element3D.size();
 
     delete[] velocity_center_grid;
     velocity_center_grid = NULL;
-    
+
 }; // MHFEM
-template cuDFNsys::MHFEM<double>::MHFEM(const cuDFNsys::Mesh<double> &mesh,
-                                        const thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs,
-                                        const double &inlet_p_,
-                                        const double &outlet_p_,
-                                        const int &dir_,
-                                        const double &L, double3 DomainDimensionRatio,
-                                        bool if_CPU,
-                                        int Nproc);
-template cuDFNsys::MHFEM<float>::MHFEM(const cuDFNsys::Mesh<float> &mesh,
-                                       const thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs,
-                                       const float &inlet_p_,
-                                       const float &outlet_p_,
-                                       const int &dir_,
-                                       const float &L,
-                                       double3 DomainDimensionRatio,
-                                       bool if_CPU,
-                                       int Nproc);
+template cuDFNsys::MHFEM<double>::MHFEM(
+    const cuDFNsys::Mesh<double> &mesh,
+    const thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs,
+    const double &inlet_p_, const double &outlet_p_, const int &dir_,
+    const double &L, double3 DomainDimensionRatio, bool if_CPU, int Nproc,
+    bool if_periodic, double muOverRhoG, double constant_qq);
+template cuDFNsys::MHFEM<float>::MHFEM(
+    const cuDFNsys::Mesh<float> &mesh,
+    const thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs,
+    const float &inlet_p_, const float &outlet_p_, const int &dir_,
+    const float &L, double3 DomainDimensionRatio, bool if_CPU, int Nproc,
+    bool if_periodic, float muOverRhoG, float constant_qq);
 
 // ====================================================
 // NAME:        MatlabPlot
@@ -127,13 +200,11 @@ template cuDFNsys::MHFEM<float>::MHFEM(const cuDFNsys::Mesh<float> &mesh,
 // DATE:        09/04/2022
 // ====================================================
 template <typename T>
-double2 cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
-                                       const string &command_key,
-                                       thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
-                                       const cuDFNsys::Mesh<T> &mesh,
-                                       const T &L,
-                                       bool if_python_visualization,
-                                       string PythonName_Without_suffix, double3 DomainDimensionRatio)
+double2 cuDFNsys::MHFEM<T>::MatlabPlot(
+    const string &mat_key, const string &command_key,
+    thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
+    const cuDFNsys::Mesh<T> &mesh, const T &L, bool if_python_visualization,
+    string PythonName_Without_suffix, double3 DomainDimensionRatio)
 {
     //cuDFNsys::MatlabAPI M1;
 
@@ -176,8 +247,10 @@ double2 cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
     h5gg.AddDataset(mat_key, "N", "OutletP", yu, dim_f);
 
     uint2 dim_ds = make_uint2(3, 1);
-    double DomainDimensionRatio_d[3] = {DomainDimensionRatio.x, DomainDimensionRatio.y, DomainDimensionRatio.z};
-    h5gg.AddDataset(mat_key, "N", "DomainDimensionRatio", DomainDimensionRatio_d, dim_ds);
+    double DomainDimensionRatio_d[3] = {
+        DomainDimensionRatio.x, DomainDimensionRatio.y, DomainDimensionRatio.z};
+    h5gg.AddDataset(mat_key, "N", "DomainDimensionRatio",
+                    DomainDimensionRatio_d, dim_ds);
 
     //---------------------
     size_t ele_num = mesh.Element3D.size();
@@ -210,8 +283,7 @@ double2 cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
         throw cuDFNsys::ExceptionsPause(AS);
     }
 
-    std::copy(this->PressureEles.data(),
-              this->PressureEles.data() + ele_num,
+    std::copy(this->PressureEles.data(), this->PressureEles.data() + ele_num,
               pressure_ELEs);
 
     // M1.WriteMat(mat_key, "u", ele_num,
@@ -250,58 +322,74 @@ double2 cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
         throw cuDFNsys::ExceptionsPause(AS);
     }
 
-    Eigen::VectorXd NormOfVelocity;
-    NormOfVelocity.resize(mesh.Element3D.size(), 1);
+    // Eigen::VectorXd NormOfVelocity;
+    // NormOfVelocity.resize(mesh.Element3D.size(), 1);
 
-    T area_sum = 0;
-    double maxV = 0;
+    // T area_sum = 0;
+    // double maxV = 0;
     for (uint i = 0; i < mesh.Element3D.size(); ++i)
     {
-        uint3 EdgeNO = make_uint3((i + 1) * 3 - 3, (i + 1) * 3 - 2, (i + 1) * 3 - 1); // from 0
-        cuDFNsys::Vector3<T> Velocity_ = cuDFNsys ::MakeVector3((T)this->VelocityNormalScalarSepEdges(EdgeNO.x, 0),
-                                                                (T)this->VelocityNormalScalarSepEdges(EdgeNO.y, 0),
-                                                                (T)this->VelocityNormalScalarSepEdges(EdgeNO.z, 0));
+        uint3 EdgeNO = make_uint3((i + 1) * 3 - 3, (i + 1) * 3 - 2,
+                                  (i + 1) * 3 - 1); // from 0
+        cuDFNsys::Vector3<T> Velocity_ = cuDFNsys ::MakeVector3(
+            (T)this->VelocityNormalScalarSepEdges(EdgeNO.x, 0),
+            (T)this->VelocityNormalScalarSepEdges(EdgeNO.y, 0),
+            (T)this->VelocityNormalScalarSepEdges(EdgeNO.z, 0));
         cuDFNsys::Vector2<T> Vertexes[3];
-        Vertexes[0] = cuDFNsys::MakeVector2(mesh.Coordinate2D[i].x[0], mesh.Coordinate2D[i].y[0]);
-        Vertexes[1] = cuDFNsys::MakeVector2(mesh.Coordinate2D[i].x[1], mesh.Coordinate2D[i].y[1]);
-        Vertexes[2] = cuDFNsys::MakeVector2(mesh.Coordinate2D[i].x[2], mesh.Coordinate2D[i].y[2]);
+        Vertexes[0] = cuDFNsys::MakeVector2(mesh.Coordinate2D[i].x[0],
+                                            mesh.Coordinate2D[i].y[0]);
+        Vertexes[1] = cuDFNsys::MakeVector2(mesh.Coordinate2D[i].x[1],
+                                            mesh.Coordinate2D[i].y[1]);
+        Vertexes[2] = cuDFNsys::MakeVector2(mesh.Coordinate2D[i].x[2],
+                                            mesh.Coordinate2D[i].y[2]);
 
-        cuDFNsys::Vector2<T> Center_p = cuDFNsys::MakeVector2(1.0f / 3.0f * (Vertexes[0].x + Vertexes[1].x + Vertexes[2].x), 1.0f / 3.0f * (Vertexes[0].y + Vertexes[1].y + Vertexes[2].y));
+        cuDFNsys::Vector2<T> Center_p = cuDFNsys::MakeVector2(
+            1.0f / 3.0f * (Vertexes[0].x + Vertexes[1].x + Vertexes[2].x),
+            1.0f / 3.0f * (Vertexes[0].y + Vertexes[1].y + Vertexes[2].y));
 
-        cuDFNsys::Vector2<T> velocity_p = cuDFNsys::ReconstructVelocityGrid<T>(Center_p, Vertexes, Velocity_);
+        cuDFNsys::Vector2<T> velocity_p =
+            cuDFNsys::ReconstructVelocityGrid<T>(Center_p, Vertexes, Velocity_);
 
-        cuDFNsys::Vector3<T> velocity_p_3D = cuDFNsys::MakeVector3(velocity_p.x, velocity_p.y, (T)0);
+        cuDFNsys::Vector3<T> velocity_p_3D =
+            cuDFNsys::MakeVector3(velocity_p.x, velocity_p.y, (T)0);
 
         T R_mat[3][3];
         Fracs[mesh.ElementFracTag[i]].RoationMatrix(R_mat, 23);
-        velocity_p_3D = cuDFNsys::ProductSquare3Vector3<T>(R_mat, velocity_p_3D);
+        velocity_p_3D =
+            cuDFNsys::ProductSquare3Vector3<T>(R_mat, velocity_p_3D);
 
         velocity_center_grid[i] = velocity_p_3D.x;
         velocity_center_grid[i + mesh.Element3D.size()] = velocity_p_3D.y;
         velocity_center_grid[i + 2 * mesh.Element3D.size()] = velocity_p_3D.z;
 
-        T area_this_element = cuDFNsys::Triangle2DArea<T>(Vertexes[0], Vertexes[1], Vertexes[2]);
-        area_sum += area_this_element;
-
-        NormOfVelocity(i, 0) = pow(velocity_p.x * velocity_p.x + velocity_p.y * velocity_p.y, 0.5) / pow(Fracs[mesh.ElementFracTag[i]].Conductivity * 12, 1.0 / 3.0); 
-        maxV = (NormOfVelocity(i, 0) > maxV? NormOfVelocity(i, 0) : maxV);
-        NormOfVelocity(i, 0) *= area_this_element;
+        // T area_this_element =
+        //     cuDFNsys::Triangle2DArea<T>(Vertexes[0], Vertexes[1], Vertexes[2]);
+        // area_sum += area_this_element;
+        // NormOfVelocity(i, 0) =
+        //     pow(velocity_p.x * velocity_p.x + velocity_p.y * velocity_p.y,
+        //         0.5) /
+        //     pow(Fracs[mesh.ElementFracTag[i]].Conductivity * 12, 1.0 / 3.0);
+        // maxV = (NormOfVelocity(i, 0) > maxV ? NormOfVelocity(i, 0) : maxV);
+        // NormOfVelocity(i, 0) *= area_this_element;
     };
 
     // now it is the maximum velocity
     //double maxV = NormOfVelocity.maxCoeff(); //NormOfVelocity.sum() / mesh.Element3D.size();
-    double meanV = NormOfVelocity.sum() / area_sum;
+    // double meanV = NormOfVelocity.sum() / area_sum;
 
-    h5gg.AddDataset<double>(mat_key, "N", "maxV", &maxV, make_uint2(1, 0));
-    h5gg.AddDataset<double>(mat_key, "N", "meanV", &meanV, make_uint2(1, 0));
+    h5gg.AddDataset<double>(mat_key, "N", "maxV", &this->MaxVelocity,
+                            make_uint2(1, 0));
+    h5gg.AddDataset<double>(mat_key, "N", "meanV", &this->MeanVelocity,
+                            make_uint2(1, 0));
 
-    double2 JKLDSF = make_double2(meanV, maxV);
+    double2 JKLDSF = make_double2(this->MeanVelocity, this->MaxVelocity);
 
     // M1.WriteMat(mat_key, "u", mesh.Element3D.size() * 3,
     //             mesh.Element3D.size(), 3, velocity_center_grid,
     //             "velocity_center_grid");
     dim_f = make_uint2(3, mesh.Element3D.size());
-    h5gg.AddDataset(mat_key, "N", "velocity_center_grid", velocity_center_grid, dim_f);
+    h5gg.AddDataset(mat_key, "N", "velocity_center_grid", velocity_center_grid,
+                    dim_f);
 
     delete[] velocity_center_grid;
     velocity_center_grid = NULL;
@@ -313,13 +401,16 @@ double2 cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
                           mesh.ElementFracTag.end());
 
     uint2 dim_fqsc = make_uint2(1, ElementFracTag.size());
-    h5gg.AddDataset(mat_key, "N", "ElementFracTag", ElementFracTag.data(), dim_fqsc);
+    h5gg.AddDataset(mat_key, "N", "ElementFracTag", ElementFracTag.data(),
+                    dim_fqsc);
 
     //
     std::vector<T> ElementAperture(ElementFracTag.size());
     for (uint i = 0; i < ElementAperture.size(); ++i)
-        ElementAperture[i] = pow(Fracs[ElementFracTag[i]].Conductivity * 12.0, 1.0 / 3.0);
-    h5gg.AddDataset(mat_key, "N", "ElementAperture", ElementAperture.data(), dim_fqsc);
+        ElementAperture[i] =
+            pow(Fracs[ElementFracTag[i]].Conductivity * 12.0, 1.0 / 3.0);
+    h5gg.AddDataset(mat_key, "N", "ElementAperture", ElementAperture.data(),
+                    dim_fqsc);
 
     if (1)
     {
@@ -368,29 +459,51 @@ double2 cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
         oss << "L_m = f['L_m'][:][0]\n";
         oss << "DomainDimensionRatio = f['DomainDimensionRatio'][:]\n";
         oss << "pressure_eles = np.array(f['pressure_eles'][:])\n";
-        oss << "velocity_center_grid = np.array(f['velocity_center_grid'][:])\n";
+        oss << "velocity_center_grid = "
+               "np.array(f['velocity_center_grid'][:])\n";
         oss << "f.close()\n";
-        oss << "mesh = ML.triangular_mesh(coordinate_3D[0, :], coordinate_3D[1, :], coordinate_3D[2, :], np.transpose(element_3D-1), representation='wireframe', color=(0, 0, 0), line_width=1.0)\n";
+        oss << "mesh = ML.triangular_mesh(coordinate_3D[0, :], "
+               "coordinate_3D[1, :], coordinate_3D[2, :], "
+               "np.transpose(element_3D-1), representation='wireframe', "
+               "color=(0, 0, 0), line_width=1.0)\n";
 
-        oss << "mesh.mlab_source.dataset.cell_data.scalars = np.transpose(pressure_eles)\n";
-        oss << "mesh.mlab_source.dataset.cell_data.scalars.name = 'Cell data'\n";
+        oss << "mesh.mlab_source.dataset.cell_data.scalars = "
+               "np.transpose(pressure_eles)\n";
+        oss << "mesh.mlab_source.dataset.cell_data.scalars.name = 'Cell "
+               "data'\n";
         oss << "mesh.mlab_source.update()\n";
         oss << "mesh.parent.update()\n";
-        oss << "mesh2 = ML.pipeline.set_active_attribute(mesh, cell_scalars='Cell data')\n";
-        oss << "s2 = ML.pipeline.surface(mesh2, colormap='rainbow', opacity=0.8)\n";
-        oss << "ML.outline(extent=[-0.5 * DomainDimensionRatio[0] * L_m, 0.5 * DomainDimensionRatio[0] * L_m, -0.5 * DomainDimensionRatio[1] * L_m, 0.5 * DomainDimensionRatio[1] * L_m, -0.5 * DomainDimensionRatio[2] * L_m, 0.5 * DomainDimensionRatio[2] * L_m])\n";
+        oss << "mesh2 = ML.pipeline.set_active_attribute(mesh, "
+               "cell_scalars='Cell data')\n";
+        oss << "s2 = ML.pipeline.surface(mesh2, colormap='rainbow', "
+               "opacity=0.8)\n";
+        oss << "ML.outline(extent=[-0.5 * DomainDimensionRatio[0] * L_m, 0.5 * "
+               "DomainDimensionRatio[0] * L_m, -0.5 * DomainDimensionRatio[1] "
+               "* L_m, 0.5 * DomainDimensionRatio[1] * L_m, -0.5 * "
+               "DomainDimensionRatio[2] * L_m, 0.5 * DomainDimensionRatio[2] * "
+               "L_m])\n";
         oss << "ML.axes()\n";
-        oss << "s2.module_manager.scalar_lut_manager.data_range = np.array([OutletP[0], InletP[0]])\n";
+        if (!this->IfPeriodic)
+            oss << "s2.module_manager.scalar_lut_manager.data_range = "
+                   "np.array([OutletP[0], InletP[0]])\n";
         oss << "ML.colorbar(object=s2, orientation='vertical')\n";
         oss << "ML.xlabel('x (m)')\n";
         oss << "ML.ylabel('y (m)')\n";
         oss << "ML.zlabel('z (m)')\n";
 
         oss << "CenterELE = np.zeros([3, element_3D.shape[1]])\n";
-        oss << "CenterELE[0, :] = 1.0 / 3.0 * (coordinate_3D[0, element_3D[0, :]-1] + coordinate_3D[0, element_3D[1, :]-1] + coordinate_3D[0, element_3D[2, :]-1])\n";
-        oss << "CenterELE[1, :] = 1.0 / 3.0 * (coordinate_3D[1, element_3D[0, :]-1] + coordinate_3D[1, element_3D[1, :]-1] + coordinate_3D[1, element_3D[2, :]-1])\n";
-        oss << "CenterELE[2, :] = 1.0 / 3.0 * (coordinate_3D[2, element_3D[0, :]-1] + coordinate_3D[2, element_3D[1, :]-1] + coordinate_3D[2, element_3D[2, :]-1])\n";
-        oss << "ML.quiver3d(CenterELE[0, :], CenterELE[1, :], CenterELE[2, :], velocity_center_grid[0, :], velocity_center_grid[1, :], velocity_center_grid[2, :])\n";
+        oss << "CenterELE[0, :] = 1.0 / 3.0 * (coordinate_3D[0, element_3D[0, "
+               ":]-1] + coordinate_3D[0, element_3D[1, :]-1] + "
+               "coordinate_3D[0, element_3D[2, :]-1])\n";
+        oss << "CenterELE[1, :] = 1.0 / 3.0 * (coordinate_3D[1, element_3D[0, "
+               ":]-1] + coordinate_3D[1, element_3D[1, :]-1] + "
+               "coordinate_3D[1, element_3D[2, :]-1])\n";
+        oss << "CenterELE[2, :] = 1.0 / 3.0 * (coordinate_3D[2, element_3D[0, "
+               ":]-1] + coordinate_3D[2, element_3D[1, :]-1] + "
+               "coordinate_3D[2, element_3D[2, :]-1])\n";
+        oss << "ML.quiver3d(CenterELE[0, :], CenterELE[1, :], CenterELE[2, :], "
+               "velocity_center_grid[0, :], velocity_center_grid[1, :], "
+               "velocity_center_grid[2, :])\n";
 
         oss << "ML.show()\n";
         oss.close();
@@ -404,22 +517,42 @@ double2 cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
         //oss << "load('" << mat_key << "');\n";
         // oss << "L = 0.5 * " << L << ";\n";
         oss << "currentPath = fileparts(mfilename('fullpath'));\n";
-        oss << "coordinate_3D = h5read([currentPath, '/" << mat_key << "'], '/coordinate_3D');\n";
-        oss << "element_3D = h5read([currentPath, '/" << mat_key << "'], '/element_3D');\n";
-        oss << "velocity_center_grid = h5read([currentPath, '/" << mat_key << "'], '/velocity_center_grid');\n";
-        oss << "pressure_eles = h5read([currentPath, '/" << mat_key << "'], '/pressure_eles');\n";
+        oss << "coordinate_3D = h5read([currentPath, '/" << mat_key
+            << "'], '/coordinate_3D');\n";
+        oss << "element_3D = h5read([currentPath, '/" << mat_key
+            << "'], '/element_3D');\n";
+        oss << "velocity_center_grid = h5read([currentPath, '/" << mat_key
+            << "'], '/velocity_center_grid');\n";
+        oss << "pressure_eles = h5read([currentPath, '/" << mat_key
+            << "'], '/pressure_eles');\n";
 
         oss << "L = h5read([currentPath, '/" << mat_key << "'], '/L_m');\n";
-        oss << "DomainDimensionRatio = h5read([currentPath, '/" << mat_key << "'], '/DomainDimensionRatio');\n";
-        oss << "cube_frame = [-L, -L, L; -L, L, L; L, L, L; L -L, L; -L, -L, -L; -L, L, -L; L, L, -L; L -L, -L; -L, L, L; -L, L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L, -L; L, -L, -L; L, -L, L; L, -L, L; L, -L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L,-L; -L, L, -L; -L,L, L];\n";
-        oss << "cube_frame(:, 1) = 0.5 .* cube_frame(:, 1) .* DomainDimensionRatio(1); ";
-        oss << "cube_frame(:, 2) = 0.5 .* cube_frame(:, 2) .* DomainDimensionRatio(2); ";
-        oss << "cube_frame(:, 3) = 0.5 .* cube_frame(:, 3) .* DomainDimensionRatio(3);\n";
+        oss << "DomainDimensionRatio = h5read([currentPath, '/" << mat_key
+            << "'], '/DomainDimensionRatio');\n";
+        oss << "cube_frame = [-L, -L, L; -L, L, L; L, L, L; L -L, L; -L, -L, "
+               "-L; -L, L, -L; L, L, -L; L -L, -L; -L, L, L; -L, L, -L; -L, "
+               "-L, -L; -L, -L, L; L, L, L; L, L, -L; L, -L, -L; L, -L, L; L, "
+               "-L, L; L, -L, -L; -L, -L, -L; -L, -L, L; L, L, L; L, L,-L; -L, "
+               "L, -L; -L,L, L];\n";
+        oss << "cube_frame(:, 1) = 0.5 .* cube_frame(:, 1) .* "
+               "DomainDimensionRatio(1); ";
+        oss << "cube_frame(:, 2) = 0.5 .* cube_frame(:, 2) .* "
+               "DomainDimensionRatio(2); ";
+        oss << "cube_frame(:, 3) = 0.5 .* cube_frame(:, 3) .* "
+               "DomainDimensionRatio(3);\n";
 
-        oss << "figure(1); view(3); title('DFN flow (mhfem)'); xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
-        oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 10 11 12; 13 14 15 16], 'FaceVertexCData', zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', 'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
+        oss << "figure(1); view(3); title('DFN flow (mhfem)'); xlabel('x "
+               "(m)'); ylabel('y (m)'); zlabel('z (m)'); hold on\n";
+        oss << "patch('Vertices', cube_frame, 'Faces', [1, 2, 3, 4;5 6 7 8;9 "
+               "10 11 12; 13 14 15 16], 'FaceVertexCData', "
+               "zeros(size(cube_frame, 1), 1), 'FaceColor', 'interp', "
+               "'EdgeAlpha', 1, 'facealpha', 0); hold on\n";
         oss << endl;
-        oss << "axis([-1.1 / 2 * DomainDimensionRatio(1) * L,  1.1 / 2 * DomainDimensionRatio(1) * L, -1.1 / 2 * DomainDimensionRatio(2) * L, 1.1 / 2 * DomainDimensionRatio(2) * L, -1.1 / 2 * DomainDimensionRatio(3) * L, 1.1 / 2 * DomainDimensionRatio(3) * L]);\n";
+        oss << "axis([-1.1 / 2 * DomainDimensionRatio(1) * L,  1.1 / 2 * "
+               "DomainDimensionRatio(1) * L, -1.1 / 2 * "
+               "DomainDimensionRatio(2) * L, 1.1 / 2 * DomainDimensionRatio(2) "
+               "* L, -1.1 / 2 * DomainDimensionRatio(3) * L, 1.1 / 2 * "
+               "DomainDimensionRatio(3) * L]);\n";
         oss << "pbaspect([DomainDimensionRatio]); hold on\n";
 
         //oss << "centers_ele = zeros(size(element_3D, 1), 3);\n";
@@ -435,8 +568,13 @@ double2 cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
 
         //oss << "tool_ = [centers_ele; center_s_edge];\n";
         //oss << "pressure_vert = griddata(tool_(:, 1), tool_(:, 2), tool_(:, 3), [pressure_eles; pressure_shared_edge], coordinate_3D(:, 1), coordinate_3D(:, 2), coordinate_3D(:, 3), 'nearest');\n";
-        oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, 'FaceVertexCData', pressure_eles, 'FaceColor', 'flat', 'EdgeAlpha', 0.9, 'facealpha', 1); colorbar; view(3); hold on\n";
-        oss << "caxis([" << this->OutletP << ", " << this->InletP << "]);\n\n";
+        oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, "
+               "'FaceVertexCData', pressure_eles, 'FaceColor', 'flat', "
+               "'EdgeAlpha', 0.9, 'facealpha', 1); colorbar; view(3); hold "
+               "on\n";
+        if (!this->IfPeriodic)
+            oss << "caxis([" << this->OutletP << ", " << this->InletP
+                << "]);\n\n";
 
         //oss << "element_3D_re = zeros(size(element_3D, 1) * 3, 3);\n";
         //oss << "element_3D_re([1:3:end], :) = element_3D;\n";
@@ -453,37 +591,51 @@ double2 cuDFNsys::MHFEM<T>::MatlabPlot(const string &mat_key,
         //oss << "quiver3(center_sep_edge(:, 1),center_sep_edge(:, 2),center_sep_edge(:, 3), Outward_normal(:, 1),Outward_normal(:, 2),Outward_normal(:, 3), 4, 'LineWidth', 1.5, 'color', 'r');\n";
 
         oss << "CenterELE = zeros(size(element_3D, 1), 3);\n";
-        oss << "CenterELE(:, 1) = 1/3 * (coordinate_3D(element_3D(:, 1), 1) + coordinate_3D(element_3D(:, 2), 1) + coordinate_3D(element_3D(:, 3), 1));\n";
-        oss << "CenterELE(:, 2) = 1/3 * (coordinate_3D(element_3D(:, 1), 2) + coordinate_3D(element_3D(:, 2), 2) + coordinate_3D(element_3D(:, 3), 2));\n";
-        oss << "CenterELE(:, 3) = 1/3 * (coordinate_3D(element_3D(:, 1), 3) + coordinate_3D(element_3D(:, 2), 3) + coordinate_3D(element_3D(:, 3), 3));\n";
-        oss << "quiver3(CenterELE(:, 1), CenterELE(:, 2), CenterELE(:, 3), velocity_center_grid(:, 1),velocity_center_grid(:, 2),velocity_center_grid(:, 3), 4, 'LineWidth', 1.5, 'color', 'r');\n";
+        oss << "CenterELE(:, 1) = 1/3 * (coordinate_3D(element_3D(:, 1), 1) + "
+               "coordinate_3D(element_3D(:, 2), 1) + "
+               "coordinate_3D(element_3D(:, 3), 1));\n";
+        oss << "CenterELE(:, 2) = 1/3 * (coordinate_3D(element_3D(:, 1), 2) + "
+               "coordinate_3D(element_3D(:, 2), 2) + "
+               "coordinate_3D(element_3D(:, 3), 2));\n";
+        oss << "CenterELE(:, 3) = 1/3 * (coordinate_3D(element_3D(:, 1), 3) + "
+               "coordinate_3D(element_3D(:, 2), 3) + "
+               "coordinate_3D(element_3D(:, 3), 3));\n";
+        oss << "quiver3(CenterELE(:, 1), CenterELE(:, 2), CenterELE(:, 3), "
+               "velocity_center_grid(:, 1),velocity_center_grid(:, "
+               "2),velocity_center_grid(:, 3), 4, 'LineWidth', 1.5, 'color', "
+               "'r');\n";
         oss << "VelocityNorm = vecnorm(velocity_center_grid');\n";
-        oss << "ElementAperture = h5read([currentPath, '/" << mat_key << "'], '/ElementAperture');\n";
-        oss << "VelocityNorm = [vecnorm(velocity_center_grid')]' ./ ElementAperture;\n";
-        oss << "len1=[vecnorm([coordinate_3D(element_3D(:, 1), :) - coordinate_3D(element_3D(:, 2), :)]')]';\n";
-        oss << "len2=[vecnorm([coordinate_3D(element_3D(:, 3), :) - coordinate_3D(element_3D(:, 2), :)]')]';\n";
-        oss << "len3=[vecnorm([coordinate_3D(element_3D(:, 1), :) - coordinate_3D(element_3D(:, 3), :)]')]';\n";
+        oss << "ElementAperture = h5read([currentPath, '/" << mat_key
+            << "'], '/ElementAperture');\n";
+        oss << "VelocityNorm = [vecnorm(velocity_center_grid')]' ./ "
+               "ElementAperture;\n";
+        oss << "len1=[vecnorm([coordinate_3D(element_3D(:, 1), :) - "
+               "coordinate_3D(element_3D(:, 2), :)]')]';\n";
+        oss << "len2=[vecnorm([coordinate_3D(element_3D(:, 3), :) - "
+               "coordinate_3D(element_3D(:, 2), :)]')]';\n";
+        oss << "len3=[vecnorm([coordinate_3D(element_3D(:, 1), :) - "
+               "coordinate_3D(element_3D(:, 3), :)]')]';\n";
         oss << "P_ss = (len1+len2+len3)*0.5;\n";
         oss << "Area_ss = (P_ss .* len1 .* len2 .* len3) .^ 0.5;\n";
-        oss << "meanFractureVelocity = sum(VelocityNorm .* Area_ss) ./ (sum(Area_ss))\n";
+        oss << "meanFractureVelocity = sum(VelocityNorm .* Area_ss .* "
+               "ElementAperture) ./ "
+               "(sum(Area_ss .* ElementAperture))\n";
         oss.close();
     }
     return JKLDSF;
 }; // MHFEM
-template double2 cuDFNsys::MHFEM<double>::MatlabPlot(const string &mat_key,
-                                                     const string &command_key,
-                                                     thrust::host_vector<cuDFNsys::Fracture<double>> Fracs,
-                                                     const cuDFNsys::Mesh<double> &mesh,
-                                                     const double &L,
-                                                     bool if_python_visualization,
-                                                     string PythonName_Without_suffix, double3 DomainDimensionRatio);
-template double2 cuDFNsys::MHFEM<float>::MatlabPlot(const string &mat_key,
-                                                    const string &command_key,
-                                                    thrust::host_vector<cuDFNsys::Fracture<float>> Fracs,
-                                                    const cuDFNsys::Mesh<float> &mesh,
-                                                    const float &L,
-                                                    bool if_python_visualization,
-                                                    string PythonName_Without_suffix, double3 DomainDimensionRatio);
+template double2 cuDFNsys::MHFEM<double>::MatlabPlot(
+    const string &mat_key, const string &command_key,
+    thrust::host_vector<cuDFNsys::Fracture<double>> Fracs,
+    const cuDFNsys::Mesh<double> &mesh, const double &L,
+    bool if_python_visualization, string PythonName_Without_suffix,
+    double3 DomainDimensionRatio);
+template double2 cuDFNsys::MHFEM<float>::MatlabPlot(
+    const string &mat_key, const string &command_key,
+    thrust::host_vector<cuDFNsys::Fracture<float>> Fracs,
+    const cuDFNsys::Mesh<float> &mesh, const float &L,
+    bool if_python_visualization, string PythonName_Without_suffix,
+    double3 DomainDimensionRatio);
 
 // ====================================================
 // NAME:        Implementation
@@ -492,13 +644,21 @@ template double2 cuDFNsys::MHFEM<float>::MatlabPlot(const string &mat_key,
 // DATE:        09/04/2022
 // ====================================================
 template <typename T>
-void cuDFNsys::MHFEM<T>::Implementation(const cuDFNsys::Mesh<T> &mesh,
-                                        const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs, bool if_CPU,
-                                        int Nproc)
+void cuDFNsys::MHFEM<T>::Implementation(
+    const cuDFNsys::Mesh<T> &mesh,
+    const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs, bool if_CPU,
+    int Nproc)
 {
     size_t NUM_sep_edges = mesh.Element3D.size() * 3,
            NUM_eles = mesh.Element3D.size(),
-           NUM_glob_interior_edges = mesh.NumInteriorEdges;
+           NUM_glob_interior_edges = mesh.NumInteriorEdges,
+           NUM_INLET_EDGES = mesh.NumInletEdges,
+           NUM_OUTLET_EDGES = mesh.NumOutletEdges,
+           NUM_NEUMMANN_EDGES = mesh.NumNeumannEdges;
+
+    size_t NumEdges = NUM_glob_interior_edges + NUM_INLET_EDGES +
+                      NUM_OUTLET_EDGES + NUM_NEUMMANN_EDGES;
+
     //cout << "NUM_sep_edges: " << NUM_sep_edges << endl;
     //cout << "NUM_eles: " << NUM_eles << endl;
     //cout << "NUM_glob_interior_edges: " << NUM_glob_interior_edges << endl;
@@ -507,24 +667,40 @@ void cuDFNsys::MHFEM<T>::Implementation(const cuDFNsys::Mesh<T> &mesh,
     if (!if_CPU)
         II_K = this->AssembleOnGPU(mesh, Fracs, this->InletP, this->OutletP);
     else
-        II_K = this->AssembleOnCPU(mesh, Fracs, this->InletP, this->OutletP, Nproc);
+        II_K = this->AssembleOnCPU(mesh, Fracs, this->InletP, this->OutletP,
+                                   Nproc);
+
+    int RowsC = NumEdges;
+
+    if (!this->IfPeriodic)
+        RowsC -= (NUM_INLET_EDGES + NUM_OUTLET_EDGES);
 
     Eigen::SparseMatrix<double> A(NUM_sep_edges, NUM_sep_edges);
     Eigen::SparseMatrix<double> B(NUM_eles, NUM_sep_edges);
-    Eigen::SparseMatrix<double> C(NUM_glob_interior_edges, NUM_sep_edges);
-    //cout << "K:\n"
-    //     << MatrixXd(II_K.first) << endl;
+    Eigen::SparseMatrix<double> C(RowsC, NUM_sep_edges);
+
+    // cout << "K:\n"
+    //      << MatrixXd(II_K.first.block(0, 0, NUM_sep_edges + NUM_eles + RowsC,
+    //                                   NUM_sep_edges + NUM_eles + RowsC))
+    //      << endl;
     // cout << "\n\n-----------\n\nb:\n"
-    //      << MatrixXd(II_K.second) << endl;
+    //      << MatrixXd(
+    //             II_K.second.block(0, 0, NUM_sep_edges + NUM_eles + RowsC, 1))
+    //      << endl;
+
     A = II_K.first.block(0, 0, NUM_sep_edges, NUM_sep_edges);
     B = II_K.first.block(NUM_sep_edges, 0, NUM_eles, NUM_sep_edges);
-    C = II_K.first.block(NUM_sep_edges + NUM_eles, 0, NUM_glob_interior_edges, NUM_sep_edges);
+    C = II_K.first.block(NUM_sep_edges + NUM_eles, 0, RowsC, NUM_sep_edges);
     //cout << "A:\n" << MatrixXd(A) << endl;
     //cout << "B:\n" << MatrixXd(B) << endl;
     //cout << "C:\n" << MatrixXd(C) << endl;
     Eigen::SparseMatrix<double> g = II_K.second.block(0, 0, NUM_sep_edges, 1);
 
-    Eigen::SparseMatrix<double> f = II_K.second.block(NUM_sep_edges, 0, NUM_eles, 1);
+    Eigen::SparseMatrix<double> f =
+        II_K.second.block(NUM_sep_edges, 0, NUM_eles, 1);
+
+    Eigen::SparseMatrix<double> s =
+        II_K.second.block(NUM_sep_edges + NUM_eles, 0, RowsC, 1);
 
     Eigen::SparseMatrix<double> A_inv(A.rows(), A.cols());
     A_inv.reserve(VectorXi::Constant(A.cols(), 3));
@@ -551,7 +727,8 @@ void cuDFNsys::MHFEM<T>::Implementation(const cuDFNsys::Mesh<T> &mesh,
             A_inv.innerVector(i * 3 + j) = SK;
         }
     }
-    cout << "\t\tRunning time of calculating A_inv: " << cuDFNsys::CPUSecond() - iStart_fem << "sec\n";
+    cout << "\t\tRunning time of calculating A_inv: "
+         << cuDFNsys::CPUSecond() - iStart_fem << "sec\n";
 
     iStart_fem = cuDFNsys::CPUSecond();
     Eigen::SparseMatrix<double> C_tps = C.transpose();
@@ -561,12 +738,14 @@ void cuDFNsys::MHFEM<T>::Implementation(const cuDFNsys::Mesh<T> &mesh,
     Eigen::SparseMatrix<double> Wq = B * A_inv;
 
     Eigen::SparseMatrix<double> U = Wq * B_tps;
-    cout << "\t\tRunning time of matrix multiplication 1: " << cuDFNsys::CPUSecond() - iStart_fem << "sec\n";
+    cout << "\t\tRunning time of matrix multiplication 1: "
+         << cuDFNsys::CPUSecond() - iStart_fem << "sec\n";
 
     iStart_fem = cuDFNsys::CPUSecond();
     for (int i = 0; i < U.rows(); ++i)
         U.coeffRef(i, i) = 1.0 / U.coeffRef(i, i);
-    cout << "\t\tRunning time of calculating U: " << cuDFNsys::CPUSecond() - iStart_fem << "sec\n";
+    cout << "\t\tRunning time of calculating U: "
+         << cuDFNsys::CPUSecond() - iStart_fem << "sec\n";
 
     iStart_fem = cuDFNsys::CPUSecond();
     Eigen::SparseMatrix<double> Re = C * A_inv;
@@ -577,10 +756,11 @@ void cuDFNsys::MHFEM<T>::Implementation(const cuDFNsys::Mesh<T> &mesh,
     //cout << 9 << endl;
     Eigen::SparseMatrix<double> D = Re * C_tps - Eq * U * Sd;
 
-    Eigen::SparseMatrix<double> r = Re * g + Eq * U * (f - Wq * g);
+    Eigen::SparseMatrix<double> r = Re * g + Eq * U * (f - Wq * g) - s;
     D.makeCompressed();
     r.makeCompressed();
-    cout << "\t\tRunning time of matrix multiplication 2: " << cuDFNsys::CPUSecond() - iStart_fem << "sec\n";
+    cout << "\t\tRunning time of matrix multiplication 2: "
+         << cuDFNsys::CPUSecond() - iStart_fem << "sec\n";
 
     //cout << "\tsolving ...\n";
 
@@ -592,33 +772,44 @@ void cuDFNsys::MHFEM<T>::Implementation(const cuDFNsys::Mesh<T> &mesh,
         throw cuDFNsys::ExceptionsPause("Compute matrix is wrong!\n");
     this->PressureInteriorEdge = solver.solve(r);
 
-    //cout << "this->PressureInteriorEdge:\n";
-    //cout << this->PressureInteriorEdge << endl;
-    cout << "\t\tRunning time of solving matrix: " << cuDFNsys::CPUSecond() - iStart_fem << "sec\n";
+    // cout << "this->AllEdges:\n";
+    // cout << this->PressureInteriorEdge << endl;
+    cout << "\t\tRunning time of solving matrix: "
+         << cuDFNsys::CPUSecond() - iStart_fem << "sec\n";
 
     iStart_fem = cuDFNsys::CPUSecond();
 
     this->PressureEles = U * (Wq * g - Sd * this->PressureInteriorEdge - f);
-    this->VelocityNormalScalarSepEdges = A_inv * (g - B_tps * this->PressureEles - C_tps * this->PressureInteriorEdge);
+    this->VelocityNormalScalarSepEdges =
+        A_inv *
+        (g - B_tps * this->PressureEles - C_tps * this->PressureInteriorEdge);
 
     // cout << this->PressureEles << endl;
     //cout << "\tcalculating flux ...\n";
     //cout << "\n\nin:\n";
+    // cout << "VelocityNormalScalarSepEdges: \n";
+    // cout << VelocityNormalScalarSepEdges << endl;
     for (size_t i = 0; i < mesh.InletEdgeNOLen.size(); ++i)
     {
-        size_t sep_EDGE_no = mesh.InletEdgeNOLen[i].x - 1;
+        size_t sep_EDGE_no = mesh.InletEdgeNOLen[i].x;
         T len = mesh.InletEdgeNOLen[i].y;
 
-        T veloc_length = abs((T)this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0) * len);
+        T veloc_length =
+            abs((T)this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0) * len);
         this->QIn += veloc_length;
         this->InletLength += len;
-        //cout << "len: " << len << ";\tq: " << this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0) << "; sep_EDGE_no: " << sep_EDGE_no + 1 << "\n";
+        // cout << "inlet len: " << len << ";\tq: " << this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0) << "; sep_EDGE_no: " << sep_EDGE_no + 1 << "\n";
         if (this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0) > 0)
         {
-            cout << "\t\t*** Warning: One inlet velocity is > 0: " << this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0);
+            cout << "\t\t*** Warning: One inlet velocity is > 0: "
+                 << this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0);
             cout << ", sep_EDGE_no: " << sep_EDGE_no;
-            cout << ", elementID (from 1): " << ceil((1.0 * sep_EDGE_no + 1.0) / 3.0);
-            cout << ", element Pressure: " << this->PressureEles(int(ceil((1.0 * sep_EDGE_no + 1.0) / 3.0)), 0) << endl;
+            cout << ", elementID (from 1): "
+                 << ceil((1.0 * sep_EDGE_no + 1.0) / 3.0);
+            cout << ", element Pressure: "
+                 << this->PressureEles(
+                        int(ceil((1.0 * sep_EDGE_no + 1.0) / 3.0)), 0)
+                 << endl;
         }
 
         //opp += veloc_length;
@@ -626,29 +817,38 @@ void cuDFNsys::MHFEM<T>::Implementation(const cuDFNsys::Mesh<T> &mesh,
     //cout << "\n\nout:\n";
     for (size_t i = 0; i < mesh.OutletEdgeNOLen.size(); ++i)
     {
-        size_t sep_EDGE_no = mesh.OutletEdgeNOLen[i].x - 1;
+        size_t sep_EDGE_no = mesh.OutletEdgeNOLen[i].x;
         T len = mesh.OutletEdgeNOLen[i].y;
 
-        T veloc_length = abs((T)this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0) * len);
+        T veloc_length =
+            abs((T)this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0) * len);
         this->QOut += veloc_length;
         this->OutletLength += len;
-        //cout << "len: " << len << ";\tq: " << this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0) << "; sep_EDGE_no: " << sep_EDGE_no + 1 << "\n";
+        // cout << "outlet len: " << len << ";\tq: " << this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0) << "; sep_EDGE_no: " << sep_EDGE_no + 1 << "\n";
         if (this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0) < 0)
         {
-            cout << "\t\t*** Warning: One outlet velocity is < 0: " << this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0);
+            cout << "\t\t*** Warning: One outlet velocity is < 0: "
+                 << this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0);
             cout << ", sep_EDGE_no: " << sep_EDGE_no;
-            cout << ", elementID (from 1): " << ceil((1.0 * sep_EDGE_no + 1.0) / 3.0);
-            cout << ", element Pressure: " << this->PressureEles(int(ceil((1.0 * sep_EDGE_no + 1.0) / 3.0)), 0) << endl;
+            cout << ", elementID (from 1): "
+                 << ceil((1.0 * sep_EDGE_no + 1.0) / 3.0);
+            cout << ", element Pressure: "
+                 << this->PressureEles(
+                        int(ceil((1.0 * sep_EDGE_no + 1.0) / 3.0)), 0)
+                 << endl;
         }
     }
-    cout << "\t\tRunning time of post treatments: " << cuDFNsys::CPUSecond() - iStart_fem << "sec\n";
+    cout << "\t\tRunning time of post treatments: "
+         << cuDFNsys::CPUSecond() - iStart_fem << "sec\n";
 }; // Implementation
-template void cuDFNsys::MHFEM<double>::Implementation(const cuDFNsys::Mesh<double> &mesh,
-                                                      const thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs, bool if_CPU,
-                                                      int Nproc);
-template void cuDFNsys::MHFEM<float>::Implementation(const cuDFNsys::Mesh<float> &mesh,
-                                                     const thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs, bool if_CPU,
-                                                     int Nproc);
+template void cuDFNsys::MHFEM<double>::Implementation(
+    const cuDFNsys::Mesh<double> &mesh,
+    const thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs, bool if_CPU,
+    int Nproc);
+template void cuDFNsys::MHFEM<float>::Implementation(
+    const cuDFNsys::Mesh<float> &mesh,
+    const thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs, bool if_CPU,
+    int Nproc);
 
 // ====================================================
 // NAME:        AssembleOnGPU
@@ -657,19 +857,22 @@ template void cuDFNsys::MHFEM<float>::Implementation(const cuDFNsys::Mesh<float>
 // DATE:        09/04/2022
 // ====================================================
 template <typename T>
-pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> cuDFNsys::MHFEM<T>::AssembleOnGPU(const cuDFNsys::Mesh<T> &mesh,
-                                                                                                 const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
-                                                                                                 T P_in,
-                                                                                                 T P_out)
+pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>>
+cuDFNsys::MHFEM<T>::AssembleOnGPU(
+    const cuDFNsys::Mesh<T> &mesh,
+    const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs, T P_in, T P_out)
 {
 
     int NUM_sep_edges = mesh.Element3D.size() * 3,
         NUM_eles = mesh.Element3D.size(),
         NUM_glob_interior_edges = mesh.NumInteriorEdges,
         NUM_INLET_EDGES = mesh.NumInletEdges,
-        NUM_OUTLET_EDGES = mesh.NumOutletEdges;
+        NUM_OUTLET_EDGES = mesh.NumOutletEdges,
+        NUM_NEUMMANN_EDGES = mesh.NumNeumannEdges;
 
-    int Dim = NUM_sep_edges + NUM_eles + NUM_glob_interior_edges;
+    int Dim = NUM_sep_edges + NUM_eles + NUM_glob_interior_edges +
+              NUM_INLET_EDGES + NUM_OUTLET_EDGES + NUM_NEUMMANN_EDGES;
+    // cout << "Dim: " << Dim << endl;
     //cout << "NUM_sep_edges: " << NUM_sep_edges << ", NUM_eles: " << NUM_eles << ", NUM_glob_interior_edges: " << NUM_glob_interior_edges << endl;
 
     int Frac_NUM = mesh.Element2D.size();
@@ -679,8 +882,7 @@ pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> cuDFNsys::MHFEM<T
     thrust::host_vector<T> Conduc_Frac(NUM_eles);
 
     for (std::vector<size_t>::iterator it_fracID = mesh.FracID->begin();
-         it_fracID != mesh.FracID->end();
-         it_fracID++)
+         it_fracID != mesh.FracID->end(); it_fracID++)
     {
         T conduct_tmp = Fracs[*(it_fracID)].Conductivity;
 
@@ -698,7 +900,8 @@ pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> cuDFNsys::MHFEM<T
 
     thrust::device_vector<cuDFNsys::EleCoor<T>> Coodin_2D_dev;
     Coodin_2D_dev = mesh.Coordinate2D;
-    cuDFNsys::EleCoor<T> *coord_2D_dev_ptr = thrust::raw_pointer_cast(Coodin_2D_dev.data());
+    cuDFNsys::EleCoor<T> *coord_2D_dev_ptr =
+        thrust::raw_pointer_cast(Coodin_2D_dev.data());
 
     cuDFNsys::EleEdgeAttri *Edge_attri_dev_ptr;
     thrust::device_vector<cuDFNsys::EleEdgeAttri> Edge_attri_dev;
@@ -709,35 +912,34 @@ pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> cuDFNsys::MHFEM<T
     T *Conduc_Frac_dev_ptr = thrust::raw_pointer_cast(Conduc_Frac_dev.data());
 
     thrust::host_vector<cuDFNsys::Triplet<T>> tri_h;
-    thrust::device_vector<cuDFNsys::Triplet<T>> tri_dev(21 * NUM_eles);
-    cuDFNsys::Triplet<T> *tri_dev_ptr = thrust::raw_pointer_cast(tri_dev.data());
+    thrust::device_vector<cuDFNsys::Triplet<T>> tri_dev(18 * NUM_eles);
+    cuDFNsys::Triplet<T> *tri_dev_ptr =
+        thrust::raw_pointer_cast(tri_dev.data());
 
-    cuDFNsys::AssembleOnGPUKernel<T><<<NUM_eles / 256 + 1, 256>>>(tri_dev_ptr,
-                                                                  coord_2D_dev_ptr,
-                                                                  Edge_attri_dev_ptr,
-                                                                  Conduc_Frac_dev_ptr,
-                                                                  NUM_sep_edges,
-                                                                  NUM_eles,
-                                                                  NUM_glob_interior_edges,
-                                                                  P_in,
-                                                                  P_out);
+    //cout << "this->MuOverRhoG: " << this->MuOverRhoG << endl;
+    // cout << "this->ConsTq " << this->ConsTq << endl;
+    cuDFNsys::AssembleOnGPUKernel<T><<<NUM_eles / 256 + 1, 256>>>(
+        tri_dev_ptr, coord_2D_dev_ptr, Edge_attri_dev_ptr, Conduc_Frac_dev_ptr,
+        NUM_sep_edges, NUM_eles, Dim, P_in, P_out, this->IfPeriodic,
+        (T)this->MuOverRhoG, this->ConsTq);
     cudaDeviceSynchronize();
     this->TripletTime = cuDFNsys::CPUSecond() - iStart_fem;
-    cout << "\t\tRunning time of GPU triplets: " << this->TripletTime << "sec\n";
+    cout << "\t\tRunning time of GPU triplets: " << this->TripletTime
+         << "sec\n";
 
     iStart_fem = cuDFNsys::CPUSecond();
 
     tri_h = tri_dev;
     Eigen::SparseMatrix<double> K(Dim, Dim);
     SparseMatrix<double> b(Dim, 1);
-    K.reserve(VectorXi::Constant(Dim, 5));
-    b.reserve(NUM_INLET_EDGES + NUM_OUTLET_EDGES);
+    K.reserve(VectorXi::Constant(Dim, 7));
+    b.reserve(NUM_INLET_EDGES + NUM_OUTLET_EDGES + NUM_NEUMMANN_EDGES);
 
-    for (size_t i = 0; i < NUM_eles * 21; ++i)
+    for (size_t i = 0; i < NUM_eles * 18; ++i)
     {
         if (tri_h[i].row != -1)
         {
-            //cout << "ele: " << i / 21 + 1 << endl;
+            //cout << "ele: " << i / 18 + 1 << endl;
             //cout << "DIM: " << Dim << "; ";
             //cout << "NUM_sep_edges: " << NUM_sep_edges << "; ";
             //cout << "NUM_eles: " << NUM_eles << "; ";
@@ -752,17 +954,20 @@ pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> cuDFNsys::MHFEM<T
             }
         }
     }
-    cout << "\t\tRunning time of Matrix assembly and generation: " << cuDFNsys::CPUSecond() - iStart_fem << "sec\n";
+    cout << "\t\tRunning time of Matrix assembly and generation: "
+         << cuDFNsys::CPUSecond() - iStart_fem << "sec\n";
     return std::make_pair(K, b);
 }; // AssembleOnGPU
-template pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> cuDFNsys::MHFEM<double>::AssembleOnGPU(const cuDFNsys::Mesh<double> &mesh,
-                                                                                                               const thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs,
-                                                                                                               double P_in,
-                                                                                                               double P_out);
-template pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> cuDFNsys::MHFEM<float>::AssembleOnGPU(const cuDFNsys::Mesh<float> &mesh,
-                                                                                                              const thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs,
-                                                                                                              float P_in,
-                                                                                                              float P_out);
+template pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>>
+cuDFNsys::MHFEM<double>::AssembleOnGPU(
+    const cuDFNsys::Mesh<double> &mesh,
+    const thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs, double P_in,
+    double P_out);
+template pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>>
+cuDFNsys::MHFEM<float>::AssembleOnGPU(
+    const cuDFNsys::Mesh<float> &mesh,
+    const thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs, float P_in,
+    float P_out);
 
 // ====================================================
 // NAME:        AssembleOnCPU
@@ -771,12 +976,14 @@ template pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> cuDFNsys
 // DATE:        05/11/2022
 // ====================================================
 template <typename T>
-pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> cuDFNsys::MHFEM<T>::AssembleOnCPU(const cuDFNsys::Mesh<T> &mesh,
-                                                                                                 const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
-                                                                                                 T P_in,
-                                                                                                 T P_out,
-                                                                                                 int Nproc)
+pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>>
+cuDFNsys::MHFEM<T>::AssembleOnCPU(
+    const cuDFNsys::Mesh<T> &mesh,
+    const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs, T P_in, T P_out,
+    int Nproc)
 {
+    throw cuDFNsys::ExceptionsPause(
+        "Use of `cuDFNsys::MHFEM<T>::AssembleOnCPU` is not recommended");
 
     int NUM_sep_edges = mesh.Element3D.size() * 3,
         NUM_eles = mesh.Element3D.size(),
@@ -794,8 +1001,7 @@ pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> cuDFNsys::MHFEM<T
     thrust::host_vector<T> Conduc_Frac(NUM_eles);
 
     for (std::vector<size_t>::iterator it_fracID = mesh.FracID->begin();
-         it_fracID != mesh.FracID->end();
-         it_fracID++)
+         it_fracID != mesh.FracID->end(); it_fracID++)
     {
         T conduct_tmp = Fracs[*(it_fracID)].Conductivity;
 
@@ -838,18 +1044,27 @@ pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> cuDFNsys::MHFEM<T
 
                 int edge_1 = tri_h[j].row % 3;
                 int edge_2 = tri_h[j].col % 3;
-                if (mesh.EdgeAttri[i].e[edge_1] == 2 && mesh.EdgeAttri[i].e[edge_2] == 2 && edge_1 == edge_2)
+                if (mesh.EdgeAttri[i].e[edge_1] == 2 &&
+                    mesh.EdgeAttri[i].e[edge_2] == 2 && edge_1 == edge_2)
                     tri_h[j].val = 1.0;
-                else if (edge_1 != edge_2 && (mesh.EdgeAttri[i].e[edge_1] == 2 || mesh.EdgeAttri[i].e[edge_2] == 2))
+                else if (edge_1 != edge_2 &&
+                         (mesh.EdgeAttri[i].e[edge_1] == 2 ||
+                          mesh.EdgeAttri[i].e[edge_2] == 2))
                     tri_h[j].row = -1;
 
                 j++;
             }
 
         T B[3] = {0};
-        B[0] = pow(pow(coord.x[2] - coord.x[1], 2) + pow(coord.y[2] - coord.y[1], 2), 0.5);
-        B[1] = pow(pow(coord.x[0] - coord.x[2], 2) + pow(coord.y[0] - coord.y[2], 2), 0.5);
-        B[2] = pow(pow(coord.x[1] - coord.x[0], 2) + pow(coord.y[1] - coord.y[0], 2), 0.5);
+        B[0] = pow(pow(coord.x[2] - coord.x[1], 2) +
+                       pow(coord.y[2] - coord.y[1], 2),
+                   0.5);
+        B[1] = pow(pow(coord.x[0] - coord.x[2], 2) +
+                       pow(coord.y[0] - coord.y[2], 2),
+                   0.5);
+        B[2] = pow(pow(coord.x[1] - coord.x[0], 2) +
+                       pow(coord.y[1] - coord.y[0], 2),
+                   0.5);
 
         for (size_t ik = 0; ik < 3; ++ik)
         {
@@ -891,9 +1106,8 @@ pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> cuDFNsys::MHFEM<T
             else if (ek == 0 || ek == 1) // in or out
             {
                 tri_h[j].row = NO_;
-                tri_h[j].col = NUM_sep_edges +
-                               NUM_eles +
-                               NUM_glob_interior_edges + 2;
+                tri_h[j].col =
+                    NUM_sep_edges + NUM_eles + NUM_glob_interior_edges + 2;
                 tri_h[j].val = P_in_out[ek] * B[(ik + 2) % 3];
                 j++;
             }
@@ -910,7 +1124,8 @@ pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> cuDFNsys::MHFEM<T
     //------------------------------
     //------------------------------
     this->TripletTime = cuDFNsys::CPUSecond() - iStart_fem;
-    cout << "\t\tRunning time of CPU triplets with Nproc = " << Nproc << ": " << this->TripletTime << "sec\n";
+    cout << "\t\tRunning time of CPU triplets with Nproc = " << Nproc << ": "
+         << this->TripletTime << "sec\n";
 
     iStart_fem = cuDFNsys::CPUSecond();
 
@@ -938,16 +1153,17 @@ pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> cuDFNsys::MHFEM<T
             }
         }
     }
-    cout << "\t\tRunning time of Matrix assembly and generation: " << cuDFNsys::CPUSecond() - iStart_fem << "sec\n";
+    cout << "\t\tRunning time of Matrix assembly and generation: "
+         << cuDFNsys::CPUSecond() - iStart_fem << "sec\n";
     return std::make_pair(K, b);
 }; // AssembleOnCPU
-template pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> cuDFNsys::MHFEM<double>::AssembleOnCPU(const cuDFNsys::Mesh<double> &mesh,
-                                                                                                               const thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs,
-                                                                                                               double P_in,
-                                                                                                               double P_out,
-                                                                                                               int Nproc);
-template pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> cuDFNsys::MHFEM<float>::AssembleOnCPU(const cuDFNsys::Mesh<float> &mesh,
-                                                                                                              const thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs,
-                                                                                                              float P_in,
-                                                                                                              float P_out,
-                                                                                                              int Nproc);
+template pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>>
+cuDFNsys::MHFEM<double>::AssembleOnCPU(
+    const cuDFNsys::Mesh<double> &mesh,
+    const thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs, double P_in,
+    double P_out, int Nproc);
+template pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>>
+cuDFNsys::MHFEM<float>::AssembleOnCPU(
+    const cuDFNsys::Mesh<float> &mesh,
+    const thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs, float P_in,
+    float P_out, int Nproc);

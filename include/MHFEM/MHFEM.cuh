@@ -41,67 +41,67 @@ using namespace Eigen;
 
 namespace cuDFNsys
 {
-template <typename T>
-class MHFEM
-{
-public:
-    T QIn = 0;
-    T QOut = 0;
-    T InletLength = 0;
-    T OutletLength = 0;
-    T QError = 0;
-    T Permeability = 0;
-    Eigen::MatrixXd PressureInteriorEdge;
-    Eigen::MatrixXd PressureEles;
-    Eigen::MatrixXd VelocityNormalScalarSepEdges;
-    T InletP = 100;
-    T OutletP = 20;
-    double TripletTime = 0;
-    double MaxVelocity;
-    double MeanVelocity;
+    template <typename T>
+    class MHFEM
+    {
+    public:
+        T QIn = 0;
+        T QOut = 0;
+        T InletLength = 0;
+        T OutletLength = 0;
+        T QError = 0;
+        T Permeability = 0;
+        Eigen::MatrixXd PressureInteriorEdge;
+        Eigen::MatrixXd PressureEles;
+        Eigen::MatrixXd VelocityNormalScalarSepEdges;
+        T InletP = 100;
+        T OutletP = 20;
+        double TripletTime = 0;
+        double MaxVelocity;
+        double MeanVelocity;
 
-public:
-    int Dir = 2;
+    public:
+        T MuOverRhoG = 1;
+        bool IfPeriodic = false;
+        T ConsTq = 1e-15;
 
-public:
-    MHFEM(){};
+    public:
+        int Dir = 2;
 
-    MHFEM(const cuDFNsys::Mesh<T> &mesh,
-          const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
-          const T &inlet_p_,
-          const T &outlet_p_,
-          const int &dir_,
-          const T &L,
-          double3 DomainDimensionRatio = make_double3(1, 1, 1),
-          bool if_CPU = false,
-          int Nproc = 10);
+    public:
+        MHFEM(){};
 
-    double2 MatlabPlot(const string &mat_key,
-                       const string &command_key,
-                       thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
-                       const cuDFNsys::Mesh<T> &mesh,
-                       const T &L,
-                       bool if_python_visualization = false,
-                       string PythonName_Without_suffix = "DFN_mhfem_py",
-                       double3 DomainDimensionRatio = make_double3(1, 1, 1));
+        MHFEM(const cuDFNsys::Mesh<T> &mesh,
+              const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
+              const T &inlet_p_, const T &outlet_p_, const int &dir_,
+              const T &L, double3 DomainDimensionRatio = make_double3(1, 1, 1),
+              bool if_CPU = false, int Nproc = 10, bool if_periodic = false,
+              T muOverRhoG = 1, T constant_qq = 1e-5);
 
-private:
-    void Implementation(const cuDFNsys::Mesh<T> &mesh,
-                        const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
-                        bool if_CPU = false,
-                        int Nproc = 10);
+        double2 MatlabPlot(const string &mat_key, const string &command_key,
+                           thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
+                           const cuDFNsys::Mesh<T> &mesh, const T &L,
+                           bool if_python_visualization = false,
+                           string PythonName_Without_suffix = "DFN_mhfem_py",
+                           double3 DomainDimensionRatio = make_double3(1, 1,
+                                                                       1));
 
-private:
-    pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> AssembleOnGPU(const cuDFNsys::Mesh<T> &mesh,
-                                                                                 const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
-                                                                                 T P_in,
-                                                                                 T P_out);
+    private:
+        void
+        Implementation(const cuDFNsys::Mesh<T> &mesh,
+                       const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
+                       bool if_CPU = false, int Nproc = 10);
 
-    pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>> AssembleOnCPU(const cuDFNsys::Mesh<T> &mesh,
-                                                                                 const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
-                                                                                 T P_in,
-                                                                                 T P_out,
-                                                                                 int Nproc = 10);
-};
+    private:
+        pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>>
+        AssembleOnGPU(const cuDFNsys::Mesh<T> &mesh,
+                      const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
+                      T P_in, T P_out);
+
+        pair<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<double>>
+        AssembleOnCPU(const cuDFNsys::Mesh<T> &mesh,
+                      const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
+                      T P_in, T P_out, int Nproc = 10);
+    };
 
 }; // namespace cuDFNsys

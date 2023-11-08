@@ -47,7 +47,7 @@ int main()
             my_dfn.LoadDFNFromCSV(nameCSV);
             my_dfn.IdentifyIntersectionsClusters(true);
         }
-
+        File_d.close();
         //my_dfn.StoreInH5("Class_DFN");
         my_dfn.Visualization("DFN_VISUAL", "DFN_VISUAL", "DFN_VISUAL", true,
                              true, true, true);
@@ -55,9 +55,10 @@ int main()
         //---------------------mesh------------
         cuDFNsys::MeshDFN<double> meshGen;
 
-        File_d.open("Class_MESH.h5");
+        std::ifstream File_d2("./Class_MESH.h5");
+        DFSW = File_d2.good();
 
-        if (File_d.is_open())
+        if (DFSW)
         {
             cout << ColoringString("A mesh file is existing! Are you sure that "
                                    "it matchs the "
@@ -84,7 +85,8 @@ int main()
             meshGen.MeshGeneration(my_dfn);
         }
 
-        File_d.close();
+        File_d2.close();
+
         meshGen.Visualization(my_dfn, "DFN_MESH_VISUAL", "DFN_MESH_VISUAL",
                               "DFN_MESH_VISUAL", true, true);
 
@@ -93,9 +95,11 @@ int main()
 
         //-------------------- flow
         cuDFNsys::FlowDFN<double> flowDFN;
-        File_d.open("Class_FLOW.h5");
 
-        if (File_d.is_open())
+        std::ifstream File_d3("./Class_FLOW.h5");
+        DFSW = File_d3.good();
+
+        if (DFSW)
         {
             cout << ColoringString("A flow file is existing! Are you sure that "
                                    "it matchs the "
@@ -125,7 +129,7 @@ int main()
         flowDFN.Visualization(my_dfn, meshGen, "DFN_FLOW_VISUAL",
                               "DFN_FLOW_VISUAL", "DFN_FLOW_VISUAL");
         flowDFN.StoreInH5("Class_FLOW");
-        File_d.close();
+        File_d3.close();
 
         cout << ColoringString(
                     "\n\nmean fracture velocity is " +

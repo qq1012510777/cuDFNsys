@@ -41,6 +41,7 @@
 #include "UMapEdge.cuh"
 #include "gmsh.h"
 #include <Eigen/Dense>
+#include <Eigen/Sparse>
 #include <algorithm>
 #include <cstring>
 #include <fstream>
@@ -78,16 +79,19 @@ public:
     thrust::host_vector<cuDFNsys::Vector2<T>> OutletEdgeNOLen;
 
     // number of interior edges
-    uint NumInteriorEdges;
+    uint NumInteriorEdges = 0;
     // number of inlet edges
-    uint NumInletEdges;
+    uint NumInletEdges = 0;
     // number of outlet edges
-    uint NumOutletEdges;
+    uint NumOutletEdges = 0;
     // number of neaumann edges
-    uint NumNeumannEdges;
+    uint NumNeumannEdges = 0;
 
     // MeanGridSize
     double MeanGridSize;
+
+    T InletTraceLength = 0;
+    T OutletTraceLength = 0;
 
 public:
     // checked percolation direction

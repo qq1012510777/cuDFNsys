@@ -292,6 +292,10 @@ __global__ void cuDFNsys::FracturesDeterministic<T>(
     verts[i].NormalVec.y /= norm_f;
     verts[i].NormalVec.z /= norm_f;
 
+    if (verts[i].NormalVec.z < 0)
+        verts[i].NormalVec.x *= -1, verts[i].NormalVec.y *= -1,
+            verts[i].NormalVec.z *= -1;
+
     //---------------------
 
     verts[i].NumVertsTruncated = 4;

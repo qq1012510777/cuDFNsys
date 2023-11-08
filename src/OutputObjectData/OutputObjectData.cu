@@ -25,21 +25,16 @@
 // DATE:        02/08/2022
 // ====================================================
 template <typename T>
-void cuDFNsys::OutputObjectData<T>::OutputFractures(const string &filename_,
-                                                    const thrust::host_vector<cuDFNsys::Fracture<T>> &Frac_verts_host,
-                                                    const T &L, double3 DomainDimensionRatio)
+void cuDFNsys::OutputObjectData<T>::OutputFractures(
+    const string &filename_,
+    const thrust::host_vector<cuDFNsys::Fracture<T>> &Frac_verts_host,
+    const T &L, double3 DomainDimensionRatio)
 {
     uint Dsize = Frac_verts_host.size();
 
     vector<string> datasername_ = {
-        "Conductivity",
-        "Verts3D",
-        "Center",
-        "Verts3DTruncated",
-        "NumVertsTruncated",
-        "Radius",
-        "ConnectModelSurf",
-        "NormalVec"};
+        "Conductivity",      "Verts3D", "Center",           "Verts3DTruncated",
+        "NumVertsTruncated", "Radius",  "ConnectModelSurf", "NormalVec"};
 
     cuDFNsys::HDF5API h5_;
     h5_.NewFile(filename_);
@@ -49,7 +44,8 @@ void cuDFNsys::OutputObjectData<T>::OutputFractures(const string &filename_,
     h5_.AddDataset(filename_, "N", "NumFractures", DiszeP, dim_e);
 
     uint2 dim_q = make_uint2(3, 1);
-    double sd[3] = {DomainDimensionRatio.x, DomainDimensionRatio.y, DomainDimensionRatio.z};
+    double sd[3] = {DomainDimensionRatio.x, DomainDimensionRatio.y,
+                    DomainDimensionRatio.z};
     h5_.AddDataset(filename_, "N", "DomainDimensionRatio", sd, dim_q);
 
     T L_m[1] = {L};
@@ -60,20 +56,17 @@ void cuDFNsys::OutputObjectData<T>::OutputFractures(const string &filename_,
         string groupname_ = "Fracture_" + std::to_string(i + 1);
 
         T Conductivity_[1] = {Frac_verts_host[i].Conductivity};
-        T Verts3D_[12] = {Frac_verts_host[i].Verts3D[0].x,
-                          Frac_verts_host[i].Verts3D[1].x,
-                          Frac_verts_host[i].Verts3D[2].x,
-                          Frac_verts_host[i].Verts3D[3].x,
-                          Frac_verts_host[i].Verts3D[0].y,
-                          Frac_verts_host[i].Verts3D[1].y,
-                          Frac_verts_host[i].Verts3D[2].y,
-                          Frac_verts_host[i].Verts3D[3].y,
-                          Frac_verts_host[i].Verts3D[0].z,
-                          Frac_verts_host[i].Verts3D[1].z,
-                          Frac_verts_host[i].Verts3D[2].z,
-                          Frac_verts_host[i].Verts3D[3].z};
+        T Verts3D_[12] = {
+            Frac_verts_host[i].Verts3D[0].x, Frac_verts_host[i].Verts3D[1].x,
+            Frac_verts_host[i].Verts3D[2].x, Frac_verts_host[i].Verts3D[3].x,
+            Frac_verts_host[i].Verts3D[0].y, Frac_verts_host[i].Verts3D[1].y,
+            Frac_verts_host[i].Verts3D[2].y, Frac_verts_host[i].Verts3D[3].y,
+            Frac_verts_host[i].Verts3D[0].z, Frac_verts_host[i].Verts3D[1].z,
+            Frac_verts_host[i].Verts3D[2].z, Frac_verts_host[i].Verts3D[3].z};
 
-        T Center_[3] = {Frac_verts_host[i].Center.x, Frac_verts_host[i].Center.y, Frac_verts_host[i].Center.z};
+        T Center_[3] = {Frac_verts_host[i].Center.x,
+                        Frac_verts_host[i].Center.y,
+                        Frac_verts_host[i].Center.z};
         T Verts3DTruncated_[24] = {Frac_verts_host[i].Verts3DTruncated[0].x,
                                    Frac_verts_host[i].Verts3DTruncated[1].x,
                                    Frac_verts_host[i].Verts3DTruncated[2].x,
@@ -107,7 +100,9 @@ void cuDFNsys::OutputObjectData<T>::OutputFractures(const string &filename_,
                                   (T)Frac_verts_host[i].ConnectModelSurf[3],
                                   (T)Frac_verts_host[i].ConnectModelSurf[4],
                                   (T)Frac_verts_host[i].ConnectModelSurf[5]};
-        T NormalVec_[3] = {Frac_verts_host[i].NormalVec.x, Frac_verts_host[i].NormalVec.y, Frac_verts_host[i].NormalVec.z};
+        T NormalVec_[3] = {Frac_verts_host[i].NormalVec.x,
+                           Frac_verts_host[i].NormalVec.y,
+                           Frac_verts_host[i].NormalVec.z};
 
         // vector<string> datasername_ = {
         //     "Conductivity",
@@ -119,36 +114,25 @@ void cuDFNsys::OutputObjectData<T>::OutputFractures(const string &filename_,
         //     "ConnectModelSurf",
         //     "NormalVec"};
 
-        vector<T *> data = {Conductivity_,
-                            Verts3D_,
-                            Center_,
-                            Verts3DTruncated_,
-                            NumVertsTruncated_,
-                            Radius_,
-                            ConnectModelSurf_,
-                            NormalVec_};
-        vector<uint2> dim = {
-            make_uint2(1, 1),
-            make_uint2(3, 4),
-            make_uint2(1, 3),
-            make_uint2(3, 8),
-            make_uint2(1, 1),
-            make_uint2(1, 1),
-            make_uint2(1, 6),
-            make_uint2(1, 3)};
-        h5_.AddDatasetsWithOneGroup(filename_,
-                                    groupname_,
-                                    datasername_,
-                                    data,
+        vector<T *> data = {Conductivity_,     Verts3D_,           Center_,
+                            Verts3DTruncated_, NumVertsTruncated_, Radius_,
+                            ConnectModelSurf_, NormalVec_};
+        vector<uint2> dim = {make_uint2(1, 1), make_uint2(3, 4),
+                             make_uint2(1, 3), make_uint2(3, 8),
+                             make_uint2(1, 1), make_uint2(1, 1),
+                             make_uint2(1, 6), make_uint2(1, 3)};
+        h5_.AddDatasetsWithOneGroup(filename_, groupname_, datasername_, data,
                                     dim);
     }
 }; // OutputFractures
-template void cuDFNsys::OutputObjectData<double>::OutputFractures(const string &filename_,
-                                                                  const thrust::host_vector<cuDFNsys::Fracture<double>> &Frac_verts_host,
-                                                                  const double &L, double3 DomainDimensionRatio);
-template void cuDFNsys::OutputObjectData<float>::OutputFractures(const string &filename_,
-                                                                 const thrust::host_vector<cuDFNsys::Fracture<float>> &Frac_verts_host,
-                                                                 const float &L, double3 DomainDimensionRatio);
+template void cuDFNsys::OutputObjectData<double>::OutputFractures(
+    const string &filename_,
+    const thrust::host_vector<cuDFNsys::Fracture<double>> &Frac_verts_host,
+    const double &L, double3 DomainDimensionRatio);
+template void cuDFNsys::OutputObjectData<float>::OutputFractures(
+    const string &filename_,
+    const thrust::host_vector<cuDFNsys::Fracture<float>> &Frac_verts_host,
+    const float &L, double3 DomainDimensionRatio);
 
 // ====================================================
 // NAME:        OutputMesh
@@ -157,9 +141,9 @@ template void cuDFNsys::OutputObjectData<float>::OutputFractures(const string &f
 // DATE:        02/08/2022
 // ====================================================
 template <typename T>
-void cuDFNsys::OutputObjectData<T>::OutputMesh(const string &filename_,
-                                               cuDFNsys::Mesh<T> mesh,
-                                               const std::vector<size_t> &Fracs_percol)
+void cuDFNsys::OutputObjectData<T>::OutputMesh(
+    const string &filename_, cuDFNsys::Mesh<T> mesh,
+    const std::vector<size_t> &Fracs_percol)
 {
     cuDFNsys::HDF5API h5_;
     h5_.NewFile(filename_);
@@ -185,23 +169,21 @@ void cuDFNsys::OutputObjectData<T>::OutputMesh(const string &filename_,
     std::vector<uint> Fracs_percol_II(Fracs_percol.size());
     std::copy(Fracs_percol.begin(), Fracs_percol.end(), Fracs_percol_II.data());
 
-    h5_.AddDataset<uint>(filename_, "N", "Fracs_percol", Fracs_percol_II.data(), make_uint2(Fracs_percol.size(), 0));
+    h5_.AddDataset<uint>(filename_, "N", "Fracs_percol", Fracs_percol_II.data(),
+                         make_uint2(Fracs_percol.size(), 0));
 
-    vector<string> datasetname = {
-        "MeshSuccess",
-        "FracID",
-        "Coordinate3D",
-        "Element2D",
-        "NumElementFrac",
-        "Element3D",
-        "Coordinate2D",
-        "ElementFracTag",
-        "EdgeAttri",
-        "InletEdgeNOLen",
-        "OutletEdgeNOLen",
-        "NumInteriorEdges",
-        "NumNeumannEdges",
-        "Dir"};
+    h5_.AddDataset<T>(filename_, "N", "InletTraceLength",
+                      &(mesh.InletTraceLength), make_uint2(1, 1));
+    h5_.AddDataset<T>(filename_, "N", "OutletTraceLength",
+                      &(mesh.OutletTraceLength), make_uint2(1, 1));
+
+    vector<string> datasetname = {"MeshSuccess",     "FracID",
+                                  "Coordinate3D",    "Element2D",
+                                  "NumElementFrac",  "Element3D",
+                                  "Coordinate2D",    "ElementFracTag",
+                                  "EdgeAttri",       "InletEdgeNOLen",
+                                  "OutletEdgeNOLen", "NumInteriorEdges",
+                                  "NumNeumannEdges", "Dir"};
 
     T MeshSuccess[1] = {(T)mesh.MeshSuccess};
 
@@ -294,42 +276,30 @@ void cuDFNsys::OutputObjectData<T>::OutputMesh(const string &filename_,
 
     T Dir[1] = {(T)mesh.Dir};
 
-    vector<uint2> dim = {
-        make_uint2(1, 1),
-        make_uint2(NumFractures[0], 1),
-        make_uint2(3, NumNodes[0]),
-        make_uint2(3, NumElements[0]),
-        make_uint2(NumFractures[0], 1),
-        make_uint2(3, NumElements[0]),
-        make_uint2(6, NumElements[0]),
-        make_uint2(NumElements[0], 1),
-        make_uint2(6, NumElements[0]),
-        make_uint2(2, NumInletEdge[0]),
-        make_uint2(2, NumOutletEdge[0]),
-        make_uint2(1, 1),
-        make_uint2(1, 1),
-        make_uint2(1, 1)};
+    vector<uint2> dim = {make_uint2(1, 1),
+                         make_uint2(NumFractures[0], 1),
+                         make_uint2(3, NumNodes[0]),
+                         make_uint2(3, NumElements[0]),
+                         make_uint2(NumFractures[0], 1),
+                         make_uint2(3, NumElements[0]),
+                         make_uint2(6, NumElements[0]),
+                         make_uint2(NumElements[0], 1),
+                         make_uint2(6, NumElements[0]),
+                         make_uint2(2, NumInletEdge[0]),
+                         make_uint2(2, NumOutletEdge[0]),
+                         make_uint2(1, 1),
+                         make_uint2(1, 1),
+                         make_uint2(1, 1)};
 
-    vector<T *> data = {
-        MeshSuccess,
-        FracID,
-        Coordinate3D,
-        Element2D,
-        NumElementFrac,
-        Element3D,
-        Coordinate2D,
-        ElementFracTag,
-        EdgeAttri,
-        InletEdgeNOLen,
-        OutletEdgeNOLen,
-        NumInteriorEdges,
-        NumNeumannEdges,
-        Dir};
+    vector<T *> data = {MeshSuccess,     FracID,
+                        Coordinate3D,    Element2D,
+                        NumElementFrac,  Element3D,
+                        Coordinate2D,    ElementFracTag,
+                        EdgeAttri,       InletEdgeNOLen,
+                        OutletEdgeNOLen, NumInteriorEdges,
+                        NumNeumannEdges, Dir};
 
-    h5_.AddDatasetsWithOneGroup(filename_,
-                                "group_mesh",
-                                datasetname,
-                                data,
+    h5_.AddDatasetsWithOneGroup(filename_, "group_mesh", datasetname, data,
                                 dim);
 
     delete[] OutletEdgeNOLen;
@@ -362,12 +332,12 @@ void cuDFNsys::OutputObjectData<T>::OutputMesh(const string &filename_,
     delete[] FracID;
     FracID = NULL;
 }; // OutputMesh
-template void cuDFNsys::OutputObjectData<double>::OutputMesh(const string &filename_,
-                                                             cuDFNsys::Mesh<double> mesh,
-                                                             const std::vector<size_t> &Fracs_percol);
-template void cuDFNsys::OutputObjectData<float>::OutputMesh(const string &filename_,
-                                                            cuDFNsys::Mesh<float> mesh,
-                                                            const std::vector<size_t> &Fracs_percol);
+template void cuDFNsys::OutputObjectData<double>::OutputMesh(
+    const string &filename_, cuDFNsys::Mesh<double> mesh,
+    const std::vector<size_t> &Fracs_percol);
+template void cuDFNsys::OutputObjectData<float>::OutputMesh(
+    const string &filename_, cuDFNsys::Mesh<float> mesh,
+    const std::vector<size_t> &Fracs_percol);
 
 // ====================================================
 // NAME:        OutputMHFEM
@@ -389,6 +359,15 @@ void cuDFNsys::OutputObjectData<T>::OutputMHFEM(const string &filename_,
 
     Value[0] = mhfem.QOut;
     h5_.AddDataset(filename_, "N", "QOut", Value, dim_e);
+
+    Value[0] = mhfem.MuOverRhoG;
+    h5_.AddDataset(filename_, "N", "MuOverRhoG", Value, dim_e);
+
+    Value[0] = (mhfem.IfPeriodic ? 1 : 0);
+    h5_.AddDataset(filename_, "N", "IfPeriodic", Value, dim_e);
+
+    Value[0] = mhfem.ConsTq;
+    h5_.AddDataset(filename_, "N", "ConsTq", Value, dim_e);
 
     Value[0] = mhfem.InletLength;
     h5_.AddDataset(filename_, "N", "InletLength", Value, dim_e);
@@ -418,22 +397,30 @@ void cuDFNsys::OutputObjectData<T>::OutputMHFEM(const string &filename_,
     h5_.AddDataset(filename_, "N", "Dir", Value3, dim_e);
 
     vector<double> PressureInteriorEdge_(mhfem.PressureInteriorEdge.data(),
-                                         mhfem.PressureInteriorEdge.data() + mhfem.PressureInteriorEdge.rows());
+                                         mhfem.PressureInteriorEdge.data() +
+                                             mhfem.PressureInteriorEdge.rows());
     uint2 dim_r = make_uint2(1, PressureInteriorEdge_.size());
-    h5_.AddDataset(filename_, "N", "PressureInteriorEdge", PressureInteriorEdge_.data(), dim_r);
+    h5_.AddDataset(filename_, "N", "PressureInteriorEdge",
+                   PressureInteriorEdge_.data(), dim_r);
 
     vector<double> PressureEles_(mhfem.PressureEles.data(),
-                                 mhfem.PressureEles.data() + mhfem.PressureEles.rows());
+                                 mhfem.PressureEles.data() +
+                                     mhfem.PressureEles.rows());
     dim_r = make_uint2(1, PressureEles_.size());
     h5_.AddDataset(filename_, "N", "PressureEles", PressureEles_.data(), dim_r);
 
-    vector<double> VelocityNormalScalarSepEdges_(mhfem.VelocityNormalScalarSepEdges.data(),
-                                                 mhfem.VelocityNormalScalarSepEdges.data() + mhfem.VelocityNormalScalarSepEdges.rows());
+    vector<double> VelocityNormalScalarSepEdges_(
+        mhfem.VelocityNormalScalarSepEdges.data(),
+        mhfem.VelocityNormalScalarSepEdges.data() +
+            mhfem.VelocityNormalScalarSepEdges.rows());
     dim_r = make_uint2(1, VelocityNormalScalarSepEdges_.size());
-    h5_.AddDataset(filename_, "N", "VelocityNormalScalarSepEdges", VelocityNormalScalarSepEdges_.data(), dim_r);
+    h5_.AddDataset(filename_, "N", "VelocityNormalScalarSepEdges",
+                   VelocityNormalScalarSepEdges_.data(), dim_r);
 
 }; // OutputMHFEM
-template void cuDFNsys::OutputObjectData<double>::OutputMHFEM(const string &filename_,
-                                                              cuDFNsys::MHFEM<double> mhfem);
-template void cuDFNsys::OutputObjectData<float>::OutputMHFEM(const string &filename_,
-                                                             cuDFNsys::MHFEM<float> mhfem);
+template void
+cuDFNsys::OutputObjectData<double>::OutputMHFEM(const string &filename_,
+                                                cuDFNsys::MHFEM<double> mhfem);
+template void
+cuDFNsys::OutputObjectData<float>::OutputMHFEM(const string &filename_,
+                                               cuDFNsys::MHFEM<float> mhfem);

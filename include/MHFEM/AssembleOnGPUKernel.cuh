@@ -34,15 +34,11 @@
 
 namespace cuDFNsys
 {
-template <typename T>
-__global__ void AssembleOnGPUKernel(cuDFNsys::Triplet<T> *tri_dev,
-                                    cuDFNsys::EleCoor<T> *coord_2D_dev,
-                                    cuDFNsys::EleEdgeAttri *Edge_attri,
-                                    T *Conduc_Frac_dev,
-                                    //int *neuman_sep_dev,
-                                    int NUM_sep_edges,
-                                    int NUM_eles,
-                                    int NUM_glob_interior_edges,
-                                    T P_in,
-                                    T P_out);
+    template <typename T>
+    __global__ void AssembleOnGPUKernel(
+        cuDFNsys::Triplet<T> *tri_dev, cuDFNsys::EleCoor<T> *coord_2D_dev,
+        cuDFNsys::EleEdgeAttri *Edge_attri, T *Conduc_Frac_dev,
+        //int *neuman_sep_dev,
+        int NUM_sep_edges, int NUM_eles, int Dim, T P_in, T P_out,
+        bool IfPeriodic, T mu_over_RhoGravity = (T)1., T const_q = 1e-5);
 }; // namespace cuDFNsys

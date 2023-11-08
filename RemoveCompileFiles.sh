@@ -23,7 +23,7 @@ for str in ${myArray[@]}; do
   echo "---------------cleaned "$str
 done
 
-myArray_II=("QuickStartGuide" "CompilationTest")
+myArray_II=("QuickStartGuide" "CompilationTest" "bin")
 for str in ${myArray_II[@]}; do
   cd  $str
   gio trash -f ./*.h5 ./*.m ./*.py
@@ -32,7 +32,7 @@ for str in ${myArray_II[@]}; do
   # gio trash -f CMakeCache.txt CMakeFiles cmake_install.cmake
   # cd ..
   # cd bin
-  gio trash -f ./main* ./Transform2DH5ParticleDataTo3D ./ColumnLikeDomainForDispersion ./QuickStartGuide ./QuickStartGuide_* ./ContinueParticleTransport ./ValidateLocalDiffusion ./ConvertH5Precision
+  gio trash -f ./cuDFNsys_exe ./main* ./Transform2DH5ParticleDataTo3D ./ColumnLikeDomainForDispersion ./QuickStartGuide ./QuickStartGuide_* ./ContinueParticleTransport ./ValidateLocalDiffusion ./ConvertH5Precision
   cd ../
   echo "---------------cleaned "$str
 done

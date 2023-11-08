@@ -25,9 +25,10 @@
 // DATE:        02/08/2022
 // ====================================================
 template <typename T>
-void cuDFNsys::InputObjectData<T>::InputFractures(const string &filename,
-                                                  thrust::host_vector<cuDFNsys::Fracture<T>> &Frac_verts_host,
-                                                  T &L, double3 &DomainDimensionRatio)
+void cuDFNsys::InputObjectData<T>::InputFractures(
+    const string &filename,
+    thrust::host_vector<cuDFNsys::Fracture<T>> &Frac_verts_host, T &L,
+    double3 &DomainDimensionRatio)
 {
     //
 
@@ -127,8 +128,8 @@ void cuDFNsys::InputObjectData<T>::InputFractures(const string &filename,
     {
         cuDFNsys::HDF5API h5g;
 
-        vector<double> Di_ = h5g.ReadDataset<double>(filename,
-                                                     "N", "DomainDimensionRatio");
+        vector<double> Di_ =
+            h5g.ReadDataset<double>(filename, "N", "DomainDimensionRatio");
         DomainDimensionRatio.x = Di_[0];
         DomainDimensionRatio.y = Di_[1];
         DomainDimensionRatio.z = Di_[2];
@@ -146,14 +147,10 @@ void cuDFNsys::InputObjectData<T>::InputFractures(const string &filename,
         string groupname = "Fracture_" + to_string(i + 1);
         Group group = file.openGroup(groupname);
         //cout << "Dsize = " << Dsize << ", " << groupname << endl;
-        vector<string> dataset_string_vec = {"Conductivity",
-                                             "Verts3D",
-                                             "Center",
-                                             "Verts3DTruncated",
-                                             "NumVertsTruncated",
-                                             "Radius",
-                                             "ConnectModelSurf",
-                                             "NormalVec"};
+        vector<string> dataset_string_vec = {
+            "Conductivity",     "Verts3D",           "Center",
+            "Verts3DTruncated", "NumVertsTruncated", "Radius",
+            "ConnectModelSurf", "NormalVec"};
         T Conductivity_[1];
         T Verts3D_[12];
         T Center_[3];
@@ -163,14 +160,9 @@ void cuDFNsys::InputObjectData<T>::InputFractures(const string &filename,
         T ConnectModelSurf_[6];
         T NormalVec_[3];
 
-        vector<T *> data = {Conductivity_,
-                            Verts3D_,
-                            Center_,
-                            Verts3DTruncated_,
-                            NumVertsTruncated_,
-                            Radius_,
-                            ConnectModelSurf_,
-                            NormalVec_};
+        vector<T *> data = {Conductivity_,     Verts3D_,           Center_,
+                            Verts3DTruncated_, NumVertsTruncated_, Radius_,
+                            ConnectModelSurf_, NormalVec_};
 
         for (uint j = 0; j < dataset_string_vec.size(); ++j)
         {
@@ -196,7 +188,8 @@ void cuDFNsys::InputObjectData<T>::InputFractures(const string &filename,
                 throw ExceptionsPause(AS);
             }
 
-            dataset_1.read(buffer, PredType::NATIVE_DOUBLE, myspace_1, filespace_1);
+            dataset_1.read(buffer, PredType::NATIVE_DOUBLE, myspace_1,
+                           filespace_1);
 
             for (uint ik = 0; ik < NUM_size; ++ik)
                 data[j][ik] = buffer[ik];
@@ -208,21 +201,34 @@ void cuDFNsys::InputObjectData<T>::InputFractures(const string &filename,
 
         Frac_verts_host[i].Conductivity = Conductivity_[0];
 
-        Frac_verts_host[i].Verts3D[0] = cuDFNsys::MakeVector3(Verts3D_[0], Verts3D_[4], Verts3D_[8]);
-        Frac_verts_host[i].Verts3D[1] = cuDFNsys::MakeVector3(Verts3D_[1], Verts3D_[5], Verts3D_[9]);
-        Frac_verts_host[i].Verts3D[2] = cuDFNsys::MakeVector3(Verts3D_[2], Verts3D_[6], Verts3D_[10]);
-        Frac_verts_host[i].Verts3D[3] = cuDFNsys::MakeVector3(Verts3D_[3], Verts3D_[7], Verts3D_[11]);
+        Frac_verts_host[i].Verts3D[0] =
+            cuDFNsys::MakeVector3(Verts3D_[0], Verts3D_[4], Verts3D_[8]);
+        Frac_verts_host[i].Verts3D[1] =
+            cuDFNsys::MakeVector3(Verts3D_[1], Verts3D_[5], Verts3D_[9]);
+        Frac_verts_host[i].Verts3D[2] =
+            cuDFNsys::MakeVector3(Verts3D_[2], Verts3D_[6], Verts3D_[10]);
+        Frac_verts_host[i].Verts3D[3] =
+            cuDFNsys::MakeVector3(Verts3D_[3], Verts3D_[7], Verts3D_[11]);
 
-        Frac_verts_host[i].Center = cuDFNsys::MakeVector3(Center_[0], Center_[1], Center_[2]);
+        Frac_verts_host[i].Center =
+            cuDFNsys::MakeVector3(Center_[0], Center_[1], Center_[2]);
 
-        Frac_verts_host[i].Verts3DTruncated[0] = cuDFNsys::MakeVector3(Verts3DTruncated_[0], Verts3DTruncated_[8], Verts3DTruncated_[16]);
-        Frac_verts_host[i].Verts3DTruncated[1] = cuDFNsys::MakeVector3(Verts3DTruncated_[1], Verts3DTruncated_[9], Verts3DTruncated_[17]);
-        Frac_verts_host[i].Verts3DTruncated[2] = cuDFNsys::MakeVector3(Verts3DTruncated_[2], Verts3DTruncated_[10], Verts3DTruncated_[18]);
-        Frac_verts_host[i].Verts3DTruncated[3] = cuDFNsys::MakeVector3(Verts3DTruncated_[3], Verts3DTruncated_[11], Verts3DTruncated_[19]);
-        Frac_verts_host[i].Verts3DTruncated[4] = cuDFNsys::MakeVector3(Verts3DTruncated_[4], Verts3DTruncated_[12], Verts3DTruncated_[20]);
-        Frac_verts_host[i].Verts3DTruncated[5] = cuDFNsys::MakeVector3(Verts3DTruncated_[5], Verts3DTruncated_[13], Verts3DTruncated_[21]);
-        Frac_verts_host[i].Verts3DTruncated[6] = cuDFNsys::MakeVector3(Verts3DTruncated_[6], Verts3DTruncated_[14], Verts3DTruncated_[22]);
-        Frac_verts_host[i].Verts3DTruncated[7] = cuDFNsys::MakeVector3(Verts3DTruncated_[7], Verts3DTruncated_[15], Verts3DTruncated_[23]);
+        Frac_verts_host[i].Verts3DTruncated[0] = cuDFNsys::MakeVector3(
+            Verts3DTruncated_[0], Verts3DTruncated_[8], Verts3DTruncated_[16]);
+        Frac_verts_host[i].Verts3DTruncated[1] = cuDFNsys::MakeVector3(
+            Verts3DTruncated_[1], Verts3DTruncated_[9], Verts3DTruncated_[17]);
+        Frac_verts_host[i].Verts3DTruncated[2] = cuDFNsys::MakeVector3(
+            Verts3DTruncated_[2], Verts3DTruncated_[10], Verts3DTruncated_[18]);
+        Frac_verts_host[i].Verts3DTruncated[3] = cuDFNsys::MakeVector3(
+            Verts3DTruncated_[3], Verts3DTruncated_[11], Verts3DTruncated_[19]);
+        Frac_verts_host[i].Verts3DTruncated[4] = cuDFNsys::MakeVector3(
+            Verts3DTruncated_[4], Verts3DTruncated_[12], Verts3DTruncated_[20]);
+        Frac_verts_host[i].Verts3DTruncated[5] = cuDFNsys::MakeVector3(
+            Verts3DTruncated_[5], Verts3DTruncated_[13], Verts3DTruncated_[21]);
+        Frac_verts_host[i].Verts3DTruncated[6] = cuDFNsys::MakeVector3(
+            Verts3DTruncated_[6], Verts3DTruncated_[14], Verts3DTruncated_[22]);
+        Frac_verts_host[i].Verts3DTruncated[7] = cuDFNsys::MakeVector3(
+            Verts3DTruncated_[7], Verts3DTruncated_[15], Verts3DTruncated_[23]);
 
         Frac_verts_host[i].NumVertsTruncated = NumVertsTruncated_[0];
 
@@ -235,18 +241,21 @@ void cuDFNsys::InputObjectData<T>::InputFractures(const string &filename,
         Frac_verts_host[i].ConnectModelSurf[4] = ConnectModelSurf_[4];
         Frac_verts_host[i].ConnectModelSurf[5] = ConnectModelSurf_[5];
 
-        Frac_verts_host[i].NormalVec = cuDFNsys::MakeVector3(NormalVec_[0], NormalVec_[1], NormalVec_[2]);
+        Frac_verts_host[i].NormalVec =
+            cuDFNsys::MakeVector3(NormalVec_[0], NormalVec_[1], NormalVec_[2]);
     }
 
     file.close();
 
 }; // InputFractures
-template void cuDFNsys::InputObjectData<double>::InputFractures(const string &filename,
-                                                                thrust::host_vector<cuDFNsys::Fracture<double>> &Frac_verts_host,
-                                                                double &L, double3 &DomainDimensionRatio);
-template void cuDFNsys::InputObjectData<float>::InputFractures(const string &filename,
-                                                               thrust::host_vector<cuDFNsys::Fracture<float>> &Frac_verts_host,
-                                                               float &L, double3 &DomainDimensionRatio);
+template void cuDFNsys::InputObjectData<double>::InputFractures(
+    const string &filename,
+    thrust::host_vector<cuDFNsys::Fracture<double>> &Frac_verts_host, double &L,
+    double3 &DomainDimensionRatio);
+template void cuDFNsys::InputObjectData<float>::InputFractures(
+    const string &filename,
+    thrust::host_vector<cuDFNsys::Fracture<float>> &Frac_verts_host, float &L,
+    double3 &DomainDimensionRatio);
 
 // ====================================================
 // NAME:        InputMesh
@@ -273,30 +282,26 @@ void cuDFNsys::InputObjectData<T>::InputMesh(const string &filename,
     };
 
     HDF5API h5g;
-    std::vector<double> TMP_U = h5g.ReadDataset<double>(filename, "N", "MeanGridSize");
+    std::vector<double> TMP_U =
+        h5g.ReadDataset<double>(filename, "N", "MeanGridSize");
     mesh.MeanGridSize = TMP_U[0];
+
+    vector<T> data_y;
+    data_y = h5g.ReadDataset<T>(filename, "N", "InletTraceLength");
+    mesh.InletTraceLength = data_y[0];
+    data_y = h5g.ReadDataset<T>(filename, "N", "OutletTraceLength");
+    mesh.OutletTraceLength = data_y[0];
 
     H5File file(filename, H5F_ACC_RDONLY);
 
-    vector<string> datasetname = {
-        "NumFractures",
-        "NumNodes",
-        "NumElements",
-        "NumInletEdges",
-        "NumOutletEdges"};
+    vector<string> datasetname = {"NumFractures", "NumNodes", "NumElements",
+                                  "NumInletEdges", "NumOutletEdges"};
 
-    uint NumFractures = 0,
-         NumNodes = 0,
-         NumElements = 0,
-         NumInletEdges = 0,
+    uint NumFractures = 0, NumNodes = 0, NumElements = 0, NumInletEdges = 0,
          NumOutletEdges = 0;
 
-    vector<uint *> data = {
-        &NumFractures,
-        &NumNodes,
-        &NumElements,
-        &NumInletEdges,
-        &NumOutletEdges};
+    vector<uint *> data = {&NumFractures, &NumNodes, &NumElements,
+                           &NumInletEdges, &NumOutletEdges};
 
     for (uint i = 0; i < datasetname.size(); ++i)
     {
@@ -344,21 +349,13 @@ void cuDFNsys::InputObjectData<T>::InputMesh(const string &filename,
     string groupname = "group_mesh";
     Group group = file.openGroup(groupname);
 
-    vector<string> datasetname_x = {
-        "MeshSuccess",
-        "FracID",
-        "Coordinate3D",
-        "Element2D",
-        "NumElementFrac",
-        "Element3D",
-        "Coordinate2D",
-        "ElementFracTag",
-        "EdgeAttri",
-        "InletEdgeNOLen",
-        "OutletEdgeNOLen",
-        "NumInteriorEdges",
-        "NumNeumannEdges",
-        "Dir"};
+    vector<string> datasetname_x = {"MeshSuccess",     "FracID",
+                                    "Coordinate3D",    "Element2D",
+                                    "NumElementFrac",  "Element3D",
+                                    "Coordinate2D",    "ElementFracTag",
+                                    "EdgeAttri",       "InletEdgeNOLen",
+                                    "OutletEdgeNOLen", "NumInteriorEdges",
+                                    "NumNeumannEdges", "Dir"};
 
     T MeshSuccess[1];
     T *FracID = new T[NumFractures];
@@ -375,21 +372,13 @@ void cuDFNsys::InputObjectData<T>::InputMesh(const string &filename,
     T NumNeumannEdges[1];
     T Dir[1];
 
-    vector<T *> data_x = {
-        MeshSuccess,
-        FracID,
-        Coordinate3D,
-        Element2D,
-        NumElementFrac,
-        Element3D,
-        Coordinate2D,
-        ElementFracTag,
-        EdgeAttri,
-        InletEdgeNOLen,
-        OutletEdgeNOLen,
-        NumInteriorEdges,
-        NumNeumannEdges,
-        Dir};
+    vector<T *> data_x = {MeshSuccess,     FracID,
+                          Coordinate3D,    Element2D,
+                          NumElementFrac,  Element3D,
+                          Coordinate2D,    ElementFracTag,
+                          EdgeAttri,       InletEdgeNOLen,
+                          OutletEdgeNOLen, NumInteriorEdges,
+                          NumNeumannEdges, Dir};
 
     for (uint i = 0; i < datasetname_x.size(); ++i)
     {
@@ -548,12 +537,14 @@ void cuDFNsys::InputObjectData<T>::InputMesh(const string &filename,
     delete[] FracID;
     FracID = NULL;
 }; // InputMesh
-template void cuDFNsys::InputObjectData<double>::InputMesh(const string &filename,
-                                                           cuDFNsys::Mesh<double> &mesh,
-                                                           std::vector<size_t> *Fracs_percol);
-template void cuDFNsys::InputObjectData<float>::InputMesh(const string &filename,
-                                                          cuDFNsys::Mesh<float> &mesh,
-                                                          std::vector<size_t> *Fracs_percol);
+template void
+cuDFNsys::InputObjectData<double>::InputMesh(const string &filename,
+                                             cuDFNsys::Mesh<double> &mesh,
+                                             std::vector<size_t> *Fracs_percol);
+template void
+cuDFNsys::InputObjectData<float>::InputMesh(const string &filename,
+                                            cuDFNsys::Mesh<float> &mesh,
+                                            std::vector<size_t> *Fracs_percol);
 
 // ====================================================
 // NAME:        InputMHFEM
@@ -586,6 +577,15 @@ void cuDFNsys::InputObjectData<T>::InputMHFEM(const string &filename,
     value_ = h5g.ReadDataset<T>(filename, "N", "QIn");
     MHFEM.QIn = value_[0];
 
+    value_ = h5g.ReadDataset<T>(filename, "N", "MuOverRhoG");
+    MHFEM.MuOverRhoG = value_[0];
+
+    value_ = h5g.ReadDataset<T>(filename, "N", "IfPeriodic");
+    MHFEM.IfPeriodic = (value_[0] == 1 ? true : false);
+
+    value_ = h5g.ReadDataset<T>(filename, "N", "ConsTq");
+    MHFEM.ConsTq = value_[0];
+
     value_ = h5g.ReadDataset<T>(filename, "N", "QOut");
     MHFEM.QOut = value_[0];
 
@@ -607,7 +607,8 @@ void cuDFNsys::InputObjectData<T>::InputMHFEM(const string &filename,
     value_ = h5g.ReadDataset<T>(filename, "N", "OutletP");
     MHFEM.OutletP = value_[0];
 
-    vector<double> value_2 = h5g.ReadDataset<double>(filename, "N", "TripletTime");
+    vector<double> value_2 =
+        h5g.ReadDataset<double>(filename, "N", "TripletTime");
     MHFEM.TripletTime = value_2[0];
 
     value_2 = h5g.ReadDataset<double>(filename, "N", "MeanVelocity");
@@ -620,18 +621,21 @@ void cuDFNsys::InputObjectData<T>::InputMHFEM(const string &filename,
     MHFEM.Dir = value_3[0];
 
     value_2 = h5g.ReadDataset<double>(filename, "N", "PressureInteriorEdge");
-    MHFEM.PressureInteriorEdge = Eigen::Map<Eigen::MatrixXd>(value_2.data(),
-                                                             value_2.size(), 1);
+    MHFEM.PressureInteriorEdge =
+        Eigen::Map<Eigen::MatrixXd>(value_2.data(), value_2.size(), 1);
 
     value_2 = h5g.ReadDataset<double>(filename, "N", "PressureEles");
-    MHFEM.PressureEles = Eigen::Map<Eigen::MatrixXd>(value_2.data(),
-                                                     value_2.size(), 1);
+    MHFEM.PressureEles =
+        Eigen::Map<Eigen::MatrixXd>(value_2.data(), value_2.size(), 1);
 
-    value_2 = h5g.ReadDataset<double>(filename, "N", "VelocityNormalScalarSepEdges");
-    MHFEM.VelocityNormalScalarSepEdges = Eigen::Map<Eigen::MatrixXd>(value_2.data(),
-                                                                     value_2.size(), 1);
+    value_2 =
+        h5g.ReadDataset<double>(filename, "N", "VelocityNormalScalarSepEdges");
+    MHFEM.VelocityNormalScalarSepEdges =
+        Eigen::Map<Eigen::MatrixXd>(value_2.data(), value_2.size(), 1);
 }; // InputMHFEM
-template void cuDFNsys::InputObjectData<double>::InputMHFEM(const string &filename,
-                                                            cuDFNsys::MHFEM<double> &MHFEM);
-template void cuDFNsys::InputObjectData<float>::InputMHFEM(const string &filename,
-                                                           cuDFNsys::MHFEM<float> &MHFEM);
+template void
+cuDFNsys::InputObjectData<double>::InputMHFEM(const string &filename,
+                                              cuDFNsys::MHFEM<double> &MHFEM);
+template void
+cuDFNsys::InputObjectData<float>::InputMHFEM(const string &filename,
+                                             cuDFNsys::MHFEM<float> &MHFEM);

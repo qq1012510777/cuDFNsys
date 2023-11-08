@@ -955,259 +955,178 @@ template void cuDFNsys::Mesh<float>::GetElements(
 template <typename T>
 void cuDFNsys::Mesh<T>::NumberingEdges(const T L, double3 DomainDimensionRatio)
 {
+    this->NumInteriorEdges = 0;
+    this->NumInletEdges = 0;
+    this->NumOutletEdges = 0;
+    this->NumNeumannEdges = 0;
+
     uint NUM_ele = this->Element3D.size();
     uint NUM_node = this->Coordinate3D.size();
 
     this->EdgeAttri.resize(NUM_ele);
 
-    //SparseMatrix<size_t> Shared_edge_global_NO(NUM_node, NUM_node);
-    //Shared_edge_global_NO.reserve(VectorXi::Constant(NUM_node, 4));
-    UMapEdge Shared_edge_global_NO;
-    Shared_edge_global_NO.reserve(3 * NUM_node);
+    Eigen::SparseMatrix<int> IfEdgeInterior;
+    IfEdgeInterior.resize(NUM_node, NUM_node);
 
-    size_t edge_shared = 1;
-
-    size_t Sep_edge_NO_in = 1;
-    size_t Sep_edge_NO_out = 1;
-    size_t Sep_edge_NO_neumann = 1;
-
-    this->InletEdgeNOLen.reserve(NUM_ele * 3);
-    this->OutletEdgeNOLen.reserve(NUM_ele * 3);
-
-    //----
-    //SparseMatrix<float> shared_edge_len(NUM_node, NUM_node);
-    //shared_edge_len.reserve(VectorXi::Constant(NUM_node, 4));
-    //double istart = 0;
-    //int element_count = -1;
-    for (size_t i = 0; i < this->Element2D.size(); ++i)
+    for (int i = 0; i < NUM_ele; ++i)
     {
-        bool if_change_ori = false;
-        size_t eleNO_tmp_1 = this->GetElementID(i, 0);
+        IfEdgeInterior.insert(this->Element3D[i].x - 1,
+                              this->Element3D[i].y - 1) = 1;
+        IfEdgeInterior.insert(this->Element3D[i].y - 1,
+                              this->Element3D[i].z - 1) = 1;
+        IfEdgeInterior.insert(this->Element3D[i].z - 1,
+                              this->Element3D[i].x - 1) = 1;
+    }
 
-        if (this->Element2D[i][0].y != this->Element3D[eleNO_tmp_1].y &&
-            this->Element2D[i][0].z != this->Element3D[eleNO_tmp_1].z)
-            if_change_ori = true;
+    std::vector<std::pair<int3, double>> InletAndOutlet_p;
 
-        //istart = cuDFNsys::CPUSecond();
+    int GlobalEdgeNo = 0;
+    std::map<std::pair<uint, uint>, uint> Set_edgeNo;
 
-        UMapEdge node2element_local =
-            this->SparseMatEdgeAttri(i, if_change_ori);
+    for (int i = 0; i < NUM_ele; ++i)
+    {
+        uint *FF = &(this->Element3D[i].x);
 
-        //cout << "i: " << i << " gen Matrix " << cuDFNsys::CPUSecond() - istart << " sec\n";
-
-        //istart = cuDFNsys::CPUSecond();
-
-        /// get 2D coordinates of the fracture at present
-        /// get 2D coordinates of the fracture at present
-        /// get 2D coordinates of the fracture at present
-        //size_t FracID__ = this->ElementFracTag[element_count + 1];
-        // cuDFNsys::Vector2<T> verts2DDD[Fracs[FracID__].NumVertsTruncated];
-        // cuDFNsys::Fracture<T> FL = Fracs[FracID__];
-        // FL.Generate2DVerts(verts2DDD, FL.NumVertsTruncated, true);
-        // cuDFNsys::Vector1<T> tmp_R_1[3][3];
-        // FL.RoationMatrix(tmp_R_1, 32);
-
-        for (size_t j = 0; j < this->Element2D[i].size(); ++j)
+        for (int j = 0; j < 3; ++j)
         {
-            // element_count++;
+            uint node1 = FF[j] - 1, node2 = FF[(j + 1) % 3] - 1;
 
-            size_t tmp_ele_NO = this->GetElementID(i, j);
+            std::pair<uint, uint> tmp_key;
+            tmp_key.first = (node1 < node2 ? node1 : node2);
+            tmp_key.second = (node1 > node2 ? node1 : node2);
 
-            uint element_list_e[3] = {this->Element2D[i][j].x,
-                                      this->Element2D[i][j].y,
-                                      this->Element2D[i][j].z};
-
-            for (size_t k = 0; k < 3; ++k)
+            if (IfEdgeInterior.coeffRef(node1, node2) == 1 &&
+                IfEdgeInterior.coeffRef(node2, node1) == 1)
             {
-                size_t Sep_NO = tmp_ele_NO * 3 + k + 1;
+                this->EdgeAttri[i].e[j] = 3;
 
-                this->EdgeAttri[tmp_ele_NO].e[k] = -1;
-                this->EdgeAttri[tmp_ele_NO].no[k] = -1;
-
-                size_t node1 = element_list_e[k],
-                       node2 = element_list_e[(k + 1) % 3];
-
-                pair<size_t, size_t> key_ =
-                    make_pair(node1 < node2 ? node1 : node2,
-                              node1 > node2 ? node1 : node2);
-
-                if (node2element_local[key_] > 0)
+                if (Set_edgeNo.find(tmp_key) == Set_edgeNo.end())
                 {
-                    this->EdgeAttri[tmp_ele_NO].e[k] = 3; // interior
+                    this->EdgeAttri[i].no[j] = GlobalEdgeNo;
+                    Set_edgeNo.insert(std::make_pair(tmp_key, GlobalEdgeNo));
+                    GlobalEdgeNo++;
+                    this->NumInteriorEdges++;
 
-                    if (Shared_edge_global_NO.find(key_) ==
-                        Shared_edge_global_NO.end())
-                    {
-                        this->EdgeAttri[tmp_ele_NO].no[k] = edge_shared;
-                        Shared_edge_global_NO[key_] = edge_shared;
-                        //Shared_edge_global_NO.coeffRef(node2 - 1, node1 - 1) = edge_shared;
-                        edge_shared++;
-
-                        //shared_edge_len.coeffRef(node1 - 1, node2 - 1) = len;
-                        //shared_edge_len.coeffRef(node2 - 1, node1 - 1) = len;
-                    }
-                    else
-                    {
-                        this->EdgeAttri[tmp_ele_NO].no[k] =
-                            Shared_edge_global_NO[key_]; // Sep_NO;
-
-                        //cout << "compare !!! ";
-                        //printf("len: %lf, pre: %lf, error: %lf%\n", len, shared_edge_len.coeffRef(node1 - 1, node2 - 1), abs(len - shared_edge_len.coeffRef(node1 - 1, node2 - 1)) * 100);
-                    }
+                    // cout << "EDGE " << GlobalEdgeNo - 1
+                    //      << " is interior, node: " << node1 << ", " << node2
+                    //      << endl;
                 }
                 else
                 {
-                    pair<bool, string> if_d = this->IfTwoEndsDirchlet(
-                        node1, node2, L, DomainDimensionRatio);
+                    this->EdgeAttri[i].no[j] = Set_edgeNo[tmp_key];
+                    // cout << "EDGE " << Set_edgeNo[tmp_key]
+                    //      << " is interior, node: " << node1 << ", " << node2
+                    //      << endl;
+                } //
+            }
+            else
+            {
+                pair<bool, string> if_d = this->IfTwoEndsDirchlet(
+                    node1 + 1, node2 + 1, L, DomainDimensionRatio);
 
-                    if (if_d.first == true)
-                    {
-                        cuDFNsys::Vector3<T> vert1 =
-                            this->Coordinate3D[node1 - 1];
-                        cuDFNsys::Vector3<T> vert2 =
-                            this->Coordinate3D[node2 - 1];
-                        cuDFNsys::Vector3<T> vect = cuDFNsys::MakeVector3(
-                            vert1.x - vert2.x, vert1.y - vert2.y,
-                            vert1.z - vert2.z);
-                        T len = sqrt(vect.x * vect.x + vect.y * vect.y +
-                                     vect.z * vect.z);
+                if (if_d.first == true)
+                {
+                    cuDFNsys::Vector3<T> vert1 = this->Coordinate3D[node1];
+                    cuDFNsys::Vector3<T> vert2 = this->Coordinate3D[node2];
+                    cuDFNsys::Vector3<T> vect = cuDFNsys::MakeVector3(
+                        vert1.x - vert2.x, vert1.y - vert2.y,
+                        vert1.z - vert2.z);
+                    T len = sqrt(vect.x * vect.x + vect.y * vect.y +
+                                 vect.z * vect.z);
+                    InletAndOutlet_p.push_back(std::make_pair(
+                        make_int3(i, j, (if_d.second == "in" ? 0 : 1)), len));
+                    // if (if_d.second == "in")
+                    // {
+                    //     this->EdgeAttri[i].e[j] = 0;
+                    //     this->EdgeAttri[i].no[j] = GlobalEdgeNo;
+                    //     this->InletEdgeNOLen.push_back(
+                    //         cuDFNsys::MakeVector2((T)(i * 3 + j), len));
+                    //     this->NumInletEdges++;
+                    //     cout << "EDGE " << GlobalEdgeNo
+                    //          << " is inlet, node: " << node1 << ", " << node2
+                    //          << endl;
+                    // }
+                    // else
+                    // {
+                    //     this->EdgeAttri[i].e[j] = 1;
+                    //     this->EdgeAttri[i].no[j] = GlobalEdgeNo;
+                    //     this->OutletEdgeNOLen.push_back(
+                    //         cuDFNsys::MakeVector2((T)(i * 3 + j), len));
+                    //     this->NumOutletEdges++;
+                    //     cout << "EDGE " << GlobalEdgeNo
+                    //          << " is outlet, node: " << node1 << ", " << node2
+                    //          << endl;
+                    // }
+                }
+                else
+                {
+                    this->EdgeAttri[i].e[j] = 2;
+                    this->EdgeAttri[i].no[j] = GlobalEdgeNo;
+                    this->NumNeumannEdges++;
 
-                        if (if_d.second == "in")
-                        {
-                            this->EdgeAttri[tmp_ele_NO].e[k] = 0;
-                            this->EdgeAttri[tmp_ele_NO].no[k] = Sep_NO;
-                            this->InletEdgeNOLen.push_back(
-                                cuDFNsys::MakeVector2((T)Sep_NO, len));
-
-                            Sep_edge_NO_in++;
-                        }
-                        else
-                        {
-                            this->EdgeAttri[tmp_ele_NO].e[k] = 1;
-                            this->EdgeAttri[tmp_ele_NO].no[k] = Sep_NO;
-                            this->OutletEdgeNOLen.push_back(
-                                cuDFNsys::MakeVector2((T)Sep_NO, len));
-
-                            Sep_edge_NO_out++;
-                        }
-                    }
-                    else
-                    {
-                        this->EdgeAttri[tmp_ele_NO].e[k] = 2;
-                        this->EdgeAttri[tmp_ele_NO].no[k] = Sep_NO;
-
-                        // determine if two nodes are inside the fracture or not,
-                        // if inside, then the edge must be problematic: it is not a neumman edge!!!
-
-                        //if (element_count + 1 == 254555)
-                        //{
-                        //    // if (element_count != 0)
-                        //    // exit(0);
-                        //
-                        //    cuDFNsys::Vector3<T> coord_1_s = cuDFNsys::MakeVector3(this->Coordinate3D[node1 - 1].x /*- FL.Center.x*/,
-                        //                                                           this->Coordinate3D[node1 - 1].y /*- FL.Center.y*/,
-                        //                                                           this->Coordinate3D[node1 - 1].z /*- FL.Center.z*/);
-                        //    cuDFNsys::Vector3<T> coord_2_s = cuDFNsys::MakeVector3(this->Coordinate3D[node2 - 1].x /*- FL.Center.x*/,
-                        //                                                           this->Coordinate3D[node2 - 1].y /*- FL.Center.y*/,
-                        //                                                           this->Coordinate3D[node2 - 1].z /*- FL.Center.z*/);
-                        //
-                        //    // coord_1_s = cuDFNsys::ProductSquare3Vector3<T>(tmp_R_1, coord_1_s);
-                        //    // coord_2_s = cuDFNsys::ProductSquare3Vector3<T>(tmp_R_1, coord_2_s);
-                        //    // cuDFNsys::Vector2<T> coord_1_k = cuDFNsys::MakeVector2(coord_1_s.x, coord_1_s.y);
-                        //    // cuDFNsys::Vector2<T> coord_2_k = cuDFNsys::MakeVector2(coord_2_s.x, coord_2_s.y);
-                        //    // bool pls_1 = cuDFNsys::IfPntInside2DConvexPoly<T>(coord_1_k, verts2DDD, FL.NumVertsTruncated);
-                        //    // bool pls_2 = cuDFNsys::IfPntInside2DConvexPoly<T>(coord_2_k, verts2DDD, FL.NumVertsTruncated);
-                        //
-                        //    for (int uuo = 0; uuo < Fracs[FracID__].NumVertsTruncated; ++uuo)
-                        //    {
-                        //        bool pls_1 = false, pls_2 = false;
-                        //
-                        //        cuDFNsys::Vector3<T> end_1 = Fracs[FracID__].Verts3DTruncated[uuo];
-                        //        cuDFNsys::Vector3<T> end_2 = Fracs[FracID__].Verts3DTruncated[(uuo + 1) % Fracs[FracID__].NumVertsTruncated];
-                        //
-                        //        cuDFNsys::Vector3<T> A1, B1, A2, B2;
-                        //
-                        //        A1.x = end_1.x - coord_1_s.x,
-                        //        A1.y = end_1.y - coord_1_s.y,
-                        //        A1.z = end_1.z - coord_1_s.z;
-                        //        B1.x = end_2.x - coord_1_s.x,
-                        //        B1.y = end_2.y - coord_1_s.y,
-                        //        B1.z = end_2.z - coord_1_s.z;
-                        //
-                        //        A2.x = end_1.x - coord_2_s.x,
-                        //        A2.y = end_1.y - coord_2_s.y,
-                        //        A2.z = end_1.z - coord_2_s.z;
-                        //        B2.x = end_2.x - coord_2_s.x,
-                        //        B2.y = end_2.y - coord_2_s.y,
-                        //        B2.z = end_2.z - coord_2_s.z;
-                        //
-                        //        T norm_A1 = sqrt(A1.x * A1.x + A1.y * A1.y + A1.z * A1.z);
-                        //        T norm_A2 = sqrt(A2.x * A2.x + A2.y * A2.y + A2.z * A2.z);
-                        //        T norm_B1 = sqrt(B1.x * B1.x + B1.y * B1.y + B1.z * B1.z);
-                        //        T norm_B2 = sqrt(B2.x * B2.x + B2.y * B2.y + B2.z * B2.z);
-                        //
-                        //        T normError = 1e-5;
-                        //        T degreeError = 0.5;
-                        //
-                        //        if (norm_A1 < normError || norm_B1 < normError)
-                        //            pls_1 = true;
-                        //
-                        //        if (norm_A2 < normError || norm_B2 < normError)
-                        //            pls_2 = true;
-                        //
-                        //        T theta1, theta2;
-                        //        if (norm_A1 > normError && norm_B1 > normError)
-                        //        {
-                        //            theta1 = acos((A1.x * B1.x + A1.y * B1.y + A1.z * B1.z) / (norm_A1 * norm_B1)) * 180.0 / M_PI;
-                        //            if (abs(theta1 - 180.0) < degreeError)
-                        //                pls_1 = true;
-                        //        }
-                        //
-                        //        if (norm_A2 > normError && norm_B2 > normError)
-                        //        {
-                        //            theta2 = acos((A2.x * B2.x + A2.y * B2.y + A2.z * B2.z) / (norm_A2 * norm_B2)) * 180.0 / M_PI;
-                        //            if (abs(theta2 - 180.0) < degreeError)
-                        //                pls_2 = true;
-                        //        }
-                        //
-                        //        cout << "Edge node: [" << end_1.x << ", " << end_1.y << ", " << end_1.z << "], [";
-                        //        cout << end_2.x << ", " << end_2.y << ", " << end_2.z << "\n";
-                        //        cout << "Iden: " << pls_1 << ", " << pls_2 << "; ";
-                        //        cout << "norm_A1: " << norm_A1 << ", ";
-                        //        cout << "norm_A2: " << norm_A2 << ", ";
-                        //        cout << "norm_B1: " << norm_B1 << ", ";
-                        //        cout << "norm_B2: " << norm_B2 << ", ";
-                        //        cout << "theta1: " << theta1 << ", ";
-                        //        cout << "theta2: " << theta2 << "\n";
-                        //        if (pls_1 && pls_2)
-                        //            break;
-                        //
-                        //        if ((!pls_1 || !pls_2) && uuo == Fracs[FracID__].NumVertsTruncated - 1)
-                        //        {
-                        //
-                        //            cout << "\t\tFracid: " << FracID__ << ", boundID: " << uuo << ", Found a problematic neumman edge in element ID: " << element_count + 1 << "; ";
-                        //            cout << "node1: " << this->Coordinate3D[node1 - 1].x << ", ";
-                        //            cout << this->Coordinate3D[node1 - 1].y << ", " << this->Coordinate3D[node1 - 1].z << "; node2: ";
-                        //            cout << this->Coordinate3D[node2 - 1].x << ", " << this->Coordinate3D[node2 - 1].y << ", " << this->Coordinate3D[node2 - 1].z << endl;
-                        //        }
-                        //    }
-                        //}
-
-                        Sep_edge_NO_neumann++;
-                    }
+                    // cout << "EDGE " << GlobalEdgeNo
+                    //      << " is lateral, node: " << node1 << ", " << node2
+                    //      << endl;
+                    GlobalEdgeNo++;
                 }
             }
         }
-        //cout << "i: " << i << " identify edge " << cuDFNsys::CPUSecond() - istart << " sec\n";
-    };
+    }
 
-    this->InletEdgeNOLen.shrink_to_fit();
-    this->OutletEdgeNOLen.shrink_to_fit();
+    for (int i = 0; i < InletAndOutlet_p.size(); ++i)
+    {
+        this->EdgeAttri[InletAndOutlet_p[i].first.x]
+            .e[InletAndOutlet_p[i].first.y] = InletAndOutlet_p[i].first.z;
+        this->EdgeAttri[InletAndOutlet_p[i].first.x]
+            .no[InletAndOutlet_p[i].first.y] = GlobalEdgeNo;
 
-    NumInteriorEdges = edge_shared - 1;
-    NumInletEdges = Sep_edge_NO_in - 1;
-    NumOutletEdges = Sep_edge_NO_out - 1;
-    NumNeumannEdges = Sep_edge_NO_neumann - 1;
+        if (InletAndOutlet_p[i].first.z == 0)
+        {
+            this->InletEdgeNOLen.push_back(
+                cuDFNsys::MakeVector2((T)(InletAndOutlet_p[i].first.x * 3 +
+                                          InletAndOutlet_p[i].first.y),
+                                      (T)InletAndOutlet_p[i].second));
+            this->NumInletEdges++;
+            this->InletTraceLength += (T)InletAndOutlet_p[i].second;
+        }
+        else
+        {
+            this->OutletEdgeNOLen.push_back(
+                cuDFNsys::MakeVector2((T)(InletAndOutlet_p[i].first.x * 3 +
+                                          InletAndOutlet_p[i].first.y),
+                                      (T)InletAndOutlet_p[i].second));
+            this->NumOutletEdges++;
+            this->OutletTraceLength += (T)InletAndOutlet_p[i].second;
+        }
+
+        GlobalEdgeNo++;
+    }
+
+    // cout << "GlobalEdgeNo: " << GlobalEdgeNo << endl;
+    // cout << "NumNeumannEdges: " << NumNeumannEdges << endl;
+    // cout << "NumOutletEdges: " << NumOutletEdges << endl;
+    // cout << "NumInletEdges: " << NumInletEdges << endl;
+    // cout << "NumInteriorEdges: " << NumInteriorEdges << endl;
+
+    if (GlobalEdgeNo !=
+        (NumNeumannEdges + NumOutletEdges + NumInletEdges + NumInteriorEdges))
+        throw cuDFNsys::ExceptionsPause("The count of edges is wrong!");
+
+    // for (int i = 0; i < this->Element2D[0].size(); ++i)
+    // {
+    //     cout << this->Element2D[0][i].x << ", " << this->Element2D[0][i].y
+    //          << ", " << this->Element2D[0][i].z << "\n";
+    // }
+    // cout << "------\n";
+    // for (int i = 0; i < this->Coordinate2D.size(); ++i)
+    // {
+    //     cout << this->Coordinate2D[i].x[0] << ", " << this->Coordinate2D[i].y[0]
+    //          << "\n";
+    //     cout << this->Coordinate2D[i].x[1] << ", " << this->Coordinate2D[i].y[1]
+    //          << "\n";
+    //     cout << this->Coordinate2D[i].x[2] << ", " << this->Coordinate2D[i].y[2]
+    //          << "\n";
+    // }
 }; // NumberingEdges
 template void cuDFNsys::Mesh<double>::NumberingEdges(
     const double L,
@@ -1292,7 +1211,8 @@ void cuDFNsys::Mesh<T>::GetEntitiesElements(
 
     if (Zero_element_entityNO.size() > 0)
     {
-        cout << "\t\t\033[33mFound zero element entities! I am removing these "
+        cout << "\t\t\033[33mFound zero element entities! I am removing "
+                "these "
                 "entities\033[0m\n";
         thrust::host_vector<thrust::host_vector<uint3>> tmp_e(
             elementEntities_2D.size() - Zero_element_entityNO.size());

@@ -149,6 +149,7 @@ namespace cuDFNsys
         void LoadClassFromH5(const string &ClassNameH5);
         void SpatialPeriodicity();
         void LoadDFNFromCSV(const string &xlsxNameWithoutSuffix);
+        bool CheckIfPeriodic() { return this->IfPeriodic; };
     };
 }; // namespace cuDFNsys
 
@@ -189,6 +190,11 @@ namespace cuDFNsys
         T MaxVelocity;
         T MeanVelocity;
         cuDFNsys::MHFEM<T> FlowData;
+        T MuOverRhoG = 1;
+        T ConsTq = 1e-15;
+
+    public:
+        bool IfPeriodic = false;
 
     public:
         FlowDFN(){};
