@@ -50,5 +50,5 @@ __global__ void Transform2DTo3DKernel(cuDFNsys::Fracture<T> *Frac_verts_device_p
                                       cuDFNsys::Particle<T> *temp2Dpos_dev_ptr,
                                       uint *ElementFracTag_cuda_devptr,
                                       //uint *EleTag_device_ptr,
-                                      uint count);
+                                      uint count, T outletcoordinate, uint Dir);
 }; // namespace cuDFNsys

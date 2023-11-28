@@ -30,10 +30,23 @@
 #include "../Fractures/Fracture.cuh"
 #include "../GlobalDef/GlobalDef.cuh"
 #include "../MatrixManipulation/MatrixManipulation.cuh"
+#include "../Geometry/Geometry.cuh"
+#include "../Geometry/Geometry.cuh"
 
 namespace cuDFNsys
 {
-template <typename T>
-__host__ __device__ cuDFNsys::Vector3<T> Roate2DPositionTo3D(cuDFNsys::Vector2<T> PositionP,
-                                                             cuDFNsys::Fracture<T> OneFrac);
+    template <typename T>
+    __host__ __device__ cuDFNsys::Vector3<T>
+    Roate2DPositionTo3D(cuDFNsys::Vector2<T> PositionP,
+                        cuDFNsys::Fracture<T> OneFrac);
+    template <typename T>
+    __host__ __device__ cuDFNsys::Vector2<T>
+    Roate3DPositionTo2D(cuDFNsys::Vector3<T> PositionP,
+                        cuDFNsys::Fracture<T> OneFrac);
+
+    template <typename T>
+    __host__ __device__ bool
+    RotateLineSegToPlane(cuDFNsys::Vector3<T> foot, cuDFNsys::Vector3<T> &end,
+                         cuDFNsys::Vector3<T> Plane[3],
+                         int LocalEdgeOnCEle, T outletcoordinate, uint Dir_flow);
 }; // namespace cuDFNsys

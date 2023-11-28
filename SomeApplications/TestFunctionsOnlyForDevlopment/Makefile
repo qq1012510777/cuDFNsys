@@ -50,4 +50,5 @@ all:
 	-Xcudafe --diag_suppress=3056 \
 	-arch=sm_60 -std=c++17 -rdc=true
 clean:
-	gio trash -f ./$(ExeName) *.h5 *.m *.py   log.txt
+	gio trash -f *.h5 *.py   log.txt ParticlePositionResult
+	find . -maxdepth 1 -name '*.m' ! -name 'ShowMSD.m' -exec gio trash -f {} \;

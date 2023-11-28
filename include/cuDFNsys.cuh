@@ -233,6 +233,7 @@ namespace cuDFNsys
         T CustomedPlaneInjection;
         bool OutputAllPTInformationOrFPTCurve;
         cuDFNsys::ParticleTransport<T> PTData;
+        bool IfPeriodic = false;
 
     public:
         PTDFN(){};

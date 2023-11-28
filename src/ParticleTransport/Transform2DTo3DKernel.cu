@@ -25,12 +25,11 @@
 // DATE:        22/02/2023
 // ====================================================
 template <typename T>
-__global__ void cuDFNsys::Transform2DTo3DKernel(cuDFNsys::Fracture<T> *Frac_verts_device_ptr,
-                                                T *Position3D_dev_ptr,
-                                                cuDFNsys::Particle<T> *temp2Dpos_dev_ptr,
-                                                uint *ElementFracTag_cuda_devptr,
-                                                //uint *EleTag_device_ptr,
-                                                uint count)
+__global__ void cuDFNsys::Transform2DTo3DKernel(
+    cuDFNsys::Fracture<T> *Frac_verts_device_ptr, T *Position3D_dev_ptr,
+    cuDFNsys::Particle<T> *temp2Dpos_dev_ptr, uint *ElementFracTag_cuda_devptr,
+    //uint *EleTag_device_ptr,
+    uint count, T L_percoDir, uint Dir)
 {
     int idx = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -38,9 +37,9 @@ __global__ void cuDFNsys::Transform2DTo3DKernel(cuDFNsys::Fracture<T> *Frac_vert
         return;
 
     uint numParticles = count;
-    cuDFNsys::Vector3<T> Pos = cuDFNsys::MakeVector3(temp2Dpos_dev_ptr[idx].Position2D.x,
-                                                     temp2Dpos_dev_ptr[idx].Position2D.y,
-                                                     (T)0.0);
+    cuDFNsys::Vector3<T> Pos =
+        cuDFNsys::MakeVector3(temp2Dpos_dev_ptr[idx].Position2D.x,
+                              temp2Dpos_dev_ptr[idx].Position2D.y, (T)0.0);
 
     //if (idx == 0)
     //printf("temp2Dpos_dev_ptr: %f, %f\n", Pos.x, Pos.y);
@@ -55,23 +54,27 @@ __global__ void cuDFNsys::Transform2DTo3DKernel(cuDFNsys::Fracture<T> *Frac_vert
     Frac_verts_device_ptr[FracTag_j].RoationMatrix(Rotate2DTo3D, 23);
 
     Pos = cuDFNsys::ProductSquare3Vector3<T>(Rotate2DTo3D, Pos);
-    Pos = cuDFNsys::MakeVector3(Pos.x + Frac_verts_device_ptr[FracTag_j].Center.x,
-                                Pos.y + Frac_verts_device_ptr[FracTag_j].Center.y,
-                                Pos.z + Frac_verts_device_ptr[FracTag_j].Center.z);
+    Pos = cuDFNsys::MakeVector3(
+        Pos.x + Frac_verts_device_ptr[FracTag_j].Center.x,
+        Pos.y + Frac_verts_device_ptr[FracTag_j].Center.y,
+        Pos.z + Frac_verts_device_ptr[FracTag_j].Center.z);
+
+    T *kk = &(Pos.x);
+    kk[Dir] -= (L_percoDir)*temp2Dpos_dev_ptr[idx].FactorPeriodic;
 
     Position3D_dev_ptr[idx] = Pos.x;
     Position3D_dev_ptr[idx + numParticles] = Pos.y;
     Position3D_dev_ptr[idx + 2 * numParticles] = Pos.z;
 }; // Transform2DTo3DKernel
-template __global__ void cuDFNsys::Transform2DTo3DKernel<double>(cuDFNsys::Fracture<double> *Frac_verts_device_ptr,
-                                                                 double *Position3D_dev_ptr,
-                                                                 cuDFNsys::Particle<double> *temp2Dpos_dev_ptr,
-                                                                 uint *ElementFracTag_cuda_devptr,
-                                                                 //uint *EleTag_device_ptr,
-                                                                 uint count);
-template __global__ void cuDFNsys::Transform2DTo3DKernel<float>(cuDFNsys::Fracture<float> *Frac_verts_device_ptr,
-                                                                float *Position3D_dev_ptr,
-                                                                cuDFNsys::Particle<float> *temp2Dpos_dev_ptr,
-                                                                uint *ElementFracTag_cuda_devptr,
-                                                                //uint *EleTag_device_ptr,
-                                                                uint count);
+template __global__ void cuDFNsys::Transform2DTo3DKernel<double>(
+    cuDFNsys::Fracture<double> *Frac_verts_device_ptr,
+    double *Position3D_dev_ptr, cuDFNsys::Particle<double> *temp2Dpos_dev_ptr,
+    uint *ElementFracTag_cuda_devptr,
+    //uint *EleTag_device_ptr,
+    uint count, double L_percoDir, uint Dir);
+template __global__ void cuDFNsys::Transform2DTo3DKernel<float>(
+    cuDFNsys::Fracture<float> *Frac_verts_device_ptr, float *Position3D_dev_ptr,
+    cuDFNsys::Particle<float> *temp2Dpos_dev_ptr,
+    uint *ElementFracTag_cuda_devptr,
+    //uint *EleTag_device_ptr,
+    uint count, float L_percoDir, uint Dir);

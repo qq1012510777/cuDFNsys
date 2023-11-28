@@ -973,7 +973,8 @@ void cuDFNsys::PTDFN<T>::ParticleTracking(cuDFNsys::DFN<T> my_dfn,
         this->IfOutputVarianceOfDisplacementsEachStep,
         this->IfInjectAtCustomedPlane,
         this->CustomedPlaneInjection,
-        this->IfUseFluxWeightedOrEqualProbableMixingIntersection};
+        this->IfUseFluxWeightedOrEqualProbableMixingIntersection,
+        this->IfPeriodic};
 }; // ParticleTracking
 template void
 cuDFNsys::PTDFN<double>::ParticleTracking(cuDFNsys::DFN<double> my_dfn,

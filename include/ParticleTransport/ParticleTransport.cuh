@@ -41,136 +41,133 @@
 #include <set>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
-#include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
-#include <thrust/sort.h>
+#include <thrust/host_vector.h>
 #include <thrust/remove.h>
+#include <thrust/sort.h>
+#include <time.h>
 
 namespace cuDFNsys
 {
-template <typename T>
-class ParticleTransport
-{
-public:
-    int NumParticles = 0;
-    thrust::host_vector<cuDFNsys::Particle<T>> ParticlePlumes;
-    thrust::host_vector<cuDFNsys::EdgeToEle> EdgesSharedEle;
-    thrust::host_vector<cuDFNsys::NeighborEle> NeighborEleOfOneEle;
-    uint Dir = 2;
-    uint SizeOfDataBlock = 2000; // how many steps store in a h5 file.
-    uint BlockNOPresent = 0;
-    vector<double> RunTimeEveryStep;
-    bool IfRecordTime = false;
-    string RecordMode = "OutputAll";
+    template <typename T>
+    class ParticleTransport
+    {
+    public:
+        int NumParticles = 0;
+        thrust::host_vector<cuDFNsys::Particle<T>> ParticlePlumes;
+        thrust::host_vector<cuDFNsys::EdgeToEle> EdgesSharedEle;
+        thrust::host_vector<cuDFNsys::NeighborEle> NeighborEleOfOneEle;
+        uint Dir = 2;
+        uint SizeOfDataBlock = 2000; // how many steps store in a h5 file.
+        uint BlockNOPresent = 0;
+        vector<double> RunTimeEveryStep;
+        bool IfRecordTime = false;
+        string RecordMode = "OutputAll";
 
-    std::vector<T> ControlPlanes;
+        std::vector<T> ControlPlanes;
 
-    bool IfOutputMSD = true;
+        bool IfOutputMSD = true;
 
-private:
-    string ParticlePosition = "ParticlePositionResult/ParticlePosition";
-    string DispersionInfo = "ParticlePositionResult/DispersionInfo";
+        thrust::host_vector<int2> CorrespondingEleLocalEdge;
 
-public:
-    ParticleTransport(){};
-    ///   ParticleTransport(const int &NumOfParticles,
-    ///                     const int &NumTimeStep,
-    ///                     T delta_T_,
-    ///                     T Dispersion_local,
-    ///                     thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
-    ///                     cuDFNsys::Mesh<T> mesh,
-    ///                     const cuDFNsys::MHFEM<T> &fem,
-    ///                     uint Dir_flow,
-    ///                     T outletcoordinate,
-    ///                     const string &Particle_mode,
-    ///                     const string &Injection_mode,
-    ///                     bool if_cpu = false,
-    ///                     int Nproc = 10,
-    ///                     bool record_time = false, // record the run time of each step
-    ///                     string recordMode = "OutputAll");
+        bool IfPeriodic = false;
 
-    ParticleTransport(const int &NumTimeStep,
-                      thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
-                      cuDFNsys::Mesh<T> mesh,
-                      const cuDFNsys::MHFEM<T> &fem,
-                      uint Dir_flow,
-                      T outletcoordinate,
-                      int NumOfParticles_ii = 0,
-                      T delta_T_ii = 0,
-                      T Diffusion_local_ii = 0, // molecular diffusion
-                      string Particle_mode_ii = "Particle_tracking",
-                      string Injection_mode_ii = "Flux-weighted",
-                      string recordMode = "OutputAll",
-                      bool if_cpu = false,
-                      int Nproc = 10,
-                      bool record_time = false, // record running time
-                      T SpacingOfControlPlanes = 10,
-                      bool IfOutputMSD = true,
-                      bool IfInitCenterDomain = false,
-                      T InjectionPlane = 0,
-                      bool If_completeMixing = true);
+    private:
+        string ParticlePosition = "ParticlePositionResult/ParticlePosition";
+        string DispersionInfo = "ParticlePositionResult/DispersionInfo";
 
-    void ParticleMovement(const int &init_NO_STEP,
-                          const int &NumTimeStep,
-                          T delta_T_,
-                          T Dispersion_local,
-                          const string &Particle_mode,
-                          const string &Injection_mode,
+    public:
+        ParticleTransport(){};
+        ///   ParticleTransport(const int &NumOfParticles,
+        ///                     const int &NumTimeStep,
+        ///                     T delta_T_,
+        ///                     T Dispersion_local,
+        ///                     thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
+        ///                     cuDFNsys::Mesh<T> mesh,
+        ///                     const cuDFNsys::MHFEM<T> &fem,
+        ///                     uint Dir_flow,
+        ///                     T outletcoordinate,
+        ///                     const string &Particle_mode,
+        ///                     const string &Injection_mode,
+        ///                     bool if_cpu = false,
+        ///                     int Nproc = 10,
+        ///                     bool record_time = false, // record the run time of each step
+        ///                     string recordMode = "OutputAll");
+
+        ParticleTransport(const int &NumTimeStep,
                           thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
-                          cuDFNsys::Mesh<T> mesh,
-                          const cuDFNsys::MHFEM<T> &fem,
-                          T outletcoordinate, bool If_completeMixing = true);
+                          cuDFNsys::Mesh<T> mesh, const cuDFNsys::MHFEM<T> &fem,
+                          uint Dir_flow, T outletcoordinate,
+                          int NumOfParticles_ii = 0, T delta_T_ii = 0,
+                          T Diffusion_local_ii = 0, // molecular diffusion
+                          string Particle_mode_ii = "Particle_tracking",
+                          string Injection_mode_ii = "Flux-weighted",
+                          string recordMode = "OutputAll", bool if_cpu = false,
+                          int Nproc = 10,
+                          bool record_time = false, // record running time
+                          T SpacingOfControlPlanes = 10,
+                          bool IfOutputMSD = true,
+                          bool IfInitCenterDomain = false, T InjectionPlane = 0,
+                          bool If_completeMixing = true, bool IfPeriodic_ = false);
 
-    void ParticleMovementCPU(const int &init_NO_STEP,
-                             const int &NumTimeStep,
-                             T delta_T_,
-                             T Dispersion_local,
-                             const string &Particle_mode,
-                             const string &Injection_mode,
-                             thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
-                             cuDFNsys::Mesh<T> mesh,
-                             const cuDFNsys::MHFEM<T> &fem,
-                             T outletcoordinate,
-                             int Nproc = 10);
+        void ParticleMovement(const int &init_NO_STEP, const int &NumTimeStep,
+                              T delta_T_, T Dispersion_local,
+                              const string &Particle_mode,
+                              const string &Injection_mode,
+                              thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
+                              cuDFNsys::Mesh<T> mesh,
+                              const cuDFNsys::MHFEM<T> &fem, T outletcoordinate,
+                              bool If_completeMixing = true);
 
-    void OutputParticleInfoStepByStep(const uint &StepNO,
-                                      const T delta_T,
-                                      const T Dispersion_local,
-                                      const string &Particle_mode,
-                                      const string &Injection_mode,
-                                      thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
-                                      cuDFNsys::Mesh<T> mesh);
+        void ParticleMovementCPU(
+            const int &init_NO_STEP, const int &NumTimeStep, T delta_T_,
+            T Dispersion_local, const string &Particle_mode,
+            const string &Injection_mode,
+            thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
+            cuDFNsys::Mesh<T> mesh, const cuDFNsys::MHFEM<T> &fem,
+            T outletcoordinate, int Nproc = 10);
 
-    void OutputMSD(const uint &StepNO, const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
-                   const cuDFNsys::Mesh<T> &mesh, const T &HalfDomainSize_PercoDirection);
+        void OutputParticleInfoStepByStep(
+            const uint &StepNO, const T delta_T, const T Dispersion_local,
+            const string &Particle_mode, const string &Injection_mode,
+            thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
+            cuDFNsys::Mesh<T> mesh);
 
-    thrust::host_vector<T> Get3DParticlePositions(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
-                                                  const cuDFNsys::Mesh<T> &mesh);
+        void OutputMSD(const uint &StepNO,
+                       const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
+                       const cuDFNsys::Mesh<T> &mesh,
+                       const T &HalfDomainSize_PercoDirection);
 
-    void IfReachControlPlane(const uint &StepNo, const uint &PercoDir,
-                             const std::vector<T> &ControlPlane,
-                             const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
-                             const cuDFNsys::Mesh<T> &mesh,
-                             const T &HalfDomainSize_PercoDir);
+        thrust::host_vector<T> Get3DParticlePositions(
+            const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
+            const cuDFNsys::Mesh<T> &mesh, T L_percoDir);
 
-    void MatlabPlot(const string &mat_key,
-                    const string &command_key,
-                    const cuDFNsys::Mesh<T> &mesh,
-                    const cuDFNsys::MHFEM<T> &fem,
-                    const T &L,
-                    double3 DomainDimensionRatio = make_double3(1, 1, 1),
-                    bool if_python_visualization = false,
-                    string PythonName_Without_suffix = "ParticleMovement");
+        void IfReachControlPlane(
+            const uint &StepNo, const uint &PercoDir,
+            const std::vector<T> &ControlPlane,
+            const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
+            const cuDFNsys::Mesh<T> &mesh, const T &HalfDomainSize_PercoDir);
 
-private:
-    void IdentifyEdgesSharedEle(cuDFNsys::Mesh<T> mesh);
+        void MatlabPlot(const string &mat_key, const string &command_key,
+                        const cuDFNsys::Mesh<T> &mesh,
+                        const cuDFNsys::MHFEM<T> &fem, const T &L,
+                        double3 DomainDimensionRatio = make_double3(1, 1, 1),
+                        bool if_python_visualization = false,
+                        string PythonName_Without_suffix = "ParticleMovement");
 
-    void InitilizeParticles(const int &NumOfParticles,
-                            cuDFNsys::Mesh<T> mesh,
-                            const cuDFNsys::MHFEM<T> &fem,
-                            const string &Injection_mode, bool IfInitCenterDomain = false, T InjectionPlane = 0);
+    private:
+        void IdentifyEdgesSharedEle(cuDFNsys::Mesh<T> mesh);
 
-    void IdentifyNeighborElements(cuDFNsys::Mesh<T> mesh);
-};
+        void InitilizeParticles(const int &NumOfParticles,
+                                cuDFNsys::Mesh<T> mesh,
+                                const cuDFNsys::MHFEM<T> &fem,
+                                const string &Injection_mode,
+                                bool IfInitCenterDomain = false,
+                                T InjectionPlane = 0);
+
+        void IdentifyNeighborElements(cuDFNsys::Mesh<T> mesh);
+
+        void
+        IdentifyInletOutletCorrespondingElementEdge(cuDFNsys::Mesh<T> mesh);
+    };
 }; // namespace cuDFNsys

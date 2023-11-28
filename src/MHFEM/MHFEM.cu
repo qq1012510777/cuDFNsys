@@ -450,6 +450,7 @@ double2 cuDFNsys::MHFEM<T>::MatlabPlot(
         oss << "import h5py\n";
         oss << "import numpy as np\n";
         oss << "from mayavi import mlab as ML\n";
+        oss << "from numpy import linalg as LA\n";
 
         oss << "f = h5py.File('" << mat_key << "')\n";
         oss << "coordinate_3D = np.array(f['coordinate_3D'][:])\n";
@@ -461,14 +462,21 @@ double2 cuDFNsys::MHFEM<T>::MatlabPlot(
         oss << "pressure_eles = np.array(f['pressure_eles'][:])\n";
         oss << "velocity_center_grid = "
                "np.array(f['velocity_center_grid'][:])\n";
+        oss << "vec_norm = LA.norm(velocity_center_grid, axis=0)\n";
+
         oss << "f.close()\n";
         oss << "mesh = ML.triangular_mesh(coordinate_3D[0, :], "
                "coordinate_3D[1, :], coordinate_3D[2, :], "
                "np.transpose(element_3D-1), representation='wireframe', "
                "color=(0, 0, 0), line_width=1.0)\n";
 
-        oss << "mesh.mlab_source.dataset.cell_data.scalars = "
-               "np.transpose(pressure_eles)\n";
+        if (!this->IfPeriodic)
+            oss << "mesh.mlab_source.dataset.cell_data.scalars = "
+                   "np.transpose(pressure_eles)\n";
+        else
+            oss << "mesh.mlab_source.dataset.cell_data.scalars = "
+                   "np.transpose(vec_norm)\n";
+
         oss << "mesh.mlab_source.dataset.cell_data.scalars.name = 'Cell "
                "data'\n";
         oss << "mesh.mlab_source.update()\n";
@@ -484,9 +492,19 @@ double2 cuDFNsys::MHFEM<T>::MatlabPlot(
                "L_m])\n";
         oss << "ML.axes()\n";
         if (!this->IfPeriodic)
+        {
             oss << "s2.module_manager.scalar_lut_manager.data_range = "
                    "np.array([OutletP[0], InletP[0]])\n";
-        oss << "ML.colorbar(object=s2, orientation='vertical')\n";
+            oss << "ML.colorbar(object=s2, orientation='vertical', "
+                   "title='Hydraulic head [L]')\n";
+        }
+        else
+        {
+            oss << "s2.module_manager.scalar_lut_manager.data_range = "
+                   "np.array([np.min(vec_norm), 0.01 * np.max(vec_norm)])\n";
+            oss << "ML.colorbar(object=s2, orientation='vertical', "
+                   "title='Norm of velocity [LL/T]')\n";
+        }
         oss << "ML.xlabel('x (m)')\n";
         oss << "ML.ylabel('y (m)')\n";
         oss << "ML.zlabel('z (m)')\n";
@@ -525,6 +543,7 @@ double2 cuDFNsys::MHFEM<T>::MatlabPlot(
             << "'], '/velocity_center_grid');\n";
         oss << "pressure_eles = h5read([currentPath, '/" << mat_key
             << "'], '/pressure_eles');\n";
+        oss << "VelocityNorm = vecnorm(velocity_center_grid');\n\n";
 
         oss << "L = h5read([currentPath, '/" << mat_key << "'], '/L_m');\n";
         oss << "DomainDimensionRatio = h5read([currentPath, '/" << mat_key
@@ -568,13 +587,30 @@ double2 cuDFNsys::MHFEM<T>::MatlabPlot(
 
         //oss << "tool_ = [centers_ele; center_s_edge];\n";
         //oss << "pressure_vert = griddata(tool_(:, 1), tool_(:, 2), tool_(:, 3), [pressure_eles; pressure_shared_edge], coordinate_3D(:, 1), coordinate_3D(:, 2), coordinate_3D(:, 3), 'nearest');\n";
-        oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, "
-               "'FaceVertexCData', pressure_eles, 'FaceColor', 'flat', "
-               "'EdgeAlpha', 0.9, 'facealpha', 1); colorbar; view(3); hold "
-               "on\n";
         if (!this->IfPeriodic)
+        {
+            oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, "
+                   "'FaceVertexCData', pressure_eles, 'FaceColor', 'flat', "
+                   "'EdgeAlpha', 0.9, 'facealpha', 1); view(3); hold "
+                   "on\n";
+            oss << "Cb = colorbar;\n";
+            // oss << "Cb.Limits = [" << this->OutletP << ", " << this->InletP << "];\n";
+            oss << "Cb.Title.String = 'Hydraulic head [L]';\n";
             oss << "caxis([" << this->OutletP << ", " << this->InletP
                 << "]);\n\n";
+        }
+        else
+        {
+            oss << "patch('Vertices', coordinate_3D, 'Faces', element_3D, "
+                   "'FaceVertexCData', VelocityNorm', 'FaceColor', 'flat', "
+                   "'EdgeAlpha', 0.9, 'facealpha', 1); view(3); hold "
+                   "on\n";
+            // s
+            oss << "Cb = colorbar;\n";
+            //oss << "Cb.Limits = [min(VelocityNorm), max(VelocityNorm)];\n";
+            oss << "Cb.Title.String = 'Norm of velocity [LL/T]';\n";
+            oss << "caxis([min(VelocityNorm), 0.01 * max(VelocityNorm)]);\n\n";
+        }
 
         //oss << "element_3D_re = zeros(size(element_3D, 1) * 3, 3);\n";
         //oss << "element_3D_re([1:3:end], :) = element_3D;\n";
@@ -604,7 +640,6 @@ double2 cuDFNsys::MHFEM<T>::MatlabPlot(
                "velocity_center_grid(:, 1),velocity_center_grid(:, "
                "2),velocity_center_grid(:, 3), 4, 'LineWidth', 1.5, 'color', "
                "'r');\n";
-        oss << "VelocityNorm = vecnorm(velocity_center_grid');\n";
         oss << "ElementAperture = h5read([currentPath, '/" << mat_key
             << "'], '/ElementAperture');\n";
         oss << "VelocityNorm = [vecnorm(velocity_center_grid')]' ./ "

@@ -44,6 +44,9 @@ struct Particle
     // accumulative displacement
     T AccumDisplacement = 0;
 
+    // 
+    int FactorPeriodic = 0;
+
     __host__ __device__ bool operator<(const cuDFNsys::Particle<T> &a) const
     {
         return ElementID < a.ElementID;

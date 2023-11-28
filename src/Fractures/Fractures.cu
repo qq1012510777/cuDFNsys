@@ -136,6 +136,13 @@ __global__ void cuDFNsys::Fractures(
         cuDFNsys::Vector3<T> Ori_Rotate = cuDFNsys::CrossProductVector3<T>(
             cuDFNsys::MakeVector3((T)0., (T)0., (T)1.), MeanOrientation);
 
+        T norm_ori =
+            pow(Ori_Rotate.x * Ori_Rotate.x + Ori_Rotate.y * Ori_Rotate.y +
+                    Ori_Rotate.z * Ori_Rotate.z,
+                0.5);
+        Ori_Rotate.x /= norm_ori, Ori_Rotate.y /= norm_ori,
+            Ori_Rotate.z /= norm_ori;
+
         cuDFNsys::Quaternion<T> qua;
         qua = qua.DescribeRotation(Ori_Rotate, angle_fs);
 
