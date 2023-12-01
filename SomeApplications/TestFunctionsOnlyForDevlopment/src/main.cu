@@ -16,6 +16,7 @@ int main(int argc, char *argv[])
 
         if (!DFSW)
         {
+
             for (int i = 0; i < 10000; ++i)
             {
                 my_dfn.RandomSeed = (unsigned long)t + i;
@@ -33,7 +34,6 @@ int main(int argc, char *argv[])
             my_dfn.Visualization("DFN_VISUAL_I", "DFN_VISUAL_I", "DFN_VISUAL_I",
                                  true, true, true, true);
 
-            cuDFNsys::MeshDFN<double> meshGen;
             meshGen.MinElementSize = 1;
             meshGen.MaxElementSize = 3;
             meshGen.MeshGeneration(my_dfn);
@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
                  << pow(meshGen.MeshData.MeanGridSize, 0.5) /
                         flowDFN.FlowData.MaxVelocity / 2
                  << endl;
-            return 0;
+            //return 0;
         }
         else
         {

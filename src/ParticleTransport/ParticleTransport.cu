@@ -2047,6 +2047,8 @@ void cuDFNsys::ParticleTransport<T>::InitilizeParticles(
         T Total_Flux = 0;
 
         //cout << "1" << endl;
+        //cout << "InjectionPlane: " << InjectionPlane << endl;
+        //cout << "mesh.Element3D.size(): " << mesh.Element3D.size() << endl;
         for (uint i = 0; i < mesh.Element3D.size(); ++i)
         {
             uint Node1 = mesh.Element3D[i].x - 1,
@@ -2069,8 +2071,8 @@ void cuDFNsys::ParticleTransport<T>::InitilizeParticles(
                 (*pts1 < InjectionPlane || *pts2 < InjectionPlane ||
                  *pts3 < InjectionPlane))
             {
-                // this element is at center
-                //cout << "elementID: " << i + 1 << endl;
+                //this element is at center
+                // cout << "elementID: " << i + 1 << endl;
                 ElementCenterDomain.push_back(i);
 
                 cuDFNsys::Vector2<T> Center_p = cuDFNsys::MakeVector2(

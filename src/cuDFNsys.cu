@@ -724,6 +724,7 @@ void cuDFNsys::MeshDFN<T>::MeshGeneration(DFN<T> &my_dfn)
         this->MinElementSize, this->MaxElementSize,       my_dfn.PercoDir,
         my_dfn.DomainSizeX,   my_dfn.DomainDimensionRatio};
     this->MeanGridSize = this->MeshData.MeanGridSize;
+    // cout << "mesh.Element3D.size(): " << this->MeshData.Element3D.size() << endl;
 };
 template void cuDFNsys::MeshDFN<double>::MeshGeneration(DFN<double> &my_dfn);
 template void cuDFNsys::MeshDFN<float>::MeshGeneration(DFN<float> &my_dfn);
@@ -951,7 +952,7 @@ void cuDFNsys::PTDFN<T>::ParticleTracking(cuDFNsys::DFN<T> my_dfn,
     cuDFNsys::OutputObjectData<T> lk;
     lk.OutputFractures("FracturesForParticle.h5", my_dfn.FracturesHost,
                        my_dfn.DomainSizeX);
-
+    
     this->PTData = cuDFNsys::ParticleTransport<T>{
         this->NumTimeSteps,
         my_dfn.FracturesHost,
