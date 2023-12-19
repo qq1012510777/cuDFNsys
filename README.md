@@ -22,7 +22,7 @@ _cuDFNsys_ is an easy-implemented, object-oriented CUDA C++ library. The simulat
 
 # Authors
 
-* Tingchang YIN, Westlake University & Zhejiang University, China, yintingchang@foxmail.com
+* [Tingchang YIN](https://qq1012510777.github.io/), Westlake University & Zhejiang University, China, yintingchang@foxmail.com
 
 * Sergio GALINDO-TORRES, Westlake University, China, s.torres@westlake.edu.cn
 
@@ -43,6 +43,10 @@ GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# Relevant publications
+- [T Yin, T Man, Ling Li, SA Galindo-Torres. Finite-Size Scaling for the Permeability of Discrete Fracture Networks (2023). Geophysical Research Letters, 50, e2022GL100837](https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2022GL100837)
+- [T Yin, T Man, SA Galindo-Torres. Universal scaling solution for the connectivity of discrete fracture networks (2022). Physica A: Statistical Mechanics and its Applications 599, 127495](https://www.sciencedirect.com/science/article/abs/pii/S0378437122003557)
 
 # Prerequisites
 _cuDFNsys_ should be installed and run on Ubuntu.

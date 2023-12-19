@@ -27,6 +27,8 @@ int main(int argc, char *argv[])
             }
             //my_dfn.LoadDFNFromCSV("InputParametersForDeterministicDFN");
             //
+            my_dfn.Visualization("DFN_VISUAL_o", "DFN_VISUAL_o", "DFN_VISUAL_o",
+                                 true, true, true, true);
 
             my_dfn.SpatialPeriodicity();
             my_dfn.IdentifyIntersectionsClusters(true);
