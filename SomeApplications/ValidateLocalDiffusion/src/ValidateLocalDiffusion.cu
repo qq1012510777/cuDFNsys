@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
         _DataType_ minGrid = 0;
         _DataType_ maxGrid = 0;
 
-        L = 60;
+        L = 30;
         DSIZE = 800; //------------------------------------------
         minGrid = 1;
         maxGrid = 3;

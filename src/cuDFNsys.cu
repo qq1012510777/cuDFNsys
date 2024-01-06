@@ -639,6 +639,29 @@ void cuDFNsys::DFN<T>::LoadDFNFromCSV(const string &xlsxNameWithoutSuffix)
                                                   this->NumFracturesTotal);
 
         // -------//--------line > 5
+        // cout << "NumFrac: " << this->NumFracturesTotal << endl;
+        // ----------------
+        std::ifstream ifs_II;
+        ifs_II.open(xlsxNameWithoutSuffix + ".csv", ios::in);
+
+        if (!ifs_II.is_open())
+        {
+            ifs_II.close();
+            throw cuDFNsys::ExceptionsPause("Fail to open " +
+                                            xlsxNameWithoutSuffix + ".csv");
+        }
+
+        items.resize(5 + this->NumFracturesTotal);
+        for (int i = 0; i < items.size(); ++i)
+        {
+            string temp_k;
+            getline(ifs_II, temp_k);
+            items[i] = temp_k;
+            //cout << temp_k << endl;
+        }
+        ifs_II.close();
+        //-----------------
+
         for (int i = 0; i < NumFracturesTotal; ++i)
         {
             istrss.str(items[5 + i]);
@@ -952,7 +975,7 @@ void cuDFNsys::PTDFN<T>::ParticleTracking(cuDFNsys::DFN<T> my_dfn,
     cuDFNsys::OutputObjectData<T> lk;
     lk.OutputFractures("FracturesForParticle.h5", my_dfn.FracturesHost,
                        my_dfn.DomainSizeX);
-    
+
     this->PTData = cuDFNsys::ParticleTransport<T>{
         this->NumTimeSteps,
         my_dfn.FracturesHost,

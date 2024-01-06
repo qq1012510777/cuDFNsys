@@ -1,4 +1,4 @@
-ExeName=ValidateLocalDiffusion
+ExeName=ValidationOfDispersionPhDThesis
 include ../Path.mk
 
 INCDIRS=-I $(cuDFNsysIncludePath) \
@@ -38,3 +38,4 @@ all:
 	-Xcudafe --diag_suppress=3056 \
 	-arch=sm_60 -std=c++17 -rdc=true
 clean:
+	gio trash -f *.h5 *.py   log.txt ParticlePositionResult

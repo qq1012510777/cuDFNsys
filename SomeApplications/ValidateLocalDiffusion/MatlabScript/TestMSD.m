@@ -8,7 +8,7 @@ deltaT = h5read([currentPath, ...
 Dispersion_local = h5read([currentPath, ...
     '/ParticlePositionResult/DispersionInfo.h5'], "/Dispersion_local");
 NumSteps = h5read([currentPath, '/ParticlePositionResult/DispersionInfo.h5'], "/NumOfSteps");
-NumSteps = 64
+NumSteps = 30
 Mean_cMSD_MSD = [];
 for i = 1:NumSteps
     try

@@ -8,7 +8,7 @@ myArray=("BenchmarkCases" "ParticleTrackingFourFrac" "ClearBadH5FileForPercolati
   "ReadMatAndOutputH5" "ReadObjectsAndDebug" "TestFunctionsOnlyForDevlopment" "TestResolutionEffect" \
   "Transform2DH5ParticleDataTo3D" "GenMultipleFamilies" "ConnectivityMultipleFamilies"
   "ColumnLikeDomainForDispersion" "ValidateLocalDiffusion" "ConvertH5Precision" "DispersionAtOneDensityValue" "IdenticalDFNDifferentPe" \
-  "Dispersion_Rho_increasing")
+  "Dispersion_Rho_increasing" "ValidationOfDispersionPhDThesis")
 
 for str in ${myArray[@]}; do
   cd ./SomeApplications/$str
