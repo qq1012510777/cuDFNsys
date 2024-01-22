@@ -1609,7 +1609,7 @@ void cuDFNsys::ParticleTransport<T>::MatlabPlot(
                "'%010d')]);\n";
         oss << "\t\t\tParticleID = h5read(H5name_2D, "
                "['/ParticleIDAndElementTag_', num2str(j, '%010d')]);\n"; // /
-        oss << "\t\t\tMatrx3D_pso = NaN(N_particles, 3);\n";
+        oss << "\t\t\tMatrx3D_pso = [];%NaN(N_particles, 3);\n";
         oss << "\t\t\tMatrx3D_pso([ParticleID(:, 1) + 1], :) = S(:, [1 2 "
                "3]);\n";
 
@@ -1715,7 +1715,7 @@ void cuDFNsys::ParticleTransport<T>::MatlabPlot(
         oss << "\tS = h5read(H5name, ['/Step_', num2str(i, '%010d')]);\n";
         oss << "\tParticleID = h5read(H5name_2D, ['/ParticleIDAndElementTag_', "
                "num2str(i, '%010d')]);\n"; // /
-        oss << "\tMatrx3D_pso = NaN(N_particles, 3);\n";
+        oss << "\tMatrx3D_pso = [];%NaN(N_particles, 3);\n";
         oss << "\tMatrx3D_pso(:, :) = S(:, [1 2 3]);\n";
 
         //oss << "\tnewcolors = Matrx3D_pso(:, 3) ./ (2 * L) .* "

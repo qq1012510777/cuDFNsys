@@ -1,5 +1,5 @@
 NumParticles,20000,
-NumTimeSteps,2000,
+NumTimeSteps,500,
 MolecularDiffusion,1.39715e-12,
 DeltaT, 76491223.69119304,
 InjectionMethod_initialcondition,Flux-weighted,

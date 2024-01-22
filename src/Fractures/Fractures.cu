@@ -278,7 +278,7 @@ __global__ void cuDFNsys::FracturesDeterministic<T>(
     if (i > count - 1)
         return;
 
-    int DataNumForOneFracture = 9;
+    int DataNumForOneFracture = 12;
 
     verts[i].NormalVec.x = Data_f[i * DataNumForOneFracture],
     verts[i].NormalVec.y = Data_f[i * DataNumForOneFracture + 1],
@@ -320,25 +320,37 @@ __global__ void cuDFNsys::FracturesDeterministic<T>(
     curand_init(seed, i, 0, &state);
 
     // generate vertices
-    cuDFNsys::Vector1<T> *normal_fff = &verts[i].NormalVec.x;
-    cuDFNsys::Vector1<T> *verts_3D_ptr = &verts[i].Verts3D[0].x;
-    for (int j = 0; j < 3; ++j)
+    if (Data_f[i * DataNumForOneFracture + 9] == 0 &&
+        Data_f[i * DataNumForOneFracture + 10] == 0 &&
+        Data_f[i * DataNumForOneFracture + 11] == 0)
     {
-        if (abs(normal_fff[j]) > 1e-3)
+        cuDFNsys::Vector1<T> *normal_fff = &verts[i].NormalVec.x;
+        cuDFNsys::Vector1<T> *verts_3D_ptr = &verts[i].Verts3D[0].x;
+        for (int j = 0; j < 3; ++j)
         {
-            verts_3D_ptr[(j + 1) % 3] = cuDFNsys::RandomUniform(
-                (cuDFNsys::Vector1<T>)-1.0, (cuDFNsys::Vector1<T>)1.0,
-                (cuDFNsys::Vector1<T>)curand_uniform(&state));
-            verts_3D_ptr[(j + 2) % 3] = cuDFNsys::RandomUniform(
-                (cuDFNsys::Vector1<T>)-1.0, (cuDFNsys::Vector1<T>)1.0,
-                (cuDFNsys::Vector1<T>)curand_uniform(&state));
-            verts_3D_ptr[j] =
-                -1.0 *
-                (verts_3D_ptr[(j + 1) % 3] * normal_fff[(j + 1) % 3] +
-                 verts_3D_ptr[(j + 2) % 3] * normal_fff[(j + 2) % 3]) /
-                normal_fff[j];
-            break;
+            if (abs(normal_fff[j]) > 1e-3)
+            {
+                verts_3D_ptr[(j + 1) % 3] = cuDFNsys::RandomUniform(
+                    (cuDFNsys::Vector1<T>)-1.0, (cuDFNsys::Vector1<T>)1.0,
+                    (cuDFNsys::Vector1<T>)curand_uniform(&state));
+                verts_3D_ptr[(j + 2) % 3] = cuDFNsys::RandomUniform(
+                    (cuDFNsys::Vector1<T>)-1.0, (cuDFNsys::Vector1<T>)1.0,
+                    (cuDFNsys::Vector1<T>)curand_uniform(&state));
+                verts_3D_ptr[j] =
+                    -1.0 *
+                    (verts_3D_ptr[(j + 1) % 3] * normal_fff[(j + 1) % 3] +
+                     verts_3D_ptr[(j + 2) % 3] * normal_fff[(j + 2) % 3]) /
+                    normal_fff[j];
+                break;
+            }
         }
+    }
+    else
+    {
+        //printf("Fracture vertices %d generated from csv\n", i);
+        verts[i].Verts3D[0].x = Data_f[i * DataNumForOneFracture + 9],
+        verts[i].Verts3D[0].y = Data_f[i * DataNumForOneFracture + 10],
+        verts[i].Verts3D[0].z = Data_f[i * DataNumForOneFracture + 11];
     }
 
     cuDFNsys::Vector1<T> norm_vert1 =

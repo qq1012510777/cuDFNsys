@@ -39,7 +39,9 @@ Lib_= -Xcompiler=-fopenmp \
 	-L$(UmfpackLibraryPath) \
 	-L$(Hdf5LibraryPath)
 
-all: 
+Transform2DH5ParticleDataTo3Dname=Transform2DH5ParticleDataTo3D
+
+all:  
 	$(NVCC) -DUSE_DOUBLES ./Exe_src/main.cu $(cuDFNsysLibraryPath)/libcuDFNsys.a \
 	-o ./$(ExeName) $(INCDIRS) $(Lib_) \
 	-Xcudafe --display_error_number -Xcudafe --diag_suppress=3057 \
@@ -48,6 +50,7 @@ all:
 	-Xcudafe --diag_suppress=3060 \
 	-Xcudafe --diag_suppress=3058 \
 	-arch=sm_60 -std=c++17 -rdc=true
+
 
 	$(NVCC) -DUSE_DOUBLES ../SomeApplications/Transform2DH5ParticleDataTo3D/src/Transform2DH5ParticleDataTo3D.cu $(cuDFNsysLibraryPath)/libcuDFNsys.a \
 	-o ./Transform2DH5ParticleDataTo3D $(INCDIRS) $(Lib_) \
@@ -59,4 +62,4 @@ all:
 	-arch=sm_60 -std=c++17 -rdc=true
 
 clean:
-	gio trash -f ./*.h5 ./*.py ./*.m ./ParticlePositionResult ./cuDFNsys_exe ./Transform2DH5ParticleDataTo3D
+	gio trash -f ./*.h5 ./*.py ./*.m ./ParticlePositionResult 

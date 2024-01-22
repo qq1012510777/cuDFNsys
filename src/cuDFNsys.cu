@@ -634,9 +634,9 @@ void cuDFNsys::DFN<T>::LoadDFNFromCSV(const string &xlsxNameWithoutSuffix)
         getline(istrss, temp_s, ',');
         this->NumFracturesTotal = atoi(temp_s.c_str());
 
-        int DataNumForOneFracture = 9;
+        int DataNumForOneFracture = 12;
         thrust::host_vector<T> Data_deterministic(DataNumForOneFracture *
-                                                  this->NumFracturesTotal);
+                                                  this->NumFracturesTotal, 0);
 
         // -------//--------line > 5
         // cout << "NumFrac: " << this->NumFracturesTotal << endl;
@@ -664,14 +664,25 @@ void cuDFNsys::DFN<T>::LoadDFNFromCSV(const string &xlsxNameWithoutSuffix)
 
         for (int i = 0; i < NumFracturesTotal; ++i)
         {
+
             istrss.str(items[5 + i]);
             getline(istrss, temp_s, ',');
 
-            for (int j = 0; j < DataNumForOneFracture; ++j)
+            string PSLD = istrss.str();
+            //cout << "Fracture " << i << ": " << PSLD << endl;
+
+            int commaCount = std::count(PSLD.begin(), PSLD.end(), ',');
+
+            //cout << commaCount << endl;
+            int JKLS = (commaCount >= 12 ? DataNumForOneFracture
+                                         : DataNumForOneFracture - 3);
+
+            for (int j = 0; j < JKLS; ++j)
             {
                 getline(istrss, temp_s, ',');
                 Data_deterministic[i * DataNumForOneFracture + j] =
                     atof(temp_s.c_str());
+                //cout << atof(temp_s.c_str()) << (j == JKLS - 1 ? "\n" : ", ");
             }
         }
 
@@ -682,6 +693,8 @@ void cuDFNsys::DFN<T>::LoadDFNFromCSV(const string &xlsxNameWithoutSuffix)
 
         thrust::device_vector<T> Data_deterministic_device = Data_deterministic;
         T *Data_f = thrust::raw_pointer_cast(Data_deterministic_device.data());
+
+        //exit(0);
 
         cuDFNsys::FracturesDeterministic<T>
             <<<this->NumFracturesTotal / 256 + 1, 256>>>(
@@ -700,12 +713,12 @@ void cuDFNsys::DFN<T>::LoadDFNFromCSV(const string &xlsxNameWithoutSuffix)
 
         cout << "First fracture: ";
         for (int j = 0; j < DataNumForOneFracture; ++j)
-            cout << Data_deterministic[j] << (j == 8 ? "\n" : ", ");
+            cout << Data_deterministic[j] << (j == DataNumForOneFracture - 1 ? "\n" : ", ");
         cout << "...\nLast fracture: ";
         for (int j = 0; j < DataNumForOneFracture; ++j)
             cout << Data_deterministic[Data_deterministic.size() -
                                        DataNumForOneFracture + j]
-                 << (j == 8 ? "\n" : ", ");
+                 << (j == DataNumForOneFracture - 1 ? "\n" : ", ");
     }
 };
 template void
