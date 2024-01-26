@@ -248,6 +248,8 @@ These will be discussed in the next section.
 ## 3. Data files
 By running `cuDFNsys_exe`, three `.h5` files are outputted, e.g., `Class_DFN.h5`, `Class_MESH.h5` and `Class_FLOW.h5`.
 
+One can open them to see DFN parameters.
+
 ## 4. Quickstart examples: write a main.cpp
 
 ## 5. How to re-run a DFN

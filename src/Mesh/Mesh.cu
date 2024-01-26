@@ -188,7 +188,7 @@ cuDFNsys::Mesh<T>::Mesh(
         gmsh::option::setNumber("Mesh.Algorithm", 1);
         cout << "\tmesh ing" << endl;
         gmsh::model::mesh::generate(2);
-        // gmsh::fltk::run();
+        //gmsh::fltk::run();
         cout << "\t\tmeshing finished, running time: "
              << cuDFNsys::CPUSecond() - istart << " sec\n";
 
@@ -198,12 +198,15 @@ cuDFNsys::Mesh<T>::Mesh(
         this->GetCoordinates();
         cout << "\t\tGeting elements" << endl;
         this->GetElements(Fracs_ss, outmap);
+        cout << "\t\tNumber of elements: " << this->Element3D.size()
+             << "; Number of nodes: " << this->Coordinate3D.size() << endl;
         //cudaDeviceReset();
         cout << "\t\tNumbering edges\n";
+
         istart = cuDFNsys::CPUSecond();
         this->NumberingEdges(L, DomainDimensionRatio /*, Fracs*/);
-        cout << "\t\tFinished! Running time: " << cuDFNsys::CPUSecond() - istart
-             << " sec\n";
+        cout << "\t\tNumbering finished! Running time: "
+             << cuDFNsys::CPUSecond() - istart << " sec\n";
 
         gmsh::model::mesh::clear();
         gmsh::clear();
@@ -967,7 +970,10 @@ void cuDFNsys::Mesh<T>::NumberingEdges(const T L, double3 DomainDimensionRatio)
 
     Eigen::SparseMatrix<int> IfEdgeInterior;
     IfEdgeInterior.resize(NUM_node, NUM_node);
+    IfEdgeInterior.reserve(Eigen::VectorXi::Constant(NUM_node, 30));
 
+    double istart = cuDFNsys::CPUSecond();
+    cout << "\t\t\tGenerating a sparse matrix to check interior edges ...\n";
     for (int i = 0; i < NUM_ele; ++i)
     {
         IfEdgeInterior.insert(this->Element3D[i].x - 1,
@@ -977,12 +983,26 @@ void cuDFNsys::Mesh<T>::NumberingEdges(const T L, double3 DomainDimensionRatio)
         IfEdgeInterior.insert(this->Element3D[i].z - 1,
                               this->Element3D[i].x - 1) = 1;
     }
+    // std::vector<Eigen::Triplet<int>> tripletList_u(NUM_ele * 3);
+    // for (int i = 0; i < NUM_ele; ++i)
+    // {
+    //     uint *NodeInx_s = &(this->Element3D[i].x);
+    //     for (int j = 0; j < 3; ++j)
+    //         tripletList_u[i * 3 + j] = Eigen::Triplet<int>(
+    //             NodeInx_s[j] - 1, NodeInx_s[(j + 1) % 3] - 1, 1);
+    // }
+    // IfEdgeInterior.setFromTriplets(tripletList_u.begin(), tripletList_u.end());
+    IfEdgeInterior.pruned(0.1);
+    cout << "\t\t\tFinished generating a sparse matrix, running time: "
+         << cuDFNsys::CPUSecond() - istart << "\n";
 
     std::vector<std::pair<int3, double>> InletAndOutlet_p;
 
     int GlobalEdgeNo = 0;
     std::map<std::pair<uint, uint>, uint> Set_edgeNo;
 
+    istart = cuDFNsys::CPUSecond();
+    cout << "\t\t\tStarting numbering edges ...\n";
     for (int i = 0; i < NUM_ele; ++i)
     {
         uint *FF = &(this->Element3D[i].x);
@@ -1072,7 +1092,11 @@ void cuDFNsys::Mesh<T>::NumberingEdges(const T L, double3 DomainDimensionRatio)
             }
         }
     }
+    cout << "\t\t\tFinished numbering, running time: "
+         << cuDFNsys::CPUSecond() - istart << "\n";
 
+    cout << "\t\t\tGenerating a vector of inlet and outlet numbering ...\n";
+    istart = cuDFNsys::CPUSecond();
     for (int i = 0; i < InletAndOutlet_p.size(); ++i)
     {
         this->EdgeAttri[InletAndOutlet_p[i].first.x]
@@ -1101,6 +1125,9 @@ void cuDFNsys::Mesh<T>::NumberingEdges(const T L, double3 DomainDimensionRatio)
 
         GlobalEdgeNo++;
     }
+    cout << "\t\t\tFinished generating a vector of inlet and outlet numbering, "
+            "running time: "
+         << cuDFNsys::CPUSecond() - istart << "\n";
 
     // cout << "GlobalEdgeNo: " << GlobalEdgeNo << endl;
     // cout << "NumNeumannEdges: " << NumNeumannEdges << endl;

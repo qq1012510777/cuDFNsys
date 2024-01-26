@@ -348,9 +348,12 @@ __global__ void cuDFNsys::FracturesDeterministic<T>(
     else
     {
         //printf("Fracture vertices %d generated from csv\n", i);
-        verts[i].Verts3D[0].x = Data_f[i * DataNumForOneFracture + 9],
-        verts[i].Verts3D[0].y = Data_f[i * DataNumForOneFracture + 10],
-        verts[i].Verts3D[0].z = Data_f[i * DataNumForOneFracture + 11];
+        verts[i].Verts3D[0].x =
+            (Data_f[i * DataNumForOneFracture + 9] - verts[i].Center.x),
+        verts[i].Verts3D[0].y =
+            (Data_f[i * DataNumForOneFracture + 10] - verts[i].Center.y),
+        verts[i].Verts3D[0].z =
+            (Data_f[i * DataNumForOneFracture + 11] - verts[i].Center.z);
     }
 
     cuDFNsys::Vector1<T> norm_vert1 =
