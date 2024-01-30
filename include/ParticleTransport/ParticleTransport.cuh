@@ -46,6 +46,7 @@
 #include <thrust/remove.h>
 #include <thrust/sort.h>
 #include <time.h>
+#include <array>
 
 namespace cuDFNsys
 {

@@ -64,7 +64,7 @@ __global__ void cuDFNsys::Fractures(
     else if (ModeSizeDistri == 2)
         R_ = cuDFNsys::RandomUniform((T)ParaSizeDistri.x, (T)ParaSizeDistri.y,
                                      (T)curand_uniform(&state));
-    else if (ModeSizeDistri == 3)
+    else if (ModeSizeDistri >= 3)
         R_ = ParaSizeDistri.x;
 
     verts[i].Radius = R_;
@@ -354,6 +354,14 @@ __global__ void cuDFNsys::FracturesDeterministic<T>(
             (Data_f[i * DataNumForOneFracture + 10] - verts[i].Center.y),
         verts[i].Verts3D[0].z =
             (Data_f[i * DataNumForOneFracture + 11] - verts[i].Center.z);
+
+        // calibration
+        if (verts[i].NormalVec.x != 0 && verts[i].NormalVec.y != 0 &&
+            verts[i].NormalVec.z != 0)
+            verts[i].Verts3D[0].z =
+                -(verts[i].NormalVec.x * verts[i].Verts3D[0].x +
+                  verts[i].NormalVec.y * verts[i].Verts3D[0].y) /
+                verts[i].NormalVec.z;
     }
 
     cuDFNsys::Vector1<T> norm_vert1 =

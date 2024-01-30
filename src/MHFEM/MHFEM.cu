@@ -32,6 +32,7 @@ cuDFNsys::MHFEM<T>::MHFEM(
     double3 DomainDimensionRatio, bool if_CPU, int Nproc, bool if_periodic,
     T muOverRhoG, T constant_qq)
 {
+    cout << "\tMHFEM ing\n";
     Eigen::setNbThreads(1);
     this->Dir = dir_;
     this->InletP = inlet_p_;

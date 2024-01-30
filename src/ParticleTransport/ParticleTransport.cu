@@ -40,6 +40,7 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(
     //     throw cuDFNsys::ExceptionsPause("Undefined Particle information record mode!\n");
     // else
     //     this->RecordMode = recordMode;
+    cout << "\tParticle tracking ing\n";
     this->IfOutputMSD = IfOutputMSD_;
     T linearDis = 0;
     for (uint i = 0;; i++)
@@ -1760,91 +1761,186 @@ void cuDFNsys::ParticleTransport<T>::IdentifyEdgesSharedEle(
 {
     this->EdgesSharedEle.resize(mesh.Element3D.size() * 3);
 
-    // create unordered_map for each edges
-    typedef struct SharedElements
+    if (1 == 1)
     {
-        uint ElementID[_NumOfSharedEleAtMost] = {0};
-        uint LocalEdgeNO[_NumOfSharedEleAtMost] = {0};
-    } SharedEle;
+        std::map<std::pair<uint, uint>,
+                 std::array<uint2, _NumOfNeighborEleAtMost + 1>>
+            If_edge_inserted;
 
-    std::unordered_map<pair<size_t, size_t>, SharedEle, PairHash> UMapEdge2Ele;
-    UMapEdge2Ele.reserve(mesh.Element3D.size() * 3);
+        // If_edge_inserted.reserve(mesh.NumInteriorEdges + mesh.NumInletEdges +
+        //                          mesh.NumOutletEdges + mesh.NumNeumannEdges);
 
-    for (size_t i = 0; i < mesh.Element3D.size(); ++i)
-    {
-        uint *pts = &mesh.Element3D[i].x;
-
-        for (size_t j = 0; j < 3; ++j)
+        //double istart_time = cuDFNsys::CPUSecond();
+        double istart_time = cuDFNsys::CPUSecond();
+        cout << "\t\tFilling the EdgesSharedEle (a member variable)\n";
+        for (size_t i = 0; i < mesh.Element3D.size(); ++i)
         {
-            size_t node1 = pts[j];
-            size_t node2 = pts[(j + 1) % 3];
+            uint *pts = &mesh.Element3D[i].x;
 
-            pair<size_t, size_t> key_;
-            key_.first = node1 < node2 ? node1 : node2;
-            key_.second = node1 > node2 ? node1 : node2;
+            for (size_t j = 0; j < 3; ++j)
+            {
+                size_t node1 = pts[j];
+                size_t node2 = pts[(j + 1) % 3];
 
-            if (UMapEdge2Ele.find(key_) == UMapEdge2Ele.end())
-            {
-                UMapEdge2Ele[key_].ElementID[0] = i + 1;
-                UMapEdge2Ele[key_].LocalEdgeNO[0] = j;
-            }
-            else
-            {
-                for (size_t k = 0; k < _NumOfSharedEleAtMost; ++k)
+                //this->EdgesSharedEle[i * 3 + j].
+                pair<size_t, size_t> key_;
+                key_.first = node1 < node2 ? node1 : node2;
+                key_.second = node1 > node2 ? node1 : node2;
+
+                if (If_edge_inserted.find(key_) == If_edge_inserted.end())
                 {
-                    if (UMapEdge2Ele[key_].ElementID[k] == 0)
-                    {
-                        UMapEdge2Ele[key_].ElementID[k] = i + 1;
-                        UMapEdge2Ele[key_].LocalEdgeNO[k] = j;
-                        break;
-                    };
+                    // edge is not recorded
+                    If_edge_inserted[key_][0].x = 1;
+                    If_edge_inserted[key_][1].x = i + 1; // element ID
+                    If_edge_inserted[key_][1].y = j;     // local edge NO
 
-                    if (k == _NumOfSharedEleAtMost - 1)
+                    this->EdgesSharedEle[i * 3 + j].NumSharedEle = 1;
+                    this->EdgesSharedEle[i * 3 + j].EleID[0] = i + 1;
+                    this->EdgesSharedEle[i * 3 + j].LocalEdgeNO[0] = j;
+                }
+                else
+                {
+                    if (If_edge_inserted[key_][0].x + 1 > _NumOfSharedEleAtMost)
                     {
                         throw cuDFNsys::ExceptionsIgnore(
                             "Find intersections shared by more than four "
                             "elements!");
                     }
+
+                    // add neighboring elements' ID to previous edges
+                    for (uint k = 0; k < If_edge_inserted[key_][0].x; ++k)
+                    {
+                        uint eleID_22 =
+                            If_edge_inserted[key_][k + 1]
+                                .x; // element ID for neignboring elements
+                        uint localEdgeNo_22 =
+                            If_edge_inserted[key_][1 + k].y; // local edge NO
+
+                        uint globalEdgeNO_22 =
+                            (eleID_22 - 1) * 3 + localEdgeNo_22;
+
+                        this->EdgesSharedEle[globalEdgeNO_22].NumSharedEle =
+                            If_edge_inserted[key_][0].x + 1;
+
+                        this->EdgesSharedEle[globalEdgeNO_22]
+                            .EleID[If_edge_inserted[key_][0].x] = i + 1;
+
+                        this->EdgesSharedEle[globalEdgeNO_22]
+                            .LocalEdgeNO[If_edge_inserted[key_][0].x] = j;
+                    }
+
+                    // add to the current edge
+                    If_edge_inserted[key_][0].x++;
+                    If_edge_inserted[key_][If_edge_inserted[key_][0].x].x =
+                        i + 1; // element ID
+                    If_edge_inserted[key_][If_edge_inserted[key_][0].x].y =
+                        j; // local edge NO
+                    this->EdgesSharedEle[i * 3 + j].NumSharedEle =
+                        If_edge_inserted[key_][0].x;
+
+                    for (uint k = 0; k < If_edge_inserted[key_][0].x; ++k)
+                    {
+                        this->EdgesSharedEle[i * 3 + j].EleID[k] =
+                            If_edge_inserted[key_][k + 1].x;
+                        this->EdgesSharedEle[i * 3 + j].LocalEdgeNO[k] =
+                            If_edge_inserted[key_][k + 1].y;
+                    }
                 }
-            };
-        }
-    };
-
-    // identify
-    for (size_t i = 0; i < this->EdgesSharedEle.size(); ++i)
-    {
-        uint *pts = &(mesh.Element3D[i / 3].x);
-
-        size_t node1 = pts[i % 3];
-        size_t node2 = pts[(i % 3 + 1) % 3];
-
-        pair<size_t, size_t> key_;
-        key_.first = node1 < node2 ? node1 : node2;
-        key_.second = node1 > node2 ? node1 : node2;
-
-        for (size_t k = 0; k < _NumOfSharedEleAtMost; ++k)
-        {
-            if (UMapEdge2Ele[key_].ElementID[k] != 0)
-            {
-                this->EdgesSharedEle[i].EleID[k] =
-                    UMapEdge2Ele[key_].ElementID[k];
-                this->EdgesSharedEle[i].LocalEdgeNO[k] =
-                    UMapEdge2Ele[key_].LocalEdgeNO[k];
-                this->EdgesSharedEle[i].NumSharedEle++;
             }
         }
-
-        // for (size_t k = 0; k < this->EdgesSharedEle[i].NumSharedEle; ++k)
-        // {
-        //     cout << UMapEdge2Ele[key_].ElementID[k] << (k == this->EdgesSharedEle[i].NumSharedEle - 1 ? "\n" : ", ");
-        //     if(UMapEdge2Ele[key_].ElementID[k] > mesh.Element3D.size())
-        //     {
-        //         throw cuDFNsys::ExceptionsIgnore("Out of range of element ID\n");
-        //     }
-        // }
+        cout << "\t\tFinished filling the EdgesSharedEle (a member variable), "
+                "run time: "
+             << cuDFNsys::CPUSecond() - istart_time << "\n";
+    }
+    else
+    {
+        //create unordered_map for each edges
+        typedef struct SharedElements
+        {
+            uint ElementID[_NumOfSharedEleAtMost] = {0};
+            uint LocalEdgeNO[_NumOfSharedEleAtMost] = {0};
+        } SharedEle;
+        std::unordered_map<pair<size_t, size_t>, SharedEle, PairHash>
+            UMapEdge2Ele;
+        UMapEdge2Ele.reserve(mesh.Element3D.size() * 3);
+        double istart_time = cuDFNsys::CPUSecond();
+        cout << "\t\tGenerating a unordered_map for recording local edge "
+                "numbering and element ID for each edge\n";
+        for (size_t i = 0; i < mesh.Element3D.size(); ++i)
+        {
+            uint *pts = &mesh.Element3D[i].x;
+            for (size_t j = 0; j < 3; ++j)
+            {
+                size_t node1 = pts[j];
+                size_t node2 = pts[(j + 1) % 3];
+                pair<size_t, size_t> key_;
+                key_.first = node1 < node2 ? node1 : node2;
+                key_.second = node1 > node2 ? node1 : node2;
+                if (UMapEdge2Ele.find(key_) == UMapEdge2Ele.end())
+                {
+                    UMapEdge2Ele[key_].ElementID[0] = i + 1;
+                    UMapEdge2Ele[key_].LocalEdgeNO[0] = j;
+                }
+                else
+                {
+                    for (size_t k = 0; k < _NumOfSharedEleAtMost; ++k)
+                    {
+                        if (UMapEdge2Ele[key_].ElementID[k] == 0)
+                        {
+                            UMapEdge2Ele[key_].ElementID[k] = i + 1;
+                            UMapEdge2Ele[key_].LocalEdgeNO[k] = j;
+                            break;
+                        };
+                        if (k == _NumOfSharedEleAtMost - 1)
+                        {
+                            throw cuDFNsys::ExceptionsIgnore(
+                                "Find intersections shared by more than four "
+                                "elements!");
+                        }
+                    }
+                };
+            }
+        };
+        cout << "\t\tFinished generating a unordered_map for recording local "
+                "edge numbering and element ID for each edge, run time: "
+             << cuDFNsys::CPUSecond() - istart_time << "\n";
+        // identify
+        istart_time = cuDFNsys::CPUSecond();
+        cout << "\t\tFilling the EdgesSharedEle (a member variable)\n";
+        for (size_t i = 0; i < this->EdgesSharedEle.size(); ++i)
+        {
+            uint *pts = &(mesh.Element3D[i / 3].x);
+            size_t node1 = pts[i % 3];
+            size_t node2 = pts[(i % 3 + 1) % 3];
+            pair<size_t, size_t> key_;
+            key_.first = node1 < node2 ? node1 : node2;
+            key_.second = node1 > node2 ? node1 : node2;
+            for (size_t k = 0; k < _NumOfSharedEleAtMost; ++k)
+            {
+                if (UMapEdge2Ele[key_].ElementID[k] != 0)
+                {
+                    this->EdgesSharedEle[i].EleID[k] =
+                        UMapEdge2Ele[key_].ElementID[k];
+                    this->EdgesSharedEle[i].LocalEdgeNO[k] =
+                        UMapEdge2Ele[key_].LocalEdgeNO[k];
+                    this->EdgesSharedEle[i].NumSharedEle++;
+                }
+            }
+            // for (size_t k = 0; k < this->EdgesSharedEle[i].NumSharedEle; ++k)
+            // {
+            //     cout << UMapEdge2Ele[key_].ElementID[k] << (k == this->EdgesSharedEle[i].NumSharedEle - 1 ? "\n" : ", ");
+            //     if(UMapEdge2Ele[key_].ElementID[k] > mesh.Element3D.size())
+            //     {
+            //         throw cuDFNsys::ExceptionsIgnore("Out of range of element ID\n");
+            //     }
+            // }
+        }
+        cout << "\t\tFinished filling the EdgesSharedEle (a member variable), "
+                "run time: "
+             << cuDFNsys::CPUSecond() - istart_time << "\n";
     }
 
-    // output a h5 file
+    //output a h5 file 
     cuDFNsys::HDF5API h5g;
     string filename_ = "EdgesSharedEle.h5";
 
@@ -1856,6 +1952,8 @@ void cuDFNsys::ParticleTransport<T>::IdentifyEdgesSharedEle(
 
     uint NUMoo = (1 + _NumOfSharedEleAtMost + _NumOfSharedEleAtMost);
 
+    double istart_time = cuDFNsys::CPUSecond();
+    cout << "\t\tWritting the EdgesSharedEle data\n";
     for (uint i = 0; i < EdgesSharedEle.size(); ++i)
     {
         data_EdgesSharedEle[i * NUMoo] = EdgesSharedEle[i].NumSharedEle;
@@ -1870,7 +1968,9 @@ void cuDFNsys::ParticleTransport<T>::IdentifyEdgesSharedEle(
     uint2 dim_u = make_uint2(EdgesSharedEle.size(), NUMoo);
 
     h5g.AddDataset(filename_, "N", "data", data_EdgesSharedEle.data(), dim_u);
-
+    cout << "\t\tFinished writting the EdgesSharedEle data, run time: "
+         << cuDFNsys::CPUSecond() - istart_time << "\n";
+    //exit(0);
 }; // IdentifyEdgesSharedEle
 template void cuDFNsys::ParticleTransport<double>::IdentifyEdgesSharedEle(
     cuDFNsys::Mesh<double> mesh);
