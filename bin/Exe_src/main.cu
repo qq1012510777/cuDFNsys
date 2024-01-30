@@ -78,10 +78,11 @@ int main()
         {
         NewMesh:;
             cout << ColoringString("Creating a new mesh") << endl;
-            cout << ColoringString("Input the minimum grid size:") << endl;
-            cin >> meshGen.MinElementSize;
-            cout << ColoringString("Input the maximum grid size:") << endl;
-            cin >> meshGen.MaxElementSize;
+            // cout << ColoringString("Input the minimum grid size:") << endl;
+            // cin >> meshGen.MinElementSize;
+            // cout << ColoringString("Input the maximum grid size:") << endl;
+            // cin >> meshGen.MaxElementSize;
+            meshGen.LoadParametersFromCSV("Mesh_parameters");
             meshGen.MeshGeneration(my_dfn);
         }
 
@@ -119,10 +120,7 @@ int main()
         {
         NewFlow:;
             cout << ColoringString("solving flow") << endl;
-            cout << ColoringString("Input the InletHead:") << endl;
-            cin >> flowDFN.InletHead;
-            cout << ColoringString("Input the OutletHead:") << endl;
-            cin >> flowDFN.OutletHead;
+            flowDFN.LoadParametersFromCSV("Flow_parameters");
             flowDFN.FlowSimulation(my_dfn, meshGen);
         }
 

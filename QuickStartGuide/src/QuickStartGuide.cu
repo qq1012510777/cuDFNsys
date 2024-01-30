@@ -12,16 +12,6 @@ int main()
     cuDFNsys::FlowDFN<double> flowDFN;
     cuDFNsys::PTDFN<double> particleTracking;
 
-    cout << "Please input the minimum grid size you wanted:\n";
-    cin >> meshGen.MinElementSize;
-    cout << "Please input the maximum grid size you wanted:\n";
-    cin >> meshGen.MaxElementSize;
-
-    cout << "Please input the inlet head value (in meters) you wanted:\n";
-    cin >> flowDFN.InletHead;
-    cout << "Please input the outlet head value (in meters) you wanted:\n";
-    cin >> flowDFN.OutletHead;
-
     my_dfn.RandomSeed = (unsigned long)t;
     my_dfn.LoadDFNFromCSV("InputParametersForStochasticDFN");
 
@@ -29,16 +19,17 @@ int main()
     my_dfn.Visualization("DFN_VISUAL", "DFN_VISUAL", "DFN_VISUAL", true, true,
                          true, true);
 
+    meshGen.LoadParametersFromCSV("Mesh_parameters");
     meshGen.MeshGeneration(my_dfn);
     meshGen.Visualization(my_dfn, "DFN_MESH_VISUAL", "DFN_MESH_VISUAL",
                           "DFN_MESH_VISUAL", true, true);
 
+    flowDFN.LoadParametersFromCSV("Flow_parameters");
     flowDFN.FlowSimulation(my_dfn, meshGen);
     flowDFN.Visualization(my_dfn, meshGen, "DFN_FLOW_VISUAL", "DFN_FLOW_VISUAL",
                           "DFN_FLOW_VISUAL");
 
     particleTracking.LoadParametersFromCSV("PT_parameters");
-
     particleTracking.ParticleTracking(my_dfn, meshGen, flowDFN);
     particleTracking.Visualization(my_dfn, meshGen, flowDFN,
                                    "DFN_DISPERSION_VISUAL",

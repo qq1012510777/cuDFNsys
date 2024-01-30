@@ -176,6 +176,7 @@ namespace cuDFNsys
                            const bool &IfCheckEdgeAttributes);
         void StoreInH5(const string &ClassNameH5);
         void LoadClassFromH5(const string &ClassNameH5);
+        void LoadParametersFromCSV(const string &CSVName);
     };
 }; // namespace cuDFNsys
 
@@ -207,6 +208,7 @@ namespace cuDFNsys
                            const string &HDF5FileName);
         void StoreInH5(const string &ClassNameH5);
         void LoadClassFromH5(const string &ClassNameH5);
+        void LoadParametersFromCSV(const string &CSVName);
     };
 }; // namespace cuDFNsys
 

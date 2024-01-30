@@ -211,7 +211,7 @@ Creating a new DFN. Please provide the name of the .csv file, without the suffix
 ```
 One can input the name of `.csv`, either `InputParametersForDeterministicDFN` or `InputParametersForStochasticDFN`.
 
-Then, the program asks you to interactively input some other parameters, e.g., the minimum and maximum, the inlet and outlet head values, and so on.
+Then, the program will load parameters for mesh and flow simulation, in `Mesh_parameters.csv` and `PT_parameters.csv`, respectively, e.g., the minimum and maximum expected finite element sizes, the inlet and outlet head values, and so on.
 
 ### 2.4. Particle tracking
 ```
@@ -250,7 +250,143 @@ By running `cuDFNsys_exe`, three `.h5` files are outputted, e.g., `Class_DFN.h5`
 
 One can open them to see DFN parameters.
 
+The first one `Class_DFN.h5` has the following structure:
+```
+./DomainDimensionRatio    Dataset {3}
+./Fracture_1              Group
+./Fracture_1/Center       Dataset {1, 3}
+./Fracture_1/Conductivity Dataset {1}
+./Fracture_1/ConnectModelSurf Dataset {1, 6}
+./Fracture_1/NormalVec    Dataset {1, 3}
+./Fracture_1/NumVertsTruncated Dataset {1}
+./Fracture_1/Radius       Dataset {1}
+./Fracture_1/Verts3D      Dataset {3, 4}
+./Fracture_1/Verts3DTruncated Dataset {3, 8}
+./Intersections           Dataset {8, 218}
+./L                       Dataset {1}
+./ListClusters            Dataset {86, 2}
+./NumClusters             Dataset {1}
+./NumFractures            Dataset {1}
+./PercoDir                Dataset {1}
+./PercolationClusters     Dataset {1}
+```
+where `Dataset {*}` is the dimension of the dataset. One can what each dataset is thourgh their names. Note that for other DFNs, the dimension of some datasets will be different. 
+
+Note that `./Fracture_1/NumVertsTruncated` is the number of vertices after the truncation of fractures. `Verts3DTruncated` is the vertices' coordinates after the truncation.
+
+The second one `Class_MESH.h5` has the following structure:
+```
+/Fracs_percol            Dataset {86}
+/InletTraceLength        Dataset {1}
+/MeanGridSize            Dataset {1}
+/NumElements             Dataset {1}
+/NumFractures            Dataset {1}
+/NumInletEdges           Dataset {1}
+/NumNodes                Dataset {1}
+/NumOutletEdges          Dataset {1}
+/OutletTraceLength       Dataset {1}
+/group_mesh              Group
+/group_mesh/Coordinate2D Dataset {6, 44111}
+/group_mesh/Coordinate3D Dataset {3, 22879}
+/group_mesh/Dir          Dataset {1}
+/group_mesh/EdgeAttri    Dataset {6, 44111}
+/group_mesh/Element2D    Dataset {3, 44111}
+/group_mesh/Element3D    Dataset {3, 44111}
+/group_mesh/ElementFracTag Dataset {44111}
+/group_mesh/FracID       Dataset {86}
+/group_mesh/InletEdgeNOLen Dataset {2, 163}
+/group_mesh/MeshSuccess  Dataset {1}
+/group_mesh/NumElementFrac Dataset {86}
+/group_mesh/NumInteriorEdges Dataset {1}
+/group_mesh/NumNeumannEdges Dataset {1}
+/group_mesh/OutletEdgeNOLen Dataset {2, 143}
+```
+where `Fracs_percol` is the tag/ID of fractures that belong to the percolation cluster. `InletTraceLength` is the total length of traces at the inlet plane. `MeanGridSize` is the mean area of finite elements. `NumElements` is the number of finite elements. `NumInletEdges` is the number of traces on inlet plane. `NumNodes` is the number of nodes of the unstructured mesh. `/group_mesh/Coordinate3D` is the 3D coordinates of all nodes. `Dir` is the percolation direction. `Element3D` is the structure of finite elements, showing us how a finite element consists of which nodes. `ElementFracTag` is the fracture ID for each finite element.
+
+The third one `Class_FLOW.h5` has the following structure:
+```
+/Dir                     Dataset {1}
+/InletLength             Dataset {1}
+/InletP                  Dataset {1}
+/MaxVelocity             Dataset {1}
+/MeanVelocity            Dataset {1}
+/MuOverRhoG              Dataset {1}
+/OutletLength            Dataset {1}
+/OutletP                 Dataset {1}
+/Permeability            Dataset {1}
+/PressureEles            Dataset {1, 44111}
+/PressureInteriorEdge    Dataset {1, 66765}
+/QError                  Dataset {1}
+/QIn                     Dataset {1}
+/QOut                    Dataset {1}
+/TripletTime             Dataset {1}
+/VelocityNormalScalarSepEdges Dataset {1, 132333}
+```
+where `MaxVelocity` is the maximum flow rate $\left[LT^{-1}\right]$, `MuOverRhoG` is the viscosity $\mu$ over the product of fluid density $\rho_g$ and gravitational acceleration $g$, `Permeability` is the Darcian permeability, `PressureEles` is the hydraulic head of each element, `VelocityNormalScalarSepEdges` is the volumatric flux rate per width of each edge (each element has three edges).
+
+
 ## 4. Quickstart examples: write a main.cpp
+The whole code is shown in `cuDFNsys/QuickStartGuide/src/QuickStartGuide.cpp`. To compile this, `cd cuDFNsys/QuickStartGuide` and `make`, then the executable program `QuickStartGuide` is generated in the current directory.
+
+First, if one want to generate a stochastic DFN, the `time` function is required.
+```
+time_t t;
+time(&t);
+```
+
+Next, one can create four empty C++ classes to represent DFN, mesh, flow and particle tracking:
+```
+cuDFNsys::DFN<double> my_dfn;
+cuDFNsys::MeshDFN<double> meshGen;
+cuDFNsys::FlowDFN<double> flowDFN;
+cuDFNsys::PTDFN<double> particleTracking;
+```
+
+To generate a stochastic DFN, one can load input parameters from a `.csv` file:
+```
+my_dfn.RandomSeed = (unsigned long)t;
+my_dfn.LoadDFNFromCSV("InputParametersForStochasticDFN");
+```
+Note that `RandomSeed` aims at stochastic DFNs at different time. Right now, a DFN is created. The intersections and clusters (including spanning clusters) should be identified, which can be done by
+```
+my_dfn.IdentifyIntersectionsClusters(true);
+```
+This DFN now can be visualized. The visulization can be performed by python or MATLAB. One can output the visualization files  by
+```
+my_dfn.Visualization("DFN_VISUAL", "DFN_VISUAL", "DFN_VISUAL", true, true,
+                         true, true);
+```
+The above function generates `.m`, `.py` and `.h5` files. For instance, one can visualize the DFN by running `DFN_VISUAL.m` in MATLAB.
+
+Based on the DFN, mesh, flow simulation and particle tracking can be done by:
+```
+meshGen.LoadParametersFromCSV("Mesh_parameters");
+meshGen.MeshGeneration(my_dfn);
+meshGen.Visualization(my_dfn, "DFN_MESH_VISUAL", "DFN_MESH_VISUAL",
+                          "DFN_MESH_VISUAL", true, true);
+
+flowDFN.LoadParametersFromCSV("Flow_parameters");
+flowDFN.FlowSimulation(my_dfn, meshGen);
+flowDFN.Visualization(my_dfn, meshGen, "DFN_FLOW_VISUAL", "DFN_FLOW_VISUAL",
+                          "DFN_FLOW_VISUAL");		
+
+particleTracking.LoadParametersFromCSV("PT_parameters");
+particleTracking.ParticleTracking(my_dfn, meshGen, flowDFN);
+particleTracking.Visualization(my_dfn, meshGen, flowDFN,
+                                   "DFN_DISPERSION_VISUAL",
+                                   "DFN_DISPERSION_VISUAL", "DFN_FLOW_VISUAL");
+```
+All input parameters are shown in the `.csv` files.
+
+Finally, the DFN, mesh and flow data can be stored (for re-run particle tracking or other purpose):
+```
+my_dfn.StoreInH5("Class_DFN");
+meshGen.StoreInH5("Class_MESH");
+flowDFN.StoreInH5("Class_FLOW");
+```
+The three h5 files can be loaded again for run more particle tracking steps (details are shown in the next section).
+
+To show the animation of particle tracking, one can run `./Transform2DH5ParticleDataTo3D 0 DFN_MESH_VISUAL.h5` in the terminal. Then run `DFN_DISPERSION_VISUAL.m` in MATLAB.
 
 ## 5. How to re-run a DFN
 

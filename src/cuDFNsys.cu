@@ -635,8 +635,8 @@ void cuDFNsys::DFN<T>::LoadDFNFromCSV(const string &xlsxNameWithoutSuffix)
         this->NumFracturesTotal = atoi(temp_s.c_str());
 
         int DataNumForOneFracture = 12;
-        thrust::host_vector<T> Data_deterministic(DataNumForOneFracture *
-                                                  this->NumFracturesTotal, 0);
+        thrust::host_vector<T> Data_deterministic(
+            DataNumForOneFracture * this->NumFracturesTotal, 0);
 
         // -------//--------line > 5
         // cout << "NumFrac: " << this->NumFracturesTotal << endl;
@@ -713,7 +713,8 @@ void cuDFNsys::DFN<T>::LoadDFNFromCSV(const string &xlsxNameWithoutSuffix)
 
         cout << "First fracture: ";
         for (int j = 0; j < DataNumForOneFracture; ++j)
-            cout << Data_deterministic[j] << (j == DataNumForOneFracture - 1 ? "\n" : ", ");
+            cout << Data_deterministic[j]
+                 << (j == DataNumForOneFracture - 1 ? "\n" : ", ");
         cout << "...\nLast fracture: ";
         for (int j = 0; j < DataNumForOneFracture; ++j)
             cout << Data_deterministic[Data_deterministic.size() -
@@ -842,6 +843,56 @@ template void
 cuDFNsys::MeshDFN<float>::LoadClassFromH5(const string &ClassNameH5);
 
 // ====================================================
+// NAME:        cuDFNsys::MeshDFN<T>::LoadParametersFromCSV
+// DESCRIPTION: Load mesh parameters from a csv file
+// AUTHOR:      Tingchang YIN
+// DATE:        30/01/2024
+// ====================================================
+template <typename T>
+void cuDFNsys::MeshDFN<T>::LoadParametersFromCSV(const string &CSVName)
+{
+    std::ifstream ifs;
+    ifs.open(CSVName + ".csv", ios::in);
+
+    if (!ifs.is_open())
+    {
+        ifs.close();
+        throw cuDFNsys::ExceptionsPause("Fail to open " + CSVName + ".csv");
+    }
+
+    vector<string> items(2);
+    for (int i = 0; i < items.size(); ++i)
+    {
+        string temp_k;
+        getline(ifs, temp_k);
+        items[i] = temp_k;
+        //cout << temp_k << endl;
+    }
+    ifs.close();
+
+    string temp_s;
+    //--------line 1
+    istringstream istrss(items[0]);
+    getline(istrss, temp_s, ',');
+    getline(istrss, temp_s, ',');
+    this->MinElementSize = atof(temp_s.c_str());
+
+    //--------line 2
+    istrss.str(items[1]);
+    getline(istrss, temp_s, ',');
+    getline(istrss, temp_s, ',');
+    this->MaxElementSize = atof(temp_s.c_str());
+
+    cout << "Load mesh parameters from " << CSVName << ".csv:\n";
+    cout << "Expected minimum element size: " << (this->MinElementSize) << endl;
+    cout << "Expected maximum element size: " << (this->MaxElementSize) << endl;
+}; // LoadParametersFromCSV
+template void
+cuDFNsys::MeshDFN<double>::LoadParametersFromCSV(const string &CSVName);
+template void
+cuDFNsys::MeshDFN<float>::LoadParametersFromCSV(const string &CSVName);
+
+// ====================================================
 // NAME:        cuDFNsys::FlowDFN<T>::FlowSimulation
 // DESCRIPTION: Flow simulation
 // AUTHOR:      Tingchang YIN
@@ -965,6 +1016,63 @@ template void
 cuDFNsys::FlowDFN<double>::LoadClassFromH5(const string &ClassNameH5);
 template void
 cuDFNsys::FlowDFN<float>::LoadClassFromH5(const string &ClassNameH5);
+
+// ====================================================
+// NAME:        cuDFNsys::FlowDFN<T>::LoadParametersFromCSV
+// DESCRIPTION: Load flow parameters from a csv file
+// AUTHOR:      Tingchang YIN
+// DATE:        30/01/2024
+// ====================================================
+template <typename T>
+void cuDFNsys::FlowDFN<T>::LoadParametersFromCSV(const string &CSVName)
+{
+    std::ifstream ifs;
+    ifs.open(CSVName + ".csv", ios::in);
+
+    if (!ifs.is_open())
+    {
+        ifs.close();
+        throw cuDFNsys::ExceptionsPause("Fail to open " + CSVName + ".csv");
+    }
+
+    vector<string> items(3);
+    for (int i = 0; i < items.size(); ++i)
+    {
+        string temp_k;
+        getline(ifs, temp_k);
+        items[i] = temp_k;
+        //cout << temp_k << endl;
+    }
+    ifs.close();
+
+    string temp_s;
+    //--------line 1
+    istringstream istrss(items[0]);
+    getline(istrss, temp_s, ',');
+    getline(istrss, temp_s, ',');
+    this->MuOverRhoG = atof(temp_s.c_str());
+
+    //--------line 2
+    istrss.str(items[1]);
+    getline(istrss, temp_s, ',');
+    getline(istrss, temp_s, ',');
+    this->InletHead = atof(temp_s.c_str());
+
+    //--------line 3
+    istrss.str(items[2]);
+    getline(istrss, temp_s, ',');
+    getline(istrss, temp_s, ',');
+    this->OutletHead = atof(temp_s.c_str());
+
+    std::cout << "Load flow parameters from " << CSVName << ".csv:\n";
+    std::cout << "MuOverRhoG: " << (this->MuOverRhoG) << endl;
+    std::cout << "InletHead: " << (this->InletHead) << endl;
+    std::cout << "OutletHead: " << (this->OutletHead) << endl;
+}; // LoadParametersFromCSV
+template void
+cuDFNsys::FlowDFN<double>::LoadParametersFromCSV(const string &CSVName);
+template void
+cuDFNsys::FlowDFN<float>::LoadParametersFromCSV(const string &CSVName);
 
 // ====================================================
 // NAME:        cuDFNsys::PTDFN<T>::ParticleTracking
