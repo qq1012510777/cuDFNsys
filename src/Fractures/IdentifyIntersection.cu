@@ -37,7 +37,7 @@ cuDFNsys::IdentifyIntersection<T>::IdentifyIntersection(thrust::host_vector<cuDF
 
     for (int i = 1; i < verts.size(); ++i)
     {
-#pragma omp parallel for schedule(dynamic) num_threads(Nproc)
+    #pragma omp parallel for schedule(dynamic) num_threads(Nproc)
         for (int j = 0; j < i; ++j)
         {
             cuDFNsys::Vector3<T> dist_two_frac = cuDFNsys::MakeVector3<T>(verts[i].Center.x - verts[j].Center.x,
@@ -168,7 +168,7 @@ cuDFNsys::IdentifyIntersection<T>::IdentifyIntersection(thrust::host_vector<cuDF
                     p.second = Intersection_f[1];
                     pair<pair<size_t, size_t>, pair<cuDFNsys::Vector3<T>, cuDFNsys::Vector3<T>>> element_ =
                         std::make_pair(key_, p);
-#pragma omp critical
+                    #pragma omp critical
                     {
                         Intersection_map.insert(element_);
                     }

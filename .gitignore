@@ -16,6 +16,7 @@ QuickStartGuide/*.m
 QuickStartGuide/*.py
 QuickStartGuide/*.h5
 QuickStartGuide/ParticlePositionResult
+QuickStartGuide/ReRunPT
 
 SomeApplications/*/main* 
 SomeApplications/*/Transform2DH5ParticleDataTo3D 

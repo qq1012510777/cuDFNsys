@@ -191,7 +191,7 @@ source ~/.bashrc
 ```
 This quickstart example can be run by `./QuickStartGuide`, where a DFN is generated in which the flow is solved by a mixed hybrid finite element method and the particle tracking is implement for a not-very-long time. 
 
-_cuDFNsys_ runs the flow and transport in DFNs by four cuda c++ classes, and the DFN model and mesh and flow data are reproducable, fo example, to run more steps for particle tracking in one DFN, please see codes (i.e., `QuickStartGuide_DFN_I_DFN.cu`, `QuickStartGuide_DFN_III_FLOW.cu`, `QuickStartGuide_DFN_II_MESH.cu` and `QuickStartGuide_DFN_IV_PT.cu`) and run the corresponding executable files in order. More details are in [manual](Manual/Manual.md)
+_cuDFNsys_ runs the flow and transport in DFNs by four cuda c++ classes, and the DFN model and mesh and flow data are reproducable, for example, to run more steps for particle tracking in one DFN, please see codes (i.e., `ReRunPT.cpp``) and run the corresponding executable file. More details are in [manual](Manual/Manual.md).
 
 # Visualization
 

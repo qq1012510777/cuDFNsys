@@ -34,8 +34,10 @@ void cuDFNsys::HDF5API::NewFile(const string &name)
     }
     catch (...)
     {
-        cout << "\033[31mA file with same name does exist and is occupied by anthor program now!\033[0m\n";
-        cout << "\033[31mSo, I will delete this file and create a new one!\033[0m\n";
+        cout << "\033[31mA file with same name does exist and is occupied by "
+                "anthor program now!\033[0m\n";
+        cout << "\033[31mSo, I will delete this file and create a new "
+                "one!\033[0m\n";
         string name1 = name;
         std::remove(name1.c_str());
         H5File file(name, H5F_ACC_TRUNC);
@@ -50,11 +52,10 @@ void cuDFNsys::HDF5API::NewFile(const string &name)
 // DATE:        09/04/2022
 // ====================================================
 template <class T>
-void cuDFNsys::HDF5API::AddDataset(const string &filename,
-                                   const string &groupname,
-                                   const string &datasetname,
-                                   const T *data, // the T should be column-major
-                                   const uint2 &dim)
+void cuDFNsys::HDF5API::AddDataset(
+    const string &filename, const string &groupname, const string &datasetname,
+    const T *data, // the T should be column-major
+    const uint2 &dim)
 {
     H5File file(filename, H5F_ACC_RDWR);
 
@@ -63,12 +64,19 @@ void cuDFNsys::HDF5API::AddDataset(const string &filename,
     if (dim.y > 1)
         rank_ = 2;
 
-    dims = new hsize_t[rank_];
+    dims = new hsize_t[2];
     dims[0] = dim.x;
     if (rank_ == 2)
         dims[1] = dim.y;
+    //cout << dims[0] << ", " << dims[1] << endl;
 
-    DataSpace dataspace(rank_, dims);
+    DataSpace dataspace;
+
+    if (rank_ == 1)
+        dataspace.setExtentSimple(rank_, &dims[0]);
+    else
+        dataspace.setExtentSimple(rank_, dims);
+
     delete[] dims;
     dims = NULL;
 
@@ -79,7 +87,12 @@ void cuDFNsys::HDF5API::AddDataset(const string &filename,
     else if (typeid(data[0]) == typeid(float))
         datatype = PredType::NATIVE_FLOAT;
     else if (typeid(data[0]) == typeid(size_t))
-        datatype = PredType::NATIVE_UINT;
+    {
+        string kklo = "In cuDFNsys::HDF5API, writing size_t data might lead to "
+                      "problems, please cast size_t array to int/uint array\n";
+        cout << kklo;
+        throw ExceptionsPause(kklo);
+    }
     else if (typeid(data[0]) == typeid(int))
         datatype = PredType::NATIVE_INT;
     else if (typeid(data[0]) == typeid(uint))
@@ -105,8 +118,7 @@ void cuDFNsys::HDF5API::AddDataset(const string &filename,
             //cout << "created group!\n";
         }
 
-        DataSet dataset =
-            group.createDataSet(datasetname, datatype, dataspace);
+        DataSet dataset = group.createDataSet(datasetname, datatype, dataspace);
 
         dataset.write(data, datatype);
 
@@ -114,19 +126,36 @@ void cuDFNsys::HDF5API::AddDataset(const string &filename,
     }
     else
     {
-        DataSet dataset =
-            file.createDataSet(datasetname, datatype, dataspace);
+        DataSet dataset = file.createDataSet(datasetname, datatype, dataspace);
 
         dataset.write(data, datatype);
     }
 
     file.close();
 }; // AddDataset
-template void cuDFNsys::HDF5API::AddDataset(const string &filename, const string &groupname, const string &datasetname, const int *data, const uint2 &dim);
-template void cuDFNsys::HDF5API::AddDataset(const string &filename, const string &groupname, const string &datasetname, const double *data, const uint2 &dim);
-template void cuDFNsys::HDF5API::AddDataset(const string &filename, const string &groupname, const string &datasetname, const float *data, const uint2 &dim);
-template void cuDFNsys::HDF5API::AddDataset(const string &filename, const string &groupname, const string &datasetname, const size_t *data, const uint2 &dim);
-template void cuDFNsys::HDF5API::AddDataset(const string &filename, const string &groupname, const string &datasetname, const uint *data, const uint2 &dim);
+template void cuDFNsys::HDF5API::AddDataset(const string &filename,
+                                            const string &groupname,
+                                            const string &datasetname,
+                                            const int *data, const uint2 &dim);
+template void cuDFNsys::HDF5API::AddDataset(const string &filename,
+                                            const string &groupname,
+                                            const string &datasetname,
+                                            const double *data,
+                                            const uint2 &dim);
+template void cuDFNsys::HDF5API::AddDataset(const string &filename,
+                                            const string &groupname,
+                                            const string &datasetname,
+                                            const float *data,
+                                            const uint2 &dim);
+template void cuDFNsys::HDF5API::AddDataset(const string &filename,
+                                            const string &groupname,
+                                            const string &datasetname,
+                                            const size_t *data,
+                                            const uint2 &dim);
+template void cuDFNsys::HDF5API::AddDataset(const string &filename,
+                                            const string &groupname,
+                                            const string &datasetname,
+                                            const uint *data, const uint2 &dim);
 
 // ====================================================
 // NAME:        AddDataset
@@ -136,14 +165,14 @@ template void cuDFNsys::HDF5API::AddDataset(const string &filename, const string
 // DATE:        09/04/2022
 // ====================================================
 template <class T>
-void cuDFNsys::HDF5API::AddDatasetsWithOneGroup(const string &filename,
-                                                const string &groupname,
-                                                const vector<string> &datasetname,
-                                                const vector<T *> data,
-                                                const vector<uint2> &dim)
+void cuDFNsys::HDF5API::AddDatasetsWithOneGroup(
+    const string &filename, const string &groupname,
+    const vector<string> &datasetname, const vector<T *> data,
+    const vector<uint2> &dim)
 {
     if (groupname == "N")
-        throw ExceptionsPause("You should define group name when you are using HDF5API::AddDatasetsWithOneGroup!\n");
+        throw ExceptionsPause("You should define group name when you are using "
+                              "HDF5API::AddDatasetsWithOneGroup!\n");
 
     H5File file(filename, H5F_ACC_RDWR);
 
@@ -170,7 +199,12 @@ void cuDFNsys::HDF5API::AddDatasetsWithOneGroup(const string &filename,
     else if (typeid(data[0][0]) == typeid(float))
         datatype = PredType::NATIVE_FLOAT;
     else if (typeid(data[0][0]) == typeid(size_t))
-        datatype = PredType::NATIVE_UINT;
+    {
+        string kklo = "In cuDFNsys::HDF5API, writing size_t data might lead to "
+                      "problems, please cast size_t array to int/uint array\n";
+        cout << kklo;
+        throw ExceptionsPause(kklo);
+    }
     else if (typeid(data[0][0]) == typeid(int))
         datatype = PredType::NATIVE_INT;
     else if (typeid(data[0][0]) == typeid(uint))
@@ -202,11 +236,26 @@ void cuDFNsys::HDF5API::AddDatasetsWithOneGroup(const string &filename,
     group.close();
     file.close();
 }; // AddDatasetsWithOneGroup
-template void cuDFNsys::HDF5API::AddDatasetsWithOneGroup(const string &filename, const string &groupname, const vector<string> &datasetname, const vector<int *> data, const vector<uint2> &dim);
-template void cuDFNsys::HDF5API::AddDatasetsWithOneGroup(const string &filename, const string &groupname, const vector<string> &datasetname, const vector<double *> data, const vector<uint2> &dim);
-template void cuDFNsys::HDF5API::AddDatasetsWithOneGroup(const string &filename, const string &groupname, const vector<string> &datasetname, const vector<float *> data, const vector<uint2> &dim);
-template void cuDFNsys::HDF5API::AddDatasetsWithOneGroup(const string &filename, const string &groupname, const vector<string> &datasetname, const vector<size_t *> data, const vector<uint2> &dim);
-template void cuDFNsys::HDF5API::AddDatasetsWithOneGroup(const string &filename, const string &groupname, const vector<string> &datasetname, const vector<uint *> data, const vector<uint2> &dim);
+template void cuDFNsys::HDF5API::AddDatasetsWithOneGroup(
+    const string &filename, const string &groupname,
+    const vector<string> &datasetname, const vector<int *> data,
+    const vector<uint2> &dim);
+template void cuDFNsys::HDF5API::AddDatasetsWithOneGroup(
+    const string &filename, const string &groupname,
+    const vector<string> &datasetname, const vector<double *> data,
+    const vector<uint2> &dim);
+template void cuDFNsys::HDF5API::AddDatasetsWithOneGroup(
+    const string &filename, const string &groupname,
+    const vector<string> &datasetname, const vector<float *> data,
+    const vector<uint2> &dim);
+template void cuDFNsys::HDF5API::AddDatasetsWithOneGroup(
+    const string &filename, const string &groupname,
+    const vector<string> &datasetname, const vector<size_t *> data,
+    const vector<uint2> &dim);
+template void cuDFNsys::HDF5API::AddDatasetsWithOneGroup(
+    const string &filename, const string &groupname,
+    const vector<string> &datasetname, const vector<uint *> data,
+    const vector<uint2> &dim);
 
 // ====================================================
 // NAME:        OverWrite
@@ -217,8 +266,7 @@ template void cuDFNsys::HDF5API::AddDatasetsWithOneGroup(const string &filename,
 template <class T>
 void cuDFNsys::HDF5API::OverWrite(const string &filename,
                                   const string &groupname,
-                                  const string &datasetname,
-                                  const T *data,
+                                  const string &datasetname, const T *data,
                                   const uint2 &dim)
 {
     H5File file(filename, H5F_ACC_RDWR); //The hdf5 c++ object.
@@ -233,14 +281,30 @@ void cuDFNsys::HDF5API::OverWrite(const string &filename,
     result++;
     file.close();
 
-    this->AddDataset(filename, groupname,
-                     datasetname, data, dim);
+    this->AddDataset(filename, groupname, datasetname, data, dim);
 }; // OverWrite
-template void cuDFNsys::HDF5API::OverWrite(const string &filename, const string &groupname, const string &datasetname, const int *data, const uint2 &dim);
-template void cuDFNsys::HDF5API::OverWrite(const string &filename, const string &groupname, const string &datasetname, const double *data, const uint2 &dim);
-template void cuDFNsys::HDF5API::OverWrite(const string &filename, const string &groupname, const string &datasetname, const float *data, const uint2 &dim);
-template void cuDFNsys::HDF5API::OverWrite(const string &filename, const string &groupname, const string &datasetname, const size_t *data, const uint2 &dim);
-template void cuDFNsys::HDF5API::OverWrite(const string &filename, const string &groupname, const string &datasetname, const uint *data, const uint2 &dim);
+template void cuDFNsys::HDF5API::OverWrite(const string &filename,
+                                           const string &groupname,
+                                           const string &datasetname,
+                                           const int *data, const uint2 &dim);
+template void cuDFNsys::HDF5API::OverWrite(const string &filename,
+                                           const string &groupname,
+                                           const string &datasetname,
+                                           const double *data,
+                                           const uint2 &dim);
+template void cuDFNsys::HDF5API::OverWrite(const string &filename,
+                                           const string &groupname,
+                                           const string &datasetname,
+                                           const float *data, const uint2 &dim);
+template void cuDFNsys::HDF5API::OverWrite(const string &filename,
+                                           const string &groupname,
+                                           const string &datasetname,
+                                           const size_t *data,
+                                           const uint2 &dim);
+template void cuDFNsys::HDF5API::OverWrite(const string &filename,
+                                           const string &groupname,
+                                           const string &datasetname,
+                                           const uint *data, const uint2 &dim);
 
 // ====================================================
 // NAME:        ReadDataset
@@ -317,18 +381,14 @@ vector<T> cuDFNsys::HDF5API::ReadDataset(const string &filename,
 
     return AK;
 }; // ReadDataset
-template vector<double> cuDFNsys::HDF5API::ReadDataset<double>(const string &filename,
-                                                               const string &groupname,
-                                                               const string &datasetname);
-template vector<float> cuDFNsys::HDF5API::ReadDataset<float>(const string &filename,
-                                                             const string &groupname,
-                                                             const string &datasetname);
-template vector<uint> cuDFNsys::HDF5API::ReadDataset<uint>(const string &filename,
-                                                           const string &groupname,
-                                                           const string &datasetname);
-template vector<int> cuDFNsys::HDF5API::ReadDataset<int>(const string &filename,
-                                                         const string &groupname,
-                                                         const string &datasetname);
+template vector<double> cuDFNsys::HDF5API::ReadDataset<double>(
+    const string &filename, const string &groupname, const string &datasetname);
+template vector<float> cuDFNsys::HDF5API::ReadDataset<float>(
+    const string &filename, const string &groupname, const string &datasetname);
+template vector<uint> cuDFNsys::HDF5API::ReadDataset<uint>(
+    const string &filename, const string &groupname, const string &datasetname);
+template vector<int> cuDFNsys::HDF5API::ReadDataset<int>(
+    const string &filename, const string &groupname, const string &datasetname);
 
 // ====================================================
 // NAME:        IfH5FileExist
@@ -358,10 +418,9 @@ bool cuDFNsys::HDF5API::IfH5FileExist(const string &filename)
 // AUTHOR:      Tingchang YIN
 // DATE:        21/08/2022
 // ====================================================
-void cuDFNsys::HDF5API::AddDatasetString(const string &filename,
-                                         const string &groupname,
-                                         const string &datasetname,
-                                         const string &sdata) // the T should be column-major
+void cuDFNsys::HDF5API::AddDatasetString(
+    const string &filename, const string &groupname, const string &datasetname,
+    const string &sdata) // the T should be column-major
 
 {
     H5File file(filename, H5F_ACC_RDWR);
@@ -386,8 +445,8 @@ void cuDFNsys::HDF5API::AddDatasetString(const string &filename,
             //cout << "created group!\n";
         }
 
-        DataSet dataset =
-            group.createDataSet(datasetname, datatype, H5::DataSpace(H5S_SCALAR));
+        DataSet dataset = group.createDataSet(datasetname, datatype,
+                                              H5::DataSpace(H5S_SCALAR));
 
         //char *buffer = new double[dim.x * dim.y]();
         dataset.write(sdata.data(), datatype);
@@ -400,8 +459,8 @@ void cuDFNsys::HDF5API::AddDatasetString(const string &filename,
     else
     {
 
-        DataSet dataset =
-            file.createDataSet(datasetname, datatype, H5::DataSpace(H5S_SCALAR));
+        DataSet dataset = file.createDataSet(datasetname, datatype,
+                                             H5::DataSpace(H5S_SCALAR));
 
         //const char *buffer = sdata.data();
 

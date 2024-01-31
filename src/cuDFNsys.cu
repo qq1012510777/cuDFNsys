@@ -218,60 +218,31 @@ void cuDFNsys::DFN<T>::StoreInH5(const string &ClassNameH5)
                         make_uint2(1, 0));
     }
     {
-        size_t Max_cluster_size = 0;
-        for (size_t i = 0; i < this->ListClusters.size(); ++i)
-            Max_cluster_size = this->ListClusters[i].size() > Max_cluster_size
-                                   ? this->ListClusters[i].size()
-                                   : Max_cluster_size;
+        std::vector<uint> TMP_S(this->PercolationCluster.size());
+        for (uint j = 0; j < TMP_S.size(); ++j)
+            TMP_S[j] = PercolationCluster[j];
 
-        T *clustersList = new T[this->ListClusters.size() * Max_cluster_size];
-        if (clustersList == NULL)
-        {
-            string AS = "Alloc error in MatlabPlotDFN!";
-            throw cuDFNsys::ExceptionsPause(AS);
-        }
-        //cout << "Max_cluster_size: " << Max_cluster_size << endl;
-        int tmpff = 0;
-        for (size_t j = 0; j < Max_cluster_size; ++j)
-            for (size_t i = 0; i < this->ListClusters.size(); ++i)
-            {
-                if (j < this->ListClusters[i].size())
-                    clustersList[tmpff] = this->ListClusters[i][j] + 1;
-                else
-                    clustersList[tmpff] = -1.0;
-
-                tmpff++;
-            }
-
-        //M1.WriteMat(mat_key, "u", ListClusters.size() * Max_cluster_size, ListClusters.size(), Max_cluster_size, clustersList, "ListClusters");
-        uint2 dim_f = make_uint2(Max_cluster_size, this->ListClusters.size());
-        h5gg.AddDataset(ClassNameH5 + ".h5", "N", "ListClusters", clustersList,
-                        dim_f);
-
-        delete[] clustersList;
-        clustersList = NULL;
-        //-----------
-
-        T *percolationcluster = new T[this->PercolationCluster.size()];
-        if (percolationcluster == NULL)
-        {
-            string AS = "Alloc error in MatlabPlotDFN!";
-            throw cuDFNsys::ExceptionsPause(AS);
-        }
-
-        for (size_t i = 0; i < this->PercolationCluster.size(); ++i)
-            percolationcluster[i] = this->PercolationCluster[i] + 1;
-
-        dim_f = make_uint2(1, this->PercolationCluster.size());
         h5gg.AddDataset(ClassNameH5 + ".h5", "N", "PercolationClusters",
-                        percolationcluster, dim_f);
+                        TMP_S.data(),
+                        make_uint2(this->PercolationCluster.size(), 0));
 
-        delete[] percolationcluster;
-        percolationcluster = NULL;
-
-        int NumberClustersyy = (int)this->ListClusters.size();
+        int NumberClustersyy = this->ListClusters.size();
         h5gg.AddDataset(ClassNameH5 + ".h5", "N", "NumClusters",
                         &NumberClustersyy, make_uint2(1, 0));
+
+        for (uint i = 0; i < NumberClustersyy; ++i)
+        {
+            std::vector<uint> TMP_O; //(ListClusters[i].size());
+
+            std::transform(ListClusters[i].begin(), ListClusters[i].end(),
+                           std::back_inserter(TMP_O),
+                           [](size_t value)
+                           { return static_cast<uint>(value); });
+
+            h5gg.AddDataset(ClassNameH5 + ".h5", "N",
+                            "Cluster_" + std::to_string(i + 1), TMP_O.data(),
+                            make_uint2(TMP_O.size(), 1));
+        }
 
         uint OKLDS = (this->IfPeriodic ? 1 : 0);
         h5gg.AddDataset(ClassNameH5 + ".h5", "N", "IfPeriodic", &OKLDS,
@@ -301,46 +272,48 @@ void cuDFNsys::DFN<T>::LoadClassFromH5(const string &ClassNameH5)
     //------
     {
         cuDFNsys::HDF5API hdf5Class;
-        // std::vector<int> NumClusters =
-        //     hdf5Class.ReadDataset<int>(ClassNameH5 + ".h5", "N", "NumClusters");
+        std::vector<int> NumClusters =
+            hdf5Class.ReadDataset<int>(ClassNameH5 + ".h5", "N", "NumClusters");
         //
-        // this->ListClusters.resize(NumClusters[0]);
-        //
-        // std::vector<T> Temp_Variable =
-        //     hdf5Class.ReadDataset<T>(ClassNameH5 + ".h5", "N", "ListClusters");
-        //
-        // for (int i = 0; i < NumClusters[0]; ++i)
-        //     this->ListClusters[i].reserve(Temp_Variable.size() /
-        //                                   NumClusters[0]);
-        // for (int i = 0; i < Temp_Variable.size(); ++i)
-        //     if (Temp_Variable[i] != -1)
-        //         this->ListClusters[i % NumClusters[0]].push_back(
-        //             Temp_Variable[i] - 1);
-        // for (int i = 0; i < NumClusters[0]; ++i)
-        //     this->ListClusters[i].shrink_to_fit();
-        //
-        // Temp_Variable = hdf5Class.ReadDataset<T>(ClassNameH5 + ".h5", "N",
-        //                                          "PercolationClusters");
-        // this->PercolationCluster.resize(Temp_Variable.size());
-        // for (int i = 0; i < Temp_Variable.size(); ++i)
-        //     this->PercolationCluster[i] = Temp_Variable[i] - 1;
-        //
+        this->ListClusters.resize(NumClusters[0]);
+
+        for (int i = 0; i < NumClusters[0]; ++i)
+        {
+            std::vector<uint> Temp_Variable = hdf5Class.ReadDataset<uint>(
+                ClassNameH5 + ".h5", "N", "Cluster_" + std::to_string(i + 1));
+            this->ListClusters[i].clear();
+            std::transform(Temp_Variable.begin(), Temp_Variable.end(),
+                           std::back_inserter(this->ListClusters[i]),
+                           [](int value)
+                           { return static_cast<size_t>(value); });
+            /// for(auto e:this->ListClusters[i])
+            ///     cout << e << ", ";
+            /// cout << "\n";
+        }
+        
+        std::vector<uint> Temp_Variable_ooo = hdf5Class.ReadDataset<uint>(
+            ClassNameH5 + ".h5", "N", "PercolationClusters");
+        this->PercolationCluster.clear();
+        std::transform(Temp_Variable_ooo.begin(), Temp_Variable_ooo.end(),
+                       std::back_inserter(this->PercolationCluster),
+                       [](int value) { return static_cast<size_t>(value); });
+
         // //------INTERSECTION PAIR---
-        // Temp_Variable =
-        //     hdf5Class.ReadDataset<T>(ClassNameH5 + ".h5", "N", "Intersections");
-        // int NumIntersections = Temp_Variable.size() / 8;
-        // for (int i = 0; i < NumIntersections; ++i)
-        //     this->IntersectionMap.insert(std::make_pair(
-        //         std::make_pair((uint)Temp_Variable[i + 6 * NumIntersections],
-        //                        (uint)Temp_Variable[i + 7 * NumIntersections]),
-        //         std::make_pair(cuDFNsys::MakeVector3(
-        //                            Temp_Variable[i],
-        //                            Temp_Variable[i + NumIntersections],
-        //                            Temp_Variable[i + NumIntersections * 2]),
-        //                        cuDFNsys::MakeVector3(
-        //                            Temp_Variable[i + NumIntersections * 3],
-        //                            Temp_Variable[i + NumIntersections * 4],
-        //                            Temp_Variable[i + NumIntersections * 5]))));
+        std::vector<T> Temp_Variable =
+            hdf5Class.ReadDataset<T>(ClassNameH5 + ".h5", "N", "Intersections");
+        int NumIntersections = Temp_Variable.size() / 8;
+        for (int i = 0; i < NumIntersections; ++i)
+            this->IntersectionMap.insert(std::make_pair(
+                std::make_pair((uint)Temp_Variable[i + 6 * NumIntersections],
+                               (uint)Temp_Variable[i + 7 * NumIntersections]),
+                std::make_pair(cuDFNsys::MakeVector3(
+                                   Temp_Variable[i],
+                                   Temp_Variable[i + NumIntersections],
+                                   Temp_Variable[i + NumIntersections * 2]),
+                               cuDFNsys::MakeVector3(
+                                   Temp_Variable[i + NumIntersections * 3],
+                                   Temp_Variable[i + NumIntersections * 4],
+                                   Temp_Variable[i + NumIntersections * 5]))));
         //------------
         std::vector<int> UO =
             hdf5Class.ReadDataset<int>(ClassNameH5 + ".h5", "N", "PercoDir");

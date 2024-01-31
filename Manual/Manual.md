@@ -6,7 +6,7 @@
 
 * Date: Oct. 19, 2023
 
-* Update date: Jan. 22, 2024 
+* Update date: Jan. 31, 2024 
 
 * Email: yintingchang@foxmail.com
 
@@ -252,25 +252,33 @@ One can open them to see DFN parameters.
 
 The first one `Class_DFN.h5` has the following structure:
 ```
-./DomainDimensionRatio    Dataset {3}
-./Fracture_1              Group
-./Fracture_1/Center       Dataset {1, 3}
-./Fracture_1/Conductivity Dataset {1}
-./Fracture_1/ConnectModelSurf Dataset {1, 6}
-./Fracture_1/NormalVec    Dataset {1, 3}
-./Fracture_1/NumVertsTruncated Dataset {1}
-./Fracture_1/Radius       Dataset {1}
-./Fracture_1/Verts3D      Dataset {3, 4}
-./Fracture_1/Verts3DTruncated Dataset {3, 8}
-./Intersections           Dataset {8, 218}
-./L                       Dataset {1}
-./ListClusters            Dataset {86, 2}
-./NumClusters             Dataset {1}
-./NumFractures            Dataset {1}
-./PercoDir                Dataset {1}
-./PercolationClusters     Dataset {1}
+/                        Group
+/Cluster_1               Dataset {338}
+/ *******
+/Cluster_9               Dataset {1}
+
+/DomainDimensionRatio    Dataset {3}
+/Fracture_1              Group
+/Fracture_1/Center       Dataset {1, 3}
+/Fracture_1/Conductivity Dataset {1}
+/Fracture_1/ConnectModelSurf Dataset {1, 6}
+/Fracture_1/NormalVec    Dataset {1, 3}
+/Fracture_1/NumVertsTruncated Dataset {1}
+/Fracture_1/Radius       Dataset {1}
+/Fracture_1/Verts3D      Dataset {3, 4}
+/Fracture_1/Verts3DTruncated Dataset {3, 8}
+
+/IfPeriodic              Dataset {1}
+/Intersections           Dataset {8, 1656}
+/L                       Dataset {1}
+/NumClusters             Dataset {1}
+/NumFractures            Dataset {1}
+/PercoDir                Dataset {1}
+/PercolationClusters     Dataset {1}
 ```
 where `Dataset {*}` is the dimension of the dataset. One can what each dataset is thourgh their names. Note that for other DFNs, the dimension of some datasets will be different. 
+
+`Cluster_1` is the ID of fractures belonging to the first cluster.
 
 Note that `./Fracture_1/NumVertsTruncated` is the number of vertices after the truncation of fractures. `Verts3DTruncated` is the vertices' coordinates after the truncation.
 
@@ -324,6 +332,7 @@ The third one `Class_FLOW.h5` has the following structure:
 ```
 where `MaxVelocity` is the maximum flow rate $\left[LT^{-1}\right]$, `MuOverRhoG` is the viscosity $\mu$ over the product of fluid density $\rho_g$ and gravitational acceleration $g$, `Permeability` is the Darcian permeability, `PressureEles` is the hydraulic head of each element, `VelocityNormalScalarSepEdges` is the volumatric flux rate per width of each edge (each element has three edges).
 
+Finally, there are some `.h5` files storing particle tracking informations. `cuDFNsys/bin/Dispersion_MeanSquareDisplacement.h5` stores the variances of particle displacements in the $x$, $y$ and $z$ directions at each time step. `cuDFNsys/bin/ParticlePositionResult/ParticlePositionInit.h5` stores the initial position of particles' coodinates (which is in the 2D format). `cuDFNsys/bin/ParticlePositionResult/ParticlePositionBlock000000000_n_.h5` (`_n_` could be a number, e.g., 1, 2, 3 or 4) stores the positions of particles at each step. Note that the 'cuDFNsys_exe' program will ask the user that if they want to transform 2D coodinates to 3D coodinates. After the transformation, the dispersion can be visualized.
 
 ## 4. Quickstart examples: write a main.cpp
 The whole code is shown in `cuDFNsys/QuickStartGuide/src/QuickStartGuide.cpp`. To compile this, `cd cuDFNsys/QuickStartGuide` and `make`, then the executable program `QuickStartGuide` is generated in the current directory.
@@ -349,7 +358,7 @@ my_dfn.LoadDFNFromCSV("InputParametersForStochasticDFN");
 ```
 Note that `RandomSeed` aims at stochastic DFNs at different time. Right now, a DFN is created. The intersections and clusters (including spanning clusters) should be identified, which can be done by
 ```
-my_dfn.IdentifyIntersectionsClusters(true);
+my_dfn.IdentifyIntersectionsClusters(true); // true here means consideration of truncated fractures
 ```
 This DFN now can be visualized. The visulization can be performed by python or MATLAB. One can output the visualization files  by
 ```
@@ -376,7 +385,7 @@ particleTracking.Visualization(my_dfn, meshGen, flowDFN,
                                    "DFN_DISPERSION_VISUAL",
                                    "DFN_DISPERSION_VISUAL", "DFN_FLOW_VISUAL");
 ```
-All input parameters are shown in the `.csv` files.
+All input parameters are shown in the corresponding `.csv` files.
 
 Finally, the DFN, mesh and flow data can be stored (for re-run particle tracking or other purpose):
 ```
@@ -389,5 +398,27 @@ The three h5 files can be loaded again for run more particle tracking steps (det
 To show the animation of particle tracking, one can run `./Transform2DH5ParticleDataTo3D 0 DFN_MESH_VISUAL.h5` in the terminal. Then run `DFN_DISPERSION_VISUAL.m` in MATLAB.
 
 ## 5. How to re-run a DFN
+In the last section, the generation of a DFN, mesh, flow simulation, and particle tracking have been presented. A question arises here: how can one run more particle tracking steps, based on the existing results?
+
+A re-run code can be written. The whole code can be seen in `cuDFNsys/QuickStartGuide/src/ReRunPT.cpp`.
+
+First, again, the four classes should be created:
+```
+    cuDFNsys::DFN<double> my_dfn;
+    cuDFNsys::MeshDFN<double> meshGen;
+    cuDFNsys::FlowDFN<double> flowDFN;
+    cuDFNsys::PTDFN<double> particleTracking;
+```
+Then, the previous data files can be loaded by 
+```
+    my_dfn.LoadClassFromH5("Class_DFN");
+    meshGen.LoadClassFromH5("Class_MESH");
+    flowDFN.LoadClassFromH5("Class_FLOW");
+```
+Finally, one just need to load the particle tracking parameters again, in which only the number of times step is taken, because other parameters, like diffusion coefficients, have been fixed.
+```
+    particleTracking.LoadParametersFromCSV("PT_parameters");
+    particleTracking.ParticleTracking(my_dfn, meshGen, flowDFN);
+```
 
 

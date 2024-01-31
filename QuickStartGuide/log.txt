@@ -1,0 +1,23 @@
+/                        Group
+/Cluster_1               Dataset {338}
+/ *******
+/Cluster_9               Dataset {1}
+
+/DomainDimensionRatio    Dataset {3}
+/Fracture_1              Group
+/Fracture_1/Center       Dataset {1, 3}
+/Fracture_1/Conductivity Dataset {1}
+/Fracture_1/ConnectModelSurf Dataset {1, 6}
+/Fracture_1/NormalVec    Dataset {1, 3}
+/Fracture_1/NumVertsTruncated Dataset {1}
+/Fracture_1/Radius       Dataset {1}
+/Fracture_1/Verts3D      Dataset {3, 4}
+/Fracture_1/Verts3DTruncated Dataset {3, 8}
+
+/IfPeriodic              Dataset {1}
+/Intersections           Dataset {8, 1656}
+/L                       Dataset {1}
+/NumClusters             Dataset {1}
+/NumFractures            Dataset {1}
+/PercoDir                Dataset {1}
+/PercolationClusters     Dataset {1}
