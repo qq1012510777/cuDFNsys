@@ -1,5 +1,7 @@
 #include "cuDFNsys.cuh"
+#include <filesystem>
 string ColoringString(const string &s);
+string PrintAllCsvAndSelectone();
 int main()
 {
     try
@@ -38,11 +40,10 @@ int main()
         {
         NewDFN:;
             cout << ColoringString("Creating a new DFN. Please provide the "
-                                   "name of the .csv "
-                                   "file, without the suffix .csv!")
+                                   "name of the .csv\n\n")
                  << endl;
-            string nameCSV;
-            cin >> nameCSV;
+            string nameCSV = PrintAllCsvAndSelectone();
+            //cin >> nameCSV;
 
             my_dfn.LoadDFNFromCSV(nameCSV);
             my_dfn.IdentifyIntersectionsClusters(true);
@@ -77,6 +78,13 @@ int main()
         else
         {
         NewMesh:;
+            cout << ColoringString("Do you want to generate mesh? Input 0 for "
+                                   "No, 1 for yes:")
+                 << endl;
+            cin >> options;
+            if (options == 0)
+                return 0;
+
             cout << ColoringString("Creating a new mesh") << endl;
             // cout << ColoringString("Input the minimum grid size:") << endl;
             // cin >> meshGen.MinElementSize;
@@ -119,6 +127,13 @@ int main()
         else
         {
         NewFlow:;
+            cout << ColoringString(
+                        "Do you want to solve flow? Input 0 for No, 1 for yes:")
+                 << endl;
+            cin >> options;
+            if (options == 0)
+                return 0;
+
             cout << ColoringString("solving flow") << endl;
             flowDFN.LoadParametersFromCSV("Flow_parameters");
             flowDFN.FlowSimulation(my_dfn, meshGen);
@@ -193,3 +208,45 @@ int main()
 };
 
 string ColoringString(const string &s) { return "\033[1;32m" + s + "\033[0m"; };
+string PrintAllCsvAndSelectone()
+{
+    // Get the current working directory
+    std::filesystem::path currentPath = std::filesystem::current_path();
+
+    // Create a vector to store the names of CSV files
+    std::vector<std::string> csvFiles;
+
+    for (const auto &entry : std::filesystem::directory_iterator(currentPath))
+        if (entry.path().extension() == ".csv")
+            csvFiles.push_back(entry.path().filename().string());
+
+    std::cout << ColoringString(".csv Files in the current directory:\n");
+    for (size_t i = 0; i < csvFiles.size(); ++i)
+        std::cout << "\tcsv number " << ColoringString(std::to_string(i))
+                  << ": " << csvFiles[i] << "\n";
+
+    std::cout << ColoringString(
+        "Enter the number corresponding to the CSV file (must be for "
+        "DFN generation) you "
+        "want to select:\n");
+    int userInput;
+    std::cin >> userInput;
+
+    if (userInput >= 0 && static_cast<size_t>(userInput) <= csvFiles.size())
+    {
+        // Get the selected CSV file
+        string nameCSV = csvFiles[userInput];
+
+        std::cout << "\tYou selected: " << nameCSV << "\n";
+        size_t dotPosition = nameCSV.find_last_of('.');
+        nameCSV = nameCSV.substr(0, dotPosition);
+
+        return nameCSV;
+    }
+    else
+    {
+        std::cout << "Invalid selection.\n";
+        exit(0);
+    }
+    return "N";
+};

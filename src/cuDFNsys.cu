@@ -218,9 +218,13 @@ void cuDFNsys::DFN<T>::StoreInH5(const string &ClassNameH5)
                         make_uint2(1, 0));
     }
     {
-        std::vector<uint> TMP_S(this->PercolationCluster.size());
-        for (uint j = 0; j < TMP_S.size(); ++j)
-            TMP_S[j] = PercolationCluster[j];
+        std::vector<uint> TMP_S;
+        TMP_S.reserve(this->PercolationCluster.size());
+
+        std::transform(this->PercolationCluster.begin(),
+                       this->PercolationCluster.end(),
+                       std::back_inserter(TMP_S),
+                       [](size_t value) { return static_cast<uint>(value); });
 
         h5gg.AddDataset(ClassNameH5 + ".h5", "N", "PercolationClusters",
                         TMP_S.data(),
@@ -233,7 +237,7 @@ void cuDFNsys::DFN<T>::StoreInH5(const string &ClassNameH5)
         for (uint i = 0; i < NumberClustersyy; ++i)
         {
             std::vector<uint> TMP_O; //(ListClusters[i].size());
-
+            TMP_O.reserve(ListClusters[i].size());
             std::transform(ListClusters[i].begin(), ListClusters[i].end(),
                            std::back_inserter(TMP_O),
                            [](size_t value)
@@ -290,7 +294,7 @@ void cuDFNsys::DFN<T>::LoadClassFromH5(const string &ClassNameH5)
             ///     cout << e << ", ";
             /// cout << "\n";
         }
-        
+
         std::vector<uint> Temp_Variable_ooo = hdf5Class.ReadDataset<uint>(
             ClassNameH5 + ".h5", "N", "PercolationClusters");
         this->PercolationCluster.clear();
