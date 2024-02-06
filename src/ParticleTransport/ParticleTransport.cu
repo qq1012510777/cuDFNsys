@@ -354,7 +354,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
         time_t t;
         time(&t);
 
-        cout << "The Step " << i << endl;
+        cout << "\t\tThe Step " << i << endl;
         double istart_b = cuDFNsys::CPUSecond();
 
         ParticleMovementOneTimeStepGPUKernel<T>
@@ -507,7 +507,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
 
         double ielaps = cuDFNsys::CPUSecond() - istart;
 
-        cout << NumPart_dynamic << "/" << this->NumParticles
+        cout << "\t\t" << NumPart_dynamic << "/" << this->NumParticles
              << " particles are still in the domain, a total of "
              << TotalNumParticlesLeaveModelFromInlet
              << " particles left the model from the inlet; running time: "
@@ -1997,13 +1997,15 @@ void cuDFNsys::ParticleTransport<T>::InitilizeParticles(
     //cout << "sum_speed: " << sum_speed << ", " << sizeofinletedge << endl;
     if (!IfInitCenterDomain)
     {
+        cout << "\t\tInjection at inflow plane/point\n";
         if (Injection_mode == "Flux-weighted" || Injection_mode == "Resident")
             for (size_t i = 0; i < mesh.InletEdgeNOLen.size(); ++i)
             {
 
-                uint EdgeNO = (uint)mesh.InletEdgeNOLen[i].x;
+                uint EdgeNO = (uint)mesh.InletEdgeNOLen[i].x; 
                 T length_ = mesh.InletEdgeNOLen[i].y;
-                if (fem.VelocityNormalScalarSepEdges(EdgeNO - 1, 0) > 0)
+                //cout << fem.VelocityNormalScalarSepEdges(EdgeNO, 0) << endl;
+                if (fem.VelocityNormalScalarSepEdges(EdgeNO, 0) > 0)
                     continue;
 
                 if (Injection_mode == "Flux-weighted")
@@ -2025,6 +2027,7 @@ void cuDFNsys::ParticleTransport<T>::InitilizeParticles(
                 {
                     // uniform
                     T proportion_ = abs(length_ / fem.InletLength);
+                    //cout << "proportion_: " << proportion_ << endl;
                     NumParticlesEachEdge[i] =
                         (uint)round(proportion_ * NumOfParticles);
                 }
@@ -2047,7 +2050,7 @@ void cuDFNsys::ParticleTransport<T>::InitilizeParticles(
         else
             throw cuDFNsys::ExceptionsPause(
                 "Undefined particle injection mode!\n");
-
+        //exit(0);
         this->NumParticles =
             thrust::reduce(thrust::host, NumParticlesEachEdge.begin(),
                            NumParticlesEachEdge.end(), 0);
@@ -2070,11 +2073,11 @@ void cuDFNsys::ParticleTransport<T>::InitilizeParticles(
         uint pARTICLEid_T = 0;
         for (size_t i = 0; i < NumParticlesEachEdge.size(); ++i)
         {
-            uint EdgeNO = (uint)mesh.InletEdgeNOLen[i].x;     // from 1
-            uint elementID = (EdgeNO - 1) / 3 + 1;            // from 1
+            uint EdgeNO = (uint)mesh.InletEdgeNOLen[i].x;     // from 0
+            uint elementID = (EdgeNO) / 3 + 1;            // from 1
             uint FracID = mesh.ElementFracTag[elementID - 1]; // from 0
 
-            uint LocalEdgeNO = (EdgeNO - 1) % 3;
+            uint LocalEdgeNO = (EdgeNO) % 3;
 
             // cuDFNsys::Vector2<T> position_ = cuDFNsys::MakeVector2((T)0.5f * (mesh.Coordinate2D[elementID - 1].x[LocalEdgeNO] + mesh.Coordinate2D[elementID - 1].x[(LocalEdgeNO + 1) % 3]),
             //                                                        (T)0.5f * (mesh.Coordinate2D[elementID - 1].y[LocalEdgeNO] + mesh.Coordinate2D[elementID - 1].y[(LocalEdgeNO + 1) % 3]));
@@ -2132,6 +2135,7 @@ void cuDFNsys::ParticleTransport<T>::InitilizeParticles(
     }
     else
     {
+        cout << "\t\tInjection at user-define plane/point\n";
         //cout << "IfInitCenterDomain: yes\n" << "InjectionPlane: " << InjectionPlane << endl;
         thrust::host_vector<uint> ElementCenterDomain;
         thrust::host_vector<cuDFNsys::Vector2<T>> ElementCenterAtCenterDomain;
