@@ -837,7 +837,7 @@ void cuDFNsys::MHFEM<T>::Implementation(
         // cout << "inlet len: " << len << ";\tq: " << this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0) << "; sep_EDGE_no: " << sep_EDGE_no + 1 << "\n";
         if (this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0) > 0)
         {
-            cout << "\t\t*** Warning: One inlet velocity is > 0: "
+            cout << "\t\t*** Note: One inlet velocity is > 0: "
                  << this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0);
             cout << ", sep_EDGE_no: " << sep_EDGE_no;
             cout << ", elementID (from 1): "
@@ -863,7 +863,7 @@ void cuDFNsys::MHFEM<T>::Implementation(
         // cout << "outlet len: " << len << ";\tq: " << this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0) << "; sep_EDGE_no: " << sep_EDGE_no + 1 << "\n";
         if (this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0) < 0)
         {
-            cout << "\t\t*** Warning: One outlet velocity is < 0: "
+            cout << "\t\t*** Note: One outlet velocity is < 0: "
                  << this->VelocityNormalScalarSepEdges(sep_EDGE_no, 0);
             cout << ", sep_EDGE_no: " << sep_EDGE_no;
             cout << ", elementID (from 1): "

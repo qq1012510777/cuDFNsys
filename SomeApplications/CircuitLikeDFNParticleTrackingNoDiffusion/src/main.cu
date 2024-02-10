@@ -45,11 +45,11 @@ int main()
     meshGen.StoreInH5("Class_MESH");
     flowDFN.StoreInH5("Class_FLOW");
 
-    cout << "*** Right now the particle data are two-dimensional. Use "
-         << "the executable `Transform2DH5ParticleDataTo3D` to "
-         << "transform "
-         << "them to 3D!  ***" << endl;
-    cout << "*** Just run: ./Transform2DH5ParticleDataTo3D 0 "
-         << "DFN_MESH_VISUAL.h5 ***" << std::endl;
+    // cout << "*** Right now the particle data are two-dimensional. Use "
+    //      << "the executable `Transform2DH5ParticleDataTo3D` to "
+    //      << "transform "
+    //      << "them to 3D!  ***" << endl;
+    // cout << "*** Just run: ./Transform2DH5ParticleDataTo3D 0 "
+    //      << "DFN_MESH_VISUAL.h5 ***" << std::endl;
     return 0;
 };

@@ -19,6 +19,8 @@ QuickStartGuide/ParticlePositionResult
 QuickStartGuide/ReRunPT
 
 SomeApplications/*/main* 
+SomeApplications/*/Level2 
+SomeApplications/*/DFN_result/* 
 SomeApplications/*/Transform2DH5ParticleDataTo3D 
 SomeApplications/*/ColumnLikeDomainForDispersion 
 SomeApplications/*/QuickStartGuide 
