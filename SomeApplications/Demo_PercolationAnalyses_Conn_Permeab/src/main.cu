@@ -20,12 +20,22 @@ using namespace std;
 
 const int SizeVec = 30;
 
+void addLineToFile(const std::string &filename, const std::string &line);
+
 int main(int argc, char *argv[])
 {
     double i_start = cuDFNsys::CPUSecond();
 
     double domain_size = atof(argv[1]);
     int MCTimes = atoi(argv[2]);
+    int Nproc = atoi(argv[3]);
+    double WaitTimeCheckTasks = atof(argv[4]);
+    if (WaitTimeCheckTasks < 1e-3)
+    {
+        cout << "WaitTimeCheckTasks cannot less than 1e-3. I will set it to be "
+                "1e-3\n";
+        WaitTimeCheckTasks = 1e-3;
+    }
 
     std::vector<int2> TagLabel(SizeVec * MCTimes);
 
@@ -39,100 +49,106 @@ int main(int argc, char *argv[])
 
     string MainFile =
         "DFN_result_L_" + cuDFNsys::ToStringWithWidth(domain_size, 4);
-
-    string command1 = "mkdir " + MainFile;
-    int resultas = system(command1.c_str());
-
+    int resultas = system(string("mkdir " + MainFile).c_str());
     if (resultas != 0)
-    {
         cout << MainFile + " exists\n";
-    }
 
     //------------------
     string GetErrorFile = "./GetErrorFile.txt";
-    string command_78 = "touch " + GetErrorFile;
-    system(command_78.c_str());
-    command_78 = "echo '' > " + GetErrorFile;
-    system(command_78.c_str());
+    string RecordProgressFile = "./RecordProgress.txt";
+    system(string("touch " + GetErrorFile).c_str());
+    system(string("echo '' > " + GetErrorFile).c_str());
+    system(string("touch " + RecordProgressFile).c_str());
+    system(string("echo '' > " + RecordProgressFile).c_str());
 
-    std::ofstream outputFile(GetErrorFile, std::ios::app);
-    if (!outputFile.is_open())
-    {
-        string command_Qd =
-            "echo CANNOT_OPEN_GetErrorFile_TEXT > " + GetErrorFile;
-        system(command_Qd.c_str());
-        outputFile.close();
-        return 0;
-    }
+    double FinishedTasksCount = 0;
+    std::vector<double> Bar_t(20);
+    double start_value = 0.05, increment = 0.05;
+    std::generate(Bar_t.begin(), Bar_t.end(),
+                  [&start_value, increment]() mutable
+                  {
+                      double value = start_value;
+                      start_value += increment;
+                      return value;
+                  });
+    std::reverse(Bar_t.begin(), Bar_t.end());
 
-#pragma omp parallel for schedule(dynamic) num_threads(8)
+#pragma omp parallel for schedule(dynamic) num_threads(Nproc)
     for (int i = 0; i < TagLabel.size(); ++i)
     {
-        string path2 = "DFN_L_" + cuDFNsys::ToStringWithWidth(domain_size, 4) +
-                       "_RhoInd_" +
-                       cuDFNsys::ToStringWithWidth(TagLabel[i].x, 3) + "_MC_" +
-                       cuDFNsys::ToStringWithWidth(TagLabel[i].y, 5);
-        string command1 = "mkdir -p " + MainFile + "/" + path2;
-        system(command1.c_str());
+        string DFN_File_path =
+            "DFN_L_" + cuDFNsys::ToStringWithWidth(domain_size, 4) +
+            "_RhoInd_" + cuDFNsys::ToStringWithWidth(TagLabel[i].x, 3) +
+            "_MC_" + cuDFNsys::ToStringWithWidth(TagLabel[i].y, 5);
 
-        string Input = " cd ./" + MainFile + "/" + path2 +
-                       " && bash ../../RunLevel2.sh " + path2 +
-                       " ../../Level2 ";
-        Input += (std::to_string(domain_size) + " ");
-        Input += (std::to_string(TagLabel[i].x) + " ");
-        Input += (std::to_string(TagLabel[i].y) + " ");
-        //Input += (" ");
+        system(string("mkdir -p " + MainFile + "/" + DFN_File_path).c_str());
 
-        // Get the current time point
-        std::chrono::system_clock::time_point now =
-            std::chrono::system_clock::now();
+        string Exe_run_command_string =
+            " cd ./" + MainFile + "/" + DFN_File_path +
+            " && bash ../../RunLevel2.sh " + DFN_File_path + " ../../Level2 " +
+            (std::to_string(domain_size) + " ") +
+            (std::to_string(TagLabel[i].x) + " ") +
+            (std::to_string(TagLabel[i].y) + " ");
 
-        // Convert the time point to a time_t object
-        std::time_t now_c = std::chrono::system_clock::to_time_t(now);
-
-        // Convert the time_t object to a string representation
-        std::string timeString = std::ctime(&now_c);
-
-#pragma critical
-        {
-            cout
-                << "Running [" << Input << "] at time: " << timeString
-                << endl; // this just a output, so this would not take a lot of time
-        }
-        std::system(Input.c_str());
+        std::system(Exe_run_command_string.c_str());
 
         int stop_idx = 0;
 
         while (stop_idx == 0)
         {
-            std::this_thread::sleep_for(std::chrono::seconds(0.8));
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(
+                int(1000 * WaitTimeCheckTasks))); // 1000 milliseconds = 1 s
 
             //--------check log.txt
-            std::string filename2 = "./" + MainFile + "/" + path2 + "/Finished";
-            if (fs::exists(filename2))
+            if (fs::exists(string("./" + MainFile + "/" + DFN_File_path +
+                                  "/Finished")))
             {
 #pragma critical
                 {
-                    std::cout << "[" << Input << "] finished!" << std::endl;
+                    FinishedTasksCount++;
+                    for (int k = 0; k < Bar_t.size(); ++k)
+                        if (abs(FinishedTasksCount / (double(TagLabel.size())) -
+                                Bar_t[k]) < 1e-6)
+                        {
+
+                            addLineToFile(
+                                RecordProgressFile,
+                                string(std::to_string(Bar_t[k] * 100) +
+                                       "% have been finished\n"));
+                            Bar_t.erase(Bar_t.begin() + k);
+                            break;
+                        }
                 }
                 stop_idx = 1;
+                break;
             }
 
-            //--------check data.h5
-            std::string filename16 = "./" + MainFile + "/" + path2 + "/Data.h5";
-            if (!fs::exists(filename16))
+            //---------------------check if it is running by process name
+            int result = system(string("pgrep -f " + DFN_File_path).c_str());
+            if (result != 0)
             {
+// record
 #pragma critical
                 {
-                    //std::cout << Input << " was not running!\n" << std::endl;
-                    string command_qw = Input + " was not running!\n";
-                    outputFile << command_qw;
+                    addLineToFile(GetErrorFile,
+                                  string(DFN_File_path +
+                                         " is not running, checking by '" +
+                                         string("pgrep -f " + DFN_File_path) +
+                                         "'\n"));
                 }
+                // kill process by name
+                system(string("pkill -f " + DFN_File_path).c_str());
+                system(string("cd ./" + MainFile + "/" + DFN_File_path +
+                              " && rm -rf ./Data.h5 ./Finished")
+                           .c_str());
                 stop_idx = 1;
+                break;
             }
 
             //------------------check warning in log.txt
-            std::string filename3 = "./" + MainFile + "/" + path2 + "/log.txt";
+            std::string filename3 =
+                "./" + MainFile + "/" + DFN_File_path + "/log.txt";
             {
                 std::ifstream inputFile(filename3); // Open the file
 
@@ -140,10 +156,21 @@ int main(int argc, char *argv[])
                 {
 #pragma critical
                     {
-                        outputFile << "Unable to open file: " << filename3
-                                   << "," << Input << endl;
+
+                        addLineToFile(
+                            GetErrorFile,
+                            string("Unable to open file: " + filename3 + "," +
+                                   Exe_run_command_string + "\n"));
                     }
+                    // kill process by name
+                    system(string("pkill -f " + DFN_File_path).c_str());
+                    system(string("cd ./" + MainFile + "/" + DFN_File_path +
+                                  " && rm -rf ./Data.h5 ./Finished")
+                               .c_str());
+
                     stop_idx = 1;
+                    inputFile.close(); // Close the file
+                    break;
                 }
                 else
                 {
@@ -156,19 +183,24 @@ int main(int argc, char *argv[])
                         {
 #pragma critical
                             {
-                                outputFile
-                                    << "The log.txt contains the word 'Warning'"
-                                    << ", I am going to delete the hdf5 and "
-                                       "the Finished"
-                                    << Input << endl;
-                            }
-                            string command_3 = "pkill -f " + path2;
-                            system(command_3.c_str());
 
-                            string command_4 =
-                                "cd ./" + MainFile + "/" + path2 +
-                                " && gio trash -f Data.h5 Finished";
-                            system(command_4.c_str());
+                                addLineToFile(
+                                    GetErrorFile,
+                                    string(
+                                        "The log.txt contains the word "
+                                        "'Warning', "
+                                        "I am going to delete the hdf5 and the "
+                                        "Finished" +
+                                        Exe_run_command_string + "\n"));
+                            }
+                            // kill process by name
+                            system(string("pkill -f " + DFN_File_path).c_str());
+
+                            system(string("cd ./" + MainFile + "/" +
+                                          DFN_File_path +
+                                          " && rm -rf ./Data.h5 ./Finished")
+                                       .c_str());
+
                             stop_idx = 1;
                             break; // Exit loop once the word is found
                         }
@@ -178,17 +210,58 @@ int main(int argc, char *argv[])
                 inputFile.close(); // Close the file
             }
         };
-        outputFile.close();
     }
 
     double ElapseTime = cuDFNsys::CPUSecond() - i_start;
 
     cuDFNsys::HDF5API hjk5;
-    hjk5.NewFile("TotalRunTime_L_" +
-                 cuDFNsys::ToStringWithWidth(domain_size, 4) + ".h5");
-    hjk5.AddDataset("TotalRunTime_L_" +
-                        cuDFNsys::ToStringWithWidth(domain_size, 4) + ".h5",
-                    "N", "TotalRunTime", &ElapseTime, make_uint2(1, 0));
+
+    // Get the current time point
+    std::chrono::system_clock::time_point now =
+        std::chrono::system_clock::now();
+
+    // Convert the time point to a time_t object
+    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+
+    // Convert the time_t object to a string representation
+    std::string timeString = std::ctime(&now_c);
+    for (char &c : timeString)
+    {
+        if (c == ' ')
+        {
+            c = '_';
+        }
+    }
+
+    std::string filenameERD =
+        "TotalRunTime_L_" + cuDFNsys::ToStringWithWidth(domain_size, 4) + ".h5";
+    if (!fs::exists(filenameERD))
+        hjk5.NewFile(filenameERD);
+
+    hjk5.AddDataset(filenameERD, "N", "TotalRunTime_" + timeString, &ElapseTime,
+                    make_uint2(1, 0));
 
     return 0;
 };
+
+void addLineToFile(const std::string &filename, const std::string &line)
+{
+    // Open the file in append mode
+    std::ofstream file(filename, std::ios::app);
+
+    if (file.is_open())
+    {
+        // Write a line to the file
+        file << line;
+
+        // Close the file
+        file.close();
+
+        //std::cout << "Line added to file." << std::endl;
+    }
+    else
+    {
+        //std::cerr << "Unable to open file." << std::endl;
+        // Consider throwing an exception or handling the error in some other way
+    }
+}

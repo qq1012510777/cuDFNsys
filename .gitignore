@@ -17,7 +17,10 @@ QuickStartGuide/*.py
 QuickStartGuide/*.h5
 QuickStartGuide/ParticlePositionResult
 QuickStartGuide/ReRunPT
+QuickStartGuide/*.avi
 
+SomeApplications/*/*.avi 
+SomeApplications/*/*.txt 
 SomeApplications/*/main* 
 SomeApplications/*/Level2 
 SomeApplications/*/DFN_result/* 

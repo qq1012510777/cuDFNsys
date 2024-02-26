@@ -59,4 +59,4 @@ all:
 	-arch=sm_60 -std=c++17 -rdc=true
 
 clean:
-	gio trash -f ./*.h5 ./*.py ./*.m ./ParticlePositionResult
+	gio trash -f ./*.h5 ./*.py ./*.m ./ParticlePositionResult GetErrorFile.txt  RecordProgress.txt  TotalRunTime*.h5
