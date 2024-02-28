@@ -36,3 +36,10 @@ SomeApplications/*/*.h5
 SomeApplications/*/*.m
 SomeApplications/*/*.py
 SomeApplications/*/ParticlePositionResult
+
+GUI/*.h5
+GUI/*.py
+!GUI/cuDFNsysGUI.py
+GUI/*.m
+GUI/DFN_Gen
+GUI/Transform2DH5ParticleDataTo3D
