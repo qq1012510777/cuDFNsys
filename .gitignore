@@ -38,8 +38,13 @@ SomeApplications/*/*.py
 SomeApplications/*/ParticlePositionResult
 
 GUI/*.h5
+GUI/dist/*
 GUI/*.py
-!GUI/cuDFNsysGUI.py
 GUI/*.m
 GUI/DFN_Gen
 GUI/Transform2DH5ParticleDataTo3D
+GUI/DFN_Flow
+GUI/DFN_Mesh
+GUI/DFN_PT
+GUI/ParticlePositionResult/*
+GUI/*.csv

@@ -6,11 +6,11 @@
 
 * Date: Oct. 19, 2023
 
-* Update date: Jan. 31, 2024 
+* Update date: Feb. 29, 2024 
 
 * Email: yintingchang@foxmail.com
 
-## 1. Compilation of a user interface code with _cuDFNsys_
+## 1. Compilation of a user interface code with cuDFNsys
 
 Suppose that the _cuDFNsys_ library has been installed in `~/cuDFNsys/lib`, then `libcuDFNsys.a` can be seen in `~/cuDFNsys/lib`, which is a static library. How can one compile and install _cuDFNsys_ library (with nessesary dependencies, e.g., gmsh) can be seen in `README.md`.
 
@@ -421,4 +421,17 @@ Finally, one just need to load the particle tracking parameters again, in which 
     particleTracking.ParticleTracking(my_dfn, meshGen, flowDFN);
 ```
 
+## 6. GUI
+Now, _cuDFNsys_ has a simple GUI. To use this, make sure the _cuDFNsys_ library has been compiled: the file `libcuDFNsys.a` should appear in `~/cuDFNsys/lib`.
+
+First, `cd cuDFNsys/GUI`, and then `make`. The `make` command here will compile four executables in the current directory: `DFN_Gen`, `DFN_Mesh`, `DFN_Flow` and `Transform2DH5ParticleDataTo3D`. So, once `make` command finished, you can see the four executables in the `cuDFNsys/GUI` directory.
+
+Now, we can run the GUI by `python3 src/cuDFNsysGUI.py`, as shown below.
+
+<p align="center">
+  <img width="500" src="https://github.com/qq1012510777/cuDFNsys/blob/main/Manual/GUI.png">
+</p>
+<p align="center">
+    <em>Figure 1. The GUI of cuDFNsys. </em>
+</p>
 

@@ -95,7 +95,7 @@ sudo apt-get install libfltk1.3-dev
 sudo apt-get install libgmsh-dev
 ```
 
-# Building _cuDFNsys_
+# Building cuDFNsys
 
 After the installation of dependencies (by `sudo apt-get install`, these relying packages are installed at default locations), and the _cuDFNsys_ library can be installed by the following steps:
 ```
@@ -211,6 +211,8 @@ To run python visualization script, just run `python3 NameOfScript.py`.
 
 # Manual
 Manual for _cuDFNsys_ is [here](Manual/Manual.md).
+
+Now, _cuDFNsys_ has a simple GUI, which rquires the _cuDFNsys_ library to be compiled. Also, the GUI can visualize the DFN, mesh, flow, and PT both in Python Matplotlib and Mayavi (required it to be installed). See [Manual](Manual/Manual.md) for more details about how to run a cuDFNsys GUI.
 
 # Directories
 
