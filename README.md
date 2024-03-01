@@ -2,9 +2,9 @@
 
 _cuDFNsys_ is an open-source CUDA library (under the GPL license) for DFN generations. It is also able to simulate flow (steady-state) and particle transport in DFNs, based on the mixed hybrid finite element method and particle tracking algorithm. _cuDFNsys_ contains around 10 000 lines of codes (counted on June 29th, 2023).
 
-_cuDFNsys_ does not support the GUI and can only run on Ubuntu.
+_cuDFNsys_ has a simple GUI and can only run on Ubuntu. See manual for more details.
 
-_cuDFNsys_ is an easy-implemented, object-oriented CUDA C++ library. The simulation is performed just by establishing CUDA C++ classes, defining member variables and calling member functions. The results are stored in a HDF5 format. At runtime, the fracture, mesh or flow data can be accessed by visting member variables of classes.
+_cuDFNsys_ is also an easy-implemented, object-oriented CUDA C++ library. The simulation is performed just by establishing CUDA C++ classes, defining member variables and calling member functions. The results are stored in a HDF5 format. At runtime, the fracture, mesh or flow data can be accessed by visting member variables of classes.
 
 <p align="center">
   <img width="500" src="https://github.com/qq1012510777/cuDFNsys/blob/main/moive_particlesII.gif">

@@ -450,51 +450,50 @@ def DFN_input_para():
                     def GetRandomseed():
                         global randomseed_sd
                         randomseed_sd = entry_k1.get()
+                        try:
+                            # Replace "your_cpp_executable" with the path to your C++ executable
+                            cpp_executable = (
+                                cuDFNsys_GUI_path
+                                + "/DFN_Gen "
+                                + current_directory
+                                + "/StochasticFracs "
+                                + randomseed_sd
+                            )
+                            # output = subprocess.check_output(
+                            #    [cpp_executable], shell=True)
+                            # print("DFN_Gen output:")
+                            # print(output.decode("utf-8"))  # Decode bytes to string
+                            process = subprocess.Popen(
+                                cpp_executable, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True, shell=True)
+                            # Read and print the output line by line
+                            for line in process.stdout:
+                                print(line, end="")
+                            # Wait for the process to finish
+                            return_code = process.wait()
+                            StochasticWindow_1.destroy()
+                            if (return_code != 0):
+                                raise subprocess.CalledProcessError(
+                                    return_code, cpp_executable, "Error")
+                            # ----------
+                            success_window = Toplevel()
+                            success_window.title("DFN generated")
+                            success_label = Label(
+                                success_window, text="Generated a DFN!")
+                            success_label.pack()
+                        except subprocess.CalledProcessError as e:
+                            print("Error running DFN_Gen:", e)
+                            StochasticWindow_1.destroy()
+                            # ----------
+                            success_window = Toplevel()
+                            success_window.title("Error")
+                            success_label = Label(
+                                success_window, text="Error happens!")
+                            success_label.pack()
 
                     button1 = Button(
                         StochasticWindow_1, text="Generate DFN", command=(GetRandomseed)
                     )
-                    button1.pack()
-
-                    try:
-                        # Replace "your_cpp_executable" with the path to your C++ executable
-                        cpp_executable = (
-                            cuDFNsys_GUI_path
-                            + "/DFN_Gen "
-                            + current_directory
-                            + "/StochasticFracs "
-                            + randomseed_sd
-                        )
-                        # output = subprocess.check_output(
-                        #    [cpp_executable], shell=True)
-                        # print("DFN_Gen output:")
-                        # print(output.decode("utf-8"))  # Decode bytes to string
-                        process = subprocess.Popen(
-                            cpp_executable, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True, shell=True)
-                        # Read and print the output line by line
-                        for line in process.stdout:
-                            print(line, end="")
-                        # Wait for the process to finish
-                        return_code = process.wait()
-                        StochasticWindow_1.destroy()
-                        if (return_code != 0):
-                            raise subprocess.CalledProcessError(
-                                return_code, cpp_executable, "Error")
-                        # ----------
-                        success_window = Toplevel()
-                        success_window.title("DFN generated")
-                        success_label = Label(
-                            success_window, text="Generated a DFN!")
-                        success_label.pack()
-                    except subprocess.CalledProcessError as e:
-                        print("Error running DFN_Gen:", e)
-                        StochasticWindow_1.destroy()
-                        # ----------
-                        success_window = Toplevel()
-                        success_window.title("Error")
-                        success_label = Label(
-                            success_window, text="Error happens!")
-                        success_label.pack()
+                    button1.pack()  
 
                     return
 
@@ -1195,7 +1194,68 @@ def PTOptionWindow():
             success_label.pack()
         return
 
+    def CalculatePeDm():
+        def getDeltaT():
+            Pe = entry1.get()
+            LengthScale = entry2.get()
+            f2 = h5py.File(current_directory + "/Class_MESH.h5")
+            MeanElementArea = np.array(f2["MeanGridSize"][0])
+            f2.close()
+            f2 = h5py.File(current_directory + "/Class_FLOW.h5")
+            MaxVelocity = np.array(f2["MaxVelocity"][0])
+            MeanVelocity = np.array(f2["MeanVelocity"][0])
+            f2.close()
+            textaddstring = "MeanElementArea: " + \
+                str(MeanElementArea) + ", MaxVelocity: " + str(MaxVelocity) + \
+                ", MeanVelocity: " + \
+                str(MeanVelocity) + \
+                ", LengthScale you set is" + LengthScale
+            textaddstring = textaddstring + "\n characterAdvectionTimeScale is: MeanElementArea^0.5 / MaxVelocity = " + \
+                "{:.5e}".format(MeanElementArea ** 0.5 / MaxVelocity)
+            if not Pe:
+                textaddstring = textaddstring + \
+                    "\n If no diffusion, then time step (delta t) is recommended to be characterAdvectionTimeScale / 10 = " + "{:.5e}".format(
+                        MeanElementArea ** 0.5 / MaxVelocity/10)
+            if Pe:
+                Dm = float(MeanVelocity) * float(LengthScale) / float(Pe)
+                textaddstring = textaddstring + \
+                    "\n If you want the Peclet number (Pe) is " + Pe + \
+                    ", then Dm should be: MeanVelocity * LengthScale / Pe = " + \
+                    "{:.5e}".format(
+                        Dm)
+                textaddstring = textaddstring + "\n characterDiffusionTimeScale is: MeanElementArea / (2 * Dm) = " + str(
+                    MeanElementArea / (2*Dm)) + "\n Now compare characterDiffusionTimeScale and characterAdvectionTimeScale"
+                if (MeanElementArea / (2*Dm) < MeanElementArea ** 0.5 / MaxVelocity):
+                    textaddstring = textaddstring + "\n characterDiffusionTimeScale is smaller, meaning the diffusion is dominant! so we better take characterDiffusionTimeScale/10 as delta t:" + \
+                        "{:.5e}".format(MeanElementArea / (2*Dm)/10)
+                else:
+                    textaddstring = textaddstring + "\n characterAdvectionTimeScale is smaller, meaning the advection is dominant! so we better take characterAdvectionTimeScale/10 as delta t:" + \
+                        "{:.5e}".format(MeanElementArea **
+                                        0.5 / MaxVelocity/10)
+            print("\n\n" + textaddstring + "\n\n")
+            CalculatePeDmWindow.destroy()
+            RunNewPT()
+            return
+        CalculatePeDmWindow = Toplevel()
+        CalculatePeDmWindow.geometry("500x300")
+        CalculatePeDmWindow.title("Get recommended time step size (delta t)")
+        texts1 = r"Peclet number (Pe) you want (leave it blank for no molecular diffusion):"
+        label1 = Label(CalculatePeDmWindow, text=texts1, wraplength=450)
+        label1.pack()
+        entry1 = Entry(CalculatePeDmWindow)
+        entry1.pack()
+        texts2 = r"Set the magnitude of the length scale in Pe:"
+        label2 = Label(CalculatePeDmWindow, text=texts2, wraplength=450)
+        label2.pack()
+        entry2 = Entry(CalculatePeDmWindow)
+        entry2.pack()
+        button_runmore = Button(
+            CalculatePeDmWindow, text="Get recommended delta t", command=getDeltaT)
+        button_runmore.pack()
+        return
+
     def RunNewPT():
+
         def StartRun():
             generate_or_empty_file(current_directory
                                    + "/PTPara.csv")
@@ -1278,7 +1338,10 @@ def PTOptionWindow():
                              IfUseFluxWeightedOrEqualProbableMixingIntersection + ",")
 
             ReRunPT()
+            ptParaWindow.destroy()
             return
+
+        # ptParaWindow = Toplevel()
 
         ptParaWindow = Toplevel()
         ptParaWindow.geometry("500x800")
@@ -1317,23 +1380,9 @@ def PTOptionWindow():
             ptParaWindow, text="Run a new PT", command=StartRun)
         button_PT_run.grid(row=len(texts), columnspan=2, padx=5, pady=5)
 
-        f2 = h5py.File(current_directory + "/Class_MESH.h5")
-        MeanElementArea = np.array(f2["MeanGridSize"][0])
-        f2.close()
-
-        f2 = h5py.File(current_directory + "/Class_FLOW.h5")
-        MaxVelocity = np.array(f2["MaxVelocity"][0])
-        f2.close()
-
-        textaddstring = "MeanElementArea: " + \
-            str(MeanElementArea) + ", MaxVelocity: " + str(MaxVelocity)
-        textaddstring = textaddstring + "\n characterAdvectionTimeScale = " + \
-            "{:.5e}".format(MeanElementArea ** 0.5 / MaxVelocity)
-
-        print("\n\n" + textaddstring + "\n\n")
-        #label_below_button = Label(
+        # label_below_button = Label(
         #    ptParaWindow, text=textaddstring, wraplength=400)
-        #label_below_button.grid(
+        # label_below_button.grid(
         #    row=len(texts) + 1, columnspan=2, padx=5, pady=5)
         return
 
@@ -1567,7 +1616,7 @@ def PTOptionWindow():
     mainWindowPT.title("Particle tracking")
     mainWindowPT.geometry("300x200")
 
-    btn1 = Button(mainWindowPT, text="Run a new PT", command=RunNewPT)
+    btn1 = Button(mainWindowPT, text="Run a new PT", command=CalculatePeDm)
     btn1.pack(fill=X, expand=1)
 
     btn2 = Button(
@@ -1584,6 +1633,7 @@ def PTOptionWindow():
 
     return
 
+
 def Help_window():
     stringHelp = "Please go to https://github.com/qq1012510777/cuDFNsys/blob/main/Manual/Manual.md (require VPN at mainland, China) or contact yintingchang@foxmail.com"
     print(stringHelp)
@@ -1594,6 +1644,7 @@ def Help_window():
     label3.pack()
 
     return
+
 
 def DefineCUDFNSYS_root():
     global cuDFNsys_root_dir
@@ -1646,6 +1697,7 @@ def DefineCUDFNSYS_root():
     root_pos = [root.winfo_rootx(), root.winfo_rooty()]
     root_width, root_height = root.winfo_width(), root.winfo_height()
     secondary_window.geometry(f"+{root_pos[0] + root_width}+{root_pos[1]}")
+
 
 def redirect_output(text_widget):
     class StdoutRedirector:
