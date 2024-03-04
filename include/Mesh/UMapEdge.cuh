@@ -27,5 +27,5 @@
 ///////////////////////////////////////////////////////////////////
 #pragma once
 #include "PairHash.cuh"
-
+#include <unordered_map>
 typedef std::unordered_map<pair<size_t, size_t>, int, PairHash> UMapEdge;
