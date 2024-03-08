@@ -76,6 +76,15 @@ all:
 	-Xcudafe --diag_suppress=3058 \
 	-arch=sm_60 -std=c++17 -rdc=true
 
+	$(NVCC) -DUSE_DOUBLES ./src/MCIterations.cu $(cuDFNsysLibraryPath)/libcuDFNsys.a \
+	-o ./MCIterations $(INCDIRS) $(Lib_) \
+	-Xcudafe --display_error_number -Xcudafe --diag_suppress=3057 \
+	-Xcudafe --diag_suppress=1301 \
+	-Xcudafe --diag_suppress=3059 \
+	-Xcudafe --diag_suppress=3060 \
+	-Xcudafe --diag_suppress=3058 \
+	-arch=sm_60 -std=c++17 -rdc=true
+
 
 	$(NVCC) -DUSE_DOUBLES ../SomeApplications/Transform2DH5ParticleDataTo3D/src/Transform2DH5ParticleDataTo3D.cu $(cuDFNsysLibraryPath)/libcuDFNsys.a \
 	-o ./Transform2DH5ParticleDataTo3D $(INCDIRS) $(Lib_) \
@@ -87,4 +96,4 @@ all:
 	-arch=sm_60 -std=c++17 -rdc=true
 
 clean:
-	gio trash -f ./*.h5 ./*.py ./*.m ./ParticlePositionResult
+	gio trash -f ./*.h5 ./*.py ./*.m ./ParticlePositionResult ./*.txt

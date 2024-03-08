@@ -6,9 +6,11 @@
 
 * Date: Oct. 19, 2023
 
-* Update date: Feb. 29, 2024 
+* Update date: Mar. 08, 2024 
 
 * Email: yintingchang@foxmail.com
+
+**Now, _cuDFNsys_ has a simple GUI. Details are presented in Section 6.**
 
 ## 1. Compilation of a user interface code with cuDFNsys
 
@@ -424,7 +426,7 @@ Finally, one just need to load the particle tracking parameters again, in which 
 ## 6. GUI
 Now, _cuDFNsys_ has a simple GUI. To use this, make sure the _cuDFNsys_ library has been compiled: the file `libcuDFNsys.a` should appear in `~/cuDFNsys/lib`.
 
-First, `cd cuDFNsys/GUI`, and then `make`. The `make` command here will compile four executables in the current directory: `DFN_Gen`, `DFN_Mesh`, `DFN_Flow` and `Transform2DH5ParticleDataTo3D`. So, once `make` command finished, you can see the four executables in the `cuDFNsys/GUI` directory.
+First, `cd cuDFNsys/GUI`, and then `make`. The `make` command here will compile four executables in the current directory: `DFN_Gen`, `DFN_Mesh`, `DFN_Flow` and `Transform2DH5ParticleDataTo3D`. So, once `make` command finished, you can see the four executables in the `cuDFNsys/GUI` directory. How to build _cuDFNsys_ can be found in README.md.
 
 Now, we can run the GUI by `python3 src/cuDFNsysGUI.py`, as shown below.
 
@@ -435,3 +437,10 @@ Now, we can run the GUI by `python3 src/cuDFNsysGUI.py`, as shown below.
     <em>Figure 1. The GUI of cuDFNsys. </em>
 </p>
 
+Before running a DFN, a project (i.e., a directory) should be established first, by clicking `File/New project`. One can also open an existing project by `Open project`. By the way, the root path of _cuDFNsys_ is defaultly set to be under home directory. If one want to change it, just click `Set cuDFNsys root`.
+
+To generate a DFN, one can click `DFN generation`. One can generate a Stochastic DFN, or a deterministic DFN, or a DFN contaning both stochastic and deterministic fractures. To visualize the DFN, click `DFN generation/Use matplotlib` or `DFN generation/Use mayavi`.
+
+The mesh, flow and particle tracking simulations are also similar. When click corresponding buttons, one should fill parameters to entries, the meaning of the entries can be obtained by click red `Help` buttons.
+
+The GUI also supports Monte Carlo iterations under the same condition (stochastic DFNs), just for DFN and mesh generation and flow simulation. 
