@@ -2115,6 +2115,15 @@ def RunMCIterations():
         if (NumProcessor > 1):
             PrintGreenString("Number of iterations: " + str(NUMMC) + ", NumProcessor = " + str(NumProcessor) + ", Parallel MC iteration ... ")
 
+        def countdown(seconds, string):
+            while seconds > 0:
+                print(".")
+                time.sleep(1)
+                seconds -= 1
+                if (seconds == 1):
+                    PrintGreenString(string)
+        countdown(3, "Start MC iterations!")
+
         try:
             # Replace "your_cpp_executable" with the path to your C++ executable
             cpp_executable = (

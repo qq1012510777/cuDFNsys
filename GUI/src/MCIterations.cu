@@ -18,7 +18,7 @@
 using namespace std;
 namespace fs = std::filesystem;
 
-bool RunCMD_with_RealTimeCheck(const string &cmd, const string &logFile);
+bool RunCMD_with_RealTimeCheck(const string &cmd, const string &logFile, const bool &IfGenLogFile = false);
 void CreateOrEmptyFile(const std::string &filename);
 void AddLineToFile(const std::string &filename, const std::string &line);
 bool IfAFileExist(const string &FilePath);
@@ -66,13 +66,13 @@ int main(int argc, char *argv[])
         //--------------------DFN gen
         string DFN_gen_run_command = "cd ./" + ProjectName + " && " +
                                      cuDFNsys_GUI_root + "/DFN_Gen " +
-                                     "../StochasticDFN && cd ..";
+                                     "../StochasticDFN";
 
         std::this_thread::sleep_for(std::chrono::seconds(
             randomNumbers[i])); // sleep a little bit for diverse random seeds
 
         bool DFN_gen_success =
-            RunCMD_with_RealTimeCheck(DFN_gen_run_command, LogFile);
+            RunCMD_with_RealTimeCheck(DFN_gen_run_command, LogFile, true);
 
         if (!DFN_gen_success)
         {
@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
         //--------------------DFN mesh
         string DFN_mesh_run_command = "cd " + ProjectName + " && " +
                                       cuDFNsys_GUI_root + "/DFN_Mesh " +
-                                      "../MeshPara && cd ..";
+                                      "../MeshPara";
         bool DFN_mesh_success =
             RunCMD_with_RealTimeCheck(DFN_mesh_run_command, LogFile);
 
@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
         //--------------------DFN Flow
         string DFN_flow_run_command = "cd " + ProjectName + " && " +
                                       cuDFNsys_GUI_root + "/DFN_Flow " +
-                                      "../FlowPara && cd ..";
+                                      "../FlowPara";
         bool DFN_flow_success =
             RunCMD_with_RealTimeCheck(DFN_flow_run_command, LogFile);
 
@@ -130,9 +130,11 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-bool RunCMD_with_RealTimeCheck(const string &cmd, const string &logFile)
+bool RunCMD_with_RealTimeCheck(const string &cmd, const string &logFile,
+                               const bool &IfGenLogFile)
 {
-    CreateOrEmptyFile(logFile);
+    if (IfGenLogFile)
+        CreateOrEmptyFile(logFile);
 
     FILE *pipe = popen((cmd + " 2>&1").c_str(), "r");
     if (!pipe)
