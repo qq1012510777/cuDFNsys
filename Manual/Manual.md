@@ -424,7 +424,7 @@ Finally, one just need to load the particle tracking parameters again, in which 
 ```
 
 ## 6. GUI
-Now, _cuDFNsys_ has a simple GUI. To use this, make sure the _cuDFNsys_ library has been compiled: the file `libcuDFNsys.a` should appear in `~/cuDFNsys/lib`.
+Now, _cuDFNsys_ has a simple GUI, which can be run on Ubuntu or Windows WSL. To use this, make sure the _cuDFNsys_ library has been compiled: the file `libcuDFNsys.a` should appear in `~/cuDFNsys/lib`.
 
 First, `cd cuDFNsys/GUI`, and then `make`. The `make` command here will compile four executables in the current directory: `DFN_Gen`, `DFN_Mesh`, `DFN_Flow` and `Transform2DH5ParticleDataTo3D`. So, once `make` command finished, you can see the four executables in the `cuDFNsys/GUI` directory. How to build _cuDFNsys_ can be found in README.md.
 
@@ -443,4 +443,6 @@ To generate a DFN, one can click `DFN generation`. One can generate a Stochastic
 
 The mesh, flow and particle tracking simulations are also similar. When click corresponding buttons, one should fill parameters to entries, the meaning of the entries can be obtained by click red `Help` buttons.
 
-The GUI also supports Monte Carlo iterations under the same condition (stochastic DFNs), just for DFN and mesh generation and flow simulation. 
+The GUI also supports Monte Carlo iterations under the same condition (stochastic DFNs), just for DFN and mesh generation and flow simulation.
+
+For visualizations, the GUI will use Matplotlib or Mayavi (see README.md for its installation).

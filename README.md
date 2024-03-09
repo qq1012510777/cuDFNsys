@@ -2,7 +2,7 @@
 
 _cuDFNsys_ is an open-source CUDA library (under the GPL license) for DFN generations. It is also able to simulate flow (steady-state) and particle transport in DFNs, based on the mixed hybrid finite element method and particle tracking algorithm. _cuDFNsys_ contains around 10 000 lines of codes (counted on June 29th, 2023).
 
-_cuDFNsys_ has a simple GUI and can only run on Ubuntu. See manual for more details.
+_cuDFNsys_ has a simple GUI and can run on Ubuntu or Windows WSL. See manual for more details.
 
 _cuDFNsys_ is also an easy-implemented, object-oriented CUDA C++ library. The simulation is performed just by establishing CUDA C++ classes, defining member variables and calling member functions. The results are stored in a HDF5 format. At runtime, the fracture, mesh or flow data can be accessed by visting member variables of classes.
 
@@ -203,7 +203,7 @@ With Python, you need to install the _mayavi_ Python package. _mayavi_ is a very
 
 Installation of _mayavi_ can be done by the following commands (I've test them in Ubuntu 23.04):
 ```
-sudo apt install python3-vtk9 python3-pip python3-pyqt5 python3-traits python3-traitsui python3-numpy python3-matplotlib python3-setuptools python3-pyqt5.qtopengl
+sudo apt install python3-h5py python3-vtk9 python3-pip python3-pyqt5 python3-traits python3-traitsui python3-numpy python3-matplotlib python3-setuptools python3-pyqt5.qtopengl
 # Please note that package names and dependencies may change over time, so make sure to check for any updates or changes in package names specific to your Ubuntu version.
 sudo apt-get install mayavi2
 ```
