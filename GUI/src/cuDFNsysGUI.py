@@ -2093,27 +2093,42 @@ def VisualizePTMayavi():
 
 
 def SetDFNParameters():
-    StochasticDFN(False)
+    def CallStochasticDFN():
+        StochasticDFN(False)
+        return
+
+    relateX = 0.25
+    relateY = 0.05
+    label1 = Label(root, height=1,
+                   text="MC iterations for DFN and flow simulation!", fg="red", font=("Helvetica", 14))
+    label1.place(relx=relateX, rely=relateY, anchor="nw")
+
+    button = Button(root, text="Continue", command=(CallStochasticDFN))
+    button.place(relx=0.5, rely=0.1, anchor="nw")
+
     return
 
 
 def RunMCIterations():
-    
+
     ClearAllWidget()
 
     def StartRunMC():
         NUMMC = 100 if (len(entry3.get()) == 0) else int(entry3.get())
         NumProcessor = 5 if (len(entry4.get()) == 0) else int(entry4.get())
-
+        DevGPUInx = 0 if (len(entry5.get()) == 0) else int(entry5.get())
+        PrintGreenString("Using GPU card No. " + str(DevGPUInx))
         ClearAllWidget()
-        
+
         if (NumProcessor < 1):
             PrintRedString("Number of CPU threads must be >= 1")
             return
         if (NumProcessor == 1):
-            PrintGreenString("Number of iterations: " + str(NUMMC) + ", Serial MC iteration ...")
+            PrintGreenString("Number of iterations: " +
+                             str(NUMMC) + ", Serial MC iteration ...")
         if (NumProcessor > 1):
-            PrintGreenString("Number of iterations: " + str(NUMMC) + ", NumProcessor = " + str(NumProcessor) + ", Parallel MC iteration ... ")
+            PrintGreenString("Number of iterations: " + str(NUMMC) +
+                             ", NumProcessor = " + str(NumProcessor) + ", Parallel MC iteration ... ")
 
         def countdown(seconds, string):
             while seconds > 0:
@@ -2129,7 +2144,8 @@ def RunMCIterations():
             cpp_executable = (
                 cuDFNsys_GUI_path
                 + "/MCIterations "
-                + cuDFNsys_GUI_path + " " + str(NUMMC) + " " + str(NumProcessor)
+                + cuDFNsys_GUI_path + " " +
+                str(NUMMC) + " " + str(NumProcessor) + " " + str(DevGPUInx)
             )
             # output = subprocess.check_output(
             #    [cpp_executable], shell=True)
@@ -2150,7 +2166,7 @@ def RunMCIterations():
         except subprocess.CalledProcessError as e:
             PrintRedString("Error:")
             print("Error running MCIterations:", e)
-        # ----------  
+        # ----------
         PrintGreenString("MC finished!")
         return
     # m
@@ -2161,7 +2177,7 @@ def RunMCIterations():
     entry3 = Entry(root, width=3)
     entry3.place(relx=relateX + 0.25, rely=relateY, anchor="nw")
 
-    # maximum grid size
+    #
     relateX = 0
     relateY = 0.05
     label4 = Label(root, width=25, height=1,
@@ -2179,9 +2195,28 @@ def RunMCIterations():
     )
     Helpbutton4.place(relx=relateX + 0.35, rely=relateY, anchor="nw")
 
+    #
+    relateX = 0
+    relateY = 0.1
+    label5 = Label(root, width=25, height=1,
+                   text="The index of GPU card:")
+    label5.place(relx=relateX, rely=relateY, anchor="nw")
+    entry5 = Entry(root, width=3)
+    entry5.place(relx=relateX + 0.25, rely=relateY, anchor="nw")
+    Helpbutton5 = Button(
+        root,
+        text="Help",
+        fg="Red",
+        command=lambda: PrintRedString(
+            "Leave it blank for the first GPU card, i.e., No, 0. Or input 1, 2, or 3 if you have multiple GPU cards!"
+        ),
+    )
+    Helpbutton5.place(relx=relateX + 0.35, rely=relateY, anchor="nw")
+
     button = Button(root, text="Start", command=StartRunMC)
-    button.place(relx=relateX + 0.1, rely=relateY + 0.1, anchor="nw")
+    button.place(relx=relateX + 0.1, rely=relateY + 0.15, anchor="nw")
     return
+
 
 def CleanAllLogs():
     ClearAllWidget()
@@ -2193,8 +2228,10 @@ def CleanAllLogs():
                 print(f"Deleted file: {file_path}")
     return
 
+
 def CleanAllMCData():
     ClearAllWidget()
+
     def CleanStart():
         ClearAllWidget()
         for root, dirs, files in os.walk("./", topdown=False):
@@ -2204,6 +2241,7 @@ def CleanAllMCData():
                     shutil.rmtree(dir_path)
                     print(f"Deleted directory: {dir_path}")
         return
+
     def exitCleanMCData():
         ClearAllWidget()
         return
@@ -2221,9 +2259,12 @@ def CleanAllMCData():
 
     return
 
+
 def Contact():
-    PrintGreenString("Please go to https://github.com/qq1012510777/cuDFNsys/blob/main/Manual/Manual.md (require VPN at mainland, China) or contact yintingchang@foxmail.com")
-    return   
+    PrintGreenString(
+        "Please go to https://github.com/qq1012510777/cuDFNsys/blob/main/Manual/Manual.md (require VPN at mainland, China) or contact yintingchang@foxmail.com")
+    return
+
 
 # --------------------root window
 root = Tk()
@@ -2336,7 +2377,8 @@ DFNMC_SIM_Menu.add_command(label="Run MC iterations", command=RunMCIterations)
 
 DFNMC_SIM_Menu.add_command(label="Clean all log files", command=CleanAllLogs)
 
-DFNMC_SIM_Menu.add_command(label="Clean all data files", command=CleanAllMCData)
+DFNMC_SIM_Menu.add_command(
+    label="Clean all data files", command=CleanAllMCData)
 
 # ---------------Help
 HelpMenu = Menu(menu)

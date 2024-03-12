@@ -18,7 +18,8 @@
 using namespace std;
 namespace fs = std::filesystem;
 
-bool RunCMD_with_RealTimeCheck(const string &cmd, const string &logFile, const bool &IfGenLogFile = false);
+bool RunCMD_with_RealTimeCheck(const string &cmd, const string &logFile,
+                               const bool &IfGenLogFile = false);
 void CreateOrEmptyFile(const std::string &filename);
 void AddLineToFile(const std::string &filename, const std::string &line);
 bool IfAFileExist(const string &FilePath);
@@ -35,6 +36,8 @@ int main(int argc, char *argv[])
     string cuDFNsys_GUI_root = (argc >= 2 ? argv[1] : "~/cuDFNsys/GUI");
     int NumIterations = (argc >= 3 ? atoi(argv[2]) : 1);
     int NumProcessors = (argc >= 4 ? atoi(argv[3]) : 1);
+    int devIndex = (argc >= 5 ? atoi(argv[4]) : 0);
+    GPUErrCheck(cudaSetDevice(devIndex));
 
     // ---------------generate a vector of random numbers -------------
     std::random_device rd;
