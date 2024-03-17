@@ -1073,7 +1073,7 @@ def DFNvisualUseMatPlotLib():
             DomainDimensionRatio[2] * Lm / 2.0 + R_rr / 2.0,
         ]
     )
-    ax.set_box_aspect([1, 1, 1])
+    ax.set_box_aspect([DomainDimensionRatio[0], DomainDimensionRatio[1], DomainDimensionRatio[2]])
     ax.set_xlabel("X (m)")
     ax.set_ylabel("Y (m)")
     ax.set_zlabel("Z (m)")
@@ -1230,6 +1230,7 @@ def DFNMesh(IfGen=True):
 
 
 def VisualizeMeshMatplotlib():
+
     f = h5py.File("./Class_MESH.h5")
     Points = np.array(f["group_mesh/Coordinate3D"][:])
     Points = np.transpose(Points)
@@ -1298,7 +1299,7 @@ def VisualizeMeshMatplotlib():
         ax.add_collection3d(Line3DCollection(
             [edge], color="black", linewidths=1))
     # Set labels
-    ax.set_box_aspect([1, 1, 1])
+    ax.set_box_aspect([DomainDimensionRatio[0], DomainDimensionRatio[1], DomainDimensionRatio[2]])
     ax.set_xlabel('X (m)')
     ax.set_ylabel('Y (m)')
     ax.set_zlabel('Z (m)')
@@ -1475,7 +1476,7 @@ def VisualizeFlowMatplotlib():
         ax.add_collection3d(Line3DCollection(
             [edge], color="black", linewidths=1))
     # Set labels
-    ax.set_box_aspect([1, 1, 1])
+    ax.set_box_aspect(DomainDimensionRatio)
     ax.set_xlabel('X (m)')
     ax.set_ylabel('Y (m)')
     ax.set_zlabel('Z (m)')
@@ -1983,11 +1984,11 @@ def VisualizePTMatplotlib():
         if R_rr > MaxR:
             MaxR = R_rr
         # Faces.append([0, 1, 2, 3])
-    for verts in Verts:
-        poly = Poly3DCollection(
-            [verts], facecolors="blue", linewidths=1, edgecolors=(0, 0, 0, 0.1), alpha=0.1
-        )
-        ax.add_collection3d(poly)
+    # for verts in Verts:
+    #     poly = Poly3DCollection(
+    #         [verts], facecolors="blue", linewidths=1, edgecolors=(0, 0, 0, 0.1), alpha=0.1
+    #     )
+    #     ax.add_collection3d(poly)
     # Define coordinates of cuboid vertices
     vertices = np.array(
         [
@@ -2056,12 +2057,12 @@ def VisualizePTMatplotlib():
     f_3.close()
     f_2.close()
     # -------------------------------
-    ax.set_box_aspect([1, 1, 1])
+    ax.set_box_aspect(DomainDimensionRatio)
     ax.set_xlabel("X (m)")
     ax.set_ylabel("Y (m)")
     ax.set_zlabel("Z (m)")
     ax.set_title(
-        "The finall position of all particles; fractures are transparent")
+        "The finall position of all particles; fractures are hidden")
     plt.show()
     return
 
@@ -2347,7 +2348,7 @@ FlowVisual_submenu.add_command(
     label="Use Matplotlib", command=VisualizeFlowMatplotlib)
 FlowVisual_submenu.add_command(
     label="Use Mayavi2 (if installed)", command=VisualizeFlowMayavi)
-DFNFlowMenu.add_cascade(label="Visualize mesh", menu=FlowVisual_submenu)
+DFNFlowMenu.add_cascade(label="Visualize flow", menu=FlowVisual_submenu)
 
 # ---------------PT
 DFNPTMenu = Menu(menu)
@@ -2363,7 +2364,7 @@ PTVisual_submenu.add_command(
     label="Use Matplotlib", command=VisualizePTMatplotlib)
 PTVisual_submenu.add_command(
     label="Use Mayavi2 (if installed)", command=VisualizePTMayavi)
-DFNPTMenu.add_cascade(label="Visualize mesh", menu=PTVisual_submenu)
+DFNPTMenu.add_cascade(label="Visualize PT", menu=PTVisual_submenu)
 
 # ---------------MonteCarlo simulation
 DFNMC_SIM_Menu = Menu(menu)

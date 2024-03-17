@@ -148,6 +148,13 @@ More details about the installation of the relying packages:
 
 * [Installation of UMFPACK](https://github.com/DrTimothyAldenDavis/SuiteSparse)
 
+If you get the error after run `make`
+```
+/usr/include/c++/11/bits/std_function.h:435:145: error: parameter packs not expanded with ‘...’ 
+```
+it can be resolved by replacing the current `nvcc` to a higher version `11.6` or higher.  
+
+
 # Compile a quickstart example
 By `cd ~/cuDFNsys/QuickStartGuide`, a `Makefile` can be seen there. Open it, and one can see
 ```
@@ -208,6 +215,18 @@ sudo apt install python3-h5py python3-vtk9 python3-pip python3-pyqt5 python3-tra
 sudo apt-get install mayavi2
 ```
 To run python visualization script, just run `python3 NameOfScript.py`.
+
+If you get the error
+```
+The following packages have unmet dependencies:
+ python3-vtk9 : Breaks: python3-vtk7 but 7.1.1+dfsg2-10.1build1 is to be installed
+E: Error, pkgProblemResolver::Resolve generated breaks, this may be caused by held packages.
+```
+it can be resolved by 
+```
+sudo apt remove python3-vtk9
+sudo apt-get install python3-vtk7
+```
 
 # Manual
 Manual for _cuDFNsys_ is [here](Manual/Manual.md).
