@@ -237,7 +237,8 @@ namespace cuDFNsys
         bool OutputAllPTInformationOrFPTCurve;
         cuDFNsys::ParticleTransport<T> PTData;
         bool IfPeriodic = false;
-
+        uint TimeIntervalOutPTInformation = 100;
+        
     public:
         PTDFN(){};
         void ParticleTracking(cuDFNsys::DFN<T> my_dfn,

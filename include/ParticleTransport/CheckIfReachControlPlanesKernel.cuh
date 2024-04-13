@@ -17,37 +17,40 @@
 *****************************************************************************/
 
 ///////////////////////////////////////////////////////////////////
-// NAME:              WhichElementToGo.cuh
+// NAME:              CheckIfReachControlPlanesKernel.cuh
 //
-// PURPOSE:           determine which element to go when the particle
-//                    encounters an intersection
+// PURPOSE:           check if particles reach control planes
 //
-// FUNCTIONS/OBJECTS: WhichElementToGo
+// FUNCTIONS/OBJECTS: CheckIfReachControlPlanesKernel
 //
 // AUTHOR:            Tingchang YIN
 ///////////////////////////////////////////////////////////////////
 #pragma once
-#include "../DataTypeSelector/DataTypeSelector.cuh"
-#include "../GlobalDef/GlobalDef.cuh"
-#include "../MHFEM/MHFEM.cuh"
-#include "../MHFEM/ReconstructVelocityGrid.cuh"
-#include "../Mesh/EleCoor.cuh"
+#include "EdgeToEle.cuh"
+#include "NeighborEle.cuh"
+#include "OutputObjectData/OutputObjectData.cuh"
+#include "Particle.cuh"
+#include "ParticleMovementOneTimeStepCPU.cuh"
+#include "ParticleMovementOneTimeStepGPUKernel.cuh"
+#include "PredicateNumOfReachedOutletParticles.cuh"
+#include "ToStringWithWidth/ToStringWithWidth.cuh"
+#include <cmath>
+#include <cstdlib>
+#include <fstream>
+#include <set>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 namespace cuDFNsys
 {
-template <typename T>
-__host__ __device__ void WhichElementToGo(uint currentEleID,
-                                          uint NumSharedEle,
-                                          T Dispersion_local,
-                                          uint *EleID_vec,
-                                          uint *LocalEdgeNo_vec,
-                                          uint *EleToFracID_ptr,
-                                          cuDFNsys::Fracture<T> *Frac_DEV,
-                                          cuDFNsys::EleCoor<T> *Coordinate2D_Vec_dev_ptr,
-                                          T *velocity_ptr,
-                                          T rand_0_1,
-                                          int &NextElementID,
-                                          int &NextFracID,
-                                          int &IndexInLocal,
-                                          bool &ifAllsharedEdgeVelocityPositive, bool If_completeMixing_fluxWeighted);
+    template <typename T>
+    __global__ void CheckIfReachControlPlanesKernel(
+        cuDFNsys::Fracture<T> *Frac_verts_device_ptr,
+        cuDFNsys::Particle<T> *temp2Dpos_dev_ptr,
+        uint *ElementFracTag_cuda_devptr,
+        //uint *EleTag_device_ptr,
+        uint count, uint Dir, T L_percoDir, uint *TimeReachControlPlanes_dev_ptr,
+        uint NumControlPlanes, T *ControlPlanes, uint NumParticlesTotal,
+        uint StepNo, T *x_ptr, T *y_ptr, T *z_ptr, T magic_number);
 }; // namespace cuDFNsys

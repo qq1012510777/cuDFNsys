@@ -32,7 +32,7 @@ __host__ __device__ void cuDFNsys::WhichElementToGo(
     cuDFNsys::Fracture<T> *Frac_DEV,
     cuDFNsys::EleCoor<T> *Coordinate2D_Vec_dev_ptr, T *velocity_ptr, T rand_0_1,
     int &NextElementID, int &NextFracID, int &IndexInLocal,
-    bool &ifAllsharedEdgeVelocityPositive, bool If_completeMixing)
+    bool &ifAllsharedEdgeVelocityPositive, bool If_completeMixing_fluxWeighted)
 {
     T TotalVeloc = 0;
     T veloc_vec[_NumOfSharedEleAtMost];
@@ -129,7 +129,7 @@ __host__ __device__ void cuDFNsys::WhichElementToGo(
     //printf("Dispersion_local: %.40f, TotalVeloc: %.40f\n", Dispersion_local,TotalVeloc);
     if (/*Dispersion_local == 0 &&*/ // commented Apr-13-2023 // particle tracking
             TotalVeloc == 0 &&
-        If_completeMixing) // all element normal velocities are positive
+        If_completeMixing_fluxWeighted) // all element normal velocities are positive
     {
         ifAllsharedEdgeVelocityPositive = true;
         return;
@@ -188,7 +188,7 @@ __host__ __device__ void cuDFNsys::WhichElementToGo(
     // equal probability !!!!!!
     // equal probability !!!!!!
     // equal probability !!!!!!
-    if (!If_completeMixing)
+    if (!If_completeMixing_fluxWeighted)
     {
         // printf("ds\n");
         for (uint i = 0; i < NumSharedEle - 1; ++i)
@@ -234,11 +234,11 @@ template __host__ __device__ void cuDFNsys::WhichElementToGo<double>(
     cuDFNsys::Fracture<double> *Frac_DEV,
     cuDFNsys::EleCoor<double> *Coordinate2D_Vec_dev_ptr, double *velocity_ptr,
     double rand_0_1, int &NextElementID, int &NextFracID, int &IndexInLocal,
-    bool &ifAllsharedEdgeVelocityPositive, bool If_completeMixing);
+    bool &ifAllsharedEdgeVelocityPositive, bool If_completeMixing_fluxWeighted);
 template __host__ __device__ void cuDFNsys::WhichElementToGo<float>(
     uint currentEleID, uint NumSharedEle, float Dispersion_local,
     uint *EleID_vec, uint *LocalEdgeNo_vec, uint *EleToFracID_ptr,
     cuDFNsys::Fracture<float> *Frac_DEV,
     cuDFNsys::EleCoor<float> *Coordinate2D_Vec_dev_ptr, float *velocity_ptr,
     float rand_0_1, int &NextElementID, int &NextFracID, int &IndexInLocal,
-    bool &ifAllsharedEdgeVelocityPositive, bool If_completeMixing);
+    bool &ifAllsharedEdgeVelocityPositive, bool If_completeMixing_fluxWeighted);

@@ -1570,6 +1570,10 @@ def RunNewPT():
         add_line_to_file(
             "./PTPara.csv", "IfUseFluxWeightedOrEqualProbableMixingIntersection, " + mixingrule + ",")
 
+        Nt_out = "100" if (len(entry10.get()) == 0) else entry10.get()
+        add_line_to_file(
+            "./PTPara.csv", "TimeIntervalOutPTInformation, " + Nt_out + ",")
+        
         RunMoreSteps()
         ClearAllWidget()
 
@@ -1659,7 +1663,7 @@ def RunNewPT():
         text="Help",
         fg="Red",
         command=lambda: PrintRedString(
-            "Do you want to output particles' coordinates at each step (1 for yes, 0 for first passage time only) (leave it blank for 1)"
+            "Do you want to output particles' coordinates at each `NT_out` step (1 for yes, 0 for first passage time only) (leave it blank for 1)"
         ),
     )
     Helpbutton4.place(relx=relateX + 0.35, rely=relateY, anchor="nw")
@@ -1772,8 +1776,26 @@ def RunNewPT():
     )
     Helpbutton2.place(relx=relateX + 0.35, rely=relateY, anchor="nw")
 
+    # TimeIntervalOutPTInformation
+    relateX = 0.45
+    relateY = 0.20
+    label10 = Label(root, width=25, height=1,
+                   text="NT_out:")
+    label10.place(relx=relateX, rely=relateY, anchor="nw")
+    entry10 = Entry(root, width=3)
+    entry10.place(relx=relateX + 0.25, rely=relateY, anchor="nw")
+    Helpbutton10 = Button(
+        root,
+        text="Help",
+        fg="Red",
+        command=lambda: PrintRedString(
+            "The information will be output once at each NT_out steps. Default value is 100"
+        ),
+    )
+    Helpbutton10.place(relx=relateX + 0.35, rely=relateY, anchor="nw")
+
     buttonsk = Button(root, text="PT start", command=(WriteCSV))
-    buttonsk.place(relx=relateX + 0.15, rely=0.21, anchor="nw")
+    buttonsk.place(relx=relateX + 0.15, rely=0.26, anchor="nw")
 
     return
 
@@ -1871,7 +1893,7 @@ def GetRecommendedDmAndDealtT():
 
 def RunMoreSteps():
     try:
-        # Replace "your_cpp_executable" with the path to your C++ executable
+        # 
         cpp_executable = (
             cuDFNsys_GUI_path
             + "/DFN_PT "
@@ -1901,6 +1923,7 @@ def RunMoreSteps():
 
 
 def ReRun():
+    ClearAllWidget()
     def ReRunII():
         NumSteps = entry1.get()
         with open("./PTPara.csv", 'r') as file:

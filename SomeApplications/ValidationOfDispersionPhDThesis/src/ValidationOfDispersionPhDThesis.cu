@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 
     cuDFNsys::PTDFN<double> particleTracking;
     particleTracking.LoadParametersFromCSV(csvname + "_PT_parameters");
-
+    particleTracking.TimeIntervalOutPTInformation = 10;
     //-----------------------------------advction time to cross a grid
     double FactorToDivideDeltaT = 10;
 

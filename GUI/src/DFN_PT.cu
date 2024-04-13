@@ -16,7 +16,10 @@ int main(int argc, char *argv[])
         flow.LoadClassFromH5("Class_FLOW");
 
         particleTracking.LoadParametersFromCSV("PTPara");
+
+        double Start_time = cuDFNsys::CPUSecond();
         particleTracking.ParticleTracking(my_dfn, meshGen, flow);
+        cout << "PT total run time: " << cuDFNsys::CPUSecond() - Start_time << endl;
         particleTracking.Visualization(my_dfn, meshGen, flow,
                                        "DFN_DISPERSION", "DFN_DISPERSION",
                                        "DFN_FLOW_VISUAL");

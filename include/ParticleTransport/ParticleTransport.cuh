@@ -26,27 +26,31 @@
 // AUTHOR:            Tingchang YIN
 ///////////////////////////////////////////////////////////////////
 #pragma once
+#include "CheckIfReachControlPlanesKernel.cuh"
 #include "EdgeToEle.cuh"
+#include "IsNotEqual.cuh"
 #include "NeighborEle.cuh"
 #include "OutputObjectData/OutputObjectData.cuh"
 #include "Particle.cuh"
 #include "ParticleMovementOneTimeStepCPU.cuh"
 #include "ParticleMovementOneTimeStepGPUKernel.cuh"
 #include "PredicateNumOfReachedOutletParticles.cuh"
+#include "ThrustStatistics/ThrustStatistics.cuh"
 #include "ToStringWithWidth/ToStringWithWidth.cuh"
 #include "Transform2DTo3DKernel.cuh"
+#include <array>
 #include <cmath>
 #include <cstdlib>
 #include <fstream>
 #include <set>
 #include <stdio.h>
 #include <stdlib.h>
+#include <thrust/count.h>
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
 #include <thrust/remove.h>
 #include <thrust/sort.h>
 #include <time.h>
-#include <array>
 
 namespace cuDFNsys
 {
@@ -65,13 +69,18 @@ namespace cuDFNsys
         bool IfRecordTime = false;
         string RecordMode = "OutputAll";
 
-        std::vector<T> ControlPlanes;
+        thrust::host_vector<T> ControlPlanes;
 
         bool IfOutputMSD = true;
 
         thrust::host_vector<int2> CorrespondingEleLocalEdge;
 
         bool IfPeriodic = false;
+
+        uint TimeIntervalOutPTInformation;
+
+        //------------record the travel time reaching control planes
+        thrust::host_vector<uint> TimeReachControlPlanes;
 
     private:
         string ParticlePosition = "ParticlePositionResult/ParticlePosition";
@@ -109,7 +118,9 @@ namespace cuDFNsys
                           T SpacingOfControlPlanes = 10,
                           bool IfOutputMSD = true,
                           bool IfInitCenterDomain = false, T InjectionPlane = 0,
-                          bool If_completeMixing = true, bool IfPeriodic_ = false);
+                          bool If_completeMixing_fluxWeighted = true,
+                          bool IfPeriodic_ = false,
+                          uint TimeIntervalOutPTInformation_s = 100);
 
         void ParticleMovement(const int &init_NO_STEP, const int &NumTimeStep,
                               T delta_T_, T Dispersion_local,
@@ -118,7 +129,7 @@ namespace cuDFNsys
                               thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
                               cuDFNsys::Mesh<T> mesh,
                               const cuDFNsys::MHFEM<T> &fem, T outletcoordinate,
-                              bool If_completeMixing = true);
+                              bool If_completeMixing_fluxWeighted = true);
 
         void ParticleMovementCPU(
             const int &init_NO_STEP, const int &NumTimeStep, T delta_T_,

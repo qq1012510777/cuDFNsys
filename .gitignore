@@ -31,6 +31,14 @@ SomeApplications/*/QuickStartGuide_*
 SomeApplications/*/ContinueParticleTransport 
 SomeApplications/*/ValidateLocalDiffusion 
 SomeApplications/*/ConvertH5Precision
+SomeApplications/ValidationOfDispersionPhDThesis/NumerousInclinedFractures/*
+SomeApplications/ValidationOfDispersionPhDThesis/SingleFrac1/*
+SomeApplications/ValidationOfDispersionPhDThesis/SingleFrac2/*
+SomeApplications/ValidationOfDispersionPhDThesis/SingleFrac3/*
+SomeApplications/ValidationOfDispersionPhDThesis/TwoIntersectingFrac/*
+SomeApplications/ValidationOfDispersionPhDThesis/TwoIntersectingFracPe_0.1/*
+SomeApplications/ValidationOfDispersionPhDThesis/TwoNonintersectingFrac/*
+SomeApplications/ValidationOfDispersionPhDThesis/TwoNonintersectingFracPe_0.1/*
 
 SomeApplications/*/*.h5
 SomeApplications/*/*.m

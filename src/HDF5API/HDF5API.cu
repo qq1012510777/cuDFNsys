@@ -170,71 +170,129 @@ void cuDFNsys::HDF5API::AddDatasetsWithOneGroup(
     const vector<string> &datasetname, const vector<T *> data,
     const vector<uint2> &dim)
 {
-    if (groupname == "N")
-        throw ExceptionsPause("You should define group name when you are using "
-                              "HDF5API::AddDatasetsWithOneGroup!\n");
+    // if (groupname == "N")
+    //     throw ExceptionsPause("You should define group name when you are using "
+    //                           "HDF5API::AddDatasetsWithOneGroup!\n");
 
-    H5File file(filename, H5F_ACC_RDWR);
-
-    Group group;
-
-    H5::Exception::dontPrint();
-    try
+    if (groupname != "N")
     {
-        //cout << "try to open a group!\n";
-        group = file.openGroup(groupname);
-        //cout << "opened group!\n";
+        H5File file(filename, H5F_ACC_RDWR);
+
+        Group group;
+
+        H5::Exception::dontPrint();
+        try
+        {
+
+            //cout << "try to open a group!\n";
+            group = file.openGroup(groupname);
+            //cout << "opened group!\n";
+        }
+        catch (...)
+        {
+            //cout << "no this group! create a new group!\n";
+            group = file.createGroup(groupname);
+            //cout << "created group!\n";
+        };
+
+        auto datatype = PredType::NATIVE_DOUBLE;
+
+        if (typeid(data[0][0]) == typeid(double))
+            datatype = PredType::NATIVE_DOUBLE;
+        else if (typeid(data[0][0]) == typeid(float))
+            datatype = PredType::NATIVE_FLOAT;
+        else if (typeid(data[0][0]) == typeid(size_t))
+        {
+            string kklo =
+                "In cuDFNsys::HDF5API, writing size_t data might lead to "
+                "problems, please cast size_t array to int/uint array\n";
+            cout << kklo;
+            throw ExceptionsPause(kklo);
+        }
+        else if (typeid(data[0][0]) == typeid(int))
+            datatype = PredType::NATIVE_INT;
+        else if (typeid(data[0][0]) == typeid(uint))
+            datatype = PredType::NATIVE_UINT;
+        else
+            throw ExceptionsPause(
+                "Undefined datatype in HDF5API::AddDataset\n");
+
+        for (int i = 0; i < datasetname.size(); ++i)
+        {
+            hsize_t *dims; // dataset dimensions for each rank
+            int rank_ = 1;
+            if (dim[i].y > 1)
+                rank_ = 2;
+
+            dims = new hsize_t[rank_];
+            dims[0] = dim[i].x;
+            if (rank_ == 2)
+                dims[1] = dim[i].y;
+            DataSpace dataspace(rank_, dims);
+            delete[] dims;
+            dims = NULL;
+
+            DataSet dataset;
+
+            dataset = group.createDataSet(datasetname[i], datatype, dataspace);
+
+            dataset.write(data[i], datatype);
+        }
+
+        group.close();
+        file.close();
     }
-    catch (...)
-    {
-        //cout << "no this group! create a new group!\n";
-        group = file.createGroup(groupname);
-        //cout << "created group!\n";
-    };
-
-    auto datatype = PredType::NATIVE_DOUBLE;
-
-    if (typeid(data[0][0]) == typeid(double))
-        datatype = PredType::NATIVE_DOUBLE;
-    else if (typeid(data[0][0]) == typeid(float))
-        datatype = PredType::NATIVE_FLOAT;
-    else if (typeid(data[0][0]) == typeid(size_t))
-    {
-        string kklo = "In cuDFNsys::HDF5API, writing size_t data might lead to "
-                      "problems, please cast size_t array to int/uint array\n";
-        cout << kklo;
-        throw ExceptionsPause(kklo);
-    }
-    else if (typeid(data[0][0]) == typeid(int))
-        datatype = PredType::NATIVE_INT;
-    else if (typeid(data[0][0]) == typeid(uint))
-        datatype = PredType::NATIVE_UINT;
     else
-        throw ExceptionsPause("Undefined datatype in HDF5API::AddDataset\n");
-
-    for (int i = 0; i < datasetname.size(); ++i)
     {
-        hsize_t *dims; // dataset dimensions for each rank
-        int rank_ = 1;
-        if (dim[i].y > 1)
-            rank_ = 2;
+        H5File file(filename, H5F_ACC_RDWR);
 
-        dims = new hsize_t[rank_];
-        dims[0] = dim[i].x;
-        if (rank_ == 2)
-            dims[1] = dim[i].y;
-        DataSpace dataspace(rank_, dims);
-        delete[] dims;
-        dims = NULL;
+        auto datatype = PredType::NATIVE_DOUBLE;
 
-        DataSet dataset =
-            group.createDataSet(datasetname[i], datatype, dataspace);
+        if (typeid(data[0][0]) == typeid(double))
+            datatype = PredType::NATIVE_DOUBLE;
+        else if (typeid(data[0][0]) == typeid(float))
+            datatype = PredType::NATIVE_FLOAT;
+        else if (typeid(data[0][0]) == typeid(size_t))
+        {
+            string kklo =
+                "In cuDFNsys::HDF5API, writing size_t data might lead to "
+                "problems, please cast size_t array to int/uint array\n";
+            cout << kklo;
+            throw ExceptionsPause(kklo);
+        }
+        else if (typeid(data[0][0]) == typeid(int))
+            datatype = PredType::NATIVE_INT;
+        else if (typeid(data[0][0]) == typeid(uint))
+            datatype = PredType::NATIVE_UINT;
+        else
+            throw ExceptionsPause(
+                "Undefined datatype in HDF5API::AddDataset\n");
 
-        dataset.write(data[i], datatype);
+        for (int i = 0; i < datasetname.size(); ++i)
+        {
+            // cout << "i: " << i << ", " << data[i][0] << ", " << data[i][1]
+            //                           << ", " << data[i][2] << endl;
+            hsize_t *dims; // dataset dimensions for each rank
+            int rank_ = 1;
+            if (dim[i].y > 1)
+                rank_ = 2;
+
+            dims = new hsize_t[rank_];
+            dims[0] = dim[i].x;
+            if (rank_ == 2)
+                dims[1] = dim[i].y;
+            DataSpace dataspace(rank_, dims);
+            delete[] dims;
+            dims = NULL;
+
+            DataSet dataset;
+
+            dataset = file.createDataSet(datasetname[i], datatype, dataspace);
+
+            dataset.write(data[i], datatype);
+        }
+        file.close();
     }
-
-    group.close();
-    file.close();
 }; // AddDatasetsWithOneGroup
 template void cuDFNsys::HDF5API::AddDatasetsWithOneGroup(
     const string &filename, const string &groupname,

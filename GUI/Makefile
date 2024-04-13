@@ -1,17 +1,6 @@
 ExeName=main
-# NVCC path
-NVCC=/usr/lib/nvidia-cuda-toolkit/bin/nvcc
-# include paths for headers
-cuDFNsysIncludePath=$(HOME)/cuDFNsys/include
-Hdf5IncludePath=/usr/include/hdf5/serial
-GmshIncludePath=usr/include
-EigenIncludePath=/usr/include
-UmfpackIncludePath=/usr/include/suitesparse
-# library paths
-cuDFNsysLibraryPath=$(HOME)/cuDFNsys/lib
-GmshLibraryPath=/usr/lib/x86_64-linux-gnu
-UmfpackLibraryPath=/usr/lib/x86_64-linux-gnu
-Hdf5LibraryPath=/usr/lib/x86_64-linux-gnu/hdf5/serial
+
+include ../Path.mk
 
 INCDIRS=-I $(cuDFNsysIncludePath) \
 		-I $(Hdf5IncludePath) \
@@ -39,7 +28,11 @@ Lib_= -Xcompiler=-fopenmp \
 	-L$(UmfpackLibraryPath) \
 	-L$(Hdf5LibraryPath)
 
-all: 
+all: DFN_Gen DFN_Mesh DFN_Flow DFN_PT MCIterations Transform2DH5ParticleDataTo3D
+
+.PHONY: all DFN_Gen DFN_Mesh DFN_Flow DFN_PT MCIterations Transform2DH5ParticleDataTo3D
+
+DFN_Gen: ./src/DFN_Gen.cu 
 	$(NVCC) -DUSE_DOUBLES ./src/DFN_Gen.cu $(cuDFNsysLibraryPath)/libcuDFNsys.a \
 	-o ./DFN_Gen $(INCDIRS) $(Lib_) \
 	-Xcudafe --display_error_number -Xcudafe --diag_suppress=3057 \
@@ -49,6 +42,8 @@ all:
 	-Xcudafe --diag_suppress=3058 \
 	-arch=sm_60 -std=c++17 -rdc=true
 
+
+DFN_Mesh: ./src/DFN_Mesh.cu
 	$(NVCC) -DUSE_DOUBLES ./src/DFN_Mesh.cu $(cuDFNsysLibraryPath)/libcuDFNsys.a \
 	-o ./DFN_Mesh $(INCDIRS) $(Lib_) \
 	-Xcudafe --display_error_number -Xcudafe --diag_suppress=3057 \
@@ -58,6 +53,7 @@ all:
 	-Xcudafe --diag_suppress=3058 \
 	-arch=sm_60 -std=c++17 -rdc=true
 
+DFN_Flow: ./src/DFN_Flow.cu
 	$(NVCC) -DUSE_DOUBLES ./src/DFN_Flow.cu $(cuDFNsysLibraryPath)/libcuDFNsys.a \
 	-o ./DFN_Flow $(INCDIRS) $(Lib_) \
 	-Xcudafe --display_error_number -Xcudafe --diag_suppress=3057 \
@@ -67,6 +63,7 @@ all:
 	-Xcudafe --diag_suppress=3058 \
 	-arch=sm_60 -std=c++17 -rdc=true
 
+DFN_PT: ./src/DFN_PT.cu
 	$(NVCC) -DUSE_DOUBLES ./src/DFN_PT.cu $(cuDFNsysLibraryPath)/libcuDFNsys.a \
 	-o ./DFN_PT $(INCDIRS) $(Lib_) \
 	-Xcudafe --display_error_number -Xcudafe --diag_suppress=3057 \
@@ -76,6 +73,7 @@ all:
 	-Xcudafe --diag_suppress=3058 \
 	-arch=sm_60 -std=c++17 -rdc=true
 
+MCIterations: ./src/MCIterations.cu
 	$(NVCC) -DUSE_DOUBLES ./src/MCIterations.cu $(cuDFNsysLibraryPath)/libcuDFNsys.a \
 	-o ./MCIterations $(INCDIRS) $(Lib_) \
 	-Xcudafe --display_error_number -Xcudafe --diag_suppress=3057 \
@@ -86,6 +84,7 @@ all:
 	-arch=sm_60 -std=c++17 -rdc=true
 
 
+Transform2DH5ParticleDataTo3D: ../SomeApplications/Transform2DH5ParticleDataTo3D/src/Transform2DH5ParticleDataTo3D.cu
 	$(NVCC) -DUSE_DOUBLES ../SomeApplications/Transform2DH5ParticleDataTo3D/src/Transform2DH5ParticleDataTo3D.cu $(cuDFNsysLibraryPath)/libcuDFNsys.a \
 	-o ./Transform2DH5ParticleDataTo3D $(INCDIRS) $(Lib_) \
 	-Xcudafe --display_error_number -Xcudafe --diag_suppress=3057 \

@@ -60,6 +60,6 @@ namespace cuDFNsys
         uint *EleToFracID_ptr, T *velocity_ptr, uint Dir_flow,
         T outletcoordinate, int count, int numElements, uint stepNO,
         uint *Particle_runtime_error_dev_pnt, uint NUMParticlesInTotal,
-        bool If_completeMixing, bool If_periodic,
+        bool If_completeMixing_fluxWeighted, bool If_periodic,
         int2 *CorrespondingEleLocalEdge_device_ptr);
 }; // namespace cuDFNsys

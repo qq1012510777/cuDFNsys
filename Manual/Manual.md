@@ -6,7 +6,7 @@
 
 * Date: Oct. 19, 2023
 
-* Update date: Mar. 08, 2024 
+* Update date: Apr. 13, 2024 
 
 * Email: yintingchang@foxmail.com
 
@@ -426,9 +426,17 @@ Finally, one just need to load the particle tracking parameters again, in which 
 ## 6. GUI
 Now, _cuDFNsys_ has a simple GUI, which can be run on Ubuntu or Windows WSL. To use this, make sure the _cuDFNsys_ library has been compiled: the file `libcuDFNsys.a` should appear in `~/cuDFNsys/lib`.
 
+Before compiling the GUI, the `Path.mk` under `~/cuDFNsys` should be changed, which is a included file of Makefile, containing paths of different denpendencies. These paths should be changed if you installed them at different paths. Details can be found in Section 1.
+
 First, `cd cuDFNsys/GUI`, and then `make`. The `make` command here will compile four executables in the current directory: `DFN_Gen`, `DFN_Mesh`, `DFN_Flow` and `Transform2DH5ParticleDataTo3D`. So, once `make` command finished, you can see the four executables in the `cuDFNsys/GUI` directory. How to build _cuDFNsys_ can be found in README.md.
 
 Now, we can run the GUI by `python3 src/cuDFNsysGUI.py`, as shown below.
+
+cuDFNsys GUI can be run under other directories. This can be done by adding one line to the end of `~/.bashrc`:
+```
+echo "alias cuDFNsys='python3 ~/cuDFNsys/GUI/src/cuDFNsysGUI.py'" >> ~/.bashrc
+``` 
+One can run `source ~/.bashrc` to update it.  Then one can just input `cuDFNsys` to run GUI under any directory.
 
 <p align="center">
   <img width="500" src="https://github.com/qq1012510777/cuDFNsys/blob/main/Manual/GUI.png">

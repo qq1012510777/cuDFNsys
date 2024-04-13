@@ -34,7 +34,7 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(
     uint *EleToFracID_ptr, T *velocity_ptr, uint Dir_flow, T outletcoordinate,
     int count, int numElements, uint stepNO,
     uint *Particle_runtime_error_dev_pnt, uint NUMParticlesInTotal,
-    bool If_completeMixing, bool If_periodic,
+    bool If_completeMixing_fluxWeighted, bool If_periodic,
     int2 *CorrespondingEleLocalEdge_device_ptr)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -42,7 +42,13 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(
     if (i >= count)
         return;
 
+    if (P_DEV[i].ParticleID > NUMParticlesInTotal)
+        return;
+
     if (P_DEV[i].ParticleID < 0)
+        return;
+
+    if (Particle_runtime_error_dev_pnt[i] == 1)
         return;
 
     // if (P_DEV[i].ParticleID > 0)
@@ -845,10 +851,10 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(
                 EdgesSharedEle_DEV[GlobalEdgeNO].LocalEdgeNO, EleToFracID_ptr,
                 Frac_DEV, Coordinate2D_Vec_dev_ptr, velocity_ptr,
                 curand_uniform(&state), newELEID_, newFracID_, IndexLocal,
-                ifAllsharedEdgeVelocityPositive, If_completeMixing);
+                ifAllsharedEdgeVelocityPositive, If_completeMixing_fluxWeighted);
             // printf("ifAllsharedEdgeVelocityPositive: %d\n", ifAllsharedEdgeVelocityPositive);
             // goto Debug100;
-            
+
             if (ifAllsharedEdgeVelocityPositive == false &&
                 (newELEID_ == -1 || newFracID_ == -1 || IndexLocal == -1))
             {
@@ -1257,7 +1263,7 @@ template __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel<double>(
     uint *EleToFracID_ptr, double *velocity_ptr, uint Dir_flow,
     double outletcoordinate, int count, int numElements, uint stepNO,
     uint *Particle_runtime_error_dev_pnt, uint NUMParticlesInTotal,
-    bool If_completeMixing, bool If_periodic,
+    bool If_completeMixing_fluxWeighted, bool If_periodic,
     int2 *CorrespondingEleLocalEdge_device_ptr);
 template __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel<float>(
     unsigned long seed, float delta_T_, float Dispersion_local,
@@ -1268,5 +1274,5 @@ template __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel<float>(
     uint *EleToFracID_ptr, float *velocity_ptr, uint Dir_flow,
     float outletcoordinate, int count, int numElements, uint stepNO,
     uint *Particle_runtime_error_dev_pnt, uint NUMParticlesInTotal,
-    bool If_completeMixing, bool If_periodic,
+    bool If_completeMixing_fluxWeighted, bool If_periodic,
     int2 *CorrespondingEleLocalEdge_device_ptr);

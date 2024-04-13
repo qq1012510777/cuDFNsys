@@ -67,8 +67,8 @@ CMAKE_BINARY_DIR = /home/tingchangyin/cuDFNsys/lib/build
 
 # Special rule for the target edit_cache
 edit_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
-	/usr/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
+	/usr/bin/ccmake -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -1161,6 +1161,30 @@ home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTrian
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.s
 .PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.s
 
+home/tingchangyin/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.o: home/tingchangyin/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.o
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.o
+
+# target to build an object file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.o
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.o
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.i: home/tingchangyin/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.i
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.i
+
+# target to preprocess a source file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.i
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.i
+
+home/tingchangyin/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.s: home/tingchangyin/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.s
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.s
+
+# target to generate assembly for a file
+home/tingchangyin/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchangyin/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.s
+.PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.s
+
 home/tingchangyin/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.o: home/tingchangyin/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.o
 .PHONY : home/tingchangyin/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.o
 
@@ -1731,6 +1755,9 @@ help:
 	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.o"
 	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.i"
 	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.s"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.o"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.i"
+	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.s"
 	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.o"
 	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.i"
 	@echo "... home/tingchangyin/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.s"

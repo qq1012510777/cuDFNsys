@@ -39,7 +39,7 @@ struct Particle
     cuDFNsys::Vector2<T> Position2D;
     // element ID
     uint ElementID;
-    // particle ID
+    // particle ID from 1
     int ParticleID; // ParticleID <= 0 means that this particle reaches outlet plane
     // accumulative displacement
     T AccumDisplacement = 0;
