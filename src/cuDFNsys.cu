@@ -1097,7 +1097,8 @@ void cuDFNsys::PTDFN<T>::ParticleTracking(cuDFNsys::DFN<T> my_dfn,
         this->CustomedPlaneInjection,
         this->IfUseFluxWeightedOrEqualProbableMixingIntersection,
         this->IfPeriodic,
-        this->TimeIntervalOutPTInformation};
+        this->TimeIntervalOutPTInformation,
+        this->IfOutputAllParticleAccumulativeDisplacement};
 }; // ParticleTracking
 template void
 cuDFNsys::PTDFN<double>::ParticleTracking(cuDFNsys::DFN<double> my_dfn,
@@ -1162,7 +1163,7 @@ void cuDFNsys::PTDFN<T>::LoadParametersFromCSV(const string &CSVName)
         throw cuDFNsys::ExceptionsPause("Fail to open " + CSVName + ".csv");
     }
 
-    vector<string> items(12);
+    vector<string> items(13);
     for (int i = 0; i < items.size(); ++i)
     {
         string temp_k;
@@ -1250,6 +1251,13 @@ void cuDFNsys::PTDFN<T>::LoadParametersFromCSV(const string &CSVName)
     this->TimeIntervalOutPTInformation =
         (temp_s.c_str()[0] == '\0' ? 100 : atoi(temp_s.c_str()));
 
+    //--------line 13
+    istrss.str(items[12]);
+    getline(istrss, temp_s, ',');
+    getline(istrss, temp_s, ',');
+    this->IfOutputAllParticleAccumulativeDisplacement =
+        (temp_s.c_str()[0] == '\0' ? false : atoi(temp_s.c_str()));
+
     cout << "Load PT parameters from " << CSVName << ".csv:\n";
     cout << "NumParticles: " << (NumParticles) << endl;
     cout << "NumTimeSteps: " << (NumTimeSteps) << endl;
@@ -1272,6 +1280,8 @@ void cuDFNsys::PTDFN<T>::LoadParametersFromCSV(const string &CSVName)
          << endl;
     cout << "TimeIntervalOutPTInformation: " << TimeIntervalOutPTInformation
          << endl;
+    cout << "IfOutputAllParticleAccumulativeDisplacement: "
+         << (IfOutputAllParticleAccumulativeDisplacement == 0? 0 : 1) << endl;
 };
 template void
 cuDFNsys::PTDFN<double>::LoadParametersFromCSV(const string &CSVName);

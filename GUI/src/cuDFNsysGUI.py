@@ -639,7 +639,7 @@ def StochasticDFN(If_gen=True):
                 "Percolation_direction," + str(PercolationDirection) + ",",
             )
             add_line_to_file(
-                "./StochasticDFN.csv", "NumFractures," +
+                "./StochasticDFN.csv", "NumFractureGroups," +
                 str(NumGroups_lo) + ","
             )
             NumberGroups = NumGroups_lo
@@ -1073,7 +1073,8 @@ def DFNvisualUseMatPlotLib():
             DomainDimensionRatio[2] * Lm / 2.0 + R_rr / 2.0,
         ]
     )
-    ax.set_box_aspect([DomainDimensionRatio[0], DomainDimensionRatio[1], DomainDimensionRatio[2]])
+    ax.set_box_aspect(
+        [DomainDimensionRatio[0], DomainDimensionRatio[1], DomainDimensionRatio[2]])
     ax.set_xlabel("X (m)")
     ax.set_ylabel("Y (m)")
     ax.set_zlabel("Z (m)")
@@ -1299,7 +1300,8 @@ def VisualizeMeshMatplotlib():
         ax.add_collection3d(Line3DCollection(
             [edge], color="black", linewidths=1))
     # Set labels
-    ax.set_box_aspect([DomainDimensionRatio[0], DomainDimensionRatio[1], DomainDimensionRatio[2]])
+    ax.set_box_aspect(
+        [DomainDimensionRatio[0], DomainDimensionRatio[1], DomainDimensionRatio[2]])
     ax.set_xlabel('X (m)')
     ax.set_ylabel('Y (m)')
     ax.set_zlabel('Z (m)')
@@ -1573,7 +1575,12 @@ def RunNewPT():
         Nt_out = "100" if (len(entry10.get()) == 0) else entry10.get()
         add_line_to_file(
             "./PTPara.csv", "TimeIntervalOutPTInformation, " + Nt_out + ",")
-        
+
+        IfoutputAccmululativedisplacements = "0" if (
+            len(entry11.get()) == 0) else entry11.get()
+        add_line_to_file(
+            "./PTPara.csv", "IfOutputAllParticlesAccumulativeDisplacements, " + IfoutputAccmululativedisplacements + ",")
+
         RunMoreSteps()
         ClearAllWidget()
 
@@ -1780,7 +1787,7 @@ def RunNewPT():
     relateX = 0.45
     relateY = 0.20
     label10 = Label(root, width=25, height=1,
-                   text="NT_out:")
+                    text="NT_out:")
     label10.place(relx=relateX, rely=relateY, anchor="nw")
     entry10 = Entry(root, width=3)
     entry10.place(relx=relateX + 0.25, rely=relateY, anchor="nw")
@@ -1794,8 +1801,26 @@ def RunNewPT():
     )
     Helpbutton10.place(relx=relateX + 0.35, rely=relateY, anchor="nw")
 
+    # If output all particles' accumulative displacements
+    relateX = 0.45
+    relateY = 0.25
+    label11 = Label(root, width=25, height=1,
+                    text="Particle displacements:")
+    label11.place(relx=relateX, rely=relateY, anchor="nw")
+    entry11 = Entry(root, width=3)
+    entry11.place(relx=relateX + 0.25, rely=relateY, anchor="nw")
+    Helpbutton11 = Button(
+        root,
+        text="Help",
+        fg="Red",
+        command=lambda: PrintRedString(
+            "If you want to output the accumulative displacements of all particles: 0-no, 1-yes. Default is 0."
+        ),
+    )
+    Helpbutton11.place(relx=relateX + 0.35, rely=relateY, anchor="nw")
+
     buttonsk = Button(root, text="PT start", command=(WriteCSV))
-    buttonsk.place(relx=relateX + 0.15, rely=0.26, anchor="nw")
+    buttonsk.place(relx=relateX + 0.15, rely=0.29, anchor="nw")
 
     return
 
@@ -1893,7 +1918,7 @@ def GetRecommendedDmAndDealtT():
 
 def RunMoreSteps():
     try:
-        # 
+        #
         cpp_executable = (
             cuDFNsys_GUI_path
             + "/DFN_PT "
@@ -1924,6 +1949,7 @@ def RunMoreSteps():
 
 def ReRun():
     ClearAllWidget()
+
     def ReRunII():
         NumSteps = entry1.get()
         with open("./PTPara.csv", 'r') as file:

@@ -39,6 +39,10 @@ SomeApplications/ValidationOfDispersionPhDThesis/TwoIntersectingFrac/*
 SomeApplications/ValidationOfDispersionPhDThesis/TwoIntersectingFracPe_0.1/*
 SomeApplications/ValidationOfDispersionPhDThesis/TwoNonintersectingFrac/*
 SomeApplications/ValidationOfDispersionPhDThesis/TwoNonintersectingFracPe_0.1/*
+SomeApplications/*/DFN_Gen
+SomeApplications/*/DFN_Flow
+SomeApplications/*/DFN_Mesh
+SomeApplications/*/DFN_PT
 
 SomeApplications/*/*.h5
 SomeApplications/*/*.m

@@ -51,6 +51,7 @@
 #include <thrust/remove.h>
 #include <thrust/sort.h>
 #include <time.h>
+#include <vector>
 
 namespace cuDFNsys
 {
@@ -79,8 +80,12 @@ namespace cuDFNsys
 
         uint TimeIntervalOutPTInformation;
 
+        bool IfOutputAllParticleAccumulativeDisplacement = false;
+
         //------------record the travel time reaching control planes
         thrust::host_vector<uint> TimeReachControlPlanes;
+
+        std::vector<T> AllParticleAccumulativeDisplacement;
 
     private:
         string ParticlePosition = "ParticlePositionResult/ParticlePosition";
@@ -104,23 +109,23 @@ namespace cuDFNsys
         ///                     bool record_time = false, // record the run time of each step
         ///                     string recordMode = "OutputAll");
 
-        ParticleTransport(const int &NumTimeStep,
-                          thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
-                          cuDFNsys::Mesh<T> mesh, const cuDFNsys::MHFEM<T> &fem,
-                          uint Dir_flow, T outletcoordinate,
-                          int NumOfParticles_ii = 0, T delta_T_ii = 0,
-                          T Diffusion_local_ii = 0, // molecular diffusion
-                          string Particle_mode_ii = "Particle_tracking",
-                          string Injection_mode_ii = "Flux-weighted",
-                          string recordMode = "OutputAll", bool if_cpu = false,
-                          int Nproc = 10,
-                          bool record_time = false, // record running time
-                          T SpacingOfControlPlanes = 10,
-                          bool IfOutputMSD = true,
-                          bool IfInitCenterDomain = false, T InjectionPlane = 0,
-                          bool If_completeMixing_fluxWeighted = true,
-                          bool IfPeriodic_ = false,
-                          uint TimeIntervalOutPTInformation_s = 100);
+        ParticleTransport(
+            const int &NumTimeStep,
+            thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
+            cuDFNsys::Mesh<T> mesh, const cuDFNsys::MHFEM<T> &fem,
+            uint Dir_flow, T outletcoordinate, int NumOfParticles_ii = 0,
+            T delta_T_ii = 0,
+            T Diffusion_local_ii = 0, // molecular diffusion
+            string Particle_mode_ii = "Particle_tracking",
+            string Injection_mode_ii = "Flux-weighted",
+            string recordMode = "OutputAll", bool if_cpu = false,
+            int Nproc = 10,
+            bool record_time = false, // record running time
+            T SpacingOfControlPlanes = 10, bool IfOutputMSD = true,
+            bool IfInitCenterDomain = false, T InjectionPlane = 0,
+            bool If_completeMixing_fluxWeighted = true,
+            bool IfPeriodic_ = false, uint TimeIntervalOutPTInformation_s = 100,
+            bool IfOutputParticleAccumulativeDisplacement_s = false);
 
         void ParticleMovement(const int &init_NO_STEP, const int &NumTimeStep,
                               T delta_T_, T Dispersion_local,

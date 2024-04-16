@@ -238,6 +238,7 @@ namespace cuDFNsys
         cuDFNsys::ParticleTransport<T> PTData;
         bool IfPeriodic = false;
         uint TimeIntervalOutPTInformation = 100;
+        bool IfOutputAllParticleAccumulativeDisplacement = false;
         
     public:
         PTDFN(){};

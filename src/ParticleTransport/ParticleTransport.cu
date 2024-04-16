@@ -34,7 +34,8 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(
     string recordMode, bool if_cpu, int Nproc, bool record_time,
     T SpacingOfControlPlanes, bool IfOutputMSD_, bool IfInitCenterDomain,
     T InjectionPlane, bool If_completeMixing_fluxWeighted, bool IfPeriodic_,
-    uint TimeIntervalOutPTInformation_s)
+    uint TimeIntervalOutPTInformation_s,
+    bool IfOutputParticleAccumulativeDisplacement_s)
 {
     //cuDFNsys::MatlabAPI M1;
     // if (recordMode != "OutputAll" && recordMode != "FPTCurve")
@@ -53,6 +54,9 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(
             break;
     }
     this->ControlPlanes.push_back(abs(outletcoordinate) * 2.0);
+
+    this->IfOutputAllParticleAccumulativeDisplacement =
+        IfOutputParticleAccumulativeDisplacement_s;
 
     this->TimeIntervalOutPTInformation = TimeIntervalOutPTInformation_s;
     if (this->TimeIntervalOutPTInformation > NumTimeStep)
@@ -242,6 +246,16 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(
         Tem_ps = h5g.ReadDataset<T>(matfile, "N", "Dispersion_local");
         T Dispersion_local = Tem_ps[0];
 
+        if (this->IfOutputAllParticleAccumulativeDisplacement)
+        {
+            cout << "loading accumulative displacements of all particles\n";
+
+            this->AllParticleAccumulativeDisplacement = h5g.ReadDataset<T>(
+                this->ParticlePosition +
+                    "_AllParticlesAccumulativeDisplacements.h5",
+                "N", "AllParticleAccumulativeDisplacement");
+        }
+
         cout << "Finish loading all information at the last step\n";
 
         if (!if_cpu)
@@ -285,6 +299,19 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(
         //                         mesh, -outletcoordinate);
         //cout << NumTimeStep << ", " << delta_T_ii << ", " << Dispersion_local << " ______ \n";
         //cout << 3 << endl;
+        if (this->IfOutputAllParticleAccumulativeDisplacement)
+        {
+            this->AllParticleAccumulativeDisplacement =
+                std::vector<T>(this->NumParticles, 0);
+
+            h5g.NewFile(this->ParticlePosition +
+                        "_AllParticlesAccumulativeDisplacements.h5");
+            h5g.AddDataset(this->ParticlePosition +
+                               "_AllParticlesAccumulativeDisplacements.h5",
+                           "N", "AllParticleAccumulativeDisplacement",
+                           this->AllParticleAccumulativeDisplacement.data(),
+                           make_uint2(this->NumParticles, 1));
+        }
 
         if (!if_cpu)
             this->ParticleMovement(
@@ -308,7 +335,8 @@ template cuDFNsys::ParticleTransport<double>::ParticleTransport(
     bool record_time, double SpacingOfControlPlanes, bool IfOutputMSD_,
     bool IfInitCenterDomain, double InjectionPlane,
     bool If_completeMixing_fluxWeighted, bool IfPeriodic_,
-    uint TimeIntervalOutPTInformation_s);
+    uint TimeIntervalOutPTInformation_s,
+    bool IfOutputParticleAccumulativeDisplacement_s);
 template cuDFNsys::ParticleTransport<float>::ParticleTransport(
     const int &NumTimeStep,
     thrust::host_vector<cuDFNsys::Fracture<float>> Fracs,
@@ -319,7 +347,8 @@ template cuDFNsys::ParticleTransport<float>::ParticleTransport(
     bool record_time, float SpacingOfControlPlanes, bool IfOutputMSD_,
     bool IfInitCenterDomain, float InjectionPlane,
     bool If_completeMixing_fluxWeighted, bool IfPeriodic_,
-    uint TimeIntervalOutPTInformation_s);
+    uint TimeIntervalOutPTInformation_s,
+    bool IfOutputParticleAccumulativeDisplacement_s);
 
 // ====================================================
 // NAME:        ParticleMovement
@@ -437,7 +466,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
             //--------check if there is a error!!!----------
             //--------check if there is a error!!!----------
             //--------check if there is a error!!!----------
-            //cout << "2" << endl;
+            // cout << "2" << endl;
             // istart_j = cuDFNsys::CPUSecond();
             uint sum_check = thrust::count(Particle_runtime_error_dev.begin(),
                                            Particle_runtime_error_dev.end(), 1);
@@ -456,7 +485,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
             //--------check if there are particles reach control planes and output planes
             //--------check if there are particles reach control planes and output planes
             //--------check if there are particles reach control planes and output planes
-            //cout << "3" << endl;
+            // cout << "3" << endl;
             /// istart_j = cuDFNsys::CPUSecond();
             thrust::device_vector<T> x_value(NumPart_dynamic),
                 y_value(NumPart_dynamic), z_value(NumPart_dynamic);
@@ -480,10 +509,11 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
             //-------------variance of x, y, z
             //-------------variance of x, y, z
             //-------------variance of x, y, z
-            //cout << "4" << endl;
+            // cout << "4" << endl;
 
             if (this->IfOutputMSD)
             {
+                // cout << "4.1" << endl;
                 auto newEnd = thrust::remove_if(x_value.begin(), x_value.end(),
                                                 IsNotEqual<T>(magic_number));
                 x_value.resize(newEnd - x_value.begin());
@@ -532,16 +562,19 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
                 Variance_segmentation[StepNo_inside_i_final - i] = temp;
                 // variance_time += (cuDFNsys::CPUSecond() - istart_j);
             }
+            // cout << "5" << endl;
         }
         // printf("\t\t%f, %f, %f, %f\n", moving_time, checkErr_time,
         //        controlPlane_time, variance_time);
-        //cout << "loop end\n";
+        // cout << "loop end\n";
         // exit(0);
         //------------ loop end
         //------------ loop end
         //------------ loop end
         //---------reduce the size of Variance_segmentation, as sometimes a loop cannot run this->TimeIntervalOutPTInformation time steps
-        if (StepNo_inside_i_final != i + this->TimeIntervalOutPTInformation - 1)
+
+        if (this->IfOutputMSD &&
+            StepNo_inside_i_final != i + this->TimeIntervalOutPTInformation - 1)
         {
             thrust::host_vector<std::vector<double>> tmp_var_vec(
                 StepNo_inside_i_final - i + 1);
@@ -558,7 +591,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
         //----------------output FPTs
         //----------------output FPTs
         //----------------output FPTs
-        //cout << "FPTs\n";
+        // cout << "FPTs\n";
         for (int j = 0; j < this->ControlPlanes.size(); ++j)
         {
             thrust::host_vector<uint> tmpo(this->NumParticles);
@@ -578,6 +611,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
         //cout << "Variances\n";
         if (this->IfOutputMSD)
         {
+            // cout << "Variances\n";
             std::vector<double *> ptr_das(Variance_segmentation.size());
             std::vector<string> datasetname_vec(Variance_segmentation.size());
             std::vector<uint2> dim_vec(Variance_segmentation.size(),
@@ -590,9 +624,23 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
                                         "N", datasetname_vec, ptr_das, dim_vec);
         }
         //----------------
-
+        // cout << "sort\n";
         thrust::sort(ParticlePlumes_DEV.begin(), ParticlePlumes_DEV.end());
         this->ParticlePlumes = ParticlePlumes_DEV;
+
+        //---------------record accumulative displacements of all particles
+        if (this->IfOutputAllParticleAccumulativeDisplacement)
+        {
+            for (int k = 0; k < this->ParticlePlumes.size(); ++k)
+                this->AllParticleAccumulativeDisplacement
+                    [this->ParticlePlumes[k].ParticleID - 1] =
+                    this->ParticlePlumes[k].AccumDisplacement;
+            h5g.OverWrite(this->ParticlePosition +
+                              "_AllParticlesAccumulativeDisplacements.h5",
+                          "N", "AllParticleAccumulativeDisplacement",
+                          this->AllParticleAccumulativeDisplacement.data(),
+                          make_uint2(this->NumParticles, 1));
+        }
 
         //------------delete particles that run out of domain from outlet
         //------------delete particles that run out of domain from outlet
@@ -600,6 +648,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
         //cout << "delete particles run out from outlet\n";
         if (!this->IfPeriodic)
         {
+            // cout << "delete particles run out from outlet\n";
             this->ParticlePlumes.erase(
                 thrust::remove_if(
                     this->ParticlePlumes.begin(), this->ParticlePlumes.end(),
@@ -614,6 +663,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
         uint temp_size = this->ParticlePlumes.size();
         if (!this->IfPeriodic)
         {
+            // cout << "delete particles run out from inlet\n";
             this->ParticlePlumes.erase(
                 thrust::remove_if(
                     this->ParticlePlumes.begin(), this->ParticlePlumes.end(),
@@ -1111,7 +1161,7 @@ void cuDFNsys::ParticleTransport<T>::OutputParticleInfoStepByStep(
 
         //h5g.NewFile(DispersionInfo + "_MeanSquareDisplacement.h5");
     }
-
+    // cout << "111\n";
     uint Step[1] = {StepNO};
     if (StepNO != 0)
         h5g.OverWrite(h5dispersioninfo, "N", "NumOfSteps", Step, dim_scalar);
@@ -1164,7 +1214,7 @@ void cuDFNsys::ParticleTransport<T>::OutputParticleInfoStepByStep(
         AccumDisplacement_g[i] = this->ParticlePlumes[i].AccumDisplacement;
         Factor_Period[i] = this->ParticlePlumes[i].FactorPeriodic;
     }
-
+    // cout << "222\n";
     if (StepNO == 0)
     {
         string mat_key;
@@ -1301,7 +1351,7 @@ void cuDFNsys::ParticleTransport<T>::OutputParticleInfoStepByStep(
 
     delete[] _IfReaded_and_ElementFracTag_;
     _IfReaded_and_ElementFracTag_ = NULL;
-
+    // cout << "333\n";
     // if (StepNO > 0)
     //     exit(0);
 }; // OutputParticleInfoStepByStep
