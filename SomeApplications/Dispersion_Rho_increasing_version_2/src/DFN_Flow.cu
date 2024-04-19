@@ -23,22 +23,24 @@ int main(int argc, char *argv[])
     }
     catch (cuDFNsys::ExceptionsIgnore &e)
     {
-        cout << e.what() << endl;
+        cout << "Warning : " << e.what() << endl;
         throw;
     }
     catch (cuDFNsys::ExceptionsPause &e)
     {
-        cout << e.what() << endl;
+        cout << "Warning : " << e.what() << endl;
         throw;
     }
     catch (H5::Exception &e)
     {
-        cout << "H5::Exception\n";
+        cout << "Warning : "
+             << "H5::Exception\n";
         throw;
     }
     catch (...)
     {
-        cout << "Unknown exceptions!\n";
+        cout << "Warning : "
+             << "Unknown exceptions!\n";
         throw;
     }
     return 0;

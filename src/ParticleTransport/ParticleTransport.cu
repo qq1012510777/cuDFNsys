@@ -447,7 +447,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
             StepNo_inside_i_final = j;
 
             // double istart_j = cuDFNsys::CPUSecond();
-            // cout << "1: " << StepNo_inside_i_final << endl;
+            //cout << "1: " << StepNo_inside_i_final << endl;
             //-------start running
             ParticleMovementOneTimeStepGPUKernel<T>
                 <<<NumPart_dynamic / 256 + 1, 256>>>(
@@ -466,7 +466,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
             //--------check if there is a error!!!----------
             //--------check if there is a error!!!----------
             //--------check if there is a error!!!----------
-            // cout << "2" << endl;
+            //cout << "2" << endl;
             // istart_j = cuDFNsys::CPUSecond();
             uint sum_check = thrust::count(Particle_runtime_error_dev.begin(),
                                            Particle_runtime_error_dev.end(), 1);
@@ -485,7 +485,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
             //--------check if there are particles reach control planes and output planes
             //--------check if there are particles reach control planes and output planes
             //--------check if there are particles reach control planes and output planes
-            // cout << "3" << endl;
+            //cout << "3" << endl;
             /// istart_j = cuDFNsys::CPUSecond();
             thrust::device_vector<T> x_value(NumPart_dynamic),
                 y_value(NumPart_dynamic), z_value(NumPart_dynamic);
@@ -509,7 +509,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
             //-------------variance of x, y, z
             //-------------variance of x, y, z
             //-------------variance of x, y, z
-            // cout << "4" << endl;
+            //cout << "4" << endl;
 
             if (this->IfOutputMSD)
             {
@@ -562,11 +562,11 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
                 Variance_segmentation[StepNo_inside_i_final - i] = temp;
                 // variance_time += (cuDFNsys::CPUSecond() - istart_j);
             }
-            // cout << "5" << endl;
+            //cout << "5" << endl;
         }
         // printf("\t\t%f, %f, %f, %f\n", moving_time, checkErr_time,
         //        controlPlane_time, variance_time);
-        // cout << "loop end\n";
+        //cout << "loop end\n";
         // exit(0);
         //------------ loop end
         //------------ loop end
@@ -591,7 +591,8 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
         //----------------output FPTs
         //----------------output FPTs
         //----------------output FPTs
-        // cout << "FPTs\n";
+        //cout << "FPTs\n";
+        
         for (int j = 0; j < this->ControlPlanes.size(); ++j)
         {
             thrust::host_vector<uint> tmpo(this->NumParticles);
@@ -615,37 +616,61 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
             std::vector<double *> ptr_das(Variance_segmentation.size());
             std::vector<string> datasetname_vec(Variance_segmentation.size());
             std::vector<uint2> dim_vec(Variance_segmentation.size(),
-                                       make_uint2(1, 3));
+                                       make_uint2(3, 1));
             for (int j = 0; j < Variance_segmentation.size(); ++j)
                 ptr_das[j] = Variance_segmentation[j].data(),
                 datasetname_vec[j] =
                     "Variance_of_xyz_" + cuDFNsys::ToStringWithWidth(i + j, 10);
-            h5g.AddDatasetsWithOneGroup("Dispersion_MeanSquareDisplacement.h5",
-                                        "N", datasetname_vec, ptr_das, dim_vec);
+
+            //cout << Variance_segmentation[j][0] << ", " << Variance_segmentation[j][1] << ", " << Variance_segmentation[j][2] << endl;
+            // h5g.AddDataset(
+            //     "Dispersion_MeanSquareDisplacement.h5",
+            //     "Group_" + cuDFNsys::ToStringWithWidth(i + j, 10),
+            //     datasetname_vec[j], Variance_segmentation[j].data(),
+            //     make_uint2(3, 1));
+            try
+            {
+                h5g.AddDatasetsWithOneGroup(
+                    "Dispersion_MeanSquareDisplacement.h5",
+                    "N", //"Group_" + cuDFNsys::ToStringWithWidth(i, 10),
+                    datasetname_vec, ptr_das, dim_vec);
+            }
+            catch (...)
+            {
+                cout << "\t\tStep " << StepNo_inside_i_final << "'s variance values are existent\n";
+            }
         }
         //----------------
-        // cout << "sort\n";
+        //cout << "sort\n";
         thrust::sort(ParticlePlumes_DEV.begin(), ParticlePlumes_DEV.end());
         this->ParticlePlumes = ParticlePlumes_DEV;
 
         //---------------record accumulative displacements of all particles
         if (this->IfOutputAllParticleAccumulativeDisplacement)
         {
+            // cout << "record accumulative displacements \n";
             for (int k = 0; k < this->ParticlePlumes.size(); ++k)
-                this->AllParticleAccumulativeDisplacement
-                    [this->ParticlePlumes[k].ParticleID - 1] =
+            {
+                int ParID = this->ParticlePlumes[k].ParticleID;
+                if (ParID < 0)
+                    ParID = -ParID;
+                if (ParID > this->NumParticles)
+                    continue;
+                this->AllParticleAccumulativeDisplacement[ParID - 1] =
                     this->ParticlePlumes[k].AccumDisplacement;
+            }
             h5g.OverWrite(this->ParticlePosition +
                               "_AllParticlesAccumulativeDisplacements.h5",
                           "N", "AllParticleAccumulativeDisplacement",
                           this->AllParticleAccumulativeDisplacement.data(),
                           make_uint2(this->NumParticles, 1));
+            // cout << "finished recorded\n";
         }
 
         //------------delete particles that run out of domain from outlet
         //------------delete particles that run out of domain from outlet
         //------------delete particles that run out of domain from outlet
-        //cout << "delete particles run out from outlet\n";
+        // cout << "delete particles run out from outlet\n";
         if (!this->IfPeriodic)
         {
             // cout << "delete particles run out from outlet\n";
@@ -659,7 +684,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
         //------------delete particles that run out of domain from inlet
         //------------delete particles that run out of domain from inlet
         //------------delete particles that run out of domain from inlet
-        //cout << "delete particles run out from inlet\n";
+        // cout << "delete particles run out from inlet\n";
         uint temp_size = this->ParticlePlumes.size();
         if (!this->IfPeriodic)
         {
@@ -1040,6 +1065,9 @@ void cuDFNsys::ParticleTransport<T>::OutputMSD(
     const uint &StepNO, const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs,
     const cuDFNsys::Mesh<T> &mesh, const T &HalfDomainSize_PercoDirection)
 {
+    if (StepNO != 0)
+        throw cuDFNsys::ExceptionsPause(
+            "cuDFNsys::ParticleTransport<T>::OutputMSD is not avaiable!\n");
     // Output MSD
     cuDFNsys::HDF5API h5g;
     uint2 dim_scalar = make_uint2(1, 1);
@@ -1074,7 +1102,7 @@ void cuDFNsys::ParticleTransport<T>::OutputMSD(
             pow(Position3D_oneD.mean(), 2.0);
     }
     uint2 dimoo = make_uint2(1, 3);
-    h5g.AddDataset(MSD_file, "N",
+    h5g.AddDataset(MSD_file, "Group_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
                    "Variance_of_xyz_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
                    Variance_of_xyz.data(), dimoo);
     // cout << Variance_of_xyz[0] << ", " << Variance_of_xyz[1] << ", " << Variance_of_xyz[2] << endl;

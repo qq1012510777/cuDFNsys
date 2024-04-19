@@ -75,6 +75,7 @@ int main(int argc, char *argv[])
     double Percentage_Particle_escape_from_inlet = atof(argv[34]);
     double Percentage_Particle_arrived_outlet = atof(argv[35]);
     uint ErrorCountAllowable = atoi(argv[36]);
+    uint NumStepsThreshold = atoi(argv[37]);
 
     cout << "NumberParticles: " << NumberParticles << endl;
     cout << "NumSteps: " << NumSteps << endl;
@@ -105,6 +106,7 @@ int main(int argc, char *argv[])
     cout << "Percentage_Particle_arrived_outlet: "
          << Percentage_Particle_arrived_outlet << endl;
     cout << "ErrorCountAllowable: " << ErrorCountAllowable << endl;
+    cout << "NumStepsThreshold: " << NumStepsThreshold << endl;
     //exit(0);
     cuDFNsys::HDF5API h5g;
 
@@ -261,8 +263,113 @@ int main(int argc, char *argv[])
             IfAFileExist("./" + DFNFileName + "/Class_FLOW.h5"))
         {
             std::vector<double> tmp;
-            if (!IfAFileExist("./" + DFNFileName +
-                              "/ParticlePositionResult/DispersionInfo.h5"))
+
+            // check if PT is normal
+            if (IfAFileExist("./" + DFNFileName +
+                             "/ParticlePositionResult/DispersionInfo.h5"))
+            {
+                system(("rm -rf ./" + DFNFileName + "/PTFinished").c_str());
+                cout << DFNFileName
+                     << ": checking particles escaping from inlet and outlet\n";
+                tmp = h5g.ReadDataset<double>(
+                    "./" + DFNFileName +
+                        "/ParticlePositionResult/DispersionInfo.h5",
+                    "N", "NumParticles");
+                int NumParticlesTotal = tmp[0];
+
+                tmp = h5g.ReadDataset<double>(
+                    "./" + DFNFileName +
+                        "/ParticlePositionResult/DispersionInfo.h5",
+                    "N", "NumParticlesLeftFromInlet");
+                int NumParticlesLeftFromInlet = tmp[0];
+
+                /// if too many particles escaped from inlet
+                if (NumParticlesLeftFromInlet * 1.0 /
+                        (NumParticlesTotal * 1.0) >
+                    Percentage_Particle_escape_from_inlet)
+                {
+                    cout << DFNFileName
+                         << ": DFN_PT failed. Too many particles escaped from "
+                            "the "
+                            "inlet. Regenerate DFN\n";
+                    system(("rm -rf ./" + DFNFileName + "/*.h5 " + DFNFileName +
+                            "/ParticlePositionResult ./" + DFNFileName +
+                            "/PTFinished")
+                               .c_str());
+                    i--;
+                    continue;
+                }
+
+                // if almost all particles arrived
+                std::vector<uint> FPT = h5g.ReadDataset<uint>(
+                    "./" + DFNFileName +
+                        "/ParticlePositionResult/"
+                        "ParticlePosition_FPTControlPlanes.h5",
+                    "N",
+                    "ControlPlane_" +
+                        cuDFNsys::ToStringWithWidth(DomainSizeX, 10) + "_m");
+                int zeroCount = std::count(FPT.begin(), FPT.end(), 0);
+                if ((NumParticlesTotal - zeroCount) * 1.0 /
+                        (NumParticlesTotal * 1.0) >
+                    Percentage_Particle_arrived_outlet)
+                {
+                    cout << DFNFileName << ": DFN_PT finished, " << zeroCount
+                         << " particles arrived\n";
+                    CreateOrEmptyFile(DFNFileName + "/PTFinished");
+                    continue;
+                }
+
+                // if too many steps have been run
+                std::vector<uint> tmp_uinty = h5g.ReadDataset<uint>(
+                    "./" + DFNFileName +
+                        "/ParticlePositionResult/DispersionInfo.h5",
+                    "N", "NumOfSteps");
+                cout << DFNFileName << ": " << zeroCount << "/"
+                     << NumParticlesTotal
+                     << " arrived, NumOfSteps: " << tmp_uinty[0] << endl;
+                if (tmp_uinty[0] > NumStepsThreshold)
+                {
+                    cout << DFNFileName
+                         << ": it runs too many steps:  " << tmp_uinty[0]
+                         << "; " << zeroCount << "/" << NumParticlesTotal
+                         << " has arrived\n";
+
+                    //CreateOrEmptyFile(DFNFileName + "/PTFinished");
+                    system(("rm -rf ./" + DFNFileName + "/*.h5 " + DFNFileName +
+                            "/ParticlePositionResult ./" + DFNFileName +
+                            "/PTFinished")
+                               .c_str());
+                    cout << "*********************************\n";
+                    cout << "The current DFN is deleted\n";
+                    cout << "*********************************\n";
+                    i--;
+                    continue;
+                }
+            } //
+
+            // if too many error happens during PT
+            if (IfAFileExist("./" + DFNFileName + "/PT_ErrorCount.h5"))
+            {
+                cout << DFNFileName
+                     << ": checking the number of errors of PT\n";
+                std::vector<uint> tmp_count = h5g.ReadDataset<uint>(
+                    "./" + DFNFileName + "/PT_ErrorCount.h5", "N",
+                    "ErrorCount");
+                if (tmp_count[0] > ErrorCountAllowable)
+                {
+                    cout << DFNFileName
+                         << ": DFN_PT failed. Too many errors happened during "
+                            "PT. Regenerate DFN\n";
+                    system(("rm -rf ./" + DFNFileName + "/*.h5 " + DFNFileName +
+                            "/ParticlePositionResult ./" + DFNFileName +
+                            "/PTFinished")
+                               .c_str());
+                    i--;
+                    continue;
+                }
+            }
+
+            //     write PT csv
             {
 
                 tmp = h5g.ReadDataset<double>(
@@ -390,77 +497,8 @@ int main(int argc, char *argv[])
                         std::to_string(
                             IfOutputAllParticlesAccumulativeDisplacements) +
                         ",\n");
-            }
+            } // finish writting PTPara.csv
 
-            if (IfAFileExist("./" + DFNFileName +
-                             "/ParticlePositionResult/DispersionInfo.h5"))
-            {
-                tmp = h5g.ReadDataset<double>(
-                    "./" + DFNFileName +
-                        "/ParticlePositionResult/DispersionInfo.h5",
-                    "N", "NumParticles");
-                int NumParticlesTotal = tmp[0];
-
-                tmp = h5g.ReadDataset<double>(
-                    "./" + DFNFileName +
-                        "/ParticlePositionResult/DispersionInfo.h5",
-                    "N", "NumParticlesLeftFromInlet");
-                int NumParticlesLeftFromInlet = tmp[0];
-
-                /// if too many particles escaped from inlet
-                if (NumParticlesLeftFromInlet * 1.0 /
-                        (NumParticlesTotal * 1.0) >
-                    Percentage_Particle_escape_from_inlet)
-                {
-                    cout << DFNFileName
-                         << ": DFN_PT failed. Too many particles escaped from "
-                            "the "
-                            "inlet. Regenerate DFN\n";
-                    system(("rm -rf ./" + DFNFileName + "/*.h5 " + DFNFileName +
-                            "/ParticlePositionResult ./" + DFNFileName +
-                            "/PTFinished")
-                               .c_str());
-                    i--;
-                    continue;
-                }
-
-                // if almost all particles arrived
-                std::vector<uint> FPT = h5g.ReadDataset<uint>(
-                    "./" + DFNFileName +
-                        "/ParticlePositionResult/"
-                        "ParticlePosition_FPTControlPlanes.h5",
-                    "N",
-                    "ControlPlane_" +
-                        cuDFNsys::ToStringWithWidth(DomainSizeX, 10) + "_m");
-                int zeroCount = std::count(FPT.begin(), FPT.end(), 0);
-                if ((NumParticlesTotal - zeroCount) * 1.0 /
-                        (NumParticlesTotal * 1.0) >
-                    Percentage_Particle_arrived_outlet)
-                {
-                    cout << DFNFileName << ": DFN_PT finished\n";
-                    CreateOrEmptyFile(DFNFileName + "/PTFinished");
-                    continue;
-                }
-            }
-            // if too many error happens during PT
-            if (IfAFileExist("./" + DFNFileName + "/PT_ErrorCount.h5"))
-            {
-                std::vector<uint> tmp_count = h5g.ReadDataset<uint>(
-                    "./" + DFNFileName + "/PT_ErrorCount.h5", "N",
-                    "ErrorCount");
-                if (tmp_count[0] > ErrorCountAllowable)
-                {
-                    cout << DFNFileName
-                         << ": DFN_PT failed. Too many errors happened during "
-                            "PT. Regenerate DFN\n";
-                    system(("rm -rf ./" + DFNFileName + "/*.h5 " + DFNFileName +
-                            "/ParticlePositionResult ./" + DFNFileName +
-                            "/PTFinished")
-                               .c_str());
-                    i--;
-                    continue;
-                }
-            }
             cout << DFNFileName << ": PT running ...\n";
             //-- start run PT
             string DFN_PT_run_command = "cd ./" + DFNFileName + " && " +
@@ -469,7 +507,7 @@ int main(int argc, char *argv[])
 
             bool DFN_PT_success = RunCMD_with_RealTimeCheck(
                 DFN_PT_run_command, "./" + DFNFileName + "/" + LogFile);
-
+            // cout << "DFN_PT_success: " << DFN_PT_success << endl;
             if (!DFN_PT_success)
             {
                 std::vector<uint> tmp_count(1);
@@ -512,6 +550,7 @@ bool RunCMD_with_RealTimeCheck(const string &cmd, const string &logFile,
     if (!pipe)
     {
         //std::cerr << "popen() failed!";
+        cout << "command failed: " << cmd << endl;
         return false;
     }
 

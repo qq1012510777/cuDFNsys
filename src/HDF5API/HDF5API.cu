@@ -270,8 +270,8 @@ void cuDFNsys::HDF5API::AddDatasetsWithOneGroup(
 
         for (int i = 0; i < datasetname.size(); ++i)
         {
-            // cout << "i: " << i << ", " << data[i][0] << ", " << data[i][1]
-            //                           << ", " << data[i][2] << endl;
+            /// cout << "i: " << i << ", " << data[i][0] << ", " << data[i][1]
+            ///      << ", " << data[i][2] << endl;
             hsize_t *dims; // dataset dimensions for each rank
             int rank_ = 1;
             if (dim[i].y > 1)
@@ -282,14 +282,20 @@ void cuDFNsys::HDF5API::AddDatasetsWithOneGroup(
             if (rank_ == 2)
                 dims[1] = dim[i].y;
             DataSpace dataspace(rank_, dims);
+
+            // for (int i = 0; i < rank_; ++i)
+            //     cout << "data size: " << dims[i] << endl;
+
             delete[] dims;
             dims = NULL;
 
-            DataSet dataset;
-
-            dataset = file.createDataSet(datasetname[i], datatype, dataspace);
+            //cout << "dataseru\n";
+            DataSet dataset =
+                file.createDataSet(datasetname[i], datatype, dataspace);
 
             dataset.write(data[i], datatype);
+
+            //cout << "written\n";
         }
         file.close();
     }

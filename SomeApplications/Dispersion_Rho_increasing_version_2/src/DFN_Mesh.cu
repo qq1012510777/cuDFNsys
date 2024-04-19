@@ -10,13 +10,13 @@ int main(int argc, char *argv[])
 
         my_dfn.LoadClassFromH5("Class_DFN");
         my_dfn.IdentifyIntersectionsClusters(true);
-        
+
         string CSVname = argv[1];
         meshGen.LoadParametersFromCSV(CSVname);
         meshGen.MeshGeneration(my_dfn);
 
         my_dfn.StoreInH5("Class_DFN");
-        
+
         meshGen.StoreInH5("Class_MESH");
 
         meshGen.Visualization(my_dfn, "DFN_MESH_VISUAL", "DFN_MESH_VISUAL",
@@ -24,22 +24,24 @@ int main(int argc, char *argv[])
     }
     catch (cuDFNsys::ExceptionsIgnore &e)
     {
-        cout << e.what() << endl;
+        cout << "Warning : " << e.what() << endl;
         throw;
     }
     catch (cuDFNsys::ExceptionsPause &e)
     {
-        cout << e.what() << endl;
+        cout << "Warning : " << e.what() << endl;
         throw;
     }
     catch (H5::Exception &e)
     {
-        cout << "H5::Exception\n";
+        cout << "Warning : "
+             << "H5::Exception\n";
         throw;
     }
     catch (...)
     {
-        cout << "Unknown exceptions!\n";
+        cout << "Warning : "
+             << "Unknown exceptions!\n";
         throw;
     }
     return 0;

@@ -4,7 +4,6 @@ int main(int argc, char *argv[])
 {
     try
     {
-
         cuDFNsys::DFN<double> my_dfn;
         cuDFNsys::MeshDFN<double> meshGen;
         cuDFNsys::FlowDFN<double> flow;
@@ -19,30 +18,31 @@ int main(int argc, char *argv[])
 
         double Start_time = cuDFNsys::CPUSecond();
         particleTracking.ParticleTracking(my_dfn, meshGen, flow);
-        cout << "PT total run time: " << cuDFNsys::CPUSecond() - Start_time << endl;
-        particleTracking.Visualization(my_dfn, meshGen, flow,
-                                       "DFN_DISPERSION", "DFN_DISPERSION",
-                                       "DFN_FLOW_VISUAL");
-        
+        cout << "PT total run time: " << cuDFNsys::CPUSecond() - Start_time
+             << endl;
+        particleTracking.Visualization(my_dfn, meshGen, flow, "DFN_DISPERSION",
+                                       "DFN_DISPERSION", "DFN_FLOW_VISUAL");
     }
     catch (cuDFNsys::ExceptionsIgnore &e)
     {
-        cout << e.what() << endl;
+        cout << "Warning : " << e.what() << endl;
         throw;
     }
     catch (cuDFNsys::ExceptionsPause &e)
     {
-        cout << e.what() << endl;
+        cout << "Warning : " << e.what() << endl;
         throw;
     }
     catch (H5::Exception &e)
     {
-        cout << "H5::Exception\n";
+        cout << "Warning : "
+             << "H5::Exception\n";
         throw;
     }
     catch (...)
     {
-        cout << "Unknown exceptions!\n";
+        cout << "Warning : "
+             << "Unknown exceptions!\n";
         throw;
     }
     return 0;
