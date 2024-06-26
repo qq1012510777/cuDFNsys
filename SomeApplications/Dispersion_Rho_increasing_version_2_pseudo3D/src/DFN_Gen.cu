@@ -8,7 +8,8 @@ int main(int argc, char *argv[])
         time(&t);
 
         cuDFNsys::DFN<double> my_dfn;
-
+        my_dfn.IfPseudo3D = true;
+        
         if (argc <= 3)
         {
             if (argc == 3)

@@ -132,6 +132,8 @@ namespace cuDFNsys
         std::vector<std::vector<size_t>> ListClusters;
         std::vector<size_t> PercolationCluster;
 
+        bool IfPseudo3D = false;
+
     private:
         bool IfPeriodic = false;
 

@@ -3,7 +3,7 @@ clear all
 close all
 
 syms x
-kappaVec = [0; 0; 0; 0; 0; 0; 15; 0; 2.5; 17.5; 5.0; 9.5; 13.5; 20; 10; 14; 8];
+kappaVec = [0; 0; 0; 0; 0; 0; 15; 0; 2.5; 17.5; 5.0; 9.5; 13.5; 20; 10; 14; 8; 11];
 
 SizePara = [3, 7.5, 0, 0, 0;
             3, 7.5, 0, 0, 0;
@@ -21,7 +21,8 @@ SizePara = [3, 7.5, 0, 0, 0;
             1, 8, 9.5, 1, 15;
             0, 1.6, 1, 25, 0;
             0, 1.8, 1, 35, 0;
-            0, 2.3, 1, 55, 0];
+            0, 2.3, 1, 55, 0;
+            0, 1.9, 1, 200, 0];
         
 Vex = zeros(size(kappaVec, 1), 1);
 meanR = Vex;
@@ -114,7 +115,7 @@ for i = 1:size(kappaVec, 1)
 
         meanR(i) = [SizePara(i, 2)];
         
-        L_charact(i) = SizePara(i, 2);
+        L_charact(i) = (SizePara(i, 2) ^ 2 * 2)^0.5;
     end
 
 end

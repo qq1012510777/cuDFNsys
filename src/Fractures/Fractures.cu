@@ -33,7 +33,8 @@ __global__ void cuDFNsys::Fractures(
     cuDFNsys::Vector4<T> ParaSizeDistri, // when mode = 1, ;
     cuDFNsys::Vector1<T> kappa,
     cuDFNsys::Vector1<T> conductivity_powerlaw_exponent, T Gamma_constant,
-    double3 DimensionRatio, cuDFNsys::Vector3<T> MeanOrientation)
+    double3 DimensionRatio, cuDFNsys::Vector3<T> MeanOrientation,
+    bool IfPseudo3D)
 {
     int i = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -114,6 +115,7 @@ __global__ void cuDFNsys::Fractures(
             (cuDFNsys::Vector1<T>)-1.0, (cuDFNsys::Vector1<T>)1.0,
             (cuDFNsys::Vector1<T>)curand_uniform(&state)),
         (T)0);
+
     cuDFNsys::Vector1<T> R_xy =
         sqrt(verts[i].NormalVec.x * verts[i].NormalVec.x +
              verts[i].NormalVec.y * verts[i].NormalVec.y);
@@ -217,6 +219,74 @@ __global__ void cuDFNsys::Fractures(
         verts[i].Verts3DTruncated[j].z = verts[i].Verts3D[j].z;
     };
 
+    // if you want a 2D-like DFN
+    if (IfPseudo3D)
+    {
+
+        verts[i].Center.y = 0;
+
+        //------------------
+        verts[i].NormalVec.y = 0;
+        norm_f = sqrt(verts[i].NormalVec.x * verts[i].NormalVec.x +
+                      verts[i].NormalVec.y * verts[i].NormalVec.y +
+                      verts[i].NormalVec.z * verts[i].NormalVec.z);
+        verts[i].NormalVec.x /= norm_f;
+        verts[i].NormalVec.y /= norm_f;
+        verts[i].NormalVec.z /= norm_f;
+
+        //--------------
+        cuDFNsys::Vector3<T> rotate_axis = cuDFNsys::MakeVector3(
+            -verts[i].NormalVec.y, verts[i].NormalVec.x, (T)0);
+        T rotate_axis_norm =
+            sqrt(rotate_axis.x * rotate_axis.x + rotate_axis.y * rotate_axis.y +
+                 rotate_axis.z * rotate_axis.z);
+        rotate_axis.x /= rotate_axis_norm;
+        rotate_axis.y /= rotate_axis_norm;
+        rotate_axis.z /= rotate_axis_norm;
+
+        cuDFNsys::Quaternion<T> qua;
+        qua = qua.DescribeRotation(verts[i].NormalVec, 45.0 / 180.0 * M_PI);
+        verts[i].Verts3D[0] = qua.Rotate(rotate_axis);
+        //--------------
+        T norm_vert1 = sqrt(verts[i].Verts3D[0].x * verts[i].Verts3D[0].x +
+                            verts[i].Verts3D[0].y * verts[i].Verts3D[0].y +
+                            verts[i].Verts3D[0].z * verts[i].Verts3D[0].z);
+        norm_vert1 = R_ / norm_vert1;
+        verts[i].Verts3D[0].x *= norm_vert1;
+        verts[i].Verts3D[0].y *= norm_vert1;
+        verts[i].Verts3D[0].z *= norm_vert1;
+        verts[i].Verts3D[2].x = -1.0 * verts[i].Verts3D[0].x;
+        verts[i].Verts3D[2].y = -1.0 * verts[i].Verts3D[0].y;
+        verts[i].Verts3D[2].z = -1.0 * verts[i].Verts3D[0].z;
+
+        verts[i].Verts3D[1] = cuDFNsys::CrossProductVector3<T>(
+            verts[i].NormalVec, verts[i].Verts3D[0]);
+        norm_vert1 = sqrt(verts[i].Verts3D[1].x * verts[i].Verts3D[1].x +
+                          verts[i].Verts3D[1].y * verts[i].Verts3D[1].y +
+                          verts[i].Verts3D[1].z * verts[i].Verts3D[1].z);
+        norm_vert1 = R_ / norm_vert1;
+        verts[i].Verts3D[1].x *= norm_vert1;
+        verts[i].Verts3D[1].y *= norm_vert1;
+        verts[i].Verts3D[1].z *= norm_vert1;
+        verts[i].Verts3D[3].x = -1.0 * verts[i].Verts3D[1].x;
+        verts[i].Verts3D[3].y = -1.0 * verts[i].Verts3D[1].y;
+        verts[i].Verts3D[3].z = -1.0 * verts[i].Verts3D[1].z;
+        //-----------------------------------------
+        for (int j = 0; j < 4; ++j)
+        {
+            verts[i].Verts3D[j].x += verts[i].Center.x;
+            verts[i].Verts3D[j].y += verts[i].Center.y;
+            verts[i].Verts3D[j].z += verts[i].Center.z;
+
+            verts[i].Verts3D[j].y =
+                (verts[i].Verts3D[j].y / abs(verts[i].Verts3D[j].y)) * 0.5 *
+                model_L;
+            verts[i].Verts3DTruncated[j].x = verts[i].Verts3D[j].x;
+            verts[i].Verts3DTruncated[j].y = verts[i].Verts3D[j].y;
+            verts[i].Verts3DTruncated[j].z = verts[i].Verts3D[j].z;
+        };
+    }
+
     bool gh = cuDFNsys::TruncateFracture<T>(&verts[i],
                                             DimensionRatio.x * model_L, 0, -1);
     verts[i].ConnectModelSurf[0] = gh;
@@ -250,7 +320,7 @@ template __global__ void cuDFNsys::Fractures<double>(
     cuDFNsys::Vector1<double> kappa,
     cuDFNsys::Vector1<double> conductivity_powerlaw_exponent,
     double Gamma_constant, double3 DimensionRatio,
-    cuDFNsys::Vector3<double> MeanOrientation);
+    cuDFNsys::Vector3<double> MeanOrientation, bool IfPseudo3D);
 template __global__ void cuDFNsys::Fractures<float>(
     cuDFNsys::Fracture<float> *verts, unsigned long seed, int count,
     cuDFNsys::Vector1<float> model_L,
@@ -260,7 +330,7 @@ template __global__ void cuDFNsys::Fractures<float>(
     cuDFNsys::Vector1<float> kappa,
     cuDFNsys::Vector1<float> conductivity_powerlaw_exponent,
     float Gamma_constant, double3 DimensionRatio,
-    cuDFNsys::Vector3<float> MeanOrientation);
+    cuDFNsys::Vector3<float> MeanOrientation, bool IfPseudo3D);
 
 // ====================================================
 // NAME:        FracturesDeterministic

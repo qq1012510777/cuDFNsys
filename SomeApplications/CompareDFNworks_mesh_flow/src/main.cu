@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 {
     time_t t;
     time(&t);
-    string csvname("example_FracPara_PercolativeFractures");
+
     double minMeshSize = 0.1;
     double maxMeshSize = 0.17;
 
@@ -23,7 +23,12 @@ int main(int argc, char *argv[])
         throw cuDFNsys::ExceptionsPause("getcwd() error");
     string curPath = cwd;
 
-    int MCtime = 30;
+    int MCtime = 1;
+
+    int Num = atoi(argv[1]);
+
+    //string csvname("example_FracPara_PercolativeFractures");
+    string csvname(argv[2]);
 
     std::vector<double> TimeDFN_GEN(MCtime), TimeDFN_MESH(MCtime),
         TimeDFN_FLOW(MCtime);
@@ -31,9 +36,9 @@ int main(int argc, char *argv[])
     for (int i = 0; i < MCtime; ++i)
     {
         chdir(curPath.c_str());
-        string path2 = "DFN_" + cuDFNsys::ToStringWithWidth(i + 1, 3);
+        string path2 = "DFN_" + cuDFNsys::ToStringWithWidth(Num, 3);
         string command1 = "mkdir -p " + path2;
-        system(command1.c_str());
+        int resulty = system(command1.c_str());
 
         string command2 = curPath + "/" + path2;
         chdir(command2.c_str());
@@ -43,7 +48,7 @@ int main(int argc, char *argv[])
         cuDFNsys::FlowDFN<double> flowDFN;
 
         double iStart_DFN = cuDFNsys::CPUSecond();
-        my_dfn.LoadDFNFromCSV(("../" + csvname));
+        my_dfn.LoadDFNFromCSV((csvname));
         my_dfn.IdentifyIntersectionsClusters(true);
         my_dfn.Visualization("DFN_VISUAL", "DFN_VISUAL", "DFN_VISUAL", true,
                              false, true, true);
@@ -77,14 +82,17 @@ int main(int argc, char *argv[])
 
     chdir(curPath.c_str());
     cuDFNsys::HDF5API h5g;
-    h5g.NewFile("TimeElapsed_cuDFNsys.h5");
 
-    h5g.AddDataset<double>("TimeElapsed_cuDFNsys.h5", "N", "TimeDFN_GEN",
-                           TimeDFN_GEN.data(), make_uint2(1, MCtime));
-    h5g.AddDataset<double>("TimeElapsed_cuDFNsys.h5", "N", "TimeDFN_MESH",
-                           TimeDFN_MESH.data(), make_uint2(1, MCtime));
-    h5g.AddDataset<double>("TimeElapsed_cuDFNsys.h5", "N", "TimeDFN_FLOW",
-                           TimeDFN_FLOW.data(), make_uint2(1, MCtime));
+    string FileNameH5 =
+        "TimeElapsed_cuDFNsys_" + cuDFNsys::ToStringWithWidth(Num, 3) + ".h5";
+    h5g.NewFile(FileNameH5);
+
+    h5g.AddDataset<double>(FileNameH5, "N", "TimeDFN_GEN", TimeDFN_GEN.data(),
+                           make_uint2(1, MCtime));
+    h5g.AddDataset<double>(FileNameH5, "N", "TimeDFN_MESH", TimeDFN_MESH.data(),
+                           make_uint2(1, MCtime));
+    h5g.AddDataset<double>(FileNameH5, "N", "TimeDFN_FLOW", TimeDFN_FLOW.data(),
+                           make_uint2(1, MCtime));
 
     return 0;
 }

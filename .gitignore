@@ -43,6 +43,9 @@ SomeApplications/*/DFN_Gen
 SomeApplications/*/DFN_Flow
 SomeApplications/*/DFN_Mesh
 SomeApplications/*/DFN_PT
+SomeApplications/*/ThreadParallel_*
+SomeApplications/*/TestParallel
+SomeApplications/*/SomeScripts/test/*
 
 SomeApplications/*/*.h5
 SomeApplications/*/*.m

@@ -60,7 +60,8 @@ void cuDFNsys::DFN<T>::FractureGeneration()
             this->Beta[i],  // beta
             this->Gamma[i], // gamma
             this->DomainDimensionRatio, // ratio of domain dimensions
-            this->MeanOrientationOfFisherDistribution[i]); // mean orientations
+            this->MeanOrientationOfFisherDistribution[i], // mean orientations
+            this->IfPseudo3D);
 
         cudaDeviceSynchronize();
         // wait until the device function finish
@@ -1281,7 +1282,7 @@ void cuDFNsys::PTDFN<T>::LoadParametersFromCSV(const string &CSVName)
     cout << "TimeIntervalOutPTInformation: " << TimeIntervalOutPTInformation
          << endl;
     cout << "IfOutputAllParticleAccumulativeDisplacement: "
-         << (IfOutputAllParticleAccumulativeDisplacement == 0? 0 : 1) << endl;
+         << (IfOutputAllParticleAccumulativeDisplacement == 0 ? 0 : 1) << endl;
 };
 template void
 cuDFNsys::PTDFN<double>::LoadParametersFromCSV(const string &CSVName);

@@ -32,12 +32,12 @@
 ///////////////////////////////////////////////////////////////////
 #pragma once
 #include "../DataTypeSelector/DataTypeSelector.cuh"
+#include "../Exceptions/Exceptions.cuh"
 #include "../GlobalDef/GlobalDef.cuh"
 #include "../MatrixManipulation/MatrixManipulation.cuh"
 #include "../RandomFunction/RandomFunction.cuh"
 #include "Fracture.cuh"
 #include "TruncateFracture.cuh"
-#include "../Exceptions/Exceptions.cuh"
 
 namespace cuDFNsys
 {
@@ -55,7 +55,8 @@ namespace cuDFNsys
         double3 DomainDimensionRatio = make_double3(1, 1, 1),
         cuDFNsys::Vector3<T> MeanOrientation = cuDFNsys::MakeVector3((T)0.,
                                                                      (T)0.,
-                                                                     (T)1.));
+                                                                     (T)1.),
+        bool IfPseudo3D = false);
 
     // Generate some fractures in a DFN
     template <typename T>
