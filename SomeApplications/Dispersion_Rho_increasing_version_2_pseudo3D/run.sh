@@ -10,8 +10,8 @@ fi
 setno=$1
 
 source ~/.bashrc
-module load cuda/12.0
-executablePath=/storage/torresLab/yintingchang/cuDFNsys/SomeApplications/Dispersion_Rho_increasing_version_2/
+#module load cuda/12.0
+executablePath=~/cuDFNsys/SomeApplications/Dispersion_Rho_increasing_version_2_pseudo3D/
 
 setfilename="set"$(printf "%05d" "$setno")
 

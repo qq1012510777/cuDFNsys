@@ -202,7 +202,12 @@ int main(int argc, char *argv[])
                     }
 
                     if (PercolationClustersSize > 0)
+                    {
+                        system(("cp ./" + DFNFileName + "/Class_DFN.h5  ./" +
+                                DFNFileName + "/Class_DFN_original.h5")
+                                   .c_str());
                         break;
+                    }
                 }
             }
 
@@ -319,11 +324,11 @@ int main(int argc, char *argv[])
                                 "from "
                                 "the "
                                 "inlet. Regenerate DFN\n";
-                        result_system =
-                            system(("rm -rf ./" + DFNFileName + "/*.h5 " +
-                                    DFNFileName + "/ParticlePositionResult/* ./" +
-                                    DFNFileName + "/PTFinished")
-                                       .c_str());
+                        result_system = system(("rm -rf ./" + DFNFileName +
+                                                "/*.h5 " + DFNFileName +
+                                                "/ParticlePositionResult/* ./" +
+                                                DFNFileName + "/PTFinished")
+                                                   .c_str());
                         i--;
                         continue;
                     }
@@ -354,8 +359,8 @@ int main(int argc, char *argv[])
                         "./" + DFNFileName +
                             "/ParticlePositionResult/DispersionInfo.h5",
                         "N", "NumOfSteps");
-                    cout << DFNFileName << ": " << NumParticlesTotal - zeroCount << "/"
-                         << NumParticlesTotal
+                    cout << DFNFileName << ": " << NumParticlesTotal - zeroCount
+                         << "/" << NumParticlesTotal
                          << " arrived, NumOfSteps: " << tmp_uinty[0] << endl;
                     if (tmp_uinty[0] > NumStepsThreshold)
                     {
@@ -365,11 +370,11 @@ int main(int argc, char *argv[])
                              << " has arrived\n";
 
                         //CreateOrEmptyFile(DFNFileName + "/PTFinished");
-                        result_system =
-                            system(("rm -rf ./" + DFNFileName + "/*.h5 " +
-                                    DFNFileName + "/ParticlePositionResult/* ./" +
-                                    DFNFileName + "/PTFinished")
-                                       .c_str());
+                        result_system = system(("rm -rf ./" + DFNFileName +
+                                                "/*.h5 " + DFNFileName +
+                                                "/ParticlePositionResult/* ./" +
+                                                DFNFileName + "/PTFinished")
+                                                   .c_str());
                         cout << "*********************************\n";
                         cout << "The current DFN is deleted\n";
                         cout << "*********************************\n";
@@ -379,7 +384,7 @@ int main(int argc, char *argv[])
                 } //
 
                 // if too many error happens during PT
-                
+
                 if (IfAFileExist("./" + DFNFileName + "/PT_ErrorCount.h5"))
                 {
                     cout << DFNFileName
@@ -393,11 +398,11 @@ int main(int argc, char *argv[])
                              << ": DFN_PT failed. Too many errors happened "
                                 "during "
                                 "PT. Regenerate DFN\n";
-                        result_system =
-                            system(("rm -rf ./" + DFNFileName + "/*.h5 " +
-                                    DFNFileName + "/ParticlePositionResult/* ./" +
-                                    DFNFileName + "/PTFinished")
-                                       .c_str());
+                        result_system = system(("rm -rf ./" + DFNFileName +
+                                                "/*.h5 " + DFNFileName +
+                                                "/ParticlePositionResult/* ./" +
+                                                DFNFileName + "/PTFinished")
+                                                   .c_str());
                         i--;
                         continue;
                     }
@@ -427,7 +432,8 @@ int main(int argc, char *argv[])
                         meanV * LengthScalePe / Pe;
 
                     double DeltaT = 0;
-
+                    cout << "MolecularDiffusionCoefficient = "
+                         << MolecularDiffusionCoefficient << endl;
                     if (Pe == 0 || LengthScalePe == 0 ||
                         MolecularDiffusionCoefficient == 0)
                     {
@@ -479,14 +485,17 @@ int main(int argc, char *argv[])
                     AddLineToFile(
                         "./" + DFNFileName + "/" + DFN_PT_csv_name + ".csv",
                         "NumTimeSteps," + std::to_string(NumSteps) + ",\n");
-                    AddLineToFile(
-                        "./" + DFNFileName + "/" + DFN_PT_csv_name + ".csv",
-                        "MolecularDiffusion," +
-                            std::to_string(MolecularDiffusionCoefficient) +
-                            ",\n");
                     AddLineToFile("./" + DFNFileName + "/" + DFN_PT_csv_name +
                                       ".csv",
-                                  "DeltaT," + std::to_string(DeltaT) + ",\n");
+                                  "MolecularDiffusion," +
+                                      DoubleNumberToScientificNotationString(
+                                          MolecularDiffusionCoefficient) +
+                                      ",\n");
+                    AddLineToFile(
+                        "./" + DFNFileName + "/" + DFN_PT_csv_name + ".csv",
+                        "DeltaT," +
+                            DoubleNumberToScientificNotationString(DeltaT) +
+                            ",\n");
                     AddLineToFile("./" + DFNFileName + "/" + DFN_PT_csv_name +
                                       ".csv",
                                   "InjectionMethod_initialcondition," +
@@ -590,50 +599,50 @@ int main(int argc, char *argv[])
         catch (cuDFNsys::ExceptionsIgnore e)
         {
             cout << "cuDFNsys::Exceptions: " << e.what() << endl;
-            result_system = system(("rm -rf ./" + DFNFileName + "/*.h5 " +
-                                    DFNFileName + "/ParticlePositionResult/* ./" +
-                                    DFNFileName + "/PTFinished")
-                                       .c_str());
+            result_system = system(
+                ("rm -rf ./" + DFNFileName + "/*.h5 " + DFNFileName +
+                 "/ParticlePositionResult/* ./" + DFNFileName + "/PTFinished")
+                    .c_str());
             i--;
             continue;
         }
         catch (cuDFNsys::ExceptionsPause e)
         {
             cout << "cuDFNsys::Exceptions: " << e.what() << endl;
-            result_system = system(("rm -rf ./" + DFNFileName + "/*.h5 " +
-                                    DFNFileName + "/ParticlePositionResult/* ./" +
-                                    DFNFileName + "/PTFinished")
-                                       .c_str());
+            result_system = system(
+                ("rm -rf ./" + DFNFileName + "/*.h5 " + DFNFileName +
+                 "/ParticlePositionResult/* ./" + DFNFileName + "/PTFinished")
+                    .c_str());
             i--;
             continue;
         }
         catch (H5::Exception e)
         {
             cout << "H5::Exceptions: " << e.getDetailMsg() << endl;
-            result_system = system(("rm -rf ./" + DFNFileName + "/*.h5 " +
-                                    DFNFileName + "/ParticlePositionResult/* ./" +
-                                    DFNFileName + "/PTFinished")
-                                       .c_str());
+            result_system = system(
+                ("rm -rf ./" + DFNFileName + "/*.h5 " + DFNFileName +
+                 "/ParticlePositionResult/* ./" + DFNFileName + "/PTFinished")
+                    .c_str());
             i--;
             continue;
         }
         catch (H5::FileIException e)
         {
             cout << "H5::Exceptions: " << e.getDetailMsg() << endl;
-            result_system = system(("rm -rf ./" + DFNFileName + "/*.h5 " +
-                                    DFNFileName + "/ParticlePositionResult/* ./" +
-                                    DFNFileName + "/PTFinished")
-                                       .c_str());
+            result_system = system(
+                ("rm -rf ./" + DFNFileName + "/*.h5 " + DFNFileName +
+                 "/ParticlePositionResult/* ./" + DFNFileName + "/PTFinished")
+                    .c_str());
             i--;
             continue;
         }
         catch (...)
         {
             cout << "Unknown exceptions\n";
-            result_system = system(("rm -rf ./" + DFNFileName + "/*.h5 " +
-                                    DFNFileName + "/ParticlePositionResult/* ./" +
-                                    DFNFileName + "/PTFinished")
-                                       .c_str());
+            result_system = system(
+                ("rm -rf ./" + DFNFileName + "/*.h5 " + DFNFileName +
+                 "/ParticlePositionResult/* ./" + DFNFileName + "/PTFinished")
+                    .c_str());
             i--;
             continue;
         }
