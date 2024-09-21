@@ -1,20 +1,20 @@
 /****************************************************************************
-* cuDFNsys - simulating flow and transport in 3D fracture networks          *
-* Copyright (C) 2022, Tingchang YIN, Sergio GALINDO-TORRES                  *
-*                                                                           *
-* This program is free software: you can redistribute it and/or modify      *
-* it under the terms of the GNU Affero General Public License as            *
-* published by the Free Software Foundation, either version 3 of the        *
-* License, or (at your option) any later version.                           *
-*                                                                           *
-* This program is distributed in the hope that it will be useful,           *
-* but WITHOUT ANY WARRANTY; without even the implied warranty of            *
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             * 
-* GNU Affero General Public License for more details.                       *
-*                                                                           *
-* You should have received a copy of the GNU Affero General Public License  *
-* along with this program.  If not, see <https://www.gnu.org/licenses/>.    *
-*****************************************************************************/
+ * cuDFNsys - simulating flow and transport in 3D fracture networks          *
+ * Copyright (C) 2022, Tingchang YIN, Sergio GALINDO-TORRES                  *
+ *                                                                           *
+ * This program is free software: you can redistribute it and/or modify      *
+ * it under the terms of the GNU Affero General Public License as            *
+ * published by the Free Software Foundation, either version 3 of the        *
+ * License, or (at your option) any later version.                           *
+ *                                                                           *
+ * This program is distributed in the hope that it will be useful,           *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of            *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             *
+ * GNU Affero General Public License for more details.                       *
+ *                                                                           *
+ * You should have received a copy of the GNU Affero General Public License  *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.    *
+ *****************************************************************************/
 
 ///////////////////////////////////////////////////////////////////
 // NAME:              cuMechsysyDFN.cuh
@@ -50,7 +50,7 @@
 #include "./MHFEM/ReconstructVelocityGrid.cuh"
 #include "./MHFEM/StimaA.cuh"
 #include "./MHFEM/Triplet.cuh"
-//#include "./MatlabAPI/MatlabAPI.cuh"
+// #include "./MatlabAPI/MatlabAPI.cuh"
 #include "./MatrixManipulation/MatrixManipulation.cuh"
 #include "./Mesh/Mesh.cuh"
 #include "./Quaternion/Quaternion.cuh"
@@ -81,28 +81,28 @@
 #include <sstream>
 #include <vector>
 
-//#include "./CPUSecond/CPUSecond.cuh"
-//#include "./Exceptions/Exceptions.cuh"
-//#include "./Fractures/Fractures.cuh"
-//#include "./Fractures/GetAllPercolatingFractures.cuh"
-//#include "./Fractures/IdentifyIntersection.cuh"
-//#include "./Fractures/IdentifyPercolationCluster.cuh"
-//#include "./Fractures/MatlabPlotDFN.cuh"
-//#include "./Fractures/RemoveDeadEndFrac.cuh"
-//#include "./GPUErrCheck/GPUErrCheck.cuh"
-//#include "./GetStatistics/GetStatistics.cuh"
-//#include "./GlobalDef/GlobalDef.cuh"
-//#include "./Graph/Graph.cuh"
-//#include "./HDF5API/HDF5API.cuh"
-//#include "./MHFEM/MHFEM.cuh"
-//#include "./MatlabAPI/MatlabAPI.cuh"
-//#include "./Mesh/Mesh.cuh"
-//#include "./ParticleTransport/EdgeToEle.cuh"
-//#include "./ParticleTransport/Particle.cuh"
-//#include "./ParticleTransport/ParticleTransport.cuh"
-//#include "./Quaternion/Quaternion.cuh"
-//#include "./ToStringWithWidth/ToStringWithWidth.cuh"
-//#include "./Warmup/Warmup.cuh"
+// #include "./CPUSecond/CPUSecond.cuh"
+// #include "./Exceptions/Exceptions.cuh"
+// #include "./Fractures/Fractures.cuh"
+// #include "./Fractures/GetAllPercolatingFractures.cuh"
+// #include "./Fractures/IdentifyIntersection.cuh"
+// #include "./Fractures/IdentifyPercolationCluster.cuh"
+// #include "./Fractures/MatlabPlotDFN.cuh"
+// #include "./Fractures/RemoveDeadEndFrac.cuh"
+// #include "./GPUErrCheck/GPUErrCheck.cuh"
+// #include "./GetStatistics/GetStatistics.cuh"
+// #include "./GlobalDef/GlobalDef.cuh"
+// #include "./Graph/Graph.cuh"
+// #include "./HDF5API/HDF5API.cuh"
+// #include "./MHFEM/MHFEM.cuh"
+// #include "./MatlabAPI/MatlabAPI.cuh"
+// #include "./Mesh/Mesh.cuh"
+// #include "./ParticleTransport/EdgeToEle.cuh"
+// #include "./ParticleTransport/Particle.cuh"
+// #include "./ParticleTransport/ParticleTransport.cuh"
+// #include "./Quaternion/Quaternion.cuh"
+// #include "./ToStringWithWidth/ToStringWithWidth.cuh"
+// #include "./Warmup/Warmup.cuh"
 
 namespace cuDFNsys
 {
@@ -138,7 +138,7 @@ namespace cuDFNsys
         bool IfPeriodic = false;
 
     public:
-        DFN(){};
+        DFN() {};
         void FractureGeneration();
         void IdentifyIntersectionsClusters(const bool &IfTruncatedFractures);
         void Visualization(const string &MatlabScriptName,
@@ -169,7 +169,7 @@ namespace cuDFNsys
         std::vector<size_t> FracsPercol;
 
     public:
-        MeshDFN(){};
+        MeshDFN() {};
         void MeshGeneration(cuDFNsys::DFN<T> &my_dfn);
         void Visualization(cuDFNsys::DFN<T> my_dfn,
                            const string &MatlabScriptName,
@@ -180,6 +180,7 @@ namespace cuDFNsys
         void StoreInH5(const string &ClassNameH5);
         void LoadClassFromH5(const string &ClassNameH5);
         void LoadParametersFromCSV(const string &CSVName);
+        void ChangePecolationDirectionAndRenumberingEdge(const int PercoDir, const T L, double3 DomainDimensionRatio = make_double3(1, 1, 1));
     };
 }; // namespace cuDFNsys
 
@@ -201,7 +202,7 @@ namespace cuDFNsys
         bool IfPeriodic = false;
 
     public:
-        FlowDFN(){};
+        FlowDFN() {};
         void FlowSimulation(cuDFNsys::DFN<T> my_dfn,
                             cuDFNsys::MeshDFN<T> my_mesh);
         void Visualization(cuDFNsys::DFN<T> my_dfn,
@@ -241,9 +242,9 @@ namespace cuDFNsys
         bool IfPeriodic = false;
         uint TimeIntervalOutPTInformation = 100;
         bool IfOutputAllParticleAccumulativeDisplacement = false;
-        
+
     public:
-        PTDFN(){};
+        PTDFN() {};
         void ParticleTracking(cuDFNsys::DFN<T> my_dfn,
                               cuDFNsys::MeshDFN<T> my_mesh,
                               cuDFNsys::FlowDFN<T> my_flow);

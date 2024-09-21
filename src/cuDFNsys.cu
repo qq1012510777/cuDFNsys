@@ -1,20 +1,20 @@
 /****************************************************************************
-* cuDFNsys - simulating flow and transport in 3D fracture networks          *
-* Copyright (C) 2022, Tingchang YIN, Sergio GALINDO-TORRES                  *
-*                                                                           *
-* This program is free software: you can redistribute it and/or modify      *
-* it under the terms of the GNU Affero General Public License as            *
-* published by the Free Software Foundation, either version 3 of the        *
-* License, or (at your option) any later version.                           *
-*                                                                           *
-* This program is distributed in the hope that it will be useful,           *
-* but WITHOUT ANY WARRANTY; without even the implied warranty of            *
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             *
-* GNU Affero General Public License for more details.                       *
-*                                                                           *
-* You should have received a copy of the GNU Affero General Public License  *
-* along with this program.  If not, see <https://www.gnu.org/licenses/>.    *
-*****************************************************************************/
+ * cuDFNsys - simulating flow and transport in 3D fracture networks          *
+ * Copyright (C) 2022, Tingchang YIN, Sergio GALINDO-TORRES                  *
+ *                                                                           *
+ * This program is free software: you can redistribute it and/or modify      *
+ * it under the terms of the GNU Affero General Public License as            *
+ * published by the Free Software Foundation, either version 3 of the        *
+ * License, or (at your option) any later version.                           *
+ *                                                                           *
+ * This program is distributed in the hope that it will be useful,           *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of            *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             *
+ * GNU Affero General Public License for more details.                       *
+ *                                                                           *
+ * You should have received a copy of the GNU Affero General Public License  *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.    *
+ *****************************************************************************/
 
 #include "cuDFNsys.cuh"
 
@@ -55,11 +55,11 @@ void cuDFNsys::DFN<T>::FractureGeneration()
             this->ModeOfSizeDistribution
                 [i], // distribution pattern of fracture sizes
             this->SizeDistributionParameters
-                [i],        // parameters of distribution of fracture sizes
-            this->Kappa[i], // kappa value of fisher distribution
-            this->Beta[i],  // beta
-            this->Gamma[i], // gamma
-            this->DomainDimensionRatio, // ratio of domain dimensions
+                [i],                                      // parameters of distribution of fracture sizes
+            this->Kappa[i],                               // kappa value of fisher distribution
+            this->Beta[i],                                // beta
+            this->Gamma[i],                               // gamma
+            this->DomainDimensionRatio,                   // ratio of domain dimensions
             this->MeanOrientationOfFisherDistribution[i], // mean orientations
             this->IfPseudo3D);
 
@@ -93,8 +93,8 @@ void cuDFNsys::DFN<T>::IdentifyIntersectionsClusters(
 
     cuDFNsys::IdentifyIntersection<T> identifyInters{
         (size_t)this->NumFracturesTotal, // number of fractures
-        this->FracturesDevicePtr, // pointer of device vector of fractures
-        IfTruncatedFractures, // if you want to use truncated fractures? here is false,
+        this->FracturesDevicePtr,        // pointer of device vector of fractures
+        IfTruncatedFractures,            // if you want to use truncated fractures? here is false,
         this->IntersectionMap};
 
     if (this->IntersectionMap.size() > 0 && this->FracturesHost.size() > 1)
@@ -144,8 +144,8 @@ void cuDFNsys::DFN<T>::Visualization(const string &MatlabScriptName,
     cuDFNsys::MatlabPlotDFN<T> As{
         HDF5FileName + ".h5", // the .h5 file, with suffix
         MatlabScriptName +
-            ".m",            // matlab script to visualize the DFN, with suffix
-        this->FracturesHost, // host vector of fractures
+            ".m",                      // matlab script to visualize the DFN, with suffix
+        this->FracturesHost,           // host vector of fractures
         this->IntersectionMap,         // intersection map
         this->ListClusters,            // clusters
         this->PercolationCluster,      // No. or say, ID, of percolating cluster
@@ -155,8 +155,8 @@ void cuDFNsys::DFN<T>::Visualization(const string &MatlabScriptName,
         IfShowOrientationDistribution, // if show orientations data?
         this->DomainSizeX,             // domain size
         this->PercoDir,                // flow direction
-        true, // true means I also want to see DFN with python script, a .py file will be generated
-        PythonScriptName, // the name of python script, without suffix
+        true,                          // true means I also want to see DFN with python script, a .py file will be generated
+        PythonScriptName,              // the name of python script, without suffix
         this->DomainDimensionRatio};
 }; // Visualization
 template void cuDFNsys::DFN<double>::Visualization(
@@ -225,7 +225,8 @@ void cuDFNsys::DFN<T>::StoreInH5(const string &ClassNameH5)
         std::transform(this->PercolationCluster.begin(),
                        this->PercolationCluster.end(),
                        std::back_inserter(TMP_S),
-                       [](size_t value) { return static_cast<uint>(value); });
+                       [](size_t value)
+                       { return static_cast<uint>(value); });
 
         h5gg.AddDataset(ClassNameH5 + ".h5", "N", "PercolationClusters",
                         TMP_S.data(),
@@ -301,7 +302,8 @@ void cuDFNsys::DFN<T>::LoadClassFromH5(const string &ClassNameH5)
         this->PercolationCluster.clear();
         std::transform(Temp_Variable_ooo.begin(), Temp_Variable_ooo.end(),
                        std::back_inserter(this->PercolationCluster),
-                       [](int value) { return static_cast<size_t>(value); });
+                       [](int value)
+                       { return static_cast<size_t>(value); });
 
         // //------INTERSECTION PAIR---
         std::vector<T> Temp_Variable =
@@ -409,7 +411,7 @@ void cuDFNsys::DFN<T>::LoadDFNFromCSV(const string &xlsxNameWithoutSuffix)
         string temp_k;
         getline(ifs, temp_k);
         items[i] = temp_k;
-        //cout << temp_k << endl;
+        // cout << temp_k << endl;
     }
     ifs.close();
 
@@ -635,7 +637,7 @@ void cuDFNsys::DFN<T>::LoadDFNFromCSV(const string &xlsxNameWithoutSuffix)
             string temp_k;
             getline(ifs_II, temp_k);
             items[i] = temp_k;
-            //cout << temp_k << endl;
+            // cout << temp_k << endl;
         }
         ifs_II.close();
         //-----------------
@@ -647,11 +649,11 @@ void cuDFNsys::DFN<T>::LoadDFNFromCSV(const string &xlsxNameWithoutSuffix)
             getline(istrss, temp_s, ',');
 
             string PSLD = istrss.str();
-            //cout << "Fracture " << i << ": " << PSLD << endl;
+            // cout << "Fracture " << i << ": " << PSLD << endl;
 
             int commaCount = std::count(PSLD.begin(), PSLD.end(), ',');
 
-            //cout << commaCount << endl;
+            // cout << commaCount << endl;
             int JKLS = (commaCount >= 12 ? DataNumForOneFracture
                                          : DataNumForOneFracture - 3);
 
@@ -660,7 +662,7 @@ void cuDFNsys::DFN<T>::LoadDFNFromCSV(const string &xlsxNameWithoutSuffix)
                 getline(istrss, temp_s, ',');
                 Data_deterministic[i * DataNumForOneFracture + j] =
                     atof(temp_s.c_str());
-                //cout << atof(temp_s.c_str()) << (j == JKLS - 1 ? "\n" : ", ");
+                // cout << atof(temp_s.c_str()) << (j == JKLS - 1 ? "\n" : ", ");
             }
         }
 
@@ -672,7 +674,7 @@ void cuDFNsys::DFN<T>::LoadDFNFromCSV(const string &xlsxNameWithoutSuffix)
         thrust::device_vector<T> Data_deterministic_device = Data_deterministic;
         T *Data_f = thrust::raw_pointer_cast(Data_deterministic_device.data());
 
-        //exit(0);
+        // exit(0);
 
         cuDFNsys::FracturesDeterministic<T>
             <<<this->NumFracturesTotal / 256 + 1, 256>>>(
@@ -726,8 +728,8 @@ void cuDFNsys::MeshDFN<T>::MeshGeneration(DFN<T> &my_dfn)
         my_dfn.PercolationCluster, my_dfn.ListClusters, this->FracsPercol};
     std::vector<pair<int, int>> IntersectionPair_percol;
     cuDFNsys::RemoveDeadEndFrac<T> RDEF{
-        this->FracsPercol,    IntersectionPair_percol, (size_t)my_dfn.PercoDir,
-        my_dfn.FracturesHost, my_dfn.IntersectionMap,  false};
+        this->FracsPercol, IntersectionPair_percol, (size_t)my_dfn.PercoDir,
+        my_dfn.FracturesHost, my_dfn.IntersectionMap, false};
 
     my_dfn.NumFracturesTotal = my_dfn.FracturesHost.size();
     my_dfn.FracturesDevice = my_dfn.FracturesHost;
@@ -735,9 +737,9 @@ void cuDFNsys::MeshDFN<T>::MeshGeneration(DFN<T> &my_dfn)
         thrust::raw_pointer_cast(my_dfn.FracturesDevice.data());
 
     this->MeshData = cuDFNsys::Mesh<T>{
-        my_dfn.FracturesHost, IntersectionPair_percol,    &(this->FracsPercol),
-        this->MinElementSize, this->MaxElementSize,       my_dfn.PercoDir,
-        my_dfn.DomainSizeX,   my_dfn.DomainDimensionRatio};
+        my_dfn.FracturesHost, IntersectionPair_percol, &(this->FracsPercol),
+        this->MinElementSize, this->MaxElementSize, my_dfn.PercoDir,
+        my_dfn.DomainSizeX, my_dfn.DomainDimensionRatio};
     this->MeanGridSize = this->MeshData.MeanGridSize;
     // cout << "mesh.Element3D.size(): " << this->MeshData.Element3D.size() << endl;
 };
@@ -844,7 +846,7 @@ void cuDFNsys::MeshDFN<T>::LoadParametersFromCSV(const string &CSVName)
         string temp_k;
         getline(ifs, temp_k);
         items[i] = temp_k;
-        //cout << temp_k << endl;
+        // cout << temp_k << endl;
     }
     ifs.close();
 
@@ -869,6 +871,23 @@ template void
 cuDFNsys::MeshDFN<double>::LoadParametersFromCSV(const string &CSVName);
 template void
 cuDFNsys::MeshDFN<float>::LoadParametersFromCSV(const string &CSVName);
+
+// ====================================================
+// NAME:        cuDFNsys::MeshDFN<T>::RenumberingEdgeAfterChangePercolationDirection
+// DESCRIPTION: renumbering grid edges after changing the percolation direction
+// AUTHOR:      Tingchang YIN
+// DATE:        14/09/2024
+// ====================================================
+template <typename T>
+void cuDFNsys::MeshDFN<T>::ChangePecolationDirectionAndRenumberingEdge(const int PercoDir, const T L, double3 DomainDimensionRatio)
+{
+    this->MeshData.Dir = PercoDir;
+    this->MeshData.NumberingEdges(L, DomainDimensionRatio);
+};
+template void
+cuDFNsys::MeshDFN<double>::ChangePecolationDirectionAndRenumberingEdge(const int PercoDir, const double L, double3 DomainDimensionRatio);
+template void
+cuDFNsys::MeshDFN<float>::ChangePecolationDirectionAndRenumberingEdge(const int PercoDir, const float L, double3 DomainDimensionRatio);
 
 // ====================================================
 // NAME:        cuDFNsys::FlowDFN<T>::FlowSimulation
@@ -1019,7 +1038,7 @@ void cuDFNsys::FlowDFN<T>::LoadParametersFromCSV(const string &CSVName)
         string temp_k;
         getline(ifs, temp_k);
         items[i] = temp_k;
-        //cout << temp_k << endl;
+        // cout << temp_k << endl;
     }
     ifs.close();
 
@@ -1170,7 +1189,7 @@ void cuDFNsys::PTDFN<T>::LoadParametersFromCSV(const string &CSVName)
         string temp_k;
         getline(ifs, temp_k);
         items[i] = temp_k;
-        //cout << temp_k << endl;
+        // cout << temp_k << endl;
     }
     ifs.close();
 

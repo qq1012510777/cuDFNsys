@@ -1,20 +1,20 @@
 /****************************************************************************
-* cuDFNsys - simulating flow and transport in 3D fracture networks          *
-* Copyright (C) 2022, Tingchang YIN, Sergio GALINDO-TORRES                  *
-*                                                                           *
-* This program is free software: you can redistribute it and/or modify      *
-* it under the terms of the GNU Affero General Public License as            *
-* published by the Free Software Foundation, either version 3 of the        *
-* License, or (at your option) any later version.                           *
-*                                                                           *
-* This program is distributed in the hope that it will be useful,           *
-* but WITHOUT ANY WARRANTY; without even the implied warranty of            *
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             *
-* GNU Affero General Public License for more details.                       *
-*                                                                           *
-* You should have received a copy of the GNU Affero General Public License  *
-* along with this program.  If not, see <https://www.gnu.org/licenses/>.    *
-*****************************************************************************/
+ * cuDFNsys - simulating flow and transport in 3D fracture networks          *
+ * Copyright (C) 2022, Tingchang YIN, Sergio GALINDO-TORRES                  *
+ *                                                                           *
+ * This program is free software: you can redistribute it and/or modify      *
+ * it under the terms of the GNU Affero General Public License as            *
+ * published by the Free Software Foundation, either version 3 of the        *
+ * License, or (at your option) any later version.                           *
+ *                                                                           *
+ * This program is distributed in the hope that it will be useful,           *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of            *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             *
+ * GNU Affero General Public License for more details.                       *
+ *                                                                           *
+ * You should have received a copy of the GNU Affero General Public License  *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.    *
+ *****************************************************************************/
 
 #include "Mesh/Mesh.cuh"
 
@@ -45,7 +45,7 @@ cuDFNsys::Mesh<T>::Mesh(
     {
         gmsh::initialize();
         cout << "\tmesh init" << endl;
-        //gmsh::option::setNumber("General.NumThreads", Nproc);
+        // gmsh::option::setNumber("General.NumThreads", Nproc);
         gmsh::option::setNumber("General.Verbosity", 2); // default level is 5
         gmsh::model::add("t2");
         gmsh::model::mesh::clear();
@@ -80,7 +80,7 @@ cuDFNsys::Mesh<T>::Mesh(
 
             int CurveLoopID = gmsh::model::occ::addCurveLoop(curveloop);
 
-            //int SurfaceID = gmsh::model::occ::addPlaneSurface({CurveLoopID});
+            // int SurfaceID = gmsh::model::occ::addPlaneSurface({CurveLoopID});
             int SurfaceID = gmsh::model::occ::addSurfaceFilling(CurveLoopID);
             // cout << "SurfaceID: " << SurfaceID << endl;
             Corre_Tag.insert(std::make_pair(FracID, SurfaceID));
@@ -90,7 +90,7 @@ cuDFNsys::Mesh<T>::Mesh(
         cout << "\t\tadded entities, running time: "
              << cuDFNsys::CPUSecond() - istart << " sec\n";
 
-        //cout << "mesh fragment" << endl;
+        // cout << "mesh fragment" << endl;
         size_t pair_size = IntersectionPair_percol.size();
         std::vector<std::pair<int, int>> object_entity(pair_size),
             tool_entity(pair_size);
@@ -119,7 +119,7 @@ cuDFNsys::Mesh<T>::Mesh(
             cout << "\t\tadded object-tool pairs; running time: "
                  << cuDFNsys::CPUSecond() - istart1 << " sec\n";
 
-            //bool IfFrag = IntersectionPair_percol.size() == 0 ? false : true;
+            // bool IfFrag = IntersectionPair_percol.size() == 0 ? false : true;
 
             if (IntersectionPair_percol.size() != 0)
             {
@@ -156,7 +156,7 @@ cuDFNsys::Mesh<T>::Mesh(
             //     cout << out[i].first << ",  " << out[i].second << endl;
             // cout << "\n NUM_frac, size = " << NUM_frac << "\n";
             // cout << "\noutDimTagsMap, size = " << outmap.size() << "\n";
-            //for (size_t i = 0; i < outmap.size(); ++i)
+            // for (size_t i = 0; i < outmap.size(); ++i)
             //{
             //    for (size_t j = 0; j < outmap[i].size(); ++j)
             //        cout << outmap[i][j].first << ",  " << outmap[i][j].second << "; ";
@@ -188,11 +188,11 @@ cuDFNsys::Mesh<T>::Mesh(
         gmsh::option::setNumber("Mesh.Algorithm", 1);
         cout << "\tmesh ing" << endl;
         gmsh::model::mesh::generate(2);
-        //gmsh::fltk::run();
+        // gmsh::fltk::run();
         cout << "\t\tmeshing finished, running time: "
              << cuDFNsys::CPUSecond() - istart << " sec\n";
 
-        //gmsh::write("exod.msh");
+        // gmsh::write("exod.msh");
 
         cout << "\t\tGeting coordinates" << endl;
         this->GetCoordinates();
@@ -200,11 +200,13 @@ cuDFNsys::Mesh<T>::Mesh(
         this->GetElements(Fracs_ss, outmap);
         cout << "\t\tNumber of elements: " << this->Element3D.size()
              << "; Number of nodes: " << this->Coordinate3D.size() << endl;
-        //cudaDeviceReset();
+        // cudaDeviceReset();
         cout << "\t\tNumbering edges\n";
 
         istart = cuDFNsys::CPUSecond();
+
         this->NumberingEdges(L, DomainDimensionRatio /*, Fracs*/);
+
         cout << "\t\tNumbering finished! Running time: "
              << cuDFNsys::CPUSecond() - istart << " sec\n";
 
@@ -247,7 +249,8 @@ cuDFNsys::Mesh<T>::Mesh(
     }
     catch (cuDFNsys::ExceptionsPause &e)
     {
-        cout << "\tPause now!\n" << e.what() << endl;
+        cout << "\tPause now!\n"
+             << e.what() << endl;
         MeshSuccess = false;
         gmsh::clear();
         gmsh::finalize();
@@ -290,7 +293,7 @@ double cuDFNsys::Mesh<T>::MatlabPlot(
     bool if_python_visualization, string PythonName_Without_suffix,
     double3 DomainDimensionRatio)
 {
-    //cuDFNsys::MatlabAPI M1;
+    // cuDFNsys::MatlabAPI M1;
 
     cuDFNsys::HDF5API h5gg;
 
@@ -359,8 +362,8 @@ double cuDFNsys::Mesh<T>::MatlabPlot(
     h5gg.AddDataset<double>(mat_key, "N", "mean_grid_area",
                             &Area_characteristic, make_uint2(1, 0));
 
-    //M1.WriteMat(mat_key, "u", ele_num * 3,
-    //            ele_num, 3, ptr_element_3D, "element_3D");
+    // M1.WriteMat(mat_key, "u", ele_num * 3,
+    //             ele_num, 3, ptr_element_3D, "element_3D");
     dim_f = make_uint2(3, ele_num);
     h5gg.AddDataset(mat_key, "N", "element_3D", ptr_element_3D, dim_f);
 
@@ -381,8 +384,8 @@ double cuDFNsys::Mesh<T>::MatlabPlot(
         for (size_t i = 0; i < frac_tag_num; ++i)
             ptr_element_Frac_Tag[i] = this->ElementFracTag[i] + 1;
 
-        //M1.WriteMat(mat_key, "u", frac_tag_num * 1,
-        //            frac_tag_num, 1, ptr_element_Frac_Tag, "element_Frac_Tag");
+        // M1.WriteMat(mat_key, "u", frac_tag_num * 1,
+        //             frac_tag_num, 1, ptr_element_Frac_Tag, "element_Frac_Tag");
         dim_f = make_uint2(1, frac_tag_num);
         h5gg.AddDataset(mat_key, "N", "element_Frac_Tag", ptr_element_Frac_Tag,
                         dim_f);
@@ -390,7 +393,7 @@ double cuDFNsys::Mesh<T>::MatlabPlot(
         delete[] ptr_element_Frac_Tag;
         ptr_element_Frac_Tag = NULL;
 
-        //thrust::host_vector<ELE_COOR> coordinate_2D;
+        // thrust::host_vector<ELE_COOR> coordinate_2D;
 
         T *verts2D = new T[frac_tag_num * 6];
         if (verts2D == NULL)
@@ -449,7 +452,7 @@ double cuDFNsys::Mesh<T>::MatlabPlot(
             throw cuDFNsys::ExceptionsPause(AS);
         }
 
-        //M1.WriteMat(mat_key, "u", (*this->FracID).size() * 4 * 2, (*this->FracID).size() * 4, 2, fracs, "fracs_2D");
+        // M1.WriteMat(mat_key, "u", (*this->FracID).size() * 4 * 2, (*this->FracID).size() * 4, 2, fracs, "fracs_2D");
         dim_f = make_uint2(2, (*this->FracID).size() * 4);
         h5gg.AddDataset(mat_key, "N", "fracs_2D", fracs, dim_f);
         delete[] fracs;
@@ -477,8 +480,8 @@ double cuDFNsys::Mesh<T>::MatlabPlot(
             edge_attri[i + 4 * NUM_ele] = this->EdgeAttri[i].e[1];
             edge_attri[i + 5 * NUM_ele] = this->EdgeAttri[i].e[2];
         }
-        //M1.WriteMat(mat_key, "u", NUM_ele * 6,
-        //            NUM_ele, 6, edge_attri, "edge_attri");
+        // M1.WriteMat(mat_key, "u", NUM_ele * 6,
+        //             NUM_ele, 6, edge_attri, "edge_attri");
 
         dim_f = make_uint2(6, NUM_ele);
         h5gg.AddDataset(mat_key, "N", "edge_attri", edge_attri, dim_f);
@@ -636,7 +639,7 @@ double cuDFNsys::Mesh<T>::MatlabPlot(
     {
         std::ofstream oss(command_key, ios::out);
         oss << "clc;\nclose all;\nclear all;\n";
-        //oss << "load('" << mat_key << "');\n";
+        // oss << "load('" << mat_key << "');\n";
         oss << "currentPath = fileparts(mfilename('fullpath'));\n";
         oss << "coordinate_3D = h5read([currentPath, '/" << mat_key
             << "'], '/coordinate_3D');\n";
@@ -726,7 +729,7 @@ double cuDFNsys::Mesh<T>::MatlabPlot(
         {
             std::ofstream oss_e("CHECK_2D_fac_" + command_key, ios::out);
             oss_e << "clc;\nclose all;\nclear all;\n";
-            //oss_e << "load('" << mat_key << "');\n";
+            // oss_e << "load('" << mat_key << "');\n";
             oss_e << "currentPath = fileparts(mfilename('fullpath'));\n";
             oss_e << "element_Frac_Tag = h5read([currentPath, '/" << mat_key
                   << "'], '/element_Frac_Tag');\n";
@@ -820,17 +823,17 @@ void cuDFNsys::Mesh<T>::GetElements(
 
     this->GetEntitiesElements(elementEntities_2D, Largest_ele, outmap);
     cout << "\t\t\tGot entity elements" << endl;
-    //cout << 1 << endl;
+    // cout << 1 << endl;
 
     // for (size_t i = 0; i < elementEntities_2D.size(); ++i)
     // cout << "this entity: " << elementEntities_2D[i].size() << " elements, the largest ele: " << Largest_ele[i] << endl;
 
     thrust::host_vector<uint3> One_entity_one_ele(elementEntities_2D.size());
-    //cout << "node:\n";
+    // cout << "node:\n";
     for (size_t i = 0; i < One_entity_one_ele.size(); ++i)
     {
         One_entity_one_ele[i] = elementEntities_2D[i][Largest_ele[i] - 1];
-        //cout << One_entity_one_ele[i].x << ", " << One_entity_one_ele[i].y << ", " << One_entity_one_ele[i].z << endl;
+        // cout << One_entity_one_ele[i].x << ", " << One_entity_one_ele[i].y << ", " << One_entity_one_ele[i].z << endl;
     }
 
     thrust::device_vector<uint3> One_entity_one_ele_dev(
@@ -875,7 +878,7 @@ void cuDFNsys::Mesh<T>::GetElements(
             string AS = "entity: " + std::to_string(i) + ", ";
             AS += "cannot find which fracture that the enetity is belonging "
                   "to!\n";
-            //cout << AS;
+            // cout << AS;
             throw cuDFNsys::ExceptionsIgnore(AS);
         }
     }
@@ -896,8 +899,8 @@ void cuDFNsys::Mesh<T>::GetElements(
         if (this->Element2D[i].size() == 0)
         {
             string AS = "one frac has no grids!\n";
-            //cout << AS;
-            //exit(0);
+            // cout << AS;
+            // exit(0);
             throw cuDFNsys::ExceptionsIgnore(AS);
         }
         this->Element3D.insert(this->Element3D.end(),
@@ -962,9 +965,15 @@ void cuDFNsys::Mesh<T>::NumberingEdges(const T L, double3 DomainDimensionRatio)
     this->NumInletEdges = 0;
     this->NumOutletEdges = 0;
     this->NumNeumannEdges = 0;
+    this->InletTraceLength = 0;
+    this->OutletTraceLength = 0;
 
     uint NUM_ele = this->Element3D.size();
     uint NUM_node = this->Coordinate3D.size();
+
+    this->EdgeAttri.clear();
+    this->InletEdgeNOLen.clear();
+    this->OutletEdgeNOLen.clear();
 
     this->EdgeAttri.resize(NUM_ele);
 
@@ -1213,7 +1222,7 @@ void cuDFNsys::Mesh<T>::GetEntitiesElements(
             {
                 elementEntities_2D[i].push_back(
                     make_uint3(node1, node2, node3));
-                //cout << "YY " << area << "; node " << RowVector3d(node1, node2, node3) << endl;
+                // cout << "YY " << area << "; node " << RowVector3d(node1, node2, node3) << endl;
 
                 T area =
                     cuDFNsys::Triangle3DArea<T>(this->Coordinate3D[node1 - 1],
@@ -1231,8 +1240,8 @@ void cuDFNsys::Mesh<T>::GetEntitiesElements(
         if (elementEntities_2D[i].size() < 1)
         {
             Zero_element_entityNO.push_back(i);
-            //string AS = "Error! One entity has zero element!\n";
-            //throw Error_throw_ignore(AS);
+            // string AS = "Error! One entity has zero element!\n";
+            // throw Error_throw_ignore(AS);
         }
     };
 

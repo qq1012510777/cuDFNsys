@@ -122,13 +122,16 @@ public:
                       string PythonName_Without_suffix = "DFN_mesh_py",
                       double3 DomainDimensionRatio = make_double3(1, 1, 1));
 
+    // numbering edges of elements
+    void NumberingEdges(const T L, double3 DomainDimensionRatio = make_double3(1, 1, 1));
+
 private:
     // get coordinates of mesh
     void GetCoordinates();
     // get elements of mesh
     void GetElements(const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs_s, const std::vector<std::vector<std::pair<int, int>>> &outmap);
     // numbering edges of elements
-    void NumberingEdges(const T L, double3 DomainDimensionRatio = make_double3(1, 1, 1));
+    // void NumberingEdges(const T L, double3 DomainDimensionRatio = make_double3(1, 1, 1));
 
 private:
     // get elements in each 3D surface entity
