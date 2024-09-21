@@ -46,6 +46,8 @@ SomeApplications/*/DFN_PT
 SomeApplications/*/ThreadParallel_*
 SomeApplications/*/TestParallel
 SomeApplications/*/SomeScripts/test/*
+SomeApplications/*/LoadDFNAndChangePercolationDirection
+SomeApplications/*/LoadMeshRenumberingEdge
 
 SomeApplications/*/*.h5
 SomeApplications/*/*.m
