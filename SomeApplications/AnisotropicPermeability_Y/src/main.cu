@@ -15,6 +15,7 @@
 #include <thread>
 #include <unistd.h>
 #include <vector>
+
 using namespace std;
 namespace fs = std::filesystem;
 
@@ -68,7 +69,7 @@ int main(int argc, char *argv[])
                     DFN_gen_run_command, "./" + DFNFileName + "/" + LogFile,
                     true);
                 // cout << DFN_gen_run_command << endl;
-               
+
                 if (!DFN_gen_success)
                 {
                     cout << DFNFileName << ": DFN_load failed\n";
@@ -84,14 +85,41 @@ int main(int argc, char *argv[])
                 continue;
             }
 
+            std::vector<uint> PercoCluID_X = h5g.ReadDataset<uint>("./" + DFNFileName_X + "/Class_DFN.h5", "N", "PercolationClusters");
+            std::vector<uint> PercoFracID_X;
+            for (int j = 0; j < PercoCluID_X.size(); ++j)
+            {
+                std::vector<uint> tmp = h5g.ReadDataset<uint>("./" + DFNFileName_X + "/Class_DFN.h5", "N", "Cluster_" + std::to_string(PercoCluID_X[j] + 1));
+                PercoFracID_X.insert(PercoFracID_X.end(), tmp.begin(), tmp.end());
+            }
+
             if (GetH5DatasetSize("./" + DFNFileName + "/Class_DFN.h5",
                                  "PercolationClusters") > 0)
             {
-                //-----------------DFN_Mesh------------
-                if (IfAFileExist("./" + DFNFileName + "/Class_DFN.h5") &&
-                    !IfAFileExist("./" + DFNFileName + "/Class_MESH.h5") &&
-                    !IfAFileExist("./" + DFNFileName_X + "/Class_MESH.h5"))
+                std::vector<uint> PercoCluID_Y = h5g.ReadDataset<uint>("./" + DFNFileName + "/Class_DFN.h5", "N", "PercolationClusters");
+                std::vector<uint> PercoFracID_Y;
+                for (int j = 0; j < PercoCluID_Y.size(); ++j)
                 {
+                    std::vector<uint> tmp = h5g.ReadDataset<uint>("./" + DFNFileName + "/Class_DFN.h5", "N", "Cluster_" + std::to_string(PercoCluID_Y[j] + 1));
+                    PercoFracID_Y.insert(PercoFracID_Y.end(), tmp.begin(), tmp.end());
+                }
+
+                bool sameDFN = false;
+                if (PercoFracID_X.size() == PercoFracID_Y.size() && std::equal(PercoFracID_X.begin(), PercoFracID_X.end(), PercoFracID_Y.begin()))
+                {
+                    sameDFN = true;
+                    cout << "The DFN is the same with the one in the X direction\n";
+                }
+                else
+                    cout << "The DFN is NOT the same with the one in the X direction\n";
+
+                //-----------------DFN_Mesh------------
+                if ((IfAFileExist("./" + DFNFileName + "/Class_DFN.h5") &&
+                     !IfAFileExist("./" + DFNFileName + "/Class_MESH.h5") &&
+                     !IfAFileExist("./" + DFNFileName_X + "/Class_MESH.h5")) ||
+                    !sameDFN)
+                {
+                GenMesh:;
                     result_system = system(("cp -f ./" + DFNFileName_X + "/MeshPara.csv   ./" + DFNFileName + "/MeshPara.csv")
                                                .c_str());
 
@@ -117,11 +145,13 @@ int main(int argc, char *argv[])
                          !IfAFileExist("./" + DFNFileName + "/Class_MESH.h5") &&
                          IfAFileExist("./" + DFNFileName_X + "/Class_MESH.h5"))
                 {
+                    if (!sameDFN)
+                        goto GenMesh;
                     result_system = system(("cp -f ./" + DFNFileName_X + "/Class_MESH.h5   ./" + DFNFileName + "/Class_MESH.h5")
                                                .c_str());
 
                     string DFN_mesh_load_command = "cd ./" + DFNFileName + " && " +
-                                                  ExeuctablePath + "/LoadMeshRenumberingEdge  1";
+                                                   ExeuctablePath + "/LoadMeshRenumberingEdge  1";
                     bool DFN_mesh_success = RunCMD_with_RealTimeCheck(
                         DFN_mesh_load_command, "./" + DFNFileName + "/" + LogFile);
                     // cout << DFN_mesh_load_command << endl;
@@ -170,7 +200,7 @@ int main(int argc, char *argv[])
             }
             else
             {
-                CreateOrEmptyFile("./" + DFNFileName + "/no_cluster_in_Y");   
+                CreateOrEmptyFile("./" + DFNFileName + "/no_cluster_in_Y");
             }
             CreateOrEmptyFile("./" + DFNFileName + "/Y_DarcyFlow_Finished");
         }

@@ -85,15 +85,59 @@ int main(int argc, char *argv[])
                 continue;
             }
 
+            std::vector<uint> PercoCluID_X = h5g.ReadDataset<uint>("./" + DFNFileName_X + "/Class_DFN.h5", "N", "PercolationClusters");
+            std::vector<uint> PercoFracID_X;
+            for (int j = 0; j < PercoCluID_X.size(); ++j)
+            {
+                std::vector<uint> tmp = h5g.ReadDataset<uint>("./" + DFNFileName_X + "/Class_DFN.h5", "N", "Cluster_" + std::to_string(PercoCluID_X[j] + 1));
+                PercoFracID_X.insert(PercoFracID_X.end(), tmp.begin(), tmp.end());
+            }
+
+            std::vector<uint> PercoCluID_Y = h5g.ReadDataset<uint>("./" + DFNFileName_Y + "/Class_DFN.h5", "N", "PercolationClusters");
+            std::vector<uint> PercoFracID_Y;
+            for (int j = 0; j < PercoCluID_Y.size(); ++j)
+            {
+                std::vector<uint> tmp = h5g.ReadDataset<uint>("./" + DFNFileName_Y + "/Class_DFN.h5", "N", "Cluster_" + std::to_string(PercoCluID_Y[j] + 1));
+                PercoFracID_Y.insert(PercoFracID_Y.end(), tmp.begin(), tmp.end());
+            }
+
             if (GetH5DatasetSize("./" + DFNFileName + "/Class_DFN.h5",
                                  "PercolationClusters") > 0)
             {
+
+                std::vector<uint> PercoCluID_Z = h5g.ReadDataset<uint>("./" + DFNFileName + "/Class_DFN.h5", "N", "PercolationClusters");
+                std::vector<uint> PercoFracID_Z;
+                for (int j = 0; j < PercoCluID_Z.size(); ++j)
+                {
+                    std::vector<uint> tmp = h5g.ReadDataset<uint>("./" + DFNFileName + "/Class_DFN.h5", "N", "Cluster_" + std::to_string(PercoCluID_Z[j] + 1));
+                    PercoFracID_Z.insert(PercoFracID_Z.end(), tmp.begin(), tmp.end());
+                }
+
+                bool sameDFN_X = false;
+                if (PercoFracID_X.size() == PercoFracID_Z.size() && std::equal(PercoFracID_X.begin(), PercoFracID_X.end(), PercoFracID_Z.begin()))
+                {
+                    sameDFN_X = true;
+                    cout << "The DFN is the same with the one in the X direction\n";
+                }
+                else
+                    cout << "The DFN is NOT the same with the one in the X direction\n";
+
+                bool sameDFN_Y = false;
+                if (PercoFracID_Y.size() == PercoFracID_Z.size() && std::equal(PercoFracID_Y.begin(), PercoFracID_Y.end(), PercoFracID_Z.begin()))
+                {
+                    sameDFN_Y = true;
+                    cout << "The DFN is the same with the one in the Y direction\n";
+                }
+                else
+                    cout << "The DFN is NOT the same with the one in the Y direction\n";
+
                 //-----------------DFN_Mesh------------
                 if (IfAFileExist("./" + DFNFileName + "/Class_DFN.h5") &&
                     !IfAFileExist("./" + DFNFileName + "/Class_MESH.h5") &&
                     !IfAFileExist("./" + DFNFileName_X + "/Class_MESH.h5") &&
                     !IfAFileExist("./" + DFNFileName_Y + "/Class_MESH.h5"))
                 {
+                GenMesh:;
                     result_system = system(("cp -f ./" + DFNFileName_X + "/MeshPara.csv   ./" + DFNFileName + "/MeshPara.csv")
                                                .c_str());
 
@@ -119,12 +163,14 @@ int main(int argc, char *argv[])
                          !IfAFileExist("./" + DFNFileName + "/Class_MESH.h5") &&
                          (IfAFileExist("./" + DFNFileName_X + "/Class_MESH.h5") || IfAFileExist("./" + DFNFileName_Y + "/Class_MESH.h5")))
                 {
-                    if (IfAFileExist("./" + DFNFileName_X + "/Class_MESH.h5"))
+                    if (IfAFileExist("./" + DFNFileName_X + "/Class_MESH.h5") && sameDFN_X)
                         result_system = system(("cp -f ./" + DFNFileName_X + "/Class_MESH.h5   ./" + DFNFileName + "/Class_MESH.h5")
                                                    .c_str());
-                    else
+                    else if (IfAFileExist("./" + DFNFileName_Y + "/Class_MESH.h5") && sameDFN_Y)
                         result_system = system(("cp -f ./" + DFNFileName_Y + "/Class_MESH.h5   ./" + DFNFileName + "/Class_MESH.h5")
                                                    .c_str());
+                    else
+                        goto GenMesh;
 
                     string DFN_mesh_load_command = "cd ./" + DFNFileName + " && " +
                                                    ExeuctablePath + "/LoadMeshRenumberingEdge  2";
@@ -176,7 +222,7 @@ int main(int argc, char *argv[])
             }
             else
             {
-                CreateOrEmptyFile("./" + DFNFileName + "/no_cluster_in_Z");   
+                CreateOrEmptyFile("./" + DFNFileName + "/no_cluster_in_Z");
             }
             CreateOrEmptyFile("./" + DFNFileName + "/Z_DarcyFlow_Finished");
         }
