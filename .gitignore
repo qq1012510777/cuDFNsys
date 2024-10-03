@@ -54,6 +54,8 @@ SomeApplications/*/*.m
 SomeApplications/*/*.py
 SomeApplications/*/ParticlePositionResult
 
+!SomeApplications/AnisotropicPermeability_GetData/StoreAndDelteHDF5.py
+
 GUI/*.h5
 GUI/dist/*
 GUI/*.py

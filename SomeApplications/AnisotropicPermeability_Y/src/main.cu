@@ -54,6 +54,9 @@ int main(int argc, char *argv[])
         CreateOrEmptyFile("./" + DFNFileName + "/" + LogFile);
         try
         {
+            if (IfAFileExist("./" + DFNFileName + "/Y_DarcyFlow_Finished"))
+                continue;
+
             //-----------------DFN_Gen-------------
             if (IfAFileExist("./" + DFNFileName_X + "/Class_DFN_original.h5"))
             {
@@ -202,6 +205,29 @@ int main(int argc, char *argv[])
             {
                 CreateOrEmptyFile("./" + DFNFileName + "/no_cluster_in_Y");
             }
+
+            string DFN_SToreData_command = "cd ./" + DFNFileName + " && " +
+                                           "python3 " + ExeuctablePath + "/StoreAndDelteHDF5.py " +
+                                           "1";
+            bool DFN_SToreData_command_success = RunCMD_with_RealTimeCheck(
+                DFN_SToreData_command, "./" + DFNFileName + "/" + LogFile);
+            if (!DFN_SToreData_command_success)
+            {
+                if (!DFN_SToreData_command_success)
+                    cout << DFNFileName
+                         << ": DFN store data failed, regenerate DFN\n";
+                result_system =
+                    system(("rm -rf ./" + DFNFileName + "/Class_DFN.h5 ./" +
+                            DFNFileName + "/Class_MESH.h5 ./" +
+                            DFNFileName + "/Class_FLOW.h5")
+                               .c_str());
+                i--;
+                continue;
+            }
+            else
+                result_system = system(
+                    ("cd ./" + DFNFileName + " && rm -rf Class_FLOW.h5 Class_MESH.h5 DFN_FLOW_VISUAL.h5 DFN_MESH_VISUAL.h5 DFN_VISUAL.h5").c_str());
+
             CreateOrEmptyFile("./" + DFNFileName + "/Y_DarcyFlow_Finished");
         }
         catch (cuDFNsys::ExceptionsIgnore e)

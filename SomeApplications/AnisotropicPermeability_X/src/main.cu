@@ -69,6 +69,9 @@ int main(int argc, char *argv[])
         CreateOrEmptyFile("./" + DFNFileName + "/" + LogFile);
         try
         {
+            if (IfAFileExist("./" + DFNFileName + "/X_DarcyFlow_Finished"))
+                continue;
+
             //-----------------DFN_Gen-------------
             if (!IfAFileExist("./" + DFNFileName + "/Class_DFN.h5"))
             {
@@ -235,7 +238,122 @@ int main(int argc, char *argv[])
 
                 //------------------
             }
+
+            string DFN_SToreData_command = "cd ./" + DFNFileName + " && " +
+                                           "python3 " + ExeuctablePath + "/StoreAndDelteHDF5.py " +
+                                           "0";
+            bool DFN_SToreData_command_success = RunCMD_with_RealTimeCheck(
+                DFN_SToreData_command, "./" + DFNFileName + "/" + LogFile);
+            if (!DFN_SToreData_command_success)
+            {
+                if (!DFN_SToreData_command_success)
+                    cout << DFNFileName
+                         << ": DFN store data failed, regenerate DFN\n";
+                result_system =
+                    system(("rm -rf ./" + DFNFileName + "/Class_DFN.h5 ./" +
+                            DFNFileName + "/Class_MESH.h5 ./" +
+                            DFNFileName + "/Class_FLOW.h5")
+                               .c_str());
+                i--;
+                continue;
+            }
+            else
+                result_system = system(
+                    ("cd ./" + DFNFileName + " && rm -rf Class_FLOW.h5 Class_MESH.h5 DFN_FLOW_VISUAL.h5 DFN_MESH_VISUAL.h5 DFN_VISUAL.h5").c_str());
+
             CreateOrEmptyFile("./" + DFNFileName + "/X_DarcyFlow_Finished");
+            //------------------------------------------
+            // we have to delete some data file (HDF5) ...
+            // as they are too large
+            // before that, store some necessary data
+            // string dataFile = "./" + DFNFileName + "/data.h5";
+            // h5g.NewFile(dataFile);
+            // Num_Fracs
+            // P32_LargestCluster
+            // P32_Total
+            // P33_LargestCluster
+            // P33_Total
+            // Percolation_Status
+            // Permeability_Apparent
+            // std::vector<double> tmpA = h5g.ReadDataset<double>("./" + DFNFileName + "/Class_DFN_original.h5", "N", "NumFractures");
+            // h5g.AddDataset(dataFile, "/", "Num_Fracs", tmpA.data(), make_uint2{1, 1});
+            // int Num_Fracs = tmpA[0];
+            // tmpA = h5g.ReadDataset<double>("./" + DFNFileName + "/Class_DFN_original.h5", "N", "L");
+            // double Lm = tmpA[0];
+            // h5g.AddDataset(dataFile, "/", "Lm", tmpA.data(), make_uint2{1, 1});
+            // std::vector<double> Area(Num_Fracs, 0);
+            // std::vector<double> Aperture(Num_Fracs, 0);
+            // for (int k = 0; k < Num_Fracs; ++k)
+            // {
+            //     tmpA = h5g.ReadDataset<double>("./" + DFNFileName + "/Class_DFN_original.h5", "Fracture_" + std::to_string(k + 1), "Radius");
+            //     Area[k] = pow((sqrt(2.) * tmpA[0]), 2.);
+            //     tmpA = h5g.ReadDataset<double>("./" + DFNFileName + "/Class_DFN_original.h5", "Fracture_" + std::to_string(k + 1), "Conductivity");
+            //     Aperture[k] = pow((tmpA[0] * 12.), 1. / 3.);
+            // }
+            // // P32_total
+            // tmpA[0] = std::accumulate(Area.begin(), Area.end(), 0) / pow(Lm, 3.0);
+            // h5g.AddDataset(dataFile, "/", "P32_total", tmpA.data(), make_uint2{1, 1});
+            // // P33_Total
+            // tmpA[0] = std::inner_product(Area.begin(), Area.end(), Aperture.begin(), 0) / pow(Lm, 3.0);
+            // h5g.AddDataset(dataFile, "/", "P33_Total", tmpA.data(), make_uint2{1, 1});
+            // // P33_LargestCluster
+            // tmpA = h5g.ReadDataset<double>("./" + DFNFileName + "/Class_DFN_original.h5", "N", "PercolationClusters");
+            // if (tmpA.size() > 0)
+            // {
+            //     std::vector<int> PercolationCluFracID;
+            //     for (int k = 0; k < tmpA.size(); ++k)
+            //     {
+            //         std::vector<int> tmp_clu = h5g.ReadDataset<int>("./" + DFNFileName + "/Class_DFN_original.h5", "N", "Cluster_" + std::to_string(tmpA[k] + 1));
+            //         PercolationCluFracID.insert(PercolationCluFracID.end(), tmp_clu.begin(), tmp_clu.end());
+            //     }
+            //     std::vector<int> products(PercolationCluFracID.size());
+            //     std::transform(PercolationCluFracID.begin(), PercolationCluFracID.end(), products.begin(), [&](int index)
+            //                    { return Area[index] * Aperture[index]; });
+            //     tmpA.resize(1);
+            //     tmpA[0] = 0;
+            //     tmpA[0] = std::accumulate(products.begin(), products.end(), 0) / pow(Lm, 3.0);
+            //     // P33_LargestCluster
+            //     h5g.AddDataset(dataFile, "/", "P33_LargestCluster", tmpA.data(), make_uint2{1, 1});
+            //     // P32_LargestCluster
+            //     std::vector<double> selected_elements(PercolationCluFracID.size());
+            //     std::transform(PercolationCluFracID.begin(), PercolationCluFracID.end(), selected_elements.begin(), [&](int index)
+            //                    {
+            //         if (index >= 0 && index < v.size()) {
+            //             return Area[index];
+            //         } else {
+            //             std::cerr << "Index out of range in Area vector: " << index << std::endl;
+            //             exit(1);
+            //         } });
+            //     tmpA[0] = std::accumulate(selected_elements.begin(), selected_elements.end(), 0.0) / pow(Lm, 3.0);
+            //     h5g.AddDataset(dataFile, "/", "P32_LargestCluster", tmpA.data(), make_uint2{1, 1});
+            // }
+            // else
+            // {
+            //     tmpA.resize(1);
+            //     tmpA[0] = 0;
+            //     h5g.AddDataset(dataFile, "/", "P33_LargestCluster", tmpA.data(), make_uint2{1, 1});
+            //     h5g.AddDataset(dataFile, "/", "P32_LargestCluster", tmpA.data(), make_uint2{1, 1});
+            // }
+            // if (IfAFileExist("./" + DFNFileName + "/Class_FLOW.h5"))
+            // {
+            //     tmpA.resize(1);
+            //     tmpA[0] = 1;
+            //     h5g.AddDataset(dataFile, "/", "Percolation_Status", tmpA.data(), make_uint2{1, 1});
+            //     //h5g.AddDataset(dataFile, "/", "Permeability_Apparent", tmpA.data(), make_uint2{1, 1});
+            //     tmpA = h5g.ReadDataset<double>("./" + DFNFileName + "/Class_FLOW.h5", "N", "Permeability");
+            //     h5g.AddDataset(dataFile, "/", "Permeability_Apparent", tmpA.data(), make_uint2{1, 1});
+            //
+            //
+            // }
+            // else
+            // {
+            //     tmpA.resize(1);
+            //     tmpA[0] = 0;
+            //     h5g.AddDataset(dataFile, "/", "Percolation_Status", tmpA.data(), make_uint2{1, 1});
+            //     h5g.AddDataset(dataFile, "/", "Permeability_Apparent", tmpA.data(), make_uint2{1, 1});
+            // }
+
+            //------------------------------------------
         }
         catch (cuDFNsys::ExceptionsIgnore e)
         {
