@@ -259,7 +259,7 @@ int main(int argc, char *argv[])
             }
             else
                 result_system = system(
-                    ("cd ./" + DFNFileName + " && rm -rf Class_FLOW.h5 Class_MESH.h5 DFN_FLOW_VISUAL.h5 DFN_MESH_VISUAL.h5 DFN_VISUAL.h5").c_str());
+                    ("cd ./" + DFNFileName + " && rm -rf Class_FLOW.h5 DFN_FLOW_VISUAL.h5 DFN_MESH_VISUAL.h5 DFN_VISUAL.h5").c_str());
 
             CreateOrEmptyFile("./" + DFNFileName + "/X_DarcyFlow_Finished");
             //------------------------------------------
