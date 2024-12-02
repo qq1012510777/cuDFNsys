@@ -53,6 +53,11 @@ int main(int argc, char *argv[])
     double MeshMinimumGridSize = atof(argv[17]);
     double MeshMaximumGridSize = atof(argv[18]);
 
+    bool IfStructedDFN = false;
+    if (argv[19] != nullptr)
+        if (atoi(argv[19]) != 0)
+            IfStructedDFN = true;
+
     // exit(0);
     cuDFNsys::HDF5API h5g;
 
@@ -96,37 +101,98 @@ int main(int argc, char *argv[])
                                   ".csv",
                               "Percolation_direction," +
                                   std::to_string(PercoDir) + ",\n");
-                AddLineToFile("./" + DFNFileName + "/" + DFN_Gen_csv_name +
-                                  ".csv",
-                              "NumFractureGroups,1,\n");
-                AddLineToFile(
-                    "./" + DFNFileName + "/" + DFN_Gen_csv_name + ".csv",
-                    "NumFractureEachGroup," +
-                        std::to_string(FracNumInit + i * FracNumIncre) + ",\n");
-                AddLineToFile("./" + DFNFileName + "/" + DFN_Gen_csv_name +
-                                  ".csv",
-                              "KappaValues," + std::to_string(Kappa) + ",\n");
-                AddLineToFile("./" + DFNFileName + "/" + DFN_Gen_csv_name +
-                                  ".csv",
-                              "MeanOrientationOfFisherDistribution,0,0,1,\n");
-                AddLineToFile("./" + DFNFileName + "/" + DFN_Gen_csv_name +
-                                  ".csv",
-                              "ModeOfSizeDistribution," +
-                                  std::to_string(FracSizeDistriMode) + ",\n");
-                AddLineToFile("./" + DFNFileName + "/" + DFN_Gen_csv_name +
-                                  ".csv",
-                              "SizeDistributionParameters," +
-                                  std::to_string(FracSizeDistriPara.x) + "," +
-                                  std::to_string(FracSizeDistriPara.y) + "," +
-                                  std::to_string(FracSizeDistriPara.z) + "," +
-                                  std::to_string(FracSizeDistriPara.w) + ",\n");
-                AddLineToFile("./" + DFNFileName + "/" + DFN_Gen_csv_name +
-                                  ".csv",
-                              "Beta," + std::to_string(Beta) + ",\n");
-                AddLineToFile(
-                    "./" + DFNFileName + "/" + DFN_Gen_csv_name + ".csv",
-                    "Gamma," + DoubleNumberToScientificNotationString(Gamma) +
-                        ",\n");
+
+                if (!IfStructedDFN)
+                    AddLineToFile("./" + DFNFileName + "/" + DFN_Gen_csv_name +
+                                      ".csv",
+                                  "NumFractureGroups,1,\n");
+                else
+                    AddLineToFile("./" + DFNFileName + "/" + DFN_Gen_csv_name +
+                                      ".csv",
+                                  "NumFractureGroups,3,\n");
+                if (!IfStructedDFN)
+                    AddLineToFile(
+                        "./" + DFNFileName + "/" + DFN_Gen_csv_name + ".csv",
+                        "NumFractureEachGroup," +
+                            std::to_string(FracNumInit + i * FracNumIncre) + ",\n");
+                else
+                    AddLineToFile(
+                        "./" + DFNFileName + "/" + DFN_Gen_csv_name + ".csv",
+                        "NumFractureEachGroup," +
+                            std::to_string(FracNumInit + i * FracNumIncre) + ", " + std::to_string(FracNumInit + i * FracNumIncre) + ", " + std::to_string(FracNumInit + i * FracNumIncre) + ",\n");
+
+                if (!IfStructedDFN)
+                    AddLineToFile("./" + DFNFileName + "/" + DFN_Gen_csv_name +
+                                      ".csv",
+                                  "KappaValues," + std::to_string(Kappa) + ",\n");
+                else
+                    AddLineToFile("./" + DFNFileName + "/" + DFN_Gen_csv_name +
+                                      ".csv",
+                                  "KappaValues," + std::to_string(Kappa) + ", " + std::to_string(Kappa) + ", " + std::to_string(Kappa) + ",\n");
+
+                if (!IfStructedDFN)
+                    AddLineToFile("./" + DFNFileName + "/" + DFN_Gen_csv_name +
+                                      ".csv",
+                                  "MeanOrientationOfFisherDistribution,0,0,1,\n");
+                else
+                    AddLineToFile("./" + DFNFileName + "/" + DFN_Gen_csv_name +
+                                      ".csv",
+                                  "MeanOrientationOfFisherDistribution,1,0,0,0,1,0,0,0,1,\n");
+
+                if (!IfStructedDFN)
+                    AddLineToFile("./" + DFNFileName + "/" + DFN_Gen_csv_name +
+                                      ".csv",
+                                  "ModeOfSizeDistribution," +
+                                      std::to_string(FracSizeDistriMode) + ",\n");
+                else
+                    AddLineToFile("./" + DFNFileName + "/" + DFN_Gen_csv_name +
+                                      ".csv",
+                                  "ModeOfSizeDistribution," + std::to_string(FracSizeDistriMode) + "," + std::to_string(FracSizeDistriMode) + "," + std::to_string(FracSizeDistriMode) + ",\n");
+
+                if (!IfStructedDFN)
+                    AddLineToFile("./" + DFNFileName + "/" + DFN_Gen_csv_name +
+                                      ".csv",
+                                  "SizeDistributionParameters," +
+                                      std::to_string(FracSizeDistriPara.x) + "," +
+                                      std::to_string(FracSizeDistriPara.y) + "," +
+                                      std::to_string(FracSizeDistriPara.z) + "," +
+                                      std::to_string(FracSizeDistriPara.w) + ",\n");
+                else
+                    AddLineToFile("./" + DFNFileName + "/" + DFN_Gen_csv_name +
+                                      ".csv",
+                                  "SizeDistributionParameters," +
+                                      std::to_string(FracSizeDistriPara.x) + "," +
+                                      std::to_string(FracSizeDistriPara.y) + "," +
+                                      std::to_string(FracSizeDistriPara.z) + "," +
+                                      std::to_string(FracSizeDistriPara.w) + "," +
+                                      std::to_string(FracSizeDistriPara.x) + "," +
+                                      std::to_string(FracSizeDistriPara.y) + "," +
+                                      std::to_string(FracSizeDistriPara.z) + "," +
+                                      std::to_string(FracSizeDistriPara.w) + "," +
+                                      std::to_string(FracSizeDistriPara.x) + "," +
+                                      std::to_string(FracSizeDistriPara.y) + "," +
+                                      std::to_string(FracSizeDistriPara.z) + "," +
+                                      std::to_string(FracSizeDistriPara.w) + ",\n");
+
+                if (!IfStructedDFN)
+                    AddLineToFile("./" + DFNFileName + "/" + DFN_Gen_csv_name +
+                                      ".csv",
+                                  "Beta," + std::to_string(Beta) + ",\n");
+                else
+                    AddLineToFile("./" + DFNFileName + "/" + DFN_Gen_csv_name +
+                                      ".csv",
+                                  "Beta," + std::to_string(Beta) + "," + std::to_string(Beta) + "," + std::to_string(Beta) + ",\n");
+
+                if (!IfStructedDFN)
+                    AddLineToFile(
+                        "./" + DFNFileName + "/" + DFN_Gen_csv_name + ".csv",
+                        "Gamma," + DoubleNumberToScientificNotationString(Gamma) +
+                            ",\n");
+                else
+                    AddLineToFile(
+                        "./" + DFNFileName + "/" + DFN_Gen_csv_name + ".csv",
+                        "Gamma," + DoubleNumberToScientificNotationString(Gamma) + "," + DoubleNumberToScientificNotationString(Gamma) + "," + DoubleNumberToScientificNotationString(Gamma) + ",\n");
+
                 string DFN_gen_run_command = "cd ./" + DFNFileName + " && " +
                                              ExeuctablePath + "/DFN_Gen " +
                                              "./StochasticDFN";
@@ -240,7 +306,7 @@ int main(int argc, char *argv[])
             }
 
             CreateOrEmptyFile("./" + DFNFileName + "/X_DarcyFlow_Finished");
-            
+
             string DFN_SToreData_command = "cd ./" + DFNFileName + " && " +
                                            "python3 " + ExeuctablePath + "/StoreAndDelteHDF5.py " +
                                            "0  >> StoreAndDelteHDF5.log 2>&1";

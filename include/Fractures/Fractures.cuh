@@ -105,7 +105,7 @@ namespace cuDFNsys
 
     template <typename T>
     __global__ void FracturesChangeDomainSize(cuDFNsys::Fracture<T> *verts,
-                                              int count, T model_L);
+                                              int count, T model_L, double3 DomainDimensionRatioTT);
 
     template <typename T>
     __global__ void FractureTwoIntersectOrNot(cuDFNsys::Fracture<T> *verts,

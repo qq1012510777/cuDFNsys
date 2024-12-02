@@ -49,7 +49,7 @@ void cuDFNsys::DFN<T>::FractureGeneration()
 
         cuDFNsys::Fractures<T><<<this->NumFractures[i] / 256 + 1, 256>>>(
             Frac_device_sub_ptr,   // the pointer to device vector
-            this->RandomSeed,      // seed
+            this->RandomSeed + i,  // seed
             this->NumFractures[i], // number of fracture
             this->DomainSizeX,     // domain size
             this->ModeOfSizeDistribution
@@ -64,6 +64,7 @@ void cuDFNsys::DFN<T>::FractureGeneration()
             this->IfPseudo3D);
 
         cudaDeviceSynchronize();
+
         // wait until the device function finish
         Frac_host_sub = Frac_device_sub;
         thrust::copy(thrust::host, Frac_host_sub.begin(), Frac_host_sub.end(),
@@ -706,6 +707,44 @@ template void
 cuDFNsys::DFN<double>::LoadDFNFromCSV(const string &xlsxNameWithoutSuffix);
 template void
 cuDFNsys::DFN<float>::LoadDFNFromCSV(const string &xlsxNameWithoutSuffix);
+
+// ====================================================
+// NAME:        cuDFNsys::DFN<T>::ChangeDomainSize
+// DESCRIPTION: change the domain size
+// AUTHOR:      Tingchang YIN
+// DATE:        02/12/2024
+// ====================================================
+template <typename T>
+void cuDFNsys::DFN<T>::ChangeDomainSize(const T &L, const double3 &DomainDimensionRatioTT)
+{
+    this->NumFracturesTotal = this->FracturesDevice.size();
+
+    this->FracturesDevicePtr =
+        thrust::raw_pointer_cast(this->FracturesDevice.data());
+    this->DomainDimensionRatio = DomainDimensionRatioTT;
+    this->DomainSizeX = L;
+
+    cuDFNsys::FracturesChangeDomainSize<<<this->NumFracturesTotal / 256 + 1, 256>>>(this->FracturesDevicePtr,
+                                                                                    this->NumFracturesTotal,
+                                                                                    this->DomainSizeX,
+                                                                                    this->DomainDimensionRatio);
+    cudaDeviceSynchronize();
+    this->FracturesHost = this->FracturesDevice;
+
+    auto new_end = thrust::remove_if(this->FracturesHost.begin(),
+                                     this->FracturesHost.end(),
+                                     [](const cuDFNsys::Fracture<T> &elem)
+                                     { return elem.NumVertsTruncated == 0; });
+
+    // Resize the vector to remove "logical" garbage at the end
+    this->FracturesHost.erase(new_end, this->FracturesHost.end());
+    this->FracturesDevice = this->FracturesHost;
+    this->NumFracturesTotal = this->FracturesHost.size();
+    this->FracturesDevicePtr =
+        thrust::raw_pointer_cast(this->FracturesDevice.data());
+}
+template void cuDFNsys::DFN<double>::ChangeDomainSize(const double &L, const double3 &DomainDimensionRatioTT);
+template void cuDFNsys::DFN<float>::ChangeDomainSize(const float &L, const double3 &DomainDimensionRatioTT);
 
 // ====================================================
 // NAME:        cuDFNsys::MeshDFN<T>::MeshGeneration

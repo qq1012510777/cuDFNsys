@@ -112,7 +112,7 @@ __device__ __host__ void cuDFNsys::StimaA(cuDFNsys::EleCoor<T> coord, T A[3][3])
         }
     //-------
 
-    T determinant_ = Tsr[0][0] * ((Tsr[1][1] * Tsr[2][2]) - (Tsr[2][1] * Tsr[1][2])) - Tsr[0][1] * (Tsr[1][0] * Tsr[2][2] - Tsr[2][0] * Tsr[1][2]) + Tsr[0][2] * (Tsr[1][0] * Tsr[2][1] - Tsr[2][0] * Tsr[1][1]);
+    T determinant_ = abs(Tsr[0][0] * ((Tsr[1][1] * Tsr[2][2]) - (Tsr[2][1] * Tsr[1][2])) - Tsr[0][1] * (Tsr[1][0] * Tsr[2][2] - Tsr[2][0] * Tsr[1][2]) + Tsr[0][2] * (Tsr[1][0] * Tsr[2][1] - Tsr[2][0] * Tsr[1][1]));
 
     for (size_t i = 0; i < 3; ++i)
         for (size_t j = 0; j < 3; ++j)

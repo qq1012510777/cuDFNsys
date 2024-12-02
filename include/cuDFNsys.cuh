@@ -153,6 +153,7 @@ namespace cuDFNsys
         void SpatialPeriodicity();
         void LoadDFNFromCSV(const string &xlsxNameWithoutSuffix);
         bool CheckIfPeriodic() { return this->IfPeriodic; };
+        void ChangeDomainSize(const T &L, const double3 &DomainDimensionRatioTT);
     };
 }; // namespace cuDFNsys
 
