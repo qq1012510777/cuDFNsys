@@ -110,6 +110,20 @@ int main(int argc, char *argv[])
     //--------------------------------------
     int errorCountLimit = 5;
     int erroCounter = 0;
+    double P33_total_A[1] = {0};
+    double P33_connected_A[1] = {0};
+    double Ratio_of_P33_A[1] = {0};
+    double P33_largest_cluster_A[1] = {0};
+    double P32_total_A[1] = {0};
+    double P32_connected_A[1] = {0};
+    double Ratio_of_P32_A[1] = {0};
+    double P32_largest_cluster_A[1] = {0};
+    double P30_A[1] = {0};
+    double P30_connected_A[1] = {0};
+    double Ratio_of_P30_A[1] = {0};
+    double P30_largest_cluster_A[1] = {0};
+    double Percolation_probability_A[1] = {0};
+    double n_I_A[1] = {0};
 
     for (int i = 0; i <= NumFracIncre_input[0]; ++i)
     {
@@ -144,32 +158,98 @@ int main(int argc, char *argv[])
             bool IfReRun = false;
             for (int percoDir = 0; percoDir < 3; ++percoDir)
             {
-                if (IfAFileExist("ClassDFN_" + cuDFNsys::ToStringWithWidth(i, 2) + "_" +
-                                 cuDFNsys::ToStringWithWidth(percoDir, 1) + ".h5"))
+                string dataFile = "DataDFN_" + cuDFNsys::ToStringWithWidth(i, 2) + "_" +
+                                  cuDFNsys::ToStringWithWidth(percoDir, 1) + ".h5";
+                if (IfAFileExist(dataFile))
                 {
-                    cout << ("ClassDFN_" + cuDFNsys::ToStringWithWidth(i, 2) + "_" +
-                             cuDFNsys::ToStringWithWidth(percoDir, 1) + ".h5")
+                    cout << (dataFile)
                          << " exists\n";
                     continue;
                 }
                 IfReRun = true;
             }
 
+            string DFNh5 = "ClassDFN_" + cuDFNsys::ToStringWithWidth(i, 2);
             if (IfReRun)
             {
                 cout << "This loop is running\n";
                 for (int percoDir = 0; percoDir < 3; ++percoDir)
                 {
 
-                    cuDFNsys::DFN<double> my_dfn_2;
-                    my_dfn_2 = my_dfn;
+                    my_dfn.PercoDir = percoDir;
 
-                    my_dfn_2.PercoDir = percoDir;
-                    my_dfn_2.FractureGeneration();
-                    my_dfn_2.IdentifyIntersectionsClusters(false);
+                    if (percoDir == 0)
+                    {
+                        my_dfn.FractureGeneration();
+                        my_dfn.IdentifyIntersectionsClusters(false);
+                        my_dfn.StoreInH5(DFNh5);
+                    }
+                    else
+                    {
+                        my_dfn.ChangePercolationDirectionIdentifyPercolationCluster(percoDir);
+                    }
+                    std::cout << "PercolationDirection = " << my_dfn.PercoDir << ", PercolationState = " << my_dfn.PercolationCluster.size() << endl;
 
-                    my_dfn_2.StoreInH5("ClassDFN_" + cuDFNsys::ToStringWithWidth(i, 2) + "_" +
-                                       cuDFNsys::ToStringWithWidth(percoDir, 1));
+                    cuDFNsys::GetStatistics<double>(my_dfn.FracturesHost,
+                                                    my_dfn.IntersectionMap,
+                                                    my_dfn.ListClusters,
+                                                    my_dfn.PercolationCluster,
+                                                    my_dfn.DomainSizeX,
+                                                    P33_total_A[0],
+                                                    P33_connected_A[0],
+                                                    Ratio_of_P33_A[0],
+                                                    P33_largest_cluster_A[0],
+                                                    P32_total_A[0],
+                                                    P32_connected_A[0],
+                                                    Ratio_of_P32_A[0],
+                                                    P32_largest_cluster_A[0],
+                                                    P30_A[0],
+                                                    P30_connected_A[0],
+                                                    Ratio_of_P30_A[0],
+                                                    P30_largest_cluster_A[0],
+                                                    Percolation_probability_A[0],
+                                                    n_I_A[0]);
+
+                    vector<string> datasetname = {
+                        "P33_total",
+                        "P33_connected",
+                        "Ratio_of_P33",
+                        "P33_largest_cluster",
+                        "P32_total",
+                        "P32_connected",
+                        "Ratio_of_P32",
+                        "P32_largest_cluster",
+                        "P30",
+                        "P30_connected",
+                        "Ratio_of_P30",
+                        "P30_largest_cluster",
+                        "Percolation_probability",
+                        "n_I"};
+
+                    vector<double *> data_input = {P33_total_A,
+                                                   P33_connected_A,
+                                                   Ratio_of_P33_A,
+                                                   P33_largest_cluster_A,
+                                                   P32_total_A,
+                                                   P32_connected_A,
+                                                   Ratio_of_P32_A,
+                                                   P32_largest_cluster_A,
+                                                   P30_A,
+                                                   P30_connected_A,
+                                                   Ratio_of_P30_A,
+                                                   P30_largest_cluster_A,
+                                                   Percolation_probability_A,
+                                                   n_I_A
+
+                    };
+                    string dataFile = "DataDFN_" + cuDFNsys::ToStringWithWidth(i, 2) + "_" +
+                                      cuDFNsys::ToStringWithWidth(percoDir, 1) + ".h5";
+
+                    vector<uint2> dim_ss(data_input.size(), make_uint2(1, 1));
+                    cuDFNsys::HDF5API h5out;
+                    h5out.NewFile(dataFile);
+                    h5out.AddDatasetsWithOneGroup(dataFile, "N",
+                                                  datasetname, data_input, dim_ss);
                 }
             }
 
@@ -179,7 +259,7 @@ int main(int argc, char *argv[])
         {
             cout << "cuDFNsys::Exceptions: " << e.what() << endl;
             int result_system = system(
-                std::string("rm -rf ./ClassDFN_" + cuDFNsys::ToStringWithWidth(i, 2) + "_*.h5")
+                std::string("rm -rf ./ClassDFN_" + cuDFNsys::ToStringWithWidth(i, 2) + ".h5")
                     .c_str());
 
             i--;
@@ -191,7 +271,7 @@ int main(int argc, char *argv[])
         {
             cout << "cuDFNsys::Exceptions: " << e.what() << endl;
             int result_system = system(
-                std::string("rm -rf ./ClassDFN_" + cuDFNsys::ToStringWithWidth(i, 2) + "_*.h5")
+                std::string("rm -rf ./ClassDFN_" + cuDFNsys::ToStringWithWidth(i, 2) + ".h5")
                     .c_str());
             i--;
             if (ErrorCheck(erroCounter, errorCountLimit))
@@ -202,7 +282,7 @@ int main(int argc, char *argv[])
         {
             cout << "H5::Exceptions: " << e.getDetailMsg() << endl;
             int result_system = system(
-                std::string("rm -rf ./ClassDFN_" + cuDFNsys::ToStringWithWidth(i, 2) + "_*.h5")
+                std::string("rm -rf ./ClassDFN_" + cuDFNsys::ToStringWithWidth(i, 2) + ".h5")
                     .c_str());
             i--;
             if (ErrorCheck(erroCounter, errorCountLimit))
@@ -213,7 +293,7 @@ int main(int argc, char *argv[])
         {
             cout << "H5::Exceptions: " << e.getDetailMsg() << endl;
             int result_system = system(
-                std::string("rm -rf ./ClassDFN_" + cuDFNsys::ToStringWithWidth(i, 2) + "_*.h5")
+                std::string("rm -rf ./ClassDFN_" + cuDFNsys::ToStringWithWidth(i, 2) + ".h5")
                     .c_str());
             i--;
             if (ErrorCheck(erroCounter, errorCountLimit))
@@ -224,7 +304,7 @@ int main(int argc, char *argv[])
         {
             cout << "Unknown exceptions\n";
             int result_system = system(
-                std::string("rm -rf ./ClassDFN_" + cuDFNsys::ToStringWithWidth(i, 2) + "_*.h5")
+                std::string("rm -rf ./ClassDFN_" + cuDFNsys::ToStringWithWidth(i, 2) + ".h5")
                     .c_str());
             i--;
             if (ErrorCheck(erroCounter, errorCountLimit))

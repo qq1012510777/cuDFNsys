@@ -33,7 +33,7 @@ void cuDFNsys::GetStatistics(const thrust::host_vector<cuDFNsys::Fracture<T>> &F
                              T &P33_total_B,
                              T &P33_connected_B,
                              T &Ratio_of_P33_B,
-                             T &P33_largest_cluster_B,
+                             T &P33_largest_cluster_B, //---------
                              T &P32_total_B,
                              T &P32_connected_B,
                              T &Ratio_of_P32_B,

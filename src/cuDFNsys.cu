@@ -747,6 +747,63 @@ template void cuDFNsys::DFN<double>::ChangeDomainSize(const double &L, const dou
 template void cuDFNsys::DFN<float>::ChangeDomainSize(const float &L, const double3 &DomainDimensionRatioTT);
 
 // ====================================================
+// NAME:        cuDFNsys::DFN<T>::ChangePercolationDirectionIdentifyPercolationCluster
+// DESCRIPTION: IdentifyPercolationCluster in different direction
+// AUTHOR:      Tingchang YIN
+// DATE:        04/12/2024
+// ====================================================
+template <typename T>
+void cuDFNsys::DFN<T>::ChangePercolationDirectionIdentifyPercolationCluster(const int &dir)
+{
+    this->PercoDir = dir;
+
+    this->PercolationCluster.resize(0);
+    this->PercolationCluster.clear();
+
+    int inlet = 0, outlet = 0;
+    if (dir == 0)
+    {
+        outlet = 1;
+    }
+    else if (dir == 1)
+    {
+        inlet = 2;
+        outlet = 3;
+    }
+    else if (dir > 1)
+    {
+        inlet = 4;
+        outlet = 5;
+    }
+
+    for (size_t i = 0; i < this->ListClusters.size(); ++i)
+    {
+        bool inlet_1 = false;
+        bool outlet_1 = false;
+
+        for (size_t j = 0; j < this->ListClusters[i].size(); ++j)
+        {
+            int FracID = this->ListClusters[i][j];
+
+            if (this->FracturesHost[FracID].ConnectModelSurf[inlet] == true)
+                inlet_1 = true;
+
+            if (this->FracturesHost[FracID].ConnectModelSurf[outlet] == true)
+                outlet_1 = true;
+
+            if (inlet_1 == true && outlet_1 == true)
+            {
+                this->PercolationCluster.push_back(i);
+                break;
+            }
+        }
+    };
+    this->PercolationCluster.shrink_to_fit();
+};
+template void cuDFNsys::DFN<double>::ChangePercolationDirectionIdentifyPercolationCluster(const int &PerDir);
+template void cuDFNsys::DFN<float>::ChangePercolationDirectionIdentifyPercolationCluster(const int &PerDir);
+
+// ====================================================
 // NAME:        cuDFNsys::MeshDFN<T>::MeshGeneration
 // DESCRIPTION: MeshGeneration
 // AUTHOR:      Tingchang YIN
