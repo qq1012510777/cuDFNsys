@@ -652,7 +652,7 @@ double2 cuDFNsys::MHFEM<T>::MatlabPlot(
         oss << "len3=[vecnorm([coordinate_3D(element_3D(:, 1), :) - "
                "coordinate_3D(element_3D(:, 3), :)]')]';\n";
         oss << "P_ss = (len1+len2+len3)*0.5;\n";
-        oss << "Area_ss = (P_ss .* len1 .* len2 .* len3) .^ 0.5;\n";
+        oss << "Area_ss=(P_ss .* (P_ss-len1) .* (P_ss-len2) .* (P_ss-len3)) .^ 0.5;\n";
         oss << "meanFractureVelocity = sum(VelocityNorm .* Area_ss .* "
                "ElementAperture) ./ "
                "(sum(Area_ss .* ElementAperture))\n";
