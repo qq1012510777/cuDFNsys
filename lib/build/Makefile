@@ -57,18 +57,18 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/yintingchang/cuDFNsys/lib
+CMAKE_SOURCE_DIR = /home/tingchang/cuDFNsys/lib
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/yintingchang/cuDFNsys/lib/build
+CMAKE_BINARY_DIR = /home/tingchang/cuDFNsys/lib/build
 
 #=============================================================================
 # Targets provided globally by CMake.
 
 # Special rule for the target edit_cache
 edit_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Running CMake cache editor..."
-	/usr/bin/ccmake -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "No interactive CMake dialog available..."
+	/usr/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -87,9 +87,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/yintingchang/cuDFNsys/lib/build/CMakeFiles /home/yintingchang/cuDFNsys/lib/build//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/tingchang/cuDFNsys/lib/build/CMakeFiles /home/tingchang/cuDFNsys/lib/build//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/yintingchang/cuDFNsys/lib/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/tingchang/cuDFNsys/lib/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -129,1493 +129,1493 @@ cuDFNsys_static/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/build
 .PHONY : cuDFNsys_static/fast
 
-home/yintingchang/cuDFNsys/src/CPUSecond/CPUSecond.o: home/yintingchang/cuDFNsys/src/CPUSecond/CPUSecond.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/CPUSecond/CPUSecond.o
+home/tingchang/cuDFNsys/src/CPUSecond/CPUSecond.o: home/tingchang/cuDFNsys/src/CPUSecond/CPUSecond.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/CPUSecond/CPUSecond.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/CPUSecond/CPUSecond.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/CPUSecond/CPUSecond.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/CPUSecond/CPUSecond.cu.o
+home/tingchang/cuDFNsys/src/CPUSecond/CPUSecond.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/CPUSecond/CPUSecond.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/CPUSecond/CPUSecond.cu.o
 
-home/yintingchang/cuDFNsys/src/CPUSecond/CPUSecond.i: home/yintingchang/cuDFNsys/src/CPUSecond/CPUSecond.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/CPUSecond/CPUSecond.i
+home/tingchang/cuDFNsys/src/CPUSecond/CPUSecond.i: home/tingchang/cuDFNsys/src/CPUSecond/CPUSecond.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/CPUSecond/CPUSecond.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/CPUSecond/CPUSecond.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/CPUSecond/CPUSecond.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/CPUSecond/CPUSecond.cu.i
+home/tingchang/cuDFNsys/src/CPUSecond/CPUSecond.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/CPUSecond/CPUSecond.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/CPUSecond/CPUSecond.cu.i
 
-home/yintingchang/cuDFNsys/src/CPUSecond/CPUSecond.s: home/yintingchang/cuDFNsys/src/CPUSecond/CPUSecond.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/CPUSecond/CPUSecond.s
+home/tingchang/cuDFNsys/src/CPUSecond/CPUSecond.s: home/tingchang/cuDFNsys/src/CPUSecond/CPUSecond.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/CPUSecond/CPUSecond.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/CPUSecond/CPUSecond.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/CPUSecond/CPUSecond.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/CPUSecond/CPUSecond.cu.s
+home/tingchang/cuDFNsys/src/CPUSecond/CPUSecond.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/CPUSecond/CPUSecond.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/CPUSecond/CPUSecond.cu.s
 
-home/yintingchang/cuDFNsys/src/Exceptions/Exceptions.o: home/yintingchang/cuDFNsys/src/Exceptions/Exceptions.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Exceptions/Exceptions.o
+home/tingchang/cuDFNsys/src/Exceptions/Exceptions.o: home/tingchang/cuDFNsys/src/Exceptions/Exceptions.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Exceptions/Exceptions.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Exceptions/Exceptions.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Exceptions/Exceptions.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Exceptions/Exceptions.cu.o
+home/tingchang/cuDFNsys/src/Exceptions/Exceptions.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Exceptions/Exceptions.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Exceptions/Exceptions.cu.o
 
-home/yintingchang/cuDFNsys/src/Exceptions/Exceptions.i: home/yintingchang/cuDFNsys/src/Exceptions/Exceptions.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Exceptions/Exceptions.i
+home/tingchang/cuDFNsys/src/Exceptions/Exceptions.i: home/tingchang/cuDFNsys/src/Exceptions/Exceptions.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Exceptions/Exceptions.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Exceptions/Exceptions.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Exceptions/Exceptions.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Exceptions/Exceptions.cu.i
+home/tingchang/cuDFNsys/src/Exceptions/Exceptions.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Exceptions/Exceptions.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Exceptions/Exceptions.cu.i
 
-home/yintingchang/cuDFNsys/src/Exceptions/Exceptions.s: home/yintingchang/cuDFNsys/src/Exceptions/Exceptions.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Exceptions/Exceptions.s
+home/tingchang/cuDFNsys/src/Exceptions/Exceptions.s: home/tingchang/cuDFNsys/src/Exceptions/Exceptions.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Exceptions/Exceptions.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Exceptions/Exceptions.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Exceptions/Exceptions.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Exceptions/Exceptions.cu.s
+home/tingchang/cuDFNsys/src/Exceptions/Exceptions.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Exceptions/Exceptions.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Exceptions/Exceptions.cu.s
 
-home/yintingchang/cuDFNsys/src/Fractures/Fracture.o: home/yintingchang/cuDFNsys/src/Fractures/Fracture.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/Fracture.o
+home/tingchang/cuDFNsys/src/Fractures/Fracture.o: home/tingchang/cuDFNsys/src/Fractures/Fracture.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/Fracture.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Fractures/Fracture.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Fractures/Fracture.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/Fracture.cu.o
+home/tingchang/cuDFNsys/src/Fractures/Fracture.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Fractures/Fracture.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/Fracture.cu.o
 
-home/yintingchang/cuDFNsys/src/Fractures/Fracture.i: home/yintingchang/cuDFNsys/src/Fractures/Fracture.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/Fracture.i
+home/tingchang/cuDFNsys/src/Fractures/Fracture.i: home/tingchang/cuDFNsys/src/Fractures/Fracture.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/Fracture.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Fractures/Fracture.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Fractures/Fracture.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/Fracture.cu.i
+home/tingchang/cuDFNsys/src/Fractures/Fracture.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Fractures/Fracture.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/Fracture.cu.i
 
-home/yintingchang/cuDFNsys/src/Fractures/Fracture.s: home/yintingchang/cuDFNsys/src/Fractures/Fracture.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/Fracture.s
+home/tingchang/cuDFNsys/src/Fractures/Fracture.s: home/tingchang/cuDFNsys/src/Fractures/Fracture.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/Fracture.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Fractures/Fracture.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Fractures/Fracture.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/Fracture.cu.s
+home/tingchang/cuDFNsys/src/Fractures/Fracture.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Fractures/Fracture.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/Fracture.cu.s
 
-home/yintingchang/cuDFNsys/src/Fractures/Fractures.o: home/yintingchang/cuDFNsys/src/Fractures/Fractures.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/Fractures.o
+home/tingchang/cuDFNsys/src/Fractures/Fractures.o: home/tingchang/cuDFNsys/src/Fractures/Fractures.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/Fractures.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Fractures/Fractures.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Fractures/Fractures.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/Fractures.cu.o
+home/tingchang/cuDFNsys/src/Fractures/Fractures.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Fractures/Fractures.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/Fractures.cu.o
 
-home/yintingchang/cuDFNsys/src/Fractures/Fractures.i: home/yintingchang/cuDFNsys/src/Fractures/Fractures.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/Fractures.i
+home/tingchang/cuDFNsys/src/Fractures/Fractures.i: home/tingchang/cuDFNsys/src/Fractures/Fractures.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/Fractures.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Fractures/Fractures.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Fractures/Fractures.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/Fractures.cu.i
+home/tingchang/cuDFNsys/src/Fractures/Fractures.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Fractures/Fractures.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/Fractures.cu.i
 
-home/yintingchang/cuDFNsys/src/Fractures/Fractures.s: home/yintingchang/cuDFNsys/src/Fractures/Fractures.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/Fractures.s
+home/tingchang/cuDFNsys/src/Fractures/Fractures.s: home/tingchang/cuDFNsys/src/Fractures/Fractures.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/Fractures.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Fractures/Fractures.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Fractures/Fractures.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/Fractures.cu.s
+home/tingchang/cuDFNsys/src/Fractures/Fractures.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Fractures/Fractures.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/Fractures.cu.s
 
-home/yintingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.o: home/yintingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.o
+home/tingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.o: home/tingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.cu.o
+home/tingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.cu.o
 
-home/yintingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.i: home/yintingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.i
+home/tingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.i: home/tingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.cu.i
+home/tingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.cu.i
 
-home/yintingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.s: home/yintingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.s
+home/tingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.s: home/tingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.cu.s
+home/tingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.cu.s
 
-home/yintingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.o: home/yintingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.o
+home/tingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.o: home/tingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.cu.o
+home/tingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.cu.o
 
-home/yintingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.i: home/yintingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.i
+home/tingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.i: home/tingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.cu.i
+home/tingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.cu.i
 
-home/yintingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.s: home/yintingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.s
+home/tingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.s: home/tingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.cu.s
+home/tingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.cu.s
 
-home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersection.o: home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersection.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersection.o
+home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersection.o: home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersection.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersection.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersection.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersection.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersection.cu.o
+home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersection.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersection.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersection.cu.o
 
-home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersection.i: home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersection.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersection.i
+home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersection.i: home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersection.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersection.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersection.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersection.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersection.cu.i
+home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersection.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersection.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersection.cu.i
 
-home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersection.s: home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersection.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersection.s
+home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersection.s: home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersection.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersection.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersection.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersection.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersection.cu.s
+home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersection.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersection.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersection.cu.s
 
-home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.o: home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.o
+home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.o: home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.cu.o
+home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.cu.o
 
-home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.i: home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.i
+home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.i: home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.cu.i
+home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.cu.i
 
-home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.s: home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.s
+home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.s: home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.cu.s
+home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.cu.s
 
-home/yintingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.o: home/yintingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.o
+home/tingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.o: home/tingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.cu.o
+home/tingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.cu.o
 
-home/yintingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.i: home/yintingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.i
+home/tingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.i: home/tingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.cu.i
+home/tingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.cu.i
 
-home/yintingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.s: home/yintingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.s
+home/tingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.s: home/tingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.cu.s
+home/tingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.cu.s
 
-home/yintingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.o: home/yintingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.o
+home/tingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.o: home/tingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.cu.o
+home/tingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.cu.o
 
-home/yintingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.i: home/yintingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.i
+home/tingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.i: home/tingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.cu.i
+home/tingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.cu.i
 
-home/yintingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.s: home/yintingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.s
+home/tingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.s: home/tingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.cu.s
+home/tingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.cu.s
 
-home/yintingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.o: home/yintingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.o
+home/tingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.o: home/tingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.cu.o
+home/tingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.cu.o
 
-home/yintingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.i: home/yintingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.i
+home/tingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.i: home/tingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.cu.i
+home/tingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.cu.i
 
-home/yintingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.s: home/yintingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.s
+home/tingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.s: home/tingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.cu.s
+home/tingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.cu.s
 
-home/yintingchang/cuDFNsys/src/Fractures/TruncateFracture.o: home/yintingchang/cuDFNsys/src/Fractures/TruncateFracture.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/TruncateFracture.o
+home/tingchang/cuDFNsys/src/Fractures/TruncateFracture.o: home/tingchang/cuDFNsys/src/Fractures/TruncateFracture.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/TruncateFracture.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Fractures/TruncateFracture.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Fractures/TruncateFracture.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/TruncateFracture.cu.o
+home/tingchang/cuDFNsys/src/Fractures/TruncateFracture.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Fractures/TruncateFracture.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/TruncateFracture.cu.o
 
-home/yintingchang/cuDFNsys/src/Fractures/TruncateFracture.i: home/yintingchang/cuDFNsys/src/Fractures/TruncateFracture.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/TruncateFracture.i
+home/tingchang/cuDFNsys/src/Fractures/TruncateFracture.i: home/tingchang/cuDFNsys/src/Fractures/TruncateFracture.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/TruncateFracture.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Fractures/TruncateFracture.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Fractures/TruncateFracture.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/TruncateFracture.cu.i
+home/tingchang/cuDFNsys/src/Fractures/TruncateFracture.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Fractures/TruncateFracture.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/TruncateFracture.cu.i
 
-home/yintingchang/cuDFNsys/src/Fractures/TruncateFracture.s: home/yintingchang/cuDFNsys/src/Fractures/TruncateFracture.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/TruncateFracture.s
+home/tingchang/cuDFNsys/src/Fractures/TruncateFracture.s: home/tingchang/cuDFNsys/src/Fractures/TruncateFracture.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/TruncateFracture.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Fractures/TruncateFracture.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Fractures/TruncateFracture.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Fractures/TruncateFracture.cu.s
+home/tingchang/cuDFNsys/src/Fractures/TruncateFracture.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Fractures/TruncateFracture.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Fractures/TruncateFracture.cu.s
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.o: home/yintingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.o
+home/tingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.o: home/tingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.cu.o
+home/tingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.cu.o
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.i: home/yintingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.i
+home/tingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.i: home/tingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.cu.i
+home/tingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.cu.i
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.s: home/yintingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.s
+home/tingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.s: home/tingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.cu.s
+home/tingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.cu.s
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.o: home/yintingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.o
+home/tingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.o: home/tingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.cu.o
+home/tingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.cu.o
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.i: home/yintingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.i
+home/tingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.i: home/tingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.cu.i
+home/tingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.cu.i
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.s: home/yintingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.s
+home/tingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.s: home/tingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.cu.s
+home/tingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.cu.s
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.o: home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.o
+home/tingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.o: home/tingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.cu.o
+home/tingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.cu.o
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.i: home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.i
+home/tingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.i: home/tingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.cu.i
+home/tingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.cu.i
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.s: home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.s
+home/tingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.s: home/tingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.cu.s
+home/tingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.cu.s
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.o: home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.o
+home/tingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.o: home/tingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.cu.o
+home/tingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.cu.o
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.i: home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.i
+home/tingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.i: home/tingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.cu.i
+home/tingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.cu.i
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.s: home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.s
+home/tingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.s: home/tingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.cu.s
+home/tingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.cu.s
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.o: home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.o
+home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.o: home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.cu.o
+home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.cu.o
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.i: home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.i
+home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.i: home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.cu.i
+home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.cu.i
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.s: home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.s
+home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.s: home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.cu.s
+home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.cu.s
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.o: home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.o
+home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.o: home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.cu.o
+home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.cu.o
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.i: home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.i
+home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.i: home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.cu.i
+home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.cu.i
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.s: home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.s
+home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.s: home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.cu.s
+home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.cu.s
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.o: home/yintingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.o
+home/tingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.o: home/tingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.cu.o
+home/tingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.cu.o
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.i: home/yintingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.i
+home/tingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.i: home/tingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.cu.i
+home/tingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.cu.i
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.s: home/yintingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.s
+home/tingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.s: home/tingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.cu.s
+home/tingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.cu.s
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.o: home/yintingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.o
+home/tingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.o: home/tingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.cu.o
+home/tingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.cu.o
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.i: home/yintingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.i
+home/tingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.i: home/tingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.cu.i
+home/tingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.cu.i
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.s: home/yintingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.s
+home/tingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.s: home/tingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.cu.s
+home/tingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.cu.s
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.o: home/yintingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.o
+home/tingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.o: home/tingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.cu.o
+home/tingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.cu.o
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.i: home/yintingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.i
+home/tingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.i: home/tingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.cu.i
+home/tingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.cu.i
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.s: home/yintingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.s
+home/tingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.s: home/tingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.cu.s
+home/tingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.cu.s
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.o: home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.o
+home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.o: home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.cu.o
+home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.cu.o
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.i: home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.i
+home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.i: home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.cu.i
+home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.cu.i
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.s: home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.s
+home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.s: home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.cu.s
+home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.cu.s
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.o: home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.o
+home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.o: home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.cu.o
+home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.cu.o
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.i: home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.i
+home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.i: home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.cu.i
+home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.cu.i
 
-home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.s: home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.s
+home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.s: home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.cu.s
+home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.cu.s
 
-home/yintingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.o: home/yintingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.o
+home/tingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.o: home/tingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.cu.o
+home/tingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.cu.o
 
-home/yintingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.i: home/yintingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.i
+home/tingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.i: home/tingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.cu.i
+home/tingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.cu.i
 
-home/yintingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.s: home/yintingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.s
+home/tingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.s: home/tingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.cu.s
+home/tingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.cu.s
 
-home/yintingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.o: home/yintingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.o
+home/tingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.o: home/tingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.cu.o
+home/tingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.cu.o
 
-home/yintingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.i: home/yintingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.i
+home/tingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.i: home/tingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.cu.i
+home/tingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.cu.i
 
-home/yintingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.s: home/yintingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.s
+home/tingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.s: home/tingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.cu.s
+home/tingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.cu.s
 
-home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.o: home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.o
+home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.o: home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.cu.o
+home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.cu.o
 
-home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.i: home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.i
+home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.i: home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.cu.i
+home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.cu.i
 
-home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.s: home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.s
+home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.s: home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.cu.s
+home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.cu.s
 
-home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.o: home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.o
+home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.o: home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.cu.o
+home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.cu.o
 
-home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.i: home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.i
+home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.i: home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.cu.i
+home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.cu.i
 
-home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.s: home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.s
+home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.s: home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.cu.s
+home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.cu.s
 
-home/yintingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.o: home/yintingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.o
+home/tingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.o: home/tingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.o
+home/tingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.o
 
-home/yintingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.i: home/yintingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.i
+home/tingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.i: home/tingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.i
+home/tingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.i
 
-home/yintingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.s: home/yintingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.s
+home/tingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.s: home/tingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.s
+home/tingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.cu.s
 
-home/yintingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.o: home/yintingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.o
+home/tingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.o: home/tingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.cu.o
+home/tingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.cu.o
 
-home/yintingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.i: home/yintingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.i
+home/tingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.i: home/tingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.cu.i
+home/tingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.cu.i
 
-home/yintingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.s: home/yintingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.s
+home/tingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.s: home/tingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.cu.s
+home/tingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.cu.s
 
-home/yintingchang/cuDFNsys/src/GetStatistics/GetStatistics.o: home/yintingchang/cuDFNsys/src/GetStatistics/GetStatistics.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/GetStatistics/GetStatistics.o
+home/tingchang/cuDFNsys/src/GetStatistics/GetStatistics.o: home/tingchang/cuDFNsys/src/GetStatistics/GetStatistics.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/GetStatistics/GetStatistics.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/GetStatistics/GetStatistics.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/GetStatistics/GetStatistics.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/GetStatistics/GetStatistics.cu.o
+home/tingchang/cuDFNsys/src/GetStatistics/GetStatistics.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/GetStatistics/GetStatistics.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/GetStatistics/GetStatistics.cu.o
 
-home/yintingchang/cuDFNsys/src/GetStatistics/GetStatistics.i: home/yintingchang/cuDFNsys/src/GetStatistics/GetStatistics.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/GetStatistics/GetStatistics.i
+home/tingchang/cuDFNsys/src/GetStatistics/GetStatistics.i: home/tingchang/cuDFNsys/src/GetStatistics/GetStatistics.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/GetStatistics/GetStatistics.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/GetStatistics/GetStatistics.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/GetStatistics/GetStatistics.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/GetStatistics/GetStatistics.cu.i
+home/tingchang/cuDFNsys/src/GetStatistics/GetStatistics.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/GetStatistics/GetStatistics.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/GetStatistics/GetStatistics.cu.i
 
-home/yintingchang/cuDFNsys/src/GetStatistics/GetStatistics.s: home/yintingchang/cuDFNsys/src/GetStatistics/GetStatistics.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/GetStatistics/GetStatistics.s
+home/tingchang/cuDFNsys/src/GetStatistics/GetStatistics.s: home/tingchang/cuDFNsys/src/GetStatistics/GetStatistics.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/GetStatistics/GetStatistics.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/GetStatistics/GetStatistics.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/GetStatistics/GetStatistics.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/GetStatistics/GetStatistics.cu.s
+home/tingchang/cuDFNsys/src/GetStatistics/GetStatistics.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/GetStatistics/GetStatistics.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/GetStatistics/GetStatistics.cu.s
 
-home/yintingchang/cuDFNsys/src/Graph/Graph.o: home/yintingchang/cuDFNsys/src/Graph/Graph.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Graph/Graph.o
+home/tingchang/cuDFNsys/src/Graph/Graph.o: home/tingchang/cuDFNsys/src/Graph/Graph.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Graph/Graph.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Graph/Graph.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Graph/Graph.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Graph/Graph.cu.o
+home/tingchang/cuDFNsys/src/Graph/Graph.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Graph/Graph.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Graph/Graph.cu.o
 
-home/yintingchang/cuDFNsys/src/Graph/Graph.i: home/yintingchang/cuDFNsys/src/Graph/Graph.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Graph/Graph.i
+home/tingchang/cuDFNsys/src/Graph/Graph.i: home/tingchang/cuDFNsys/src/Graph/Graph.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Graph/Graph.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Graph/Graph.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Graph/Graph.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Graph/Graph.cu.i
+home/tingchang/cuDFNsys/src/Graph/Graph.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Graph/Graph.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Graph/Graph.cu.i
 
-home/yintingchang/cuDFNsys/src/Graph/Graph.s: home/yintingchang/cuDFNsys/src/Graph/Graph.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Graph/Graph.s
+home/tingchang/cuDFNsys/src/Graph/Graph.s: home/tingchang/cuDFNsys/src/Graph/Graph.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Graph/Graph.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Graph/Graph.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Graph/Graph.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Graph/Graph.cu.s
+home/tingchang/cuDFNsys/src/Graph/Graph.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Graph/Graph.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Graph/Graph.cu.s
 
-home/yintingchang/cuDFNsys/src/HDF5API/HDF5API.o: home/yintingchang/cuDFNsys/src/HDF5API/HDF5API.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/HDF5API/HDF5API.o
+home/tingchang/cuDFNsys/src/HDF5API/HDF5API.o: home/tingchang/cuDFNsys/src/HDF5API/HDF5API.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/HDF5API/HDF5API.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/HDF5API/HDF5API.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/HDF5API/HDF5API.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/HDF5API/HDF5API.cu.o
+home/tingchang/cuDFNsys/src/HDF5API/HDF5API.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/HDF5API/HDF5API.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/HDF5API/HDF5API.cu.o
 
-home/yintingchang/cuDFNsys/src/HDF5API/HDF5API.i: home/yintingchang/cuDFNsys/src/HDF5API/HDF5API.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/HDF5API/HDF5API.i
+home/tingchang/cuDFNsys/src/HDF5API/HDF5API.i: home/tingchang/cuDFNsys/src/HDF5API/HDF5API.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/HDF5API/HDF5API.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/HDF5API/HDF5API.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/HDF5API/HDF5API.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/HDF5API/HDF5API.cu.i
+home/tingchang/cuDFNsys/src/HDF5API/HDF5API.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/HDF5API/HDF5API.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/HDF5API/HDF5API.cu.i
 
-home/yintingchang/cuDFNsys/src/HDF5API/HDF5API.s: home/yintingchang/cuDFNsys/src/HDF5API/HDF5API.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/HDF5API/HDF5API.s
+home/tingchang/cuDFNsys/src/HDF5API/HDF5API.s: home/tingchang/cuDFNsys/src/HDF5API/HDF5API.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/HDF5API/HDF5API.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/HDF5API/HDF5API.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/HDF5API/HDF5API.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/HDF5API/HDF5API.cu.s
+home/tingchang/cuDFNsys/src/HDF5API/HDF5API.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/HDF5API/HDF5API.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/HDF5API/HDF5API.cu.s
 
-home/yintingchang/cuDFNsys/src/InputObjectData/InputObjectData.o: home/yintingchang/cuDFNsys/src/InputObjectData/InputObjectData.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/InputObjectData/InputObjectData.o
+home/tingchang/cuDFNsys/src/InputObjectData/InputObjectData.o: home/tingchang/cuDFNsys/src/InputObjectData/InputObjectData.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/InputObjectData/InputObjectData.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/InputObjectData/InputObjectData.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/InputObjectData/InputObjectData.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/InputObjectData/InputObjectData.cu.o
+home/tingchang/cuDFNsys/src/InputObjectData/InputObjectData.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/InputObjectData/InputObjectData.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/InputObjectData/InputObjectData.cu.o
 
-home/yintingchang/cuDFNsys/src/InputObjectData/InputObjectData.i: home/yintingchang/cuDFNsys/src/InputObjectData/InputObjectData.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/InputObjectData/InputObjectData.i
+home/tingchang/cuDFNsys/src/InputObjectData/InputObjectData.i: home/tingchang/cuDFNsys/src/InputObjectData/InputObjectData.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/InputObjectData/InputObjectData.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/InputObjectData/InputObjectData.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/InputObjectData/InputObjectData.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/InputObjectData/InputObjectData.cu.i
+home/tingchang/cuDFNsys/src/InputObjectData/InputObjectData.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/InputObjectData/InputObjectData.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/InputObjectData/InputObjectData.cu.i
 
-home/yintingchang/cuDFNsys/src/InputObjectData/InputObjectData.s: home/yintingchang/cuDFNsys/src/InputObjectData/InputObjectData.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/InputObjectData/InputObjectData.s
+home/tingchang/cuDFNsys/src/InputObjectData/InputObjectData.s: home/tingchang/cuDFNsys/src/InputObjectData/InputObjectData.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/InputObjectData/InputObjectData.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/InputObjectData/InputObjectData.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/InputObjectData/InputObjectData.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/InputObjectData/InputObjectData.cu.s
+home/tingchang/cuDFNsys/src/InputObjectData/InputObjectData.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/InputObjectData/InputObjectData.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/InputObjectData/InputObjectData.cu.s
 
-home/yintingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.o: home/yintingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.o
+home/tingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.o: home/tingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.cu.o
+home/tingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.cu.o
 
-home/yintingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.i: home/yintingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.i
+home/tingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.i: home/tingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.cu.i
+home/tingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.cu.i
 
-home/yintingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.s: home/yintingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.s
+home/tingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.s: home/tingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.cu.s
+home/tingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.cu.s
 
-home/yintingchang/cuDFNsys/src/MHFEM/MHFEM.o: home/yintingchang/cuDFNsys/src/MHFEM/MHFEM.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/MHFEM/MHFEM.o
+home/tingchang/cuDFNsys/src/MHFEM/MHFEM.o: home/tingchang/cuDFNsys/src/MHFEM/MHFEM.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/MHFEM/MHFEM.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/MHFEM/MHFEM.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/MHFEM/MHFEM.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/MHFEM/MHFEM.cu.o
+home/tingchang/cuDFNsys/src/MHFEM/MHFEM.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/MHFEM/MHFEM.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/MHFEM/MHFEM.cu.o
 
-home/yintingchang/cuDFNsys/src/MHFEM/MHFEM.i: home/yintingchang/cuDFNsys/src/MHFEM/MHFEM.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/MHFEM/MHFEM.i
+home/tingchang/cuDFNsys/src/MHFEM/MHFEM.i: home/tingchang/cuDFNsys/src/MHFEM/MHFEM.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/MHFEM/MHFEM.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/MHFEM/MHFEM.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/MHFEM/MHFEM.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/MHFEM/MHFEM.cu.i
+home/tingchang/cuDFNsys/src/MHFEM/MHFEM.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/MHFEM/MHFEM.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/MHFEM/MHFEM.cu.i
 
-home/yintingchang/cuDFNsys/src/MHFEM/MHFEM.s: home/yintingchang/cuDFNsys/src/MHFEM/MHFEM.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/MHFEM/MHFEM.s
+home/tingchang/cuDFNsys/src/MHFEM/MHFEM.s: home/tingchang/cuDFNsys/src/MHFEM/MHFEM.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/MHFEM/MHFEM.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/MHFEM/MHFEM.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/MHFEM/MHFEM.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/MHFEM/MHFEM.cu.s
+home/tingchang/cuDFNsys/src/MHFEM/MHFEM.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/MHFEM/MHFEM.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/MHFEM/MHFEM.cu.s
 
-home/yintingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.o: home/yintingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.o
+home/tingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.o: home/tingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.cu.o
+home/tingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.cu.o
 
-home/yintingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.i: home/yintingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.i
+home/tingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.i: home/tingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.cu.i
+home/tingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.cu.i
 
-home/yintingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.s: home/yintingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.s
+home/tingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.s: home/tingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.cu.s
+home/tingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.cu.s
 
-home/yintingchang/cuDFNsys/src/MHFEM/StimaA.o: home/yintingchang/cuDFNsys/src/MHFEM/StimaA.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/MHFEM/StimaA.o
+home/tingchang/cuDFNsys/src/MHFEM/StimaA.o: home/tingchang/cuDFNsys/src/MHFEM/StimaA.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/MHFEM/StimaA.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/MHFEM/StimaA.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/MHFEM/StimaA.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/MHFEM/StimaA.cu.o
+home/tingchang/cuDFNsys/src/MHFEM/StimaA.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/MHFEM/StimaA.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/MHFEM/StimaA.cu.o
 
-home/yintingchang/cuDFNsys/src/MHFEM/StimaA.i: home/yintingchang/cuDFNsys/src/MHFEM/StimaA.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/MHFEM/StimaA.i
+home/tingchang/cuDFNsys/src/MHFEM/StimaA.i: home/tingchang/cuDFNsys/src/MHFEM/StimaA.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/MHFEM/StimaA.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/MHFEM/StimaA.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/MHFEM/StimaA.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/MHFEM/StimaA.cu.i
+home/tingchang/cuDFNsys/src/MHFEM/StimaA.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/MHFEM/StimaA.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/MHFEM/StimaA.cu.i
 
-home/yintingchang/cuDFNsys/src/MHFEM/StimaA.s: home/yintingchang/cuDFNsys/src/MHFEM/StimaA.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/MHFEM/StimaA.s
+home/tingchang/cuDFNsys/src/MHFEM/StimaA.s: home/tingchang/cuDFNsys/src/MHFEM/StimaA.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/MHFEM/StimaA.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/MHFEM/StimaA.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/MHFEM/StimaA.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/MHFEM/StimaA.cu.s
+home/tingchang/cuDFNsys/src/MHFEM/StimaA.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/MHFEM/StimaA.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/MHFEM/StimaA.cu.s
 
-home/yintingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.o: home/yintingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.o
+home/tingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.o: home/tingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.cu.o
+home/tingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.cu.o
 
-home/yintingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.i: home/yintingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.i
+home/tingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.i: home/tingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.cu.i
+home/tingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.cu.i
 
-home/yintingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.s: home/yintingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.s
+home/tingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.s: home/tingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.cu.s
+home/tingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.cu.s
 
-home/yintingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.o: home/yintingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.o
+home/tingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.o: home/tingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.cu.o
+home/tingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.cu.o
 
-home/yintingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.i: home/yintingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.i
+home/tingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.i: home/tingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.cu.i
+home/tingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.cu.i
 
-home/yintingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.s: home/yintingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.s
+home/tingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.s: home/tingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.cu.s
+home/tingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.cu.s
 
-home/yintingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.o: home/yintingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.o
+home/tingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.o: home/tingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.cu.o
+home/tingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.cu.o
 
-home/yintingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.i: home/yintingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.i
+home/tingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.i: home/tingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.cu.i
+home/tingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.cu.i
 
-home/yintingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.s: home/yintingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.s
+home/tingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.s: home/tingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.cu.s
+home/tingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.cu.s
 
-home/yintingchang/cuDFNsys/src/Mesh/Mesh.o: home/yintingchang/cuDFNsys/src/Mesh/Mesh.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Mesh/Mesh.o
+home/tingchang/cuDFNsys/src/Mesh/Mesh.o: home/tingchang/cuDFNsys/src/Mesh/Mesh.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Mesh/Mesh.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Mesh/Mesh.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Mesh/Mesh.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Mesh/Mesh.cu.o
+home/tingchang/cuDFNsys/src/Mesh/Mesh.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Mesh/Mesh.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Mesh/Mesh.cu.o
 
-home/yintingchang/cuDFNsys/src/Mesh/Mesh.i: home/yintingchang/cuDFNsys/src/Mesh/Mesh.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Mesh/Mesh.i
+home/tingchang/cuDFNsys/src/Mesh/Mesh.i: home/tingchang/cuDFNsys/src/Mesh/Mesh.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Mesh/Mesh.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Mesh/Mesh.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Mesh/Mesh.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Mesh/Mesh.cu.i
+home/tingchang/cuDFNsys/src/Mesh/Mesh.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Mesh/Mesh.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Mesh/Mesh.cu.i
 
-home/yintingchang/cuDFNsys/src/Mesh/Mesh.s: home/yintingchang/cuDFNsys/src/Mesh/Mesh.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Mesh/Mesh.s
+home/tingchang/cuDFNsys/src/Mesh/Mesh.s: home/tingchang/cuDFNsys/src/Mesh/Mesh.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Mesh/Mesh.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Mesh/Mesh.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Mesh/Mesh.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Mesh/Mesh.cu.s
+home/tingchang/cuDFNsys/src/Mesh/Mesh.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Mesh/Mesh.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Mesh/Mesh.cu.s
 
-home/yintingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.o: home/yintingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.o
+home/tingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.o: home/tingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.cu.o
+home/tingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.cu.o
 
-home/yintingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.i: home/yintingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.i
+home/tingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.i: home/tingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.cu.i
+home/tingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.cu.i
 
-home/yintingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.s: home/yintingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.s
+home/tingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.s: home/tingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.cu.s
+home/tingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.cu.s
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.o: home/yintingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.o
+home/tingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.o: home/tingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.o
+home/tingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.o
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.i: home/yintingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.i
+home/tingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.i: home/tingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.i
+home/tingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.i
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.s: home/yintingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.s
+home/tingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.s: home/tingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.s
+home/tingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.cu.s
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.o: home/yintingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.o
+home/tingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.o: home/tingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.o
+home/tingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.o
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.i: home/yintingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.i
+home/tingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.i: home/tingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.i
+home/tingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.i
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.s: home/yintingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.s
+home/tingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.s: home/tingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.s
+home/tingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.cu.s
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.o: home/yintingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.o
+home/tingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.o: home/tingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.o
+home/tingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.o
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.i: home/yintingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.i
+home/tingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.i: home/tingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.i
+home/tingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.i
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.s: home/yintingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.s
+home/tingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.s: home/tingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.s
+home/tingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.cu.s
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.o: home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.o
+home/tingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.o: home/tingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.o
+home/tingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.o
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.i: home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.i
+home/tingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.i: home/tingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.i
+home/tingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.i
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.s: home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.s
+home/tingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.s: home/tingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.s
+home/tingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.cu.s
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.o: home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.o
+home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.o: home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.o
+home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.o
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.i: home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.i
+home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.i: home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.i
+home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.i
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.s: home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.s
+home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.s: home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.s
+home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.cu.s
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.o: home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.o
+home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.o: home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.o
+home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.o
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.i: home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.i
+home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.i: home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.i
+home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.i
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.s: home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.s
+home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.s: home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.s
+home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.cu.s
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.o: home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.o
+home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.o: home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.o
+home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.o
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.i: home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.i
+home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.i: home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.i
+home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.i
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.s: home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.s
+home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.s: home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.s
+home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.cu.s
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.o: home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.o
+home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.o: home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.o
+home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.o
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.i: home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.i
+home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.i: home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.i
+home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.i
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.s: home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.s
+home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.s: home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.s
+home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.cu.s
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.o: home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.o
+home/tingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.o: home/tingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.o
+home/tingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.o
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.i: home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.i
+home/tingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.i: home/tingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.i
+home/tingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.i
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.s: home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.s
+home/tingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.s: home/tingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.s
+home/tingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.cu.s
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.o: home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.o
+home/tingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.o: home/tingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.o
+home/tingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.o
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.i: home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.i
+home/tingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.i: home/tingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.i
+home/tingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.i
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.s: home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.s
+home/tingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.s: home/tingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.s
+home/tingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.cu.s
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.o: home/yintingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.o
+home/tingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.o: home/tingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.o
+home/tingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.o
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.i: home/yintingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.i
+home/tingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.i: home/tingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.i
+home/tingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.i
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.s: home/yintingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.s
+home/tingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.s: home/tingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.s
+home/tingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.cu.s
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.o: home/yintingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.o
+home/tingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.o: home/tingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.o
+home/tingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.o
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.i: home/yintingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.i
+home/tingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.i: home/tingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.i
+home/tingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.i
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.s: home/yintingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.s
+home/tingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.s: home/tingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.s
+home/tingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.cu.s
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.o: home/yintingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.o
+home/tingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.o: home/tingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.o
+home/tingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.o
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.i: home/yintingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.i
+home/tingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.i: home/tingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.i
+home/tingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.i
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.s: home/yintingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.s
+home/tingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.s: home/tingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.s
+home/tingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.cu.s
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.o: home/yintingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.o
+home/tingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.o: home/tingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.cu.o
+home/tingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.cu.o
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.i: home/yintingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.i
+home/tingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.i: home/tingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.cu.i
+home/tingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.cu.i
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.s: home/yintingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.s
+home/tingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.s: home/tingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.cu.s
+home/tingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.cu.s
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.o: home/yintingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.o
+home/tingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.o: home/tingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.o
+home/tingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.o
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.i: home/yintingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.i
+home/tingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.i: home/tingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.i
+home/tingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.i
 
-home/yintingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.s: home/yintingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.s
+home/tingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.s: home/tingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.s
+home/tingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.cu.s
 
-home/yintingchang/cuDFNsys/src/Quaternion/Quaternion.o: home/yintingchang/cuDFNsys/src/Quaternion/Quaternion.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Quaternion/Quaternion.o
+home/tingchang/cuDFNsys/src/Quaternion/Quaternion.o: home/tingchang/cuDFNsys/src/Quaternion/Quaternion.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Quaternion/Quaternion.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Quaternion/Quaternion.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Quaternion/Quaternion.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Quaternion/Quaternion.cu.o
+home/tingchang/cuDFNsys/src/Quaternion/Quaternion.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Quaternion/Quaternion.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Quaternion/Quaternion.cu.o
 
-home/yintingchang/cuDFNsys/src/Quaternion/Quaternion.i: home/yintingchang/cuDFNsys/src/Quaternion/Quaternion.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Quaternion/Quaternion.i
+home/tingchang/cuDFNsys/src/Quaternion/Quaternion.i: home/tingchang/cuDFNsys/src/Quaternion/Quaternion.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Quaternion/Quaternion.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Quaternion/Quaternion.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Quaternion/Quaternion.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Quaternion/Quaternion.cu.i
+home/tingchang/cuDFNsys/src/Quaternion/Quaternion.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Quaternion/Quaternion.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Quaternion/Quaternion.cu.i
 
-home/yintingchang/cuDFNsys/src/Quaternion/Quaternion.s: home/yintingchang/cuDFNsys/src/Quaternion/Quaternion.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Quaternion/Quaternion.s
+home/tingchang/cuDFNsys/src/Quaternion/Quaternion.s: home/tingchang/cuDFNsys/src/Quaternion/Quaternion.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Quaternion/Quaternion.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Quaternion/Quaternion.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Quaternion/Quaternion.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Quaternion/Quaternion.cu.s
+home/tingchang/cuDFNsys/src/Quaternion/Quaternion.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Quaternion/Quaternion.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Quaternion/Quaternion.cu.s
 
-home/yintingchang/cuDFNsys/src/RandomFunction/RandomFunction.o: home/yintingchang/cuDFNsys/src/RandomFunction/RandomFunction.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/RandomFunction/RandomFunction.o
+home/tingchang/cuDFNsys/src/RandomFunction/RandomFunction.o: home/tingchang/cuDFNsys/src/RandomFunction/RandomFunction.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/RandomFunction/RandomFunction.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/RandomFunction/RandomFunction.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/RandomFunction/RandomFunction.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/RandomFunction/RandomFunction.cu.o
+home/tingchang/cuDFNsys/src/RandomFunction/RandomFunction.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/RandomFunction/RandomFunction.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/RandomFunction/RandomFunction.cu.o
 
-home/yintingchang/cuDFNsys/src/RandomFunction/RandomFunction.i: home/yintingchang/cuDFNsys/src/RandomFunction/RandomFunction.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/RandomFunction/RandomFunction.i
+home/tingchang/cuDFNsys/src/RandomFunction/RandomFunction.i: home/tingchang/cuDFNsys/src/RandomFunction/RandomFunction.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/RandomFunction/RandomFunction.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/RandomFunction/RandomFunction.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/RandomFunction/RandomFunction.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/RandomFunction/RandomFunction.cu.i
+home/tingchang/cuDFNsys/src/RandomFunction/RandomFunction.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/RandomFunction/RandomFunction.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/RandomFunction/RandomFunction.cu.i
 
-home/yintingchang/cuDFNsys/src/RandomFunction/RandomFunction.s: home/yintingchang/cuDFNsys/src/RandomFunction/RandomFunction.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/RandomFunction/RandomFunction.s
+home/tingchang/cuDFNsys/src/RandomFunction/RandomFunction.s: home/tingchang/cuDFNsys/src/RandomFunction/RandomFunction.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/RandomFunction/RandomFunction.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/RandomFunction/RandomFunction.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/RandomFunction/RandomFunction.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/RandomFunction/RandomFunction.cu.s
+home/tingchang/cuDFNsys/src/RandomFunction/RandomFunction.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/RandomFunction/RandomFunction.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/RandomFunction/RandomFunction.cu.s
 
-home/yintingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.o: home/yintingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.o
+home/tingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.o: home/tingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.cu.o
+home/tingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.cu.o
 
-home/yintingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.i: home/yintingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.i
+home/tingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.i: home/tingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.cu.i
+home/tingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.cu.i
 
-home/yintingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.s: home/yintingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.s
+home/tingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.s: home/tingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.cu.s
+home/tingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.cu.s
 
-home/yintingchang/cuDFNsys/src/Warmup/Warmup.o: home/yintingchang/cuDFNsys/src/Warmup/Warmup.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Warmup/Warmup.o
+home/tingchang/cuDFNsys/src/Warmup/Warmup.o: home/tingchang/cuDFNsys/src/Warmup/Warmup.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Warmup/Warmup.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/Warmup/Warmup.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Warmup/Warmup.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/Warmup/Warmup.cu.o
+home/tingchang/cuDFNsys/src/Warmup/Warmup.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Warmup/Warmup.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/Warmup/Warmup.cu.o
 
-home/yintingchang/cuDFNsys/src/Warmup/Warmup.i: home/yintingchang/cuDFNsys/src/Warmup/Warmup.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Warmup/Warmup.i
+home/tingchang/cuDFNsys/src/Warmup/Warmup.i: home/tingchang/cuDFNsys/src/Warmup/Warmup.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Warmup/Warmup.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/Warmup/Warmup.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Warmup/Warmup.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/Warmup/Warmup.cu.i
+home/tingchang/cuDFNsys/src/Warmup/Warmup.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Warmup/Warmup.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/Warmup/Warmup.cu.i
 
-home/yintingchang/cuDFNsys/src/Warmup/Warmup.s: home/yintingchang/cuDFNsys/src/Warmup/Warmup.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Warmup/Warmup.s
+home/tingchang/cuDFNsys/src/Warmup/Warmup.s: home/tingchang/cuDFNsys/src/Warmup/Warmup.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Warmup/Warmup.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/Warmup/Warmup.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/Warmup/Warmup.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/Warmup/Warmup.cu.s
+home/tingchang/cuDFNsys/src/Warmup/Warmup.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/Warmup/Warmup.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/Warmup/Warmup.cu.s
 
-home/yintingchang/cuDFNsys/src/cuDFNsys.o: home/yintingchang/cuDFNsys/src/cuDFNsys.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/cuDFNsys.o
+home/tingchang/cuDFNsys/src/cuDFNsys.o: home/tingchang/cuDFNsys/src/cuDFNsys.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/cuDFNsys.o
 
 # target to build an object file
-home/yintingchang/cuDFNsys/src/cuDFNsys.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/cuDFNsys.cu.o
-.PHONY : home/yintingchang/cuDFNsys/src/cuDFNsys.cu.o
+home/tingchang/cuDFNsys/src/cuDFNsys.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/cuDFNsys.cu.o
+.PHONY : home/tingchang/cuDFNsys/src/cuDFNsys.cu.o
 
-home/yintingchang/cuDFNsys/src/cuDFNsys.i: home/yintingchang/cuDFNsys/src/cuDFNsys.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/cuDFNsys.i
+home/tingchang/cuDFNsys/src/cuDFNsys.i: home/tingchang/cuDFNsys/src/cuDFNsys.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/cuDFNsys.i
 
 # target to preprocess a source file
-home/yintingchang/cuDFNsys/src/cuDFNsys.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/cuDFNsys.cu.i
-.PHONY : home/yintingchang/cuDFNsys/src/cuDFNsys.cu.i
+home/tingchang/cuDFNsys/src/cuDFNsys.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/cuDFNsys.cu.i
+.PHONY : home/tingchang/cuDFNsys/src/cuDFNsys.cu.i
 
-home/yintingchang/cuDFNsys/src/cuDFNsys.s: home/yintingchang/cuDFNsys/src/cuDFNsys.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/cuDFNsys.s
+home/tingchang/cuDFNsys/src/cuDFNsys.s: home/tingchang/cuDFNsys/src/cuDFNsys.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/cuDFNsys.s
 
 # target to generate assembly for a file
-home/yintingchang/cuDFNsys/src/cuDFNsys.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/yintingchang/cuDFNsys/src/cuDFNsys.cu.s
-.PHONY : home/yintingchang/cuDFNsys/src/cuDFNsys.cu.s
+home/tingchang/cuDFNsys/src/cuDFNsys.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuDFNsys_static.dir/build.make CMakeFiles/cuDFNsys_static.dir/home/tingchang/cuDFNsys/src/cuDFNsys.cu.s
+.PHONY : home/tingchang/cuDFNsys/src/cuDFNsys.cu.s
 
 # Help Target
 help:
@@ -1626,192 +1626,192 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... cuDFNsys_static"
-	@echo "... home/yintingchang/cuDFNsys/src/CPUSecond/CPUSecond.o"
-	@echo "... home/yintingchang/cuDFNsys/src/CPUSecond/CPUSecond.i"
-	@echo "... home/yintingchang/cuDFNsys/src/CPUSecond/CPUSecond.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Exceptions/Exceptions.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Exceptions/Exceptions.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Exceptions/Exceptions.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Fractures/Fracture.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Fractures/Fracture.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Fractures/Fracture.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Fractures/Fractures.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Fractures/Fractures.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Fractures/Fractures.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersection.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersection.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersection.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Fractures/TruncateFracture.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Fractures/TruncateFracture.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Fractures/TruncateFracture.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.s"
-	@echo "... home/yintingchang/cuDFNsys/src/GetStatistics/GetStatistics.o"
-	@echo "... home/yintingchang/cuDFNsys/src/GetStatistics/GetStatistics.i"
-	@echo "... home/yintingchang/cuDFNsys/src/GetStatistics/GetStatistics.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Graph/Graph.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Graph/Graph.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Graph/Graph.s"
-	@echo "... home/yintingchang/cuDFNsys/src/HDF5API/HDF5API.o"
-	@echo "... home/yintingchang/cuDFNsys/src/HDF5API/HDF5API.i"
-	@echo "... home/yintingchang/cuDFNsys/src/HDF5API/HDF5API.s"
-	@echo "... home/yintingchang/cuDFNsys/src/InputObjectData/InputObjectData.o"
-	@echo "... home/yintingchang/cuDFNsys/src/InputObjectData/InputObjectData.i"
-	@echo "... home/yintingchang/cuDFNsys/src/InputObjectData/InputObjectData.s"
-	@echo "... home/yintingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.o"
-	@echo "... home/yintingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.i"
-	@echo "... home/yintingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.s"
-	@echo "... home/yintingchang/cuDFNsys/src/MHFEM/MHFEM.o"
-	@echo "... home/yintingchang/cuDFNsys/src/MHFEM/MHFEM.i"
-	@echo "... home/yintingchang/cuDFNsys/src/MHFEM/MHFEM.s"
-	@echo "... home/yintingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.o"
-	@echo "... home/yintingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.i"
-	@echo "... home/yintingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.s"
-	@echo "... home/yintingchang/cuDFNsys/src/MHFEM/StimaA.o"
-	@echo "... home/yintingchang/cuDFNsys/src/MHFEM/StimaA.i"
-	@echo "... home/yintingchang/cuDFNsys/src/MHFEM/StimaA.s"
-	@echo "... home/yintingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.o"
-	@echo "... home/yintingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.i"
-	@echo "... home/yintingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Mesh/Mesh.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Mesh/Mesh.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Mesh/Mesh.s"
-	@echo "... home/yintingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.o"
-	@echo "... home/yintingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.i"
-	@echo "... home/yintingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.s"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.o"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.i"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.s"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.o"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.i"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.s"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.o"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.i"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.s"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.o"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.i"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.s"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.o"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.i"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.s"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.o"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.i"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.s"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.o"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.i"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.s"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.o"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.i"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.s"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.o"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.i"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.s"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.o"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.i"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.s"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.o"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.i"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.s"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.o"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.i"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.s"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.o"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.i"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.s"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.o"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.i"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.s"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.o"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.i"
-	@echo "... home/yintingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Quaternion/Quaternion.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Quaternion/Quaternion.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Quaternion/Quaternion.s"
-	@echo "... home/yintingchang/cuDFNsys/src/RandomFunction/RandomFunction.o"
-	@echo "... home/yintingchang/cuDFNsys/src/RandomFunction/RandomFunction.i"
-	@echo "... home/yintingchang/cuDFNsys/src/RandomFunction/RandomFunction.s"
-	@echo "... home/yintingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.o"
-	@echo "... home/yintingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.i"
-	@echo "... home/yintingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.s"
-	@echo "... home/yintingchang/cuDFNsys/src/Warmup/Warmup.o"
-	@echo "... home/yintingchang/cuDFNsys/src/Warmup/Warmup.i"
-	@echo "... home/yintingchang/cuDFNsys/src/Warmup/Warmup.s"
-	@echo "... home/yintingchang/cuDFNsys/src/cuDFNsys.o"
-	@echo "... home/yintingchang/cuDFNsys/src/cuDFNsys.i"
-	@echo "... home/yintingchang/cuDFNsys/src/cuDFNsys.s"
+	@echo "... home/tingchang/cuDFNsys/src/CPUSecond/CPUSecond.o"
+	@echo "... home/tingchang/cuDFNsys/src/CPUSecond/CPUSecond.i"
+	@echo "... home/tingchang/cuDFNsys/src/CPUSecond/CPUSecond.s"
+	@echo "... home/tingchang/cuDFNsys/src/Exceptions/Exceptions.o"
+	@echo "... home/tingchang/cuDFNsys/src/Exceptions/Exceptions.i"
+	@echo "... home/tingchang/cuDFNsys/src/Exceptions/Exceptions.s"
+	@echo "... home/tingchang/cuDFNsys/src/Fractures/Fracture.o"
+	@echo "... home/tingchang/cuDFNsys/src/Fractures/Fracture.i"
+	@echo "... home/tingchang/cuDFNsys/src/Fractures/Fracture.s"
+	@echo "... home/tingchang/cuDFNsys/src/Fractures/Fractures.o"
+	@echo "... home/tingchang/cuDFNsys/src/Fractures/Fractures.i"
+	@echo "... home/tingchang/cuDFNsys/src/Fractures/Fractures.s"
+	@echo "... home/tingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.o"
+	@echo "... home/tingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.i"
+	@echo "... home/tingchang/cuDFNsys/src/Fractures/GetAllPercolatingFractures.s"
+	@echo "... home/tingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.o"
+	@echo "... home/tingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.i"
+	@echo "... home/tingchang/cuDFNsys/src/Fractures/IdentifyFracPairSphericalDetection.s"
+	@echo "... home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersection.o"
+	@echo "... home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersection.i"
+	@echo "... home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersection.s"
+	@echo "... home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.o"
+	@echo "... home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.i"
+	@echo "... home/tingchang/cuDFNsys/src/Fractures/IdentifyIntersectionKernel.s"
+	@echo "... home/tingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.o"
+	@echo "... home/tingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.i"
+	@echo "... home/tingchang/cuDFNsys/src/Fractures/IdentifyPercolationCluster.s"
+	@echo "... home/tingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.o"
+	@echo "... home/tingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.i"
+	@echo "... home/tingchang/cuDFNsys/src/Fractures/MatlabPlotDFN.s"
+	@echo "... home/tingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.o"
+	@echo "... home/tingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.i"
+	@echo "... home/tingchang/cuDFNsys/src/Fractures/RemoveDeadEndFrac.s"
+	@echo "... home/tingchang/cuDFNsys/src/Fractures/TruncateFracture.o"
+	@echo "... home/tingchang/cuDFNsys/src/Fractures/TruncateFracture.i"
+	@echo "... home/tingchang/cuDFNsys/src/Fractures/TruncateFracture.s"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.o"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.i"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/DistancePnt2DSeg.s"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.o"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.i"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/If2DPntLiesOnCollinearSeg.s"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.o"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.i"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/IfPntInside2DConvexPoly.s"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.o"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.i"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/IfPntLiesOnBound2DConvexPoly.s"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.o"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.i"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DPoly.s"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.o"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.i"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/Intersection2DLine2DSeg.s"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.o"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.i"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/IntersectionTwoCollinear2DSegs.s"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.o"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.i"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/OrientationThree2DPnts.s"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.o"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.i"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/Scale2DSegment.s"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.o"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.i"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DArea.s"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.o"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.i"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/2D/Triangle2DOrientation.s"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.o"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.i"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/3D/DistancePnt3DPlane.s"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.o"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.i"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/3D/If3DTriangleSkinny.s"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.o"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.i"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DPolyXYPlane.s"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.o"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.i"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/3D/Intersection3DSegXYPlane.s"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.o"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.i"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/3D/Scale3DTriangle.s"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.o"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.i"
+	@echo "... home/tingchang/cuDFNsys/src/Geometry/3D/Triangle3DArea.s"
+	@echo "... home/tingchang/cuDFNsys/src/GetStatistics/GetStatistics.o"
+	@echo "... home/tingchang/cuDFNsys/src/GetStatistics/GetStatistics.i"
+	@echo "... home/tingchang/cuDFNsys/src/GetStatistics/GetStatistics.s"
+	@echo "... home/tingchang/cuDFNsys/src/Graph/Graph.o"
+	@echo "... home/tingchang/cuDFNsys/src/Graph/Graph.i"
+	@echo "... home/tingchang/cuDFNsys/src/Graph/Graph.s"
+	@echo "... home/tingchang/cuDFNsys/src/HDF5API/HDF5API.o"
+	@echo "... home/tingchang/cuDFNsys/src/HDF5API/HDF5API.i"
+	@echo "... home/tingchang/cuDFNsys/src/HDF5API/HDF5API.s"
+	@echo "... home/tingchang/cuDFNsys/src/InputObjectData/InputObjectData.o"
+	@echo "... home/tingchang/cuDFNsys/src/InputObjectData/InputObjectData.i"
+	@echo "... home/tingchang/cuDFNsys/src/InputObjectData/InputObjectData.s"
+	@echo "... home/tingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.o"
+	@echo "... home/tingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.i"
+	@echo "... home/tingchang/cuDFNsys/src/MHFEM/AssembleOnGPUKernel.s"
+	@echo "... home/tingchang/cuDFNsys/src/MHFEM/MHFEM.o"
+	@echo "... home/tingchang/cuDFNsys/src/MHFEM/MHFEM.i"
+	@echo "... home/tingchang/cuDFNsys/src/MHFEM/MHFEM.s"
+	@echo "... home/tingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.o"
+	@echo "... home/tingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.i"
+	@echo "... home/tingchang/cuDFNsys/src/MHFEM/ReconstructVelocityGrid.s"
+	@echo "... home/tingchang/cuDFNsys/src/MHFEM/StimaA.o"
+	@echo "... home/tingchang/cuDFNsys/src/MHFEM/StimaA.i"
+	@echo "... home/tingchang/cuDFNsys/src/MHFEM/StimaA.s"
+	@echo "... home/tingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.o"
+	@echo "... home/tingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.i"
+	@echo "... home/tingchang/cuDFNsys/src/MatrixManipulation/MatrixManipulation.s"
+	@echo "... home/tingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.o"
+	@echo "... home/tingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.i"
+	@echo "... home/tingchang/cuDFNsys/src/Mesh/GetLocalCoordiates.s"
+	@echo "... home/tingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.o"
+	@echo "... home/tingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.i"
+	@echo "... home/tingchang/cuDFNsys/src/Mesh/IdentifyEleFrac.s"
+	@echo "... home/tingchang/cuDFNsys/src/Mesh/Mesh.o"
+	@echo "... home/tingchang/cuDFNsys/src/Mesh/Mesh.i"
+	@echo "... home/tingchang/cuDFNsys/src/Mesh/Mesh.s"
+	@echo "... home/tingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.o"
+	@echo "... home/tingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.i"
+	@echo "... home/tingchang/cuDFNsys/src/OutputObjectData/OutputObjectData.s"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.o"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.i"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/AngleBetweenTwoNeighboringTriangles.s"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.o"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.i"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/CheckIfReachControlPlanesKernel.s"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.o"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.i"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/IdentifyParticleCrossesWhichEdge.s"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.o"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.i"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/IfParticleOnBoundOfElement.s"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.o"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.i"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionInNeighboringElement.s"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.o"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.i"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/IfParticlePositionNearOneVertexOfElement.s"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.o"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.i"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepCPU.s"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.o"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.i"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/ParticleMovementOneTimeStepGPUKernel.s"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.o"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.i"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/ParticleReflection.s"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.o"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.i"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/ParticleTransport.s"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.o"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.i"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/RandomWalkerGeometryFunctions.s"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.o"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.i"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/Roate2DPositionTo3D.s"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.o"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.i"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/RotationRemainningTrajectoryBetweenTwo3DTriangles.s"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.o"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.i"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/Transform2DTo3DKernel.s"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.o"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.i"
+	@echo "... home/tingchang/cuDFNsys/src/ParticleTransport/WhichElementToGo.s"
+	@echo "... home/tingchang/cuDFNsys/src/Quaternion/Quaternion.o"
+	@echo "... home/tingchang/cuDFNsys/src/Quaternion/Quaternion.i"
+	@echo "... home/tingchang/cuDFNsys/src/Quaternion/Quaternion.s"
+	@echo "... home/tingchang/cuDFNsys/src/RandomFunction/RandomFunction.o"
+	@echo "... home/tingchang/cuDFNsys/src/RandomFunction/RandomFunction.i"
+	@echo "... home/tingchang/cuDFNsys/src/RandomFunction/RandomFunction.s"
+	@echo "... home/tingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.o"
+	@echo "... home/tingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.i"
+	@echo "... home/tingchang/cuDFNsys/src/ToStringWithWidth/ToStringWithWidth.s"
+	@echo "... home/tingchang/cuDFNsys/src/Warmup/Warmup.o"
+	@echo "... home/tingchang/cuDFNsys/src/Warmup/Warmup.i"
+	@echo "... home/tingchang/cuDFNsys/src/Warmup/Warmup.s"
+	@echo "... home/tingchang/cuDFNsys/src/cuDFNsys.o"
+	@echo "... home/tingchang/cuDFNsys/src/cuDFNsys.i"
+	@echo "... home/tingchang/cuDFNsys/src/cuDFNsys.s"
 .PHONY : help
 
 

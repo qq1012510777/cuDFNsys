@@ -107,24 +107,19 @@ __global__ void cuDFNsys::Fractures(
             (T)(DimensionRatio.z * model_L * 0.5), (T)(curand_uniform(&state)));
     }
 
-    verts[i].NormalVec = cuDFNsys::MakeVector3(
-        (T)cuDFNsys::RandomUniform(
-            (cuDFNsys::Vector1<T>)-1.0, (cuDFNsys::Vector1<T>)1.0,
-            (cuDFNsys::Vector1<T>)curand_uniform(&state)),
-        (T)cuDFNsys::RandomUniform(
-            (cuDFNsys::Vector1<T>)-1.0, (cuDFNsys::Vector1<T>)1.0,
-            (cuDFNsys::Vector1<T>)curand_uniform(&state)),
-        (T)0);
+    T phi__ = ((T)cuDFNsys::RandomUniform(
+             (cuDFNsys::Vector1<T>)0, (cuDFNsys::Vector1<T>)(2. * M_PI),
+             (cuDFNsys::Vector1<T>)curand_uniform(&state)));
+    T theta_ = (T)cuDFNsys::RandomFisher((T)curand_uniform(&state), (T)kappa);
+    verts[i].NormalVec.x = sin(theta_) * cos(phi__);
+    verts[i].NormalVec.y = sin(theta_) * sin(phi__);
+    verts[i].NormalVec.z = cos(theta_);
 
-    cuDFNsys::Vector1<T> R_xy =
-        sqrt(verts[i].NormalVec.x * verts[i].NormalVec.x +
-             verts[i].NormalVec.y * verts[i].NormalVec.y);
-    verts[i].NormalVec.z =
-        R_xy / tan(cuDFNsys::RandomFisher((T)curand_uniform(&state), (T)kappa));
     cuDFNsys::Vector1<T> norm_f =
         sqrt(verts[i].NormalVec.x * verts[i].NormalVec.x +
              verts[i].NormalVec.y * verts[i].NormalVec.y +
              verts[i].NormalVec.z * verts[i].NormalVec.z);
+
     verts[i].NormalVec.x /= norm_f;
     verts[i].NormalVec.y /= norm_f;
     verts[i].NormalVec.z /= norm_f;
@@ -679,20 +674,29 @@ cuDFNsys::FracturesCPU<T>::FracturesCPU(
         verts[i].Center.z = cuDFNsys::RandomUniform(
             (T)(-model_L * 0.5), (T)(model_L * 0.5), ((T)rand() / (T)RAND_MAX));
 
-        verts[i].NormalVec = cuDFNsys::MakeVector3(
-            (T)cuDFNsys::RandomUniform((cuDFNsys::Vector1<T>)-1.0,
-                                       (cuDFNsys::Vector1<T>)1.0,
-                                       ((T)rand() / (T)RAND_MAX)),
-            (T)cuDFNsys::RandomUniform((cuDFNsys::Vector1<T>)-1.0,
-                                       (cuDFNsys::Vector1<T>)1.0,
-                                       ((T)rand() / (T)RAND_MAX)),
-            (T)0);
-        cuDFNsys::Vector1<T> R_xy =
-            sqrt(verts[i].NormalVec.x * verts[i].NormalVec.x +
-                 verts[i].NormalVec.y * verts[i].NormalVec.y);
-        verts[i].NormalVec.z =
-            R_xy /
-            tan(cuDFNsys::RandomFisher(((T)rand() / (T)RAND_MAX), (T)kappa));
+        // verts[i].NormalVec = cuDFNsys::MakeVector3(
+        //     (T)cuDFNsys::RandomUniform((cuDFNsys::Vector1<T>)-1.0,
+        //                                (cuDFNsys::Vector1<T>)1.0,
+        //                                ((T)rand() / (T)RAND_MAX)),
+        //     (T)cuDFNsys::RandomUniform((cuDFNsys::Vector1<T>)-1.0,
+        //                                (cuDFNsys::Vector1<T>)1.0,
+        //                                ((T)rand() / (T)RAND_MAX)),
+        //     (T)0);
+        // cuDFNsys::Vector1<T> R_xy =
+        //     sqrt(verts[i].NormalVec.x * verts[i].NormalVec.x +
+        //          verts[i].NormalVec.y * verts[i].NormalVec.y);
+        // verts[i].NormalVec.z =
+        //     R_xy /
+        //     tan(cuDFNsys::RandomFisher(((T)rand() / (T)RAND_MAX), (T)kappa));
+
+        T phi__ = (T)cuDFNsys::RandomUniform((cuDFNsys::Vector1<T>)0.,
+                                        (cuDFNsys::Vector1<T>)(2.0*M_PI),
+                                        ((T)rand() / (T)RAND_MAX));
+        T theta_ = (T)cuDFNsys::RandomFisher(((T)rand() / (T)RAND_MAX), (T)kappa);
+        verts[i].NormalVec.x = sin(theta_) * cos(phi__);
+        verts[i].NormalVec.y = sin(theta_) * sin(phi__);
+        verts[i].NormalVec.z = cos(theta_);
+
         cuDFNsys::Vector1<T> norm_f =
             sqrt(verts[i].NormalVec.x * verts[i].NormalVec.x +
                  verts[i].NormalVec.y * verts[i].NormalVec.y +
@@ -1717,3 +1721,19 @@ cuDFNsys::FracturesParallel<double>(cuDFNsys::Fracture<double> *verts,
 template __global__ void
 cuDFNsys::FracturesParallel<float>(cuDFNsys::Fracture<float> *verts, int count,
                                    unsigned long seed, float model_L);
+
+
+
+    // verts[i].NormalVec = cuDFNsys::MakeVector3(
+    //     (T)cuDFNsys::RandomUniform(
+    //         (cuDFNsys::Vector1<T>)-1.0, (cuDFNsys::Vector1<T>)1.0,
+    //         (cuDFNsys::Vector1<T>)curand_uniform(&state)),
+    //     (T)cuDFNsys::RandomUniform(
+    //         (cuDFNsys::Vector1<T>)-1.0, (cuDFNsys::Vector1<T>)1.0,
+    //         (cuDFNsys::Vector1<T>)curand_uniform(&state)),
+    //     (T)0);
+    // cuDFNsys::Vector1<T> R_xy =
+    //     sqrt(verts[i].NormalVec.x * verts[i].NormalVec.x +
+    //          verts[i].NormalVec.y * verts[i].NormalVec.y);
+    // verts[i].NormalVec.z =
+    //     R_xy / tan(cuDFNsys::RandomFisher((T)curand_uniform(&state), (T)kappa));
