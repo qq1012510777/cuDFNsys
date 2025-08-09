@@ -188,7 +188,7 @@ int main(int argc, char *argv[])
                     {
                         my_dfn.ChangePercolationDirectionIdentifyPercolationCluster(percoDir);
                     }
-                    std::cout << "PercolationDirection = " << my_dfn.PercoDir << ", PercolationState = " << my_dfn.PercolationCluster.size() << endl;
+                    std::cout << "PercolationDirection = " << my_dfn.PercoDir << ", PercolationState (number of percolation clusters) = " << my_dfn.PercolationCluster.size() << endl;
 
                     cuDFNsys::GetStatistics<double>(my_dfn.FracturesHost,
                                                     my_dfn.IntersectionMap,

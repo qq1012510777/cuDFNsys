@@ -1,5 +1,5 @@
 ExeName=main
-NVCC=/usr/local/cuda/bin/nvcc
+NVCC=/usr/bin/nvcc
 # include paths for headers
 Hdf5IncludePath=/usr/lib/x86_64-linux-gnu/hdf5/serial/include
 GmshIncludePath=$(HOME)/pkg/gmsh-4.8.4-source/MY_GMSH/include
@@ -10,7 +10,7 @@ GmshLibraryPath=$(HOME)/pkg/gmsh-4.8.4-source/MY_GMSH/lib
 UmfpackLibraryPath=$(HOME)/pkg/SuiteSparse-master/lib
 Hdf5LibraryPath=/usr/lib/x86_64-linux-gnu/hdf5/serial
 
-INCDIRS=-I ../include \
+INCDIRS=-I ../../include \
 		-I $(Hdf5IncludePath) \
 		-I $(GmshIncludePath) \
 		-I $(EigenIncludePath) \
