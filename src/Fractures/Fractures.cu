@@ -125,8 +125,8 @@ __global__ void cuDFNsys::Fractures(
     verts[i].NormalVec.z /= norm_f;
 
     //---------------------- if the mean orientation is not (0, 0, 1)
-    if (!(MeanOrientation.x == (T)0. && MeanOrientation.y == (T)0. &&
-          MeanOrientation.z == (T)1.))
+    if (!(abs(MeanOrientation.x) < (T)1e-7 && abs(MeanOrientation.y) < (T)1e-7 &&
+          abs(MeanOrientation.z - 1) < (T)1e-7))
     {
         //rotate the orientation of this fracture
         T angle_fs = acos(MeanOrientation.z);

@@ -2,7 +2,7 @@ clc
 clear all
 close all
 
-directoryName = "/home/tingchang/Test";
+directoryName = "./";
 
 cd(directoryName);
 
@@ -40,7 +40,7 @@ xlabel("$\theta$ value", 'Interpreter','latex')
 ylabel("Frequency")
 ylim([0,4])
 
-kappa = 16;                      % concentration parameter
+kappa = 20;                      % concentration parameter
 theta = linspace(0, 0.5*pi, 1000);   % theta from 0 to pi
 
 % Compute PDF of theta for Fisher distribution
