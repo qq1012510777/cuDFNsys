@@ -198,6 +198,12 @@ int main(int argc, char *argv[])
                     else
                     {
                         my_dfn.ChangePercolationDirectionIdentifyPercolationCluster(percoDir);
+
+                        if (my_dfn.PercolationCluster.size() > 2)
+                        {
+                            std::cout << "PercolationDirection = " << my_dfn.PercoDir << ", PercolationState (number of percolation clusters) = " << my_dfn.PercolationCluster.size() << endl;
+                            exit(0);
+                        }
                     }
                     std::cout << "PercolationDirection = " << my_dfn.PercoDir << ", PercolationState (number of percolation clusters) = " << my_dfn.PercolationCluster.size() << endl;
 
