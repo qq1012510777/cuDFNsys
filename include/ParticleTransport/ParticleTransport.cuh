@@ -87,6 +87,8 @@ namespace cuDFNsys
 
         std::vector<T> AllParticleAccumulativeDisplacement;
 
+        size_t IfPureDiffusion = 0; 
+
     private:
         string ParticlePosition = "ParticlePositionResult/ParticlePosition";
         string DispersionInfo = "ParticlePositionResult/DispersionInfo";

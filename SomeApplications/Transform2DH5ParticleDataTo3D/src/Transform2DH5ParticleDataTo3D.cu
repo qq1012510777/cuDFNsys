@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
 
         string FracH5 = "FracturesForParticle.h5";
         cout << "input arg 1: 0 or 1,  where 0 is OutputAll, 1 is FPTCurve\n";
-        cout << "input arg 2: name of mesh file h5, without .h5\n"; 
+        cout << "input arg 2: name of mesh file h5, with .h5\n"; 
         bool If_FPT = atoi(argv[1]) == 0 ? false : true;
 
         if (argv[2] == NULL)

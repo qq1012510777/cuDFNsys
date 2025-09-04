@@ -69,3 +69,5 @@ GUI/DFN_Mesh
 GUI/DFN_PT
 GUI/ParticlePositionResult/*
 GUI/*.csv
+
+*.mat

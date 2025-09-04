@@ -50,6 +50,9 @@
 
 namespace cuDFNsys
 {
+    // Device global variable
+    //__device__ size_t InletMode = 0; // when is 1, remove; when is 2, reflective
+   
     template <typename T>
     __global__ void ParticleMovementOneTimeStepGPUKernel(
         unsigned long seed, T delta_T_, T Dispersion_local,
@@ -61,5 +64,5 @@ namespace cuDFNsys
         T outletcoordinate, int count, int numElements, uint stepNO,
         uint *Particle_runtime_error_dev_pnt, uint NUMParticlesInTotal,
         bool If_completeMixing_fluxWeighted, bool If_periodic,
-        int2 *CorrespondingEleLocalEdge_device_ptr);
+        int2 *CorrespondingEleLocalEdge_device_ptr, size_t IfPureDiffusion);
 }; // namespace cuDFNsys

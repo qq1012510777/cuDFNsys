@@ -65,7 +65,7 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(
             "--------\n";
     cout << "At every " << this->TimeIntervalOutPTInformation
          << " time steps, the information is output once\n";
-    cout << "Variance and FPT will be still calculated at each time "
+    cout << "Variance (deleted) and FPT will be still calculated at each time "
             "step\n";
     cout << "----------------------TimeIntervalOutPTInformation----------------"
             "------\n\n";
@@ -260,7 +260,7 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(
 
         if (!if_cpu)
             this->ParticleMovement(
-                ExistingNumsteps + 1, NumTimeStep, delta_T_, Dispersion_local,
+                ExistingNumsteps, NumTimeStep, delta_T_, Dispersion_local,
                 Particle_mode, Injection_mode, Fracs, mesh, fem,
                 outletcoordinate, If_completeMixing_fluxWeighted);
         else
@@ -284,8 +284,8 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(
         this->TimeReachControlPlanes = thrust::host_vector<uint>(
             this->ControlPlanes.size() * this->NumParticles, 0);
         //cout << 2 << endl;
-        if (this->IfOutputMSD)
-            this->OutputMSD(0, Fracs, mesh, -outletcoordinate);
+        // if (this->IfOutputMSD)
+        //     this->OutputMSD(0, Fracs, mesh, -outletcoordinate);
         this->OutputParticleInfoStepByStep(0, delta_T_ii, Dispersion_local_ii,
                                            Particle_mode_ii, Injection_mode_ii,
                                            Fracs, mesh);
@@ -315,7 +315,7 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(
 
         if (!if_cpu)
             this->ParticleMovement(
-                1, NumTimeStep, delta_T_ii, Dispersion_local_ii,
+                0, NumTimeStep, delta_T_ii, Dispersion_local_ii,
                 Particle_mode_ii, Injection_mode_ii, Fracs, mesh, fem,
                 outletcoordinate, If_completeMixing_fluxWeighted);
         else
@@ -417,7 +417,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
     T *ControlPlanes_dev_ptr =
         thrust::raw_pointer_cast(ControlPlanes_dev.data());
 
-    for (uint i = init_NO_STEP; i <= NumTimeStep + init_NO_STEP;
+    for (uint i = init_NO_STEP; i < NumTimeStep + init_NO_STEP;
          i = i + this->TimeIntervalOutPTInformation)
     {
         thrust::device_vector<uint> Particle_runtime_error_dev(NumPart_dynamic,
@@ -444,7 +444,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
         {
             if (j > NumTimeStep + init_NO_STEP)
                 break;
-            StepNo_inside_i_final = j;
+            StepNo_inside_i_final = j + 1;
 
             // double istart_j = cuDFNsys::CPUSecond();
             //cout << "1: " << StepNo_inside_i_final << endl;
@@ -459,7 +459,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
                     NumPart_dynamic, mesh.Element3D.size(), i,
                     Particle_runtime_error_dev_pnt, this->NumParticles,
                     If_completeMixing_fluxWeighted, this->IfPeriodic,
-                    CorrespondingEleLocalEdge_device_ptr);
+                    CorrespondingEleLocalEdge_device_ptr, this->IfPureDiffusion);
             cudaDeviceSynchronize();
             // moving_time += (cuDFNsys::CPUSecond() - istart_j);
 
@@ -511,8 +511,8 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
             //-------------variance of x, y, z
             //cout << "4" << endl;
 
-            if (this->IfOutputMSD)
-            {
+            // if (this->IfOutputMSD)
+            // {
                 // cout << "4.1" << endl;
                 auto newEnd = thrust::remove_if(x_value.begin(), x_value.end(),
                                                 IsNotEqual<T>(magic_number));
@@ -559,9 +559,9 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
                         SquaredDifference<T>(mean), 0.0, thrust::plus<T>());
                     temp[k] = sumOfSquaredDifferences / size_data;
                 }
-                Variance_segmentation[StepNo_inside_i_final - i] = temp;
+                Variance_segmentation[StepNo_inside_i_final - i - 1] = temp;
                 // variance_time += (cuDFNsys::CPUSecond() - istart_j);
-            }
+            // }
             //cout << "5" << endl;
         }
         // printf("\t\t%f, %f, %f, %f\n", moving_time, checkErr_time,
@@ -573,18 +573,18 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
         //------------ loop end
         //---------reduce the size of Variance_segmentation, as sometimes a loop cannot run this->TimeIntervalOutPTInformation time steps
 
-        if (this->IfOutputMSD &&
-            StepNo_inside_i_final != i + this->TimeIntervalOutPTInformation - 1)
-        {
-            thrust::host_vector<std::vector<double>> tmp_var_vec(
-                StepNo_inside_i_final - i + 1);
-            thrust::copy(Variance_segmentation.begin(),
-                         Variance_segmentation.begin() + StepNo_inside_i_final -
-                             i + 1,
-                         tmp_var_vec.begin());
-            Variance_segmentation = tmp_var_vec;
-            Variance_segmentation.shrink_to_fit();
-        }
+        // if (this->IfOutputMSD &&
+        //     StepNo_inside_i_final != i + this->TimeIntervalOutPTInformation - 1)
+        // {
+        //     thrust::host_vector<std::vector<double>> tmp_var_vec(
+        //         StepNo_inside_i_final - i + 1);
+        //     thrust::copy(Variance_segmentation.begin(),
+        //                  Variance_segmentation.begin() + StepNo_inside_i_final -
+        //                      i + 1,
+        //                  tmp_var_vec.begin());
+        //     Variance_segmentation = tmp_var_vec;
+        //     Variance_segmentation.shrink_to_fit();
+        // }
 
         this->TimeReachControlPlanes = TimeReachControlPlanes_dev;
 
@@ -610,36 +610,36 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
         //----------------
         //----------------output variance
         //cout << "Variances\n";
-        if (this->IfOutputMSD)
-        {
-            // cout << "Variances\n";
-            std::vector<double *> ptr_das(Variance_segmentation.size());
-            std::vector<string> datasetname_vec(Variance_segmentation.size());
-            std::vector<uint2> dim_vec(Variance_segmentation.size(),
-                                       make_uint2(3, 1));
-            for (int j = 0; j < Variance_segmentation.size(); ++j)
-                ptr_das[j] = Variance_segmentation[j].data(),
-                datasetname_vec[j] =
-                    "Variance_of_xyz_" + cuDFNsys::ToStringWithWidth(i + j, 10);
-
-            //cout << Variance_segmentation[j][0] << ", " << Variance_segmentation[j][1] << ", " << Variance_segmentation[j][2] << endl;
-            // h5g.AddDataset(
-            //     "Dispersion_MeanSquareDisplacement.h5",
-            //     "Group_" + cuDFNsys::ToStringWithWidth(i + j, 10),
-            //     datasetname_vec[j], Variance_segmentation[j].data(),
-            //     make_uint2(3, 1));
-            try
-            {
-                h5g.AddDatasetsWithOneGroup(
-                    "Dispersion_MeanSquareDisplacement.h5",
-                    "N", //"Group_" + cuDFNsys::ToStringWithWidth(i, 10),
-                    datasetname_vec, ptr_das, dim_vec);
-            }
-            catch (...)
-            {
-                cout << "\t\tStep " << StepNo_inside_i_final << "'s variance values are existent\n";
-            }
-        }
+        // if (this->IfOutputMSD)
+        // {
+        //     // cout << "Variances\n";
+        //     std::vector<double *> ptr_das(Variance_segmentation.size());
+        //     std::vector<string> datasetname_vec(Variance_segmentation.size());
+        //     std::vector<uint2> dim_vec(Variance_segmentation.size(),
+        //                                make_uint2(3, 1));
+        //     for (int j = 0; j < Variance_segmentation.size(); ++j)
+        //         ptr_das[j] = Variance_segmentation[j].data(),
+        //         datasetname_vec[j] =
+        //             "Variance_of_xyz_" + cuDFNsys::ToStringWithWidth(i + j, 10);
+    // 
+        //     //cout << Variance_segmentation[j][0] << ", " << Variance_segmentation[j][1] << ", " << Variance_segmentation[j][2] << endl;
+        //     // h5g.AddDataset(
+        //     //     "Dispersion_MeanSquareDisplacement.h5",
+        //     //     "Group_" + cuDFNsys::ToStringWithWidth(i + j, 10),
+        //     //     datasetname_vec[j], Variance_segmentation[j].data(),
+        //     //     make_uint2(3, 1));
+        //     try
+        //     {
+        //         h5g.AddDatasetsWithOneGroup(
+        //             "Dispersion_MeanSquareDisplacement.h5",
+        //             "N", //"Group_" + cuDFNsys::ToStringWithWidth(i, 10),
+        //             datasetname_vec, ptr_das, dim_vec);
+        //     }
+        //     catch (...)
+        //     {
+        //         cout << "\t\tStep " << StepNo_inside_i_final << "'s variance values are existent\n";
+        //     }
+        // }
         //----------------
         //cout << "sort\n";
         thrust::sort(ParticlePlumes_DEV.begin(), ParticlePlumes_DEV.end());
@@ -719,7 +719,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
             &TotalNumParticlesLeaveModelFromInlet, make_uint2(1, 1));
         if ((this->RecordMode == "OutputAll") ||
             (this->RecordMode == "FPTCurve" &&
-             StepNo_inside_i_final == NumTimeStep + init_NO_STEP))
+             StepNo_inside_i_final - 1 == NumTimeStep + init_NO_STEP))
             this->OutputParticleInfoStepByStep(StepNo_inside_i_final, delta_T_,
                                                Dispersion_local, Particle_mode,
                                                Injection_mode, Fracs, mesh);

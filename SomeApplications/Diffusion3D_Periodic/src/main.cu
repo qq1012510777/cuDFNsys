@@ -21,6 +21,8 @@ bool IfAFileExist(const string &FilePath);
 
 int main(int argc, char *argv[])
 {
+  
+
     if (argc != 5)
     {
         std::cout << "Usage: " << argv[0] << 
@@ -50,17 +52,23 @@ int main(int argc, char *argv[])
             my_dfn.IdentifyIntersectionsClusters(true);
             if (my_dfn.PercolationCluster.size() == 0)
                 return 0;
-            std::cout << "It is percolative\n";
+            std::cout << "**It is percolative**\n";
             std::string DFNVisualFIle = "DFN_Visual";
-            my_dfn.Visualization(DFNVisualFIle, DFNVisualFIle, DFNVisualFIle, false, false, true, true);
-            my_dfn.StoreInH5(DFNH5);
+            my_dfn.SpatialPeriodicity();
+            my_dfn.IdentifyIntersectionsClusters(true);
 
+            if (my_dfn.PercolationCluster.size() == 0)
+            {
+                std::cout << "Wrong with `SpatialPeriodicity`\n";
+                return 0;
+            }
+            my_dfn.Visualization(DFNVisualFIle, DFNVisualFIle, DFNVisualFIle, true, true, true, true);
             my_mesh.LoadParametersFromCSV(csvMesh);
             my_mesh.MeshGeneration(my_dfn);
             std::string MeshVisualFIle = "Mesh_Visual";
             my_mesh.Visualization(my_dfn, MeshVisualFIle, MeshVisualFIle, MeshVisualFIle, true, true);
-            my_mesh.StoreInH5(MeshH5);
-
+            
+            my_flow.IfPeriodic = true;
             my_flow.LoadParametersFromCSV(csvFlow);
             my_flow.FlowSimulation(my_dfn, my_mesh);
             
@@ -69,6 +77,9 @@ int main(int argc, char *argv[])
             // my_flow.FlowData.PressureEles = my_flow.FlowData.PressureEles.setZero();
             // my_flow.FlowData.VelocityNormalScalarSepEdges = my_flow.FlowData.VelocityNormalScalarSepEdges.setZero();
             // diffusion no velocity
+
+            my_mesh.StoreInH5(MeshH5);
+            my_dfn.StoreInH5(DFNH5);
             my_flow.StoreInH5(FlowH5);
             return 0;
         }
@@ -79,7 +90,8 @@ int main(int argc, char *argv[])
             my_flow.LoadClassFromH5(FlowH5);   
         };
 
-
+        my_PT.PTData.IfPureDiffusion = 1;  // > 0 means pure diffusion
+        my_PT.IfPeriodic = true;
         my_PT.LoadParametersFromCSV(csvPT);
         my_PT.ParticleTracking(my_dfn,
             my_mesh,

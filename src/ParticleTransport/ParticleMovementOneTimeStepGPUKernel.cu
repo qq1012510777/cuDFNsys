@@ -35,7 +35,7 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(
     int count, int numElements, uint stepNO,
     uint *Particle_runtime_error_dev_pnt, uint NUMParticlesInTotal,
     bool If_completeMixing_fluxWeighted, bool If_periodic,
-    int2 *CorrespondingEleLocalEdge_device_ptr)
+    int2 *CorrespondingEleLocalEdge_device_ptr, size_t IfPureDiffusion)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -139,11 +139,20 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(
             conductivity_k = Frac_DEV[FracID].Conductivity;
             b_aperture = pow(conductivity_k * 12.0, 1.0 / 3.0);
             Veloc_p.x /= b_aperture, Veloc_p.y /= b_aperture;
-
+            
+            // Veloc_p.x = 0, Veloc_p.y = 0;
             TargPos.x = InitPos.x + Veloc_p.x * (delta_T_ - delta_T_consume) +
                         ratio_diffusion * diffusion_term_x;
             TargPos.y = InitPos.y + Veloc_p.y * (delta_T_ - delta_T_consume) +
                         ratio_diffusion * diffusion_term_y;
+            
+            if (IfPureDiffusion > 0)
+            {
+                TargPos.x = InitPos.x +
+                    ratio_diffusion * diffusion_term_x;
+                TargPos.y = InitPos.y + 
+                    ratio_diffusion * diffusion_term_y;          
+            }
 
             normLastTrajectory =
                 pow((TargPos.x - InitPos.x) * (TargPos.x - InitPos.x) +
@@ -1264,7 +1273,7 @@ template __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel<double>(
     double outletcoordinate, int count, int numElements, uint stepNO,
     uint *Particle_runtime_error_dev_pnt, uint NUMParticlesInTotal,
     bool If_completeMixing_fluxWeighted, bool If_periodic,
-    int2 *CorrespondingEleLocalEdge_device_ptr);
+    int2 *CorrespondingEleLocalEdge_device_ptr,  size_t IfPureDiffusion);
 template __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel<float>(
     unsigned long seed, float delta_T_, float Dispersion_local,
     cuDFNsys::Particle<float> *P_DEV, cuDFNsys::Fracture<float> *Frac_DEV,
@@ -1275,4 +1284,4 @@ template __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel<float>(
     float outletcoordinate, int count, int numElements, uint stepNO,
     uint *Particle_runtime_error_dev_pnt, uint NUMParticlesInTotal,
     bool If_completeMixing_fluxWeighted, bool If_periodic,
-    int2 *CorrespondingEleLocalEdge_device_ptr);
+    int2 *CorrespondingEleLocalEdge_device_ptr,  size_t IfPureDiffusion);
