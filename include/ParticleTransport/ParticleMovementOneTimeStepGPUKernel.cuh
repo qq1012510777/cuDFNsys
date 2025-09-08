@@ -64,5 +64,5 @@ namespace cuDFNsys
         T outletcoordinate, int count, int numElements, uint stepNO,
         uint *Particle_runtime_error_dev_pnt, uint NUMParticlesInTotal,
         bool If_completeMixing_fluxWeighted, bool If_periodic,
-        int2 *CorrespondingEleLocalEdge_device_ptr, size_t IfPureDiffusion);
+        int2 *CorrespondingEleLocalEdge_device_ptr, size_t IfPureDiffusion, size_t IfReflectionAtInlet_);
 }; // namespace cuDFNsys

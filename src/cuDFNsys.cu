@@ -1189,7 +1189,7 @@ void cuDFNsys::PTDFN<T>::ParticleTracking(cuDFNsys::DFN<T> my_dfn,
     cuDFNsys::OutputObjectData<T> lk;
     lk.OutputFractures("FracturesForParticle.h5", my_dfn.FracturesHost,
                        my_dfn.DomainSizeX);
-
+    
     this->PTData = cuDFNsys::ParticleTransport<T>{
         this->NumTimeSteps,
         my_dfn.FracturesHost,
@@ -1214,7 +1214,10 @@ void cuDFNsys::PTDFN<T>::ParticleTracking(cuDFNsys::DFN<T> my_dfn,
         this->IfUseFluxWeightedOrEqualProbableMixingIntersection,
         this->IfPeriodic,
         this->TimeIntervalOutPTInformation,
-        this->IfOutputAllParticleAccumulativeDisplacement};
+        this->IfOutputAllParticleAccumulativeDisplacement,
+        this->IfPureDiffusion,
+        this->IfDiscontinueAfterFirstAbsorption,
+        this->IfReflectionAtInlet};
 }; // ParticleTracking
 template void
 cuDFNsys::PTDFN<double>::ParticleTracking(cuDFNsys::DFN<double> my_dfn,

@@ -31,7 +31,7 @@ __global__ void cuDFNsys::CheckIfReachControlPlanesKernel(
     //uint *EleTag_device_ptr,
     uint count, uint Dir, T L_percoDir, uint *TimeReachControlPlanes_dev_ptr,
     uint NumControlPlanes, T *ControlPlanes, uint NumParticlesTotal,
-    uint StepNo, T *x_ptr, T *y_ptr, T *z_ptr, T magic_number)
+    uint StepNo, T *x_ptr, T *y_ptr, T *z_ptr, T magic_number, T InjectionPlaneAtLongitudinalDirection_)
 {
     int idx = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -61,7 +61,7 @@ __global__ void cuDFNsys::CheckIfReachControlPlanesKernel(
         Pos.z + Frac_verts_device_ptr[FracTag_j].Center.z);
 
     T *kk = &(Pos.x);
-    kk[Dir] -= (L_percoDir)*temp2Dpos_dev_ptr[idx].FactorPeriodic;
+    // kk[Dir] -= (L_percoDir)*temp2Dpos_dev_ptr[idx].FactorPeriodic;
 
     if (temp2Dpos_dev_ptr[idx].ParticleID > 0 &&
         temp2Dpos_dev_ptr[idx].ParticleID <= NumParticlesTotal)
@@ -80,12 +80,15 @@ __global__ void cuDFNsys::CheckIfReachControlPlanesKernel(
                     [i * NumParticlesTotal + temp2Dpos_dev_ptr[idx].ParticleID -
                      1] == 0)
             {
-                if (kk[Dir] >= ControlPlanes[i])
+                if ((kk[Dir] <= ControlPlanes[i] && ControlPlanes[i] < InjectionPlaneAtLongitudinalDirection_) ||
+                    (kk[Dir] >= ControlPlanes[i] && ControlPlanes[i] > InjectionPlaneAtLongitudinalDirection_)
+                    )
                 {
                     TimeReachControlPlanes_dev_ptr
                         [i * NumParticlesTotal +
                          temp2Dpos_dev_ptr[idx].ParticleID - 1] = StepNo;
                 }
+                // else if (kk[Dir] <= ControlPlanes[i] && ControlPlanes[i] > InjectionPlaneAtLongitudinalDirection_)
             }
         }
         if (i == NumControlPlanes - 1 &&
@@ -109,7 +112,7 @@ template __global__ void cuDFNsys::CheckIfReachControlPlanesKernel<double>(
     uint count, uint Dir, double L_percoDir,
     uint *TimeReachControlPlanes_dev_ptr, uint NumControlPlanes,
     double *ControlPlanes, uint NumParticlesTotal, uint StepNo, double *x_ptr,
-    double *y_ptr, double *z_ptr, double magic_number);
+    double *y_ptr, double *z_ptr, double magic_number, double InjectionPlaneAtLongitudinalDirection_);
 template __global__ void cuDFNsys::CheckIfReachControlPlanesKernel<float>(
     cuDFNsys::Fracture<float> *Frac_verts_device_ptr,
     cuDFNsys::Particle<float> *temp2Dpos_dev_ptr,
@@ -118,4 +121,4 @@ template __global__ void cuDFNsys::CheckIfReachControlPlanesKernel<float>(
     uint count, uint Dir, float L_percoDir,
     uint *TimeReachControlPlanes_dev_ptr, uint NumControlPlanes,
     float *ControlPlanes, uint NumParticlesTotal, uint StepNo, float *x_ptr,
-    float *y_ptr, float *z_ptr, float magic_number);
+    float *y_ptr, float *z_ptr, float magic_number, float InjectionPlaneAtLongitudinalDirection_);

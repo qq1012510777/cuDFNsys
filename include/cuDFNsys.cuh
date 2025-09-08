@@ -244,7 +244,9 @@ namespace cuDFNsys
         bool IfPeriodic = false;
         uint TimeIntervalOutPTInformation = 100;
         bool IfOutputAllParticleAccumulativeDisplacement = false;
-
+        size_t IfPureDiffusion = 0; 
+        size_t IfDiscontinueAfterFirstAbsorption = 0;
+        size_t IfReflectionAtInlet = 0;
     public:
         PTDFN() {};
         void ParticleTracking(cuDFNsys::DFN<T> my_dfn,

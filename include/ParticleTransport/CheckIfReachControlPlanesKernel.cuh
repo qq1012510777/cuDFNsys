@@ -52,5 +52,5 @@ namespace cuDFNsys
         //uint *EleTag_device_ptr,
         uint count, uint Dir, T L_percoDir, uint *TimeReachControlPlanes_dev_ptr,
         uint NumControlPlanes, T *ControlPlanes, uint NumParticlesTotal,
-        uint StepNo, T *x_ptr, T *y_ptr, T *z_ptr, T magic_number);
+        uint StepNo, T *x_ptr, T *y_ptr, T *z_ptr, T magic_number, T InjectionPlaneAtLongitudinalDirection_);
 }; // namespace cuDFNsys

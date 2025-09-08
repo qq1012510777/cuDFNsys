@@ -35,7 +35,7 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(
     int count, int numElements, uint stepNO,
     uint *Particle_runtime_error_dev_pnt, uint NUMParticlesInTotal,
     bool If_completeMixing_fluxWeighted, bool If_periodic,
-    int2 *CorrespondingEleLocalEdge_device_ptr, size_t IfPureDiffusion)
+    int2 *CorrespondingEleLocalEdge_device_ptr, size_t IfPureDiffusion, size_t IfReflectionAtInlet_)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -567,9 +567,23 @@ __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel(
                 if (!If_periodic)
                     if (Dispersion_local != 0)
                     {
-                        P_DEV[i].ParticleID =
-                            NUMParticlesInTotal * 2; //delete this randam walker
-                        goto TimeStepInfo;
+                        if (IfPureDiffusion == 0)
+                        { 
+                            P_DEV[i].ParticleID =
+                                NUMParticlesInTotal * 2; //delete this randam walker
+                            goto TimeStepInfo;
+                        }
+                        else if (IfPureDiffusion != 0 && IfReflectionAtInlet_ == 0) // pure diffusion and absorption at inlet
+                        {
+                            P_DEV[i].ParticleID =
+                                -P_DEV[i].ParticleID; // reaches inlet plane
+                            //take this as target plane
+                            goto TimeStepInfo;
+                        }   
+                        else if (IfPureDiffusion != 0 && IfReflectionAtInlet_ != 0) // reflective at inlet
+                        {
+                            goto NON_FLUX_EDGE;
+                        } 
                     }
                     else
                     {
@@ -1273,7 +1287,7 @@ template __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel<double>(
     double outletcoordinate, int count, int numElements, uint stepNO,
     uint *Particle_runtime_error_dev_pnt, uint NUMParticlesInTotal,
     bool If_completeMixing_fluxWeighted, bool If_periodic,
-    int2 *CorrespondingEleLocalEdge_device_ptr,  size_t IfPureDiffusion);
+    int2 *CorrespondingEleLocalEdge_device_ptr,  size_t IfPureDiffusion, size_t IfReflectionAtInlet_);
 template __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel<float>(
     unsigned long seed, float delta_T_, float Dispersion_local,
     cuDFNsys::Particle<float> *P_DEV, cuDFNsys::Fracture<float> *Frac_DEV,
@@ -1284,4 +1298,4 @@ template __global__ void cuDFNsys::ParticleMovementOneTimeStepGPUKernel<float>(
     float outletcoordinate, int count, int numElements, uint stepNO,
     uint *Particle_runtime_error_dev_pnt, uint NUMParticlesInTotal,
     bool If_completeMixing_fluxWeighted, bool If_periodic,
-    int2 *CorrespondingEleLocalEdge_device_ptr,  size_t IfPureDiffusion);
+    int2 *CorrespondingEleLocalEdge_device_ptr,  size_t IfPureDiffusion, size_t IfReflectionAtInlet_);

@@ -21,16 +21,18 @@ bool IfAFileExist(const string &FilePath);
 
 int main(int argc, char *argv[])
 {
-    if (argc != 5)
+    if (argc != 7)
     {
         std::cout << "Usage: " << argv[0] << 
-        " <csvDFN> <csvMesh> <csvFlow> <csvPT>\n";
+        " <csvDFN> <csvMesh> <csvFlow> <csvPT> <IfDiscontinueAfterFirstAbsorption> <IfInletReflective>\n";
         exit(0);
     }
     std::string csvDFN = std::string(argv[1]);
     std::string csvMesh = std::string(argv[2]);
     std::string csvFlow = std::string(argv[3]);
     std::string csvPT = std::string(argv[4]);
+    size_t IfDiscontinueAfterFirstAbsorption_ = atoi(argv[5]);
+    size_t IfInletReflective_ = atoi(argv[6]);    
 
     std::string DFNH5 = "Class_DFN";
     std::string MeshH5 = "Class_Mesh";
@@ -53,13 +55,13 @@ int main(int argc, char *argv[])
             std::cout << "It is percolative\n";
             std::string DFNVisualFIle = "DFN_Visual";
             my_dfn.Visualization(DFNVisualFIle, DFNVisualFIle, DFNVisualFIle, false, false, true, true);
-            my_dfn.StoreInH5(DFNH5);
+            
 
             my_mesh.LoadParametersFromCSV(csvMesh);
             my_mesh.MeshGeneration(my_dfn);
             std::string MeshVisualFIle = "Mesh_Visual";
             my_mesh.Visualization(my_dfn, MeshVisualFIle, MeshVisualFIle, MeshVisualFIle, true, true);
-            my_mesh.StoreInH5(MeshH5);
+            
 
             my_flow.LoadParametersFromCSV(csvFlow);
             my_flow.FlowSimulation(my_dfn, my_mesh);
@@ -69,6 +71,8 @@ int main(int argc, char *argv[])
             // my_flow.FlowData.PressureEles = my_flow.FlowData.PressureEles.setZero();
             // my_flow.FlowData.VelocityNormalScalarSepEdges = my_flow.FlowData.VelocityNormalScalarSepEdges.setZero();
             // diffusion no velocity
+            my_dfn.StoreInH5(DFNH5);
+            my_mesh.StoreInH5(MeshH5);
             my_flow.StoreInH5(FlowH5);
             return 0;
         }
@@ -79,8 +83,45 @@ int main(int argc, char *argv[])
             my_flow.LoadClassFromH5(FlowH5);   
         };
 
-
+        // if (IfAFileExist("./ParticlePositionResult/DispersionInfo.h5"))
+        // {
+        //     cuDFNsys::HDF5API hdf5_rw;
+// 
+        //     std::vector<uint> tmp = 
+        //         hdf5_rw.ReadDataset<uint>("./ParticlePositionResult/DispersionInfo.h5", "N", "NumParticlesLeftFromInlet");
+        //     if (tmp[0] > 1)
+        //     {
+        //         std:: cout << "Found first hit on inlet\n";
+        //         return;
+        //     }
+// 
+        //     tmp = hdf5_rw.ReadDataset<uint>(
+        //                     "./ParticlePositionResult/DispersionInfo.h5",
+        //                 "N", "NumParticles");
+        //     int NumParticlesTotal = tmp[0];
+// 
+        //     std::vector<uint> FPT = hdf5_rw.ReadDataset<uint>(
+        //                 "./ParticlePositionResult/"
+        //                     "ParticlePosition_FPTControlPlanes.h5",
+        //                 "N",
+        //                 "ControlPlane_" +
+        //                     std::to_string(my_dfn.DomainSizeX * my_dfn.DomainDimensionRatio.z * -0.5) +
+        //                     "_m");
+        //     int zeroCount = std::count(FPT.begin(), FPT.end(), 0);
+// 
+        //     if (zeroCount < NumParticlesTotal)
+        //     {
+        //         std:: cout << "Found first hit on outlet\n";
+        //         return;
+        //     }
+// 
+        // };//
         my_PT.LoadParametersFromCSV(csvPT);
+
+        my_PT.IfPureDiffusion = 1;  // > 0 means pure diffusion
+        my_PT.IfDiscontinueAfterFirstAbsorption = IfDiscontinueAfterFirstAbsorption_; // > 0 means stop when there is first absorption
+        my_PT.IfReflectionAtInlet = IfInletReflective_; // > 0 means reflective inlet
+        // cout << "b\n";
         my_PT.ParticleTracking(my_dfn,
             my_mesh,
             my_flow);

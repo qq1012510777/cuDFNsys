@@ -1,5 +1,5 @@
 NumParticles,20000,
-NumTimeSteps,20000,
+NumTimeSteps,50000,
 MolecularDiffusion, 0.25,
 DeltaT, 0.025,
 InjectionMethod_initialcondition,Resident,

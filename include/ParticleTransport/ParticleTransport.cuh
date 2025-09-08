@@ -82,12 +82,16 @@ namespace cuDFNsys
 
         bool IfOutputAllParticleAccumulativeDisplacement = false;
 
+        T InjectionPlaneAtLongitudinalDirection = 0;
+
         //------------record the travel time reaching control planes
         thrust::host_vector<uint> TimeReachControlPlanes;
 
         std::vector<T> AllParticleAccumulativeDisplacement;
 
         size_t IfPureDiffusion = 0; 
+        size_t IfDiscontinueAfterFirstAbsorption = 0;
+        size_t IfReflectionAtInlet = 0;
 
     private:
         string ParticlePosition = "ParticlePositionResult/ParticlePosition";
@@ -127,7 +131,9 @@ namespace cuDFNsys
             bool IfInitCenterDomain = false, T InjectionPlane = 0,
             bool If_completeMixing_fluxWeighted = true,
             bool IfPeriodic_ = false, uint TimeIntervalOutPTInformation_s = 100,
-            bool IfOutputParticleAccumulativeDisplacement_s = false);
+            bool IfOutputParticleAccumulativeDisplacement_s = false, size_t IfPureDiffusion_ = 0,
+            size_t IfDiscontinueAfterFirstAbsorption__ = 0,
+            size_t IfReflectionAtInlet_ = 0);
 
         void ParticleMovement(const int &init_NO_STEP, const int &NumTimeStep,
                               T delta_T_, T Dispersion_local,

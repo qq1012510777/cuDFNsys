@@ -35,25 +35,42 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(
     T SpacingOfControlPlanes, bool IfOutputMSD_, bool IfInitCenterDomain,
     T InjectionPlane, bool If_completeMixing_fluxWeighted, bool IfPeriodic_,
     uint TimeIntervalOutPTInformation_s,
-    bool IfOutputParticleAccumulativeDisplacement_s)
+    bool IfOutputParticleAccumulativeDisplacement_s, size_t IfPureDiffusion_,
+    size_t IfDiscontinueAfterFirstAbsorption__, size_t IfReflectionAtInlet_ )
 {
     //cuDFNsys::MatlabAPI M1;
     // if (recordMode != "OutputAll" && recordMode != "FPTCurve")
     //     throw cuDFNsys::ExceptionsPause("Undefined Particle information record mode!\n");
     // else
     //     this->RecordMode = recordMode;
+    this->IfPureDiffusion = IfPureDiffusion_;
+    this->IfDiscontinueAfterFirstAbsorption = IfDiscontinueAfterFirstAbsorption__;
+    this->IfReflectionAtInlet = IfReflectionAtInlet_;
+    this->InjectionPlaneAtLongitudinalDirection = InjectionPlane;
+
     cout << "\tParticle tracking ing\n";
+    cout << "\tIfPureDiffusion: " << this->IfPureDiffusion << "\n";
+    cout << "\tIfDiscontinueAfterFirstAbsorption: " << this->IfDiscontinueAfterFirstAbsorption << "\n";
+    cout << "\tIfReflectionAtInlet: " << this->IfReflectionAtInlet << "\n";
+    cout << "\tInjectionPlane: " << this->InjectionPlaneAtLongitudinalDirection << " in the " << ((this->Dir == 0) ? "x" : (this->Dir == 1) ? "y" : "z") << " direction\n";
     this->IfOutputMSD = IfOutputMSD_;
-    T linearDis = 0;
+    T linearDis = abs(outletcoordinate);
     for (uint i = 0;; i++)
     {
-        linearDis += SpacingOfControlPlanes;
-        if (linearDis < (abs(outletcoordinate) * 2.0 - 1e-1))
+        linearDis -= SpacingOfControlPlanes;
+        // cout << "linearDis: " << linearDis << "\n";
+        if (abs(linearDis - outletcoordinate) > 1e-1)
             this->ControlPlanes.push_back(linearDis);
         else
             break;
     }
-    this->ControlPlanes.push_back(abs(outletcoordinate) * 2.0);
+    this->ControlPlanes.push_back(outletcoordinate);
+    cout << "\tControlPlanes: ";
+    for (auto e : this->ControlPlanes)
+    {
+        cout << e << ", ";
+    }
+    cout << "\n";
 
     this->IfOutputAllParticleAccumulativeDisplacement =
         IfOutputParticleAccumulativeDisplacement_s;
@@ -235,7 +252,7 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(
             std::vector<uint> temp = h5g.ReadDataset<uint>(
                 ParticlePosition + "_FPTControlPlanes.h5", "N",
                 "ControlPlane_" +
-                    cuDFNsys::ToStringWithWidth(ControlPlanes[i], 10) + "_m");
+                    std::to_string(ControlPlanes[i]) + "_m");
             thrust::copy(temp.begin(), temp.end(),
                          TimeReachControlPlanes.begin() +
                              i * this->NumParticles);
@@ -336,7 +353,8 @@ template cuDFNsys::ParticleTransport<double>::ParticleTransport(
     bool IfInitCenterDomain, double InjectionPlane,
     bool If_completeMixing_fluxWeighted, bool IfPeriodic_,
     uint TimeIntervalOutPTInformation_s,
-    bool IfOutputParticleAccumulativeDisplacement_s);
+    bool IfOutputParticleAccumulativeDisplacement_s, size_t IfPureDiffusion_,
+    size_t IfDiscontinueAfterFirstAbsorption__, size_t IfReflectionAtInlet_ );
 template cuDFNsys::ParticleTransport<float>::ParticleTransport(
     const int &NumTimeStep,
     thrust::host_vector<cuDFNsys::Fracture<float>> Fracs,
@@ -348,7 +366,8 @@ template cuDFNsys::ParticleTransport<float>::ParticleTransport(
     bool IfInitCenterDomain, float InjectionPlane,
     bool If_completeMixing_fluxWeighted, bool IfPeriodic_,
     uint TimeIntervalOutPTInformation_s,
-    bool IfOutputParticleAccumulativeDisplacement_s);
+    bool IfOutputParticleAccumulativeDisplacement_s, size_t IfPureDiffusion_,
+    size_t IfDiscontinueAfterFirstAbsorption__, size_t IfReflectionAtInlet_ );
 
 // ====================================================
 // NAME:        ParticleMovement
@@ -459,7 +478,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
                     NumPart_dynamic, mesh.Element3D.size(), i,
                     Particle_runtime_error_dev_pnt, this->NumParticles,
                     If_completeMixing_fluxWeighted, this->IfPeriodic,
-                    CorrespondingEleLocalEdge_device_ptr, this->IfPureDiffusion);
+                    CorrespondingEleLocalEdge_device_ptr, this->IfPureDiffusion, this->IfReflectionAtInlet);
             cudaDeviceSynchronize();
             // moving_time += (cuDFNsys::CPUSecond() - istart_j);
 
@@ -502,7 +521,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
                         TimeReachControlPlanes_dev_ptr,
                         this->ControlPlanes.size(), ControlPlanes_dev_ptr,
                         this->NumParticles, j, x_value_ptr, y_value_ptr,
-                        z_value_ptr, magic_number);
+                        z_value_ptr, magic_number, this->InjectionPlaneAtLongitudinalDirection);
                 cudaDeviceSynchronize();
             }
             /// controlPlane_time += (cuDFNsys::CPUSecond() - istart_j);
@@ -514,52 +533,47 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
             // if (this->IfOutputMSD)
             // {
                 // cout << "4.1" << endl;
-                auto newEnd = thrust::remove_if(x_value.begin(), x_value.end(),
-                                                IsNotEqual<T>(magic_number));
-                x_value.resize(newEnd - x_value.begin());
-
-                auto newEnd1 = thrust::remove_if(y_value.begin(), y_value.end(),
-                                                 IsNotEqual<T>(magic_number));
-                y_value.resize(newEnd1 - y_value.begin());
-
-                auto newEnd2 = thrust::remove_if(z_value.begin(), z_value.end(),
-                                                 IsNotEqual<T>(magic_number));
-                z_value.resize(newEnd2 - z_value.begin());
-
-                std::vector<double> temp(3, 0);
-                // istart_j = cuDFNsys::CPUSecond();
-                for (int k = 0; k < 3; ++k)
-                {
-                    // thrust::device_vector<T> tmpo;
-                    // if (k == 0)
-                    //     tmpo = x_value;
-                    // else if (k == 1)
-                    //     tmpo = y_value;
-                    // else if (k == 2)
-                    //     tmpo = z_value;
-                    // summary_stats_unary_op<T> unary_op;
-                    // summary_stats_binary_op<T> binary_op;
-                    // summary_stats_data<T> init;
-                    // init.initialize();
-                    // summary_stats_data<T> result_1 = thrust::transform_reduce(
-                    //     tmpo.begin(), tmpo.end(), unary_op, init, binary_op);
-                    // temp[k] = result_1.variance();
-
-                    auto begin_va = x_value.begin();
-                    int size_data = x_value.size();
-                    if (k == 1)
-                        begin_va = y_value.begin(), size_data = y_value.size();
-                    else if (k == 2)
-                        begin_va = z_value.begin(), size_data = z_value.size();
-
-                    T mean = thrust::reduce(begin_va, begin_va + size_data) /
-                             size_data;
-                    T sumOfSquaredDifferences = thrust::transform_reduce(
-                        begin_va, begin_va + size_data,
-                        SquaredDifference<T>(mean), 0.0, thrust::plus<T>());
-                    temp[k] = sumOfSquaredDifferences / size_data;
-                }
-                Variance_segmentation[StepNo_inside_i_final - i - 1] = temp;
+                // auto newEnd = thrust::remove_if(x_value.begin(), x_value.end(),
+                //                                 IsNotEqual<T>(magic_number));
+                // x_value.resize(newEnd - x_value.begin());
+                // auto newEnd1 = thrust::remove_if(y_value.begin(), y_value.end(),
+                //                                  IsNotEqual<T>(magic_number));
+                // y_value.resize(newEnd1 - y_value.begin());
+                // auto newEnd2 = thrust::remove_if(z_value.begin(), z_value.end(),
+                //                                  IsNotEqual<T>(magic_number));
+                // z_value.resize(newEnd2 - z_value.begin());
+                // std::vector<double> temp(3, 0);
+                // // istart_j = cuDFNsys::CPUSecond();
+                // for (int k = 0; k < 3; ++k)
+                // {
+                //     // thrust::device_vector<T> tmpo;
+                //     // if (k == 0)
+                //     //     tmpo = x_value;
+                //     // else if (k == 1)
+                //     //     tmpo = y_value;
+                //     // else if (k == 2)
+                //     //     tmpo = z_value;
+                //     // summary_stats_unary_op<T> unary_op;
+                //     // summary_stats_binary_op<T> binary_op;
+                //     // summary_stats_data<T> init;
+                //     // init.initialize();
+                //     // summary_stats_data<T> result_1 = thrust::transform_reduce(
+                //     //     tmpo.begin(), tmpo.end(), unary_op, init, binary_op);
+                //     // temp[k] = result_1.variance();
+                //     auto begin_va = x_value.begin();
+                //     int size_data = x_value.size();
+                //     if (k == 1)
+                //         begin_va = y_value.begin(), size_data = y_value.size();
+                //     else if (k == 2)
+                //         begin_va = z_value.begin(), size_data = z_value.size();
+                //     T mean = thrust::reduce(begin_va, begin_va + size_data) /
+                //              size_data;
+                //     T sumOfSquaredDifferences = thrust::transform_reduce(
+                //         begin_va, begin_va + size_data,
+                //         SquaredDifference<T>(mean), 0.0, thrust::plus<T>());
+                //     temp[k] = sumOfSquaredDifferences / size_data;
+                // }
+                // Variance_segmentation[StepNo_inside_i_final - i - 1] = temp;
                 // variance_time += (cuDFNsys::CPUSecond() - istart_j);
             // }
             //cout << "5" << endl;
@@ -604,7 +618,7 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
             h5g.OverWrite(
                 ParticlePosition + "_FPTControlPlanes.h5", "N",
                 "ControlPlane_" +
-                    cuDFNsys::ToStringWithWidth(ControlPlanes[j], 10) + "_m",
+                    std::to_string(ControlPlanes[j]) + "_m",
                 tmpo.data(), make_uint2(1, this->NumParticles));
         }
         //----------------
@@ -726,6 +740,14 @@ void cuDFNsys::ParticleTransport<T>::ParticleMovement(
         if (NumPart_dynamic == 0 && Particle_mode == "Particle_tracking")
         {
             cout << "\e[1;32mAll particles reached outlet plane!\e[0m\n";
+            break;
+        }
+
+        if (this->IfDiscontinueAfterFirstAbsorption != 0 && 
+            ((NumPart_dynamic < this->NumParticles) || 
+            (TotalNumParticlesLeaveModelFromInlet > 0)))
+        {
+            std::cout << "First absorption is found\n";
             break;
         }
         cout << "\n";
@@ -1307,7 +1329,7 @@ void cuDFNsys::ParticleTransport<T>::OutputParticleInfoStepByStep(
             h5g.AddDataset(
                 matkeyd, "N",
                 "ControlPlane_" +
-                    cuDFNsys::ToStringWithWidth(ControlPlanes[i], 10) + "_m",
+                    std::to_string(ControlPlanes[i]) + "_m",
                 tmpo.data(), dimf2);
         }
     }
