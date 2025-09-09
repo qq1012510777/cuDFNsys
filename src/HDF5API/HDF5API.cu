@@ -341,11 +341,81 @@ void cuDFNsys::HDF5API::OverWrite(const string &filename,
     else
         channelName = "/" + datasetname;
 
-    int result = H5Ldelete(file.getId(), channelName.data(), H5P_DEFAULT);
-    result++;
-    file.close();
+    if (H5Lexists(file.getId(), channelName.c_str(), H5P_DEFAULT))
+    {
+        //
+        H5::DataSet dataset = file.openDataSet(channelName);
+        H5::DataSpace dataspace = dataset.getSpace();
+        int rank = dataspace.getSimpleExtentNdims();
 
-    this->AddDataset(filename, groupname, datasetname, data, dim);
+        if (rank == 0)
+        {
+            // Scalar dataset (just one value)
+            if (dim.x != 1 || dim.y != 1)
+            {
+                throw ExceptionsPause("Scalar dataset mismatch: expected 1x1");
+            }
+        } 
+        else if (rank == 1)
+        {
+            hsize_t dims[1];
+            dataspace.getSimpleExtentDims(dims);
+            // compare dims[0] with your expected size
+            if (dims[0] != dim.x && dim.y == 1)
+            {
+                throw ExceptionsPause("Filename: "+ filename + ", channelName is: " + channelName + 
+                        ". Dataset shape mismatch, cannot overwrite in-place. Existing dataset size: " + std::to_string(dims[0]) + 
+                    " * " + std::to_string(dims[1]) + ", but the size of data input: " + std::to_string(dim.x) + 
+                    " * " + std::to_string(dim.y) + "\n");    
+            }
+        } 
+        else if (rank == 2) 
+        {
+            hsize_t dims[2];
+            dataspace.getSimpleExtentDims(dims);
+            if (dims[0] != dim.x || dims[1] != dim.y) {
+                throw ExceptionsPause("Filename: "+ filename + ", channelName is: " + channelName + 
+                    ". Dataset shape mismatch, cannot overwrite in-place. Existing dataset size: " + std::to_string(dims[0]) + 
+                " * " + std::to_string(dims[1]) + ", but the size of data input: " + std::to_string(dim.x) + 
+                " * " + std::to_string(dim.y) + "\n");
+            }
+        } else {
+            throw ExceptionsPause("Unsupported dataset rank: " + std::to_string(rank));
+        }
+
+        
+        auto datatype = PredType::NATIVE_DOUBLE;
+
+        if (typeid(data[0]) == typeid(double))
+            datatype = PredType::NATIVE_DOUBLE;
+        else if (typeid(data[0]) == typeid(float))
+            datatype = PredType::NATIVE_FLOAT;
+        else if (typeid(data[0]) == typeid(size_t))
+        {
+            string kklo = "In cuDFNsys::HDF5API, writing size_t data might lead to "
+                        "problems, please cast size_t array to int/uint array\n";
+            cout << kklo;
+            throw ExceptionsPause(kklo);
+        }
+        else if (typeid(data[0]) == typeid(int))
+            datatype = PredType::NATIVE_INT;
+        else if (typeid(data[0]) == typeid(uint))
+            datatype = PredType::NATIVE_UINT;
+        else
+            throw ExceptionsPause("Undefined datatype in HDF5API::AddDataset\n");
+        
+        dataset.write(data,
+                    datatype); // 
+
+        dataset.close();
+        dataspace.close();
+        file.close();
+    }
+    else // dataset does not exist
+    {    
+        file.close();
+        this->AddDataset(filename, groupname, datasetname, data, dim);
+    }
 }; // OverWrite
 template void cuDFNsys::HDF5API::OverWrite(const string &filename,
                                            const string &groupname,
