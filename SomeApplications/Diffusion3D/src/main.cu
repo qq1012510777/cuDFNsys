@@ -15,24 +15,33 @@
 #include <thread>
 #include <unistd.h>
 #include <vector>
+
+#include <string>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <stdexcept>
+
 using namespace std;
 namespace fs = std::filesystem;
 bool IfAFileExist(const string &FilePath);
+std::vector<double> readFirstLineCSV(const std::string& filename);
 
 int main(int argc, char *argv[])
 {
-    if (argc != 7)
+    if (argc != 8)
     {
         std::cout << "Usage: " << argv[0] << 
-        " <csvDFN> <csvMesh> <csvFlow> <csvPT> <IfDiscontinueAfterFirstAbsorption> <IfInletReflective>\n";
+        " <csvDFN> <csvMesh> <csvFlow> <csvPT> <csvControlPlane> <IfDiscontinueAfterFirstAbsorption> <IfInletReflective>\n";
         exit(0);
     }
     std::string csvDFN = std::string(argv[1]);
     std::string csvMesh = std::string(argv[2]);
     std::string csvFlow = std::string(argv[3]);
     std::string csvPT = std::string(argv[4]);
-    size_t IfDiscontinueAfterFirstAbsorption_ = atoi(argv[5]);
-    size_t IfInletReflective_ = atoi(argv[6]);    
+    std::string csvControlPlanes = std::string(argv[5]);
+    size_t IfDiscontinueAfterFirstAbsorption_ = atoi(argv[6]);
+    size_t IfInletReflective_ = atoi(argv[7]);    
 
     std::string DFNH5 = "Class_DFN";
     std::string MeshH5 = "Class_Mesh";
@@ -121,6 +130,8 @@ int main(int argc, char *argv[])
         my_PT.IfPureDiffusion = 1;  // > 0 means pure diffusion
         my_PT.IfDiscontinueAfterFirstAbsorption = IfDiscontinueAfterFirstAbsorption_; // > 0 means stop when there is first absorption
         my_PT.IfReflectionAtInlet = IfInletReflective_; // > 0 means reflective inlet
+
+        my_PT.ControlPlanes = readFirstLineCSV(csvControlPlanes);
         // cout << "b\n";
         my_PT.ParticleTracking(my_dfn,
             my_mesh,
@@ -153,4 +164,50 @@ bool IfAFileExist(const string &FilePath)
     {
         return false;
     }
+}
+
+std::vector<double> readFirstLineCSV(const std::string& filename1) 
+{
+    std::string filename = filename1 + ".csv";
+
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        throw std::runtime_error("Cannot open file: " + filename);
+    }
+    
+    std::string firstLine;
+    if (!std::getline(file, firstLine)) {
+        throw std::runtime_error("File is empty: " + filename);
+    }
+    
+    std::vector<double> result;
+    std::istringstream lineStream(firstLine);
+    std::string token;
+    
+    while (std::getline(lineStream, token, ',')) {
+        // Trim whitespace from the token
+        token.erase(0, token.find_first_not_of(" \t\n\r\f\v"));
+        token.erase(token.find_last_not_of(" \t\n\r\f\v") + 1);
+        
+        // Stop reading if token is empty
+        if (token.empty()) {
+            break;
+        }
+        
+        // Try to convert token to double
+        try {
+            double value = std::stod(token);
+            result.push_back(value);
+        }
+        catch (const std::invalid_argument&) {
+            // Stop reading if conversion fails (non-numeric value)
+            break;
+        }
+        catch (const std::out_of_range&) {
+            // Handle out of range values if needed, or break
+            break;
+        }
+    }
+    
+    return result;
 }

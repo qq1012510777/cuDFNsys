@@ -1217,7 +1217,8 @@ void cuDFNsys::PTDFN<T>::ParticleTracking(cuDFNsys::DFN<T> my_dfn,
         this->IfOutputAllParticleAccumulativeDisplacement,
         this->IfPureDiffusion,
         this->IfDiscontinueAfterFirstAbsorption,
-        this->IfReflectionAtInlet};
+        this->IfReflectionAtInlet,
+        this->ControlPlanes};
 }; // ParticleTracking
 template void
 cuDFNsys::PTDFN<double>::ParticleTracking(cuDFNsys::DFN<double> my_dfn,

@@ -133,7 +133,7 @@ namespace cuDFNsys
             bool IfPeriodic_ = false, uint TimeIntervalOutPTInformation_s = 100,
             bool IfOutputParticleAccumulativeDisplacement_s = false, size_t IfPureDiffusion_ = 0,
             size_t IfDiscontinueAfterFirstAbsorption__ = 0,
-            size_t IfReflectionAtInlet_ = 0);
+            size_t IfReflectionAtInlet_ = 0, std::vector<T> ControlPlanes = {0});
 
         void ParticleMovement(const int &init_NO_STEP, const int &NumTimeStep,
                               T delta_T_, T Dispersion_local,

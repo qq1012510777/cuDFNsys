@@ -247,6 +247,7 @@ namespace cuDFNsys
         size_t IfPureDiffusion = 0; 
         size_t IfDiscontinueAfterFirstAbsorption = 0;
         size_t IfReflectionAtInlet = 0;
+        std::vector<T> ControlPlanes = {0}; // do not include the outlet coordinate
     public:
         PTDFN() {};
         void ParticleTracking(cuDFNsys::DFN<T> my_dfn,

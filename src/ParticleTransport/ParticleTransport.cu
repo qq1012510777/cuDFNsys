@@ -36,7 +36,7 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(
     T InjectionPlane, bool If_completeMixing_fluxWeighted, bool IfPeriodic_,
     uint TimeIntervalOutPTInformation_s,
     bool IfOutputParticleAccumulativeDisplacement_s, size_t IfPureDiffusion_,
-    size_t IfDiscontinueAfterFirstAbsorption__, size_t IfReflectionAtInlet_ )
+    size_t IfDiscontinueAfterFirstAbsorption__, size_t IfReflectionAtInlet_ , std::vector<T> ControlPlanes_)
 {
     //cuDFNsys::MatlabAPI M1;
     // if (recordMode != "OutputAll" && recordMode != "FPTCurve")
@@ -54,17 +54,10 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(
     cout << "\tIfReflectionAtInlet: " << this->IfReflectionAtInlet << "\n";
     cout << "\tInjectionPlane: " << this->InjectionPlaneAtLongitudinalDirection << " in the " << ((this->Dir == 0) ? "x" : (this->Dir == 1) ? "y" : "z") << " direction\n";
     this->IfOutputMSD = IfOutputMSD_;
-    T linearDis = abs(outletcoordinate);
-    for (uint i = 0;; i++)
-    {
-        linearDis -= SpacingOfControlPlanes;
-        // cout << "linearDis: " << linearDis << "\n";
-        if (abs(linearDis - outletcoordinate) > 1e-1)
-            this->ControlPlanes.push_back(linearDis);
-        else
-            break;
-    }
+    
+    this->ControlPlanes.assign(ControlPlanes_.begin(), ControlPlanes_.end());  // push_back(outletcoordinate);
     this->ControlPlanes.push_back(outletcoordinate);
+
     cout << "\tControlPlanes: ";
     for (auto e : this->ControlPlanes)
     {
@@ -354,7 +347,7 @@ template cuDFNsys::ParticleTransport<double>::ParticleTransport(
     bool If_completeMixing_fluxWeighted, bool IfPeriodic_,
     uint TimeIntervalOutPTInformation_s,
     bool IfOutputParticleAccumulativeDisplacement_s, size_t IfPureDiffusion_,
-    size_t IfDiscontinueAfterFirstAbsorption__, size_t IfReflectionAtInlet_ );
+    size_t IfDiscontinueAfterFirstAbsorption__, size_t IfReflectionAtInlet_, std::vector<double> ControlPlanes_);
 template cuDFNsys::ParticleTransport<float>::ParticleTransport(
     const int &NumTimeStep,
     thrust::host_vector<cuDFNsys::Fracture<float>> Fracs,
@@ -367,7 +360,7 @@ template cuDFNsys::ParticleTransport<float>::ParticleTransport(
     bool If_completeMixing_fluxWeighted, bool IfPeriodic_,
     uint TimeIntervalOutPTInformation_s,
     bool IfOutputParticleAccumulativeDisplacement_s, size_t IfPureDiffusion_,
-    size_t IfDiscontinueAfterFirstAbsorption__, size_t IfReflectionAtInlet_ );
+    size_t IfDiscontinueAfterFirstAbsorption__, size_t IfReflectionAtInlet_, std::vector<float> ControlPlanes_);
 
 // ====================================================
 // NAME:        ParticleMovement

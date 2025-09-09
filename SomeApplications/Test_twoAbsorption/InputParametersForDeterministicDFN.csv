@@ -1,0 +1,6 @@
+IfStochastic,0,
+DomainSizeX,40,
+DomainDimensionRatio,1,1,1,,,,,
+Percolation_direction,2,,,,,,,
+NumFractures,1,
+Fracture_1, 1,0,0, 0,0,0, 200,0.2,5e-4,0,1,1,
