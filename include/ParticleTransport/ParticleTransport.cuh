@@ -64,8 +64,8 @@ namespace cuDFNsys
         thrust::host_vector<cuDFNsys::EdgeToEle> EdgesSharedEle;
         thrust::host_vector<cuDFNsys::NeighborEle> NeighborEleOfOneEle;
         uint Dir = 2;
-        uint SizeOfDataBlock = 2000; // how many steps store in a h5 file.
-        uint BlockNOPresent = 0;
+        // uint SizeOfDataBlock = 2000; // how many steps store in a h5 file.
+        // uint BlockNOPresent = 0;
         vector<double> RunTimeEveryStep;
         bool IfRecordTime = false;
         string RecordMode = "OutputAll";

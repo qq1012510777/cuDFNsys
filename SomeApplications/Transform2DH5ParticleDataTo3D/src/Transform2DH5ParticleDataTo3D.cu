@@ -26,12 +26,18 @@
 #include "cuDFNsys.cuh"
 #include <omp.h>
 #include <unistd.h>
+#include <string>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <stdexcept>
 
 #ifdef USE_DOUBLES
 typedef double _DataType_;
 #else
 typedef float _DataType_;
 #endif
+namespace fs = std::filesystem;
 
 __global__ void Transform2DTO3DKernel(
     cuDFNsys::Fracture<_DataType_> *Frac_verts_device_ptr,
@@ -69,7 +75,20 @@ __global__ void Transform2DTO3DKernel(
     Position3D_dev_ptr[idx + numParticles] = Pos.y;
     Position3D_dev_ptr[idx + 2 * numParticles] = Pos.z;
 };
+bool IfAFileExist(const string &FilePath)
+{
+    fs::path filePath = FilePath;
 
+    // Check if the file exists
+    if (fs::exists(filePath))
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
 int main(int argc, char *argv[])
 {
 
@@ -78,16 +97,20 @@ int main(int argc, char *argv[])
         _DataType_ L;
 
         string FracH5 = "FracturesForParticle.h5";
-        cout << "input arg 1: 0 or 1,  where 0 is OutputAll, 1 is FPTCurve\n";
-        cout << "input arg 2: name of mesh file h5, with .h5\n"; 
-        bool If_FPT = atoi(argv[1]) == 0 ? false : true;
-
-        if (argv[2] == NULL)
-            throw cuDFNsys::ExceptionsPause(
-                "Please give the name of mesh file (.h5)!");
-
-        string mshfile = argv[2];
-
+        bool If_FPT;
+        string mshfile;
+        // uint OutputInterval = 0;
+        if (argc == 3)
+        {
+            If_FPT = atoi(argv[1]) == 0 ? false : true;
+            mshfile = std::string(argv[2]);
+        }
+        else
+        {
+            cout << "Usage: " << argv[0] << " <0 or 1,  where 0 is OutputAll, 1 is FPTCurve>  <name of mesh file h5, with .h5>\n";
+            exit(0);
+        }
+    
         thrust::host_vector<cuDFNsys::Fracture<_DataType_>> Frac_verts_host;
 
         double3 UI;
@@ -115,12 +138,12 @@ int main(int argc, char *argv[])
             h5g.ReadDataset<uint>(DispersionInfo_h5, "N", "NumOfSteps");
         uint ExistingNumsteps = Tem_p[0];
 
-        Tem_p = h5g.ReadDataset<uint>(DispersionInfo_h5, "N", "BlockNOPresent");
-        uint BlockNOPresent = Tem_p[0];
+        // Tem_p = h5g.ReadDataset<uint>(DispersionInfo_h5, "N", "BlockNOPresent");
+        // uint BlockNOPresent = Tem_p[0];
 
-        Tem_p =
-            h5g.ReadDataset<uint>(DispersionInfo_h5, "N", "SizeOfDataBlock");
-        uint SizeOfDataBlock = Tem_p[0];
+        // Tem_p =
+           //  h5g.ReadDataset<uint>(DispersionInfo_h5, "N", "SizeOfDataBlock");
+        // uint SizeOfDataBlock = Tem_p[0];
 
         vector<uint> ElementFracTag =
             h5g.ReadDataset<uint>(mshfile, "N", "element_Frac_Tag");
@@ -152,20 +175,24 @@ int main(int argc, char *argv[])
                 else
                 {
                     filename =
-                        ParticlePosition + "Block" +
+                        ParticlePosition + "_Step_" +
                         cuDFNsys::ToStringWithWidth(
-                            (uint)ceil((double)i / ((double)SizeOfDataBlock)),
+                            i,
                             10) +
                         ".h5";
 
                     outfilename =
-                        ParticlePosition + "Block" +
+                        ParticlePosition + "_Step_" +
                         cuDFNsys::ToStringWithWidth(
-                            (uint)ceil((double)i / ((double)SizeOfDataBlock)),
+                            i,
                             10) +
                         "_3D.h5";
-                    if (i % SizeOfDataBlock == 1)
+                    // if (i % SizeOfDataBlock == 1)
+
+                    if (IfAFileExist(filename))
                         h5g.NewFile(outfilename);
+                    else
+                        continue;
                 }
             else
             {
@@ -173,6 +200,7 @@ int main(int argc, char *argv[])
                 outfilename = ParticlePosition + "LastStep_3D.h5";
                 h5g.NewFile(outfilename);
             }
+
             vector<_DataType_> temp2Dpos;
             try
             {

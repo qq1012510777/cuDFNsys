@@ -92,39 +92,34 @@ int main(int argc, char *argv[])
             my_flow.LoadClassFromH5(FlowH5);   
         };
 
-        // if (IfAFileExist("./ParticlePositionResult/DispersionInfo.h5"))
-        // {
-        //     cuDFNsys::HDF5API hdf5_rw;
-// 
-        //     std::vector<uint> tmp = 
-        //         hdf5_rw.ReadDataset<uint>("./ParticlePositionResult/DispersionInfo.h5", "N", "NumParticlesLeftFromInlet");
-        //     if (tmp[0] > 1)
-        //     {
-        //         std:: cout << "Found first hit on inlet\n";
-        //         return;
-        //     }
-// 
-        //     tmp = hdf5_rw.ReadDataset<uint>(
-        //                     "./ParticlePositionResult/DispersionInfo.h5",
-        //                 "N", "NumParticles");
-        //     int NumParticlesTotal = tmp[0];
-// 
-        //     std::vector<uint> FPT = hdf5_rw.ReadDataset<uint>(
-        //                 "./ParticlePositionResult/"
-        //                     "ParticlePosition_FPTControlPlanes.h5",
-        //                 "N",
-        //                 "ControlPlane_" +
-        //                     std::to_string(my_dfn.DomainSizeX * my_dfn.DomainDimensionRatio.z * -0.5) +
-        //                     "_m");
-        //     int zeroCount = std::count(FPT.begin(), FPT.end(), 0);
-// 
-        //     if (zeroCount < NumParticlesTotal)
-        //     {
-        //         std:: cout << "Found first hit on outlet\n";
-        //         return;
-        //     }
-// 
-        // };//
+        if (IfAFileExist("./ParticlePositionResult/DispersionInfo.h5"))
+        {
+            cuDFNsys::HDF5API hdf5_rw;
+            std::vector<uint> tmp = 
+                hdf5_rw.ReadDataset<uint>("./ParticlePositionResult/DispersionInfo.h5", "N", "NumParticlesLeftFromInlet");
+            if (tmp[0] > 1)
+            {
+                std:: cout << "Found first hit on inlet\n";
+                return;
+            }
+            tmp = hdf5_rw.ReadDataset<uint>(
+                            "./ParticlePositionResult/DispersionInfo.h5",
+                        "N", "NumParticles");
+            int NumParticlesTotal = tmp[0];
+            std::vector<uint> FPT = hdf5_rw.ReadDataset<uint>(
+                        "./ParticlePositionResult/"
+                            "ParticlePosition_FPTControlPlanes.h5",
+                        "N",
+                        "ControlPlane_" +
+                            std::to_string(my_dfn.DomainSizeX * my_dfn.DomainDimensionRatio.z * -0.5) +
+                            "_m");
+            int zeroCount = std::count(FPT.begin(), FPT.end(), 0);
+            if (zeroCount < NumParticlesTotal)
+            {
+                std:: cout << "Found first hit on outlet\n";
+                return;
+            }
+        };//
         my_PT.LoadParametersFromCSV(csvPT);
 
         my_PT.IfPureDiffusion = 1;  // > 0 means pure diffusion
@@ -148,6 +143,30 @@ int main(int argc, char *argv[])
         std::cout << e.what() << "\n";
         
         return 0;    
+    }
+    catch (cuDFNsys::ExceptionsIgnore &e)
+    {
+        std::cout << e.what() << "\n";
+        
+        return 0;    
+    }
+    catch (H5::Exception &e)
+    {
+        //std::cout << e.what() << "\n";
+        std::cout << "H5::Exceptions: " << e.getDetailMsg() << endl;
+        return 0;    
+    }
+    catch (H5::FileIException &e)
+    {
+        //std::cout << e.what() << "\n";
+        std::cout << "H5::Exceptions: " << e.getDetailMsg() << endl;
+        return 0;    
+    }
+    catch (...)
+    {
+        std::cout << "Unclear exception\n";
+        throw;
+        return 0;
     }
 }
 

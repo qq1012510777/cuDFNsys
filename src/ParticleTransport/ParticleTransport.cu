@@ -141,11 +141,11 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(
         vector<uint> Tem_p = h5g.ReadDataset<uint>(matfile, "N", "NumOfSteps");
         uint ExistingNumsteps = Tem_p[0];
 
-        Tem_p = h5g.ReadDataset<uint>(matfile, "N", "BlockNOPresent");
-        this->BlockNOPresent = Tem_p[0];
+        // Tem_p = h5g.ReadDataset<uint>(matfile, "N", "BlockNOPresent");
+        // this->BlockNOPresent = Tem_p[0];
 
-        Tem_p = h5g.ReadDataset<uint>(matfile, "N", "SizeOfDataBlock");
-        this->SizeOfDataBlock = Tem_p[0];
+        // Tem_p = h5g.ReadDataset<uint>(matfile, "N", "SizeOfDataBlock");
+        // this->SizeOfDataBlock = Tem_p[0];
 
         Tem_p = h5g.ReadDataset<uint>(matfile, "N", "NumParticles");
         this->NumParticles = Tem_p[0];
@@ -162,8 +162,8 @@ cuDFNsys::ParticleTransport<T>::ParticleTransport(
                 "Undefined Particle information record mode!\n");
 
         string file_block_last =
-            this->ParticlePosition + "Block" +
-            cuDFNsys::ToStringWithWidth(this->BlockNOPresent, 10) + ".h5";
+            this->ParticlePosition + "_Step_" +
+            cuDFNsys::ToStringWithWidth(ExistingNumsteps, 10) + ".h5";
         string datasetname_last =
             "Step_" + cuDFNsys::ToStringWithWidth(ExistingNumsteps, 10);
         string accumDisplacementName =
@@ -1191,15 +1191,15 @@ void cuDFNsys::ParticleTransport<T>::OutputParticleInfoStepByStep(
         po[0] = {Dispersion_local};
         h5g.AddDataset(h5dispersioninfo, "N", "Dispersion_local", po,
                        dim_scalar);
-        uint ouy[1] = {this->SizeOfDataBlock};
-        h5g.AddDataset(h5dispersioninfo, "N", "SizeOfDataBlock", ouy,
-                       dim_scalar);
+        // uint ouy[1] = {this->SizeOfDataBlock};
+        // h5g.AddDataset(h5dispersioninfo, "N", "SizeOfDataBlock", ouy,
+        //                dim_scalar);
 
-        ouy[0] = {BlockNOPresent};
-        h5g.AddDataset(h5dispersioninfo, "N", "BlockNOPresent", ouy,
-                       dim_scalar);
+        // ouy[0] = {BlockNOPresent};
+        // h5g.AddDataset(h5dispersioninfo, "N", "BlockNOPresent", ouy,
+        //                dim_scalar);
 
-        ouy[0] = {(uint)NumParticles};
+        uint ouy[1] = {(uint)NumParticles};
         h5g.AddDataset(h5dispersioninfo, "N", "NumParticles", ouy, dim_scalar);
 
         //h5g.NewFile(DispersionInfo + "_MeanSquareDisplacement.h5");
@@ -1330,24 +1330,24 @@ void cuDFNsys::ParticleTransport<T>::OutputParticleInfoStepByStep(
     {
         if (this->RecordMode == "OutputAll")
         {
-            if (StepNO > (this->BlockNOPresent * this->SizeOfDataBlock))
-            {
-                this->BlockNOPresent++;
-                uint ouy[1] = {this->BlockNOPresent};
-
-                h5g.OverWrite(h5dispersioninfo, "N", "BlockNOPresent", ouy,
-                              dim_scalar);
-
-                string mat_key =
-                    ParticlePosition + "Block" +
-                    cuDFNsys::ToStringWithWidth(this->BlockNOPresent, 10) +
-                    ".h5";
-                h5g.NewFile(mat_key);
-            }
+            // if (StepNO > (this->BlockNOPresent * this->SizeOfDataBlock))
+            // {
+            //     this->BlockNOPresent++;
+            //     uint ouy[1] = {this->BlockNOPresent};
+            // 
+            //     h5g.OverWrite(h5dispersioninfo, "N", "BlockNOPresent", ouy,
+            //                   dim_scalar);
+            // 
+            //     string mat_key =
+            //         ParticlePosition + "Block" +
+            //         cuDFNsys::ToStringWithWidth(this->BlockNOPresent, 10) +
+            //         ".h5";
+            //     h5g.NewFile(mat_key);
+            // }
             string mat_key =
-                ParticlePosition + "Block" +
-                cuDFNsys::ToStringWithWidth(this->BlockNOPresent, 10) + ".h5";
-
+                ParticlePosition + "_Step_" +
+                cuDFNsys::ToStringWithWidth(StepNO, 10) + ".h5";
+            h5g.NewFile(mat_key);
             h5g.AddDataset(mat_key, "N",
                            "Step_" + cuDFNsys::ToStringWithWidth(StepNO, 10),
                            particle_position_3D, dim_data);
@@ -1779,16 +1779,16 @@ void cuDFNsys::ParticleTransport<T>::MatlabPlot(
                "'/NumParticles');\n";
         oss << "clear S;\n";
 
-        oss << "BlockNOPresent = h5read([currentPath, "
-               "'/ParticlePositionResult/DispersionInfo.h5'], "
-               "'/BlockNOPresent');\n";
-        oss << "SizeOfDataBlock = h5read([currentPath, "
-               "'/ParticlePositionResult/DispersionInfo.h5'], "
-               "'/SizeOfDataBlock');\n";
+        // oss << "BlockNOPresent = h5read([currentPath, "
+        //        "'/ParticlePositionResult/DispersionInfo.h5'], "
+        //        "'/BlockNOPresent');\n";
+        // oss << "SizeOfDataBlock = h5read([currentPath, "
+        //        "'/ParticlePositionResult/DispersionInfo.h5'], "
+        //        "'/SizeOfDataBlock');\n";
 
         oss << "S = h5read([currentPath, "
-               "'/ParticlePositionResult/ParticlePositionBlock', "
-               "num2str(BlockNOPresent, '%010d'), '.h5'], "
+               "'/ParticlePositionResult/ParticlePosition_Step_', "
+               "num2str(N_steps, '%010d'), '.h5'], "
                "['/ParticleIDAndElementTag_', num2str(N_steps, '%010d')]); "
                "\n";
         oss << "ReachedParticleNO = [1:1:N_particles];\n";
@@ -1817,17 +1817,20 @@ void cuDFNsys::ParticleTransport<T>::MatlabPlot(
                "'/ParticlePositionResult/ParticlePositionInit_3D.h5']; "
                "else; "
                "H5name = [currentPath, "
-               "'/ParticlePositionResult/ParticlePositionBlock', "
-               "num2str(ceil(double(j) / double(SizeOfDataBlock)), "
+               "'/ParticlePositionResult/ParticlePosition_Step_', "
+               "num2str(j, "
                "'%010d'), "
                "'_3D.h5']; end;\n";
         oss << "\t\t\tif (j == 0); H5name_2D = [currentPath, "
                "'/ParticlePositionResult/ParticlePositionInit.h5']; else; "
                "H5name_2D = [currentPath, "
-               "'/ParticlePositionResult/ParticlePositionBlock', "
-               "num2str(ceil(double(j) / double(SizeOfDataBlock)), "
+               "'/ParticlePositionResult/ParticlePosition_Step_', "
+               "num2str(j, "
                "'%010d'), "
                "'.h5']; end;\n";
+        oss << "\t\t\tif exist(H5name, 'file') ~= 2\n";
+        oss << "\t\t\t    continue\n";
+        oss << "\t\t\tend\n";
 
         oss << "\t\t\tS = h5read(H5name, ['/Step_', num2str(j, "
                "'%010d')]);\n";
@@ -1926,16 +1929,18 @@ void cuDFNsys::ParticleTransport<T>::MatlabPlot(
         oss << "\tif (i == 0); H5name = [currentPath, "
                "'/ParticlePositionResult/ParticlePositionInit_3D.h5']; else; "
                "H5name = [currentPath, "
-               "'/ParticlePositionResult/ParticlePositionBlock', "
-               "num2str(ceil(double(i) / double(SizeOfDataBlock)), '%010d'), "
+               "'/ParticlePositionResult/ParticlePosition_Step_', "
+               "num2str(i, '%010d'), "
                "'_3D.h5']; end;\n";
         oss << "\tif (i == 0); H5name_2D = [currentPath, "
                "'/ParticlePositionResult/ParticlePositionInit.h5']; else; "
                "H5name_2D = [currentPath, "
-               "'/ParticlePositionResult/ParticlePositionBlock', "
-               "num2str(ceil(double(i) / double(SizeOfDataBlock)), '%010d'), "
+               "'/ParticlePositionResult/ParticlePosition_Step_', "
+               "num2str(i, '%010d'), "
                "'.h5']; end;\n";
-
+        oss << "\tif exist(H5name, 'file') ~= 2\n";
+        oss << "\t    continue\n";
+        oss << "\tend\n";
         oss << "\ttry\n\t\tS = h5read(H5name, ['/Step_', num2str(i, "
                "'%010d')]);\n\tcatch\n\t\tcontinue\n\tend\n";
         oss << "\tParticleID = h5read(H5name_2D, ['/ParticleIDAndElementTag_', "
