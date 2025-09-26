@@ -30,7 +30,7 @@ cuDFNsys::MHFEM<T>::MHFEM(
     const thrust::host_vector<cuDFNsys::Fracture<T>> &Fracs, const T &inlet_p_,
     const T &outlet_p_, const int &dir_, const T &L,
     double3 DomainDimensionRatio, bool if_CPU, int Nproc, bool if_periodic,
-    T muOverRhoG, T constant_qq)
+    T muOverRhoG, T constant_qq, bool DoesNotNeedToSolve_)
 {
     cout << "\tMHFEM ing\n";
     Eigen::setNbThreads(1);
@@ -42,7 +42,11 @@ cuDFNsys::MHFEM<T>::MHFEM(
     // cout << "constant_qq: " << constant_qq << endl;
     this->ConsTq = constant_qq;
     // cout << " this->ConsTq: " << this->ConsTq << endl;
-
+    this->DoesNotNeedToSolve = DoesNotNeedToSolve_;
+    if (this->DoesNotNeedToSolve)
+    {
+        std::cout << "\tDoes not need to solve\n";
+    }
     if (this->IfPeriodic &&
         (abs(mesh.InletTraceLength - mesh.OutletTraceLength) > 1e-5))
         throw cuDFNsys::ExceptionsPause("The DFN is not spatially periodic");
@@ -186,13 +190,13 @@ template cuDFNsys::MHFEM<double>::MHFEM(
     const thrust::host_vector<cuDFNsys::Fracture<double>> &Fracs,
     const double &inlet_p_, const double &outlet_p_, const int &dir_,
     const double &L, double3 DomainDimensionRatio, bool if_CPU, int Nproc,
-    bool if_periodic, double muOverRhoG, double constant_qq);
+    bool if_periodic, double muOverRhoG, double constant_qq, bool DoesNotNeedToSolve_);
 template cuDFNsys::MHFEM<float>::MHFEM(
     const cuDFNsys::Mesh<float> &mesh,
     const thrust::host_vector<cuDFNsys::Fracture<float>> &Fracs,
     const float &inlet_p_, const float &outlet_p_, const int &dir_,
     const float &L, double3 DomainDimensionRatio, bool if_CPU, int Nproc,
-    bool if_periodic, float muOverRhoG, float constant_qq);
+    bool if_periodic, float muOverRhoG, float constant_qq, bool DoesNotNeedToSolve_);
 
 // ====================================================
 // NAME:        MatlabPlot
@@ -804,9 +808,13 @@ void cuDFNsys::MHFEM<T>::Implementation(
     UmfPackLU<Eigen::SparseMatrix<double>> solver;
     //SparseLU<Eigen::SparseMatrix<double>> solver;
     solver.compute(D);
-    if (solver.info() != Success)
+    if (solver.info() != Success && !DoesNotNeedToSolve)
         throw cuDFNsys::ExceptionsPause("Compute matrix is wrong!\n");
-    this->PressureInteriorEdge = solver.solve(r);
+
+    if (!DoesNotNeedToSolve)
+        this->PressureInteriorEdge = solver.solve(r);
+    else
+        this->PressureInteriorEdge = r * 0;
 
     // cout << "this->AllEdges:\n";
     // cout << this->PressureInteriorEdge << endl;
@@ -819,6 +827,12 @@ void cuDFNsys::MHFEM<T>::Implementation(
     this->VelocityNormalScalarSepEdges =
         A_inv *
         (g - B_tps * this->PressureEles - C_tps * this->PressureInteriorEdge);
+    
+    if (DoesNotNeedToSolve)
+    {
+        this->PressureEles *= 0;
+        this->VelocityNormalScalarSepEdges *= 0;   
+    }
 
     // cout << this->PressureEles << endl;
     //cout << "\tcalculating flux ...\n";

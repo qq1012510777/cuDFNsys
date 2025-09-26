@@ -1024,7 +1024,8 @@ void cuDFNsys::FlowDFN<T>::FlowSimulation(cuDFNsys::DFN<T> my_dfn,
                                         0,
                                         this->IfPeriodic,
                                         this->MuOverRhoG,
-                                        this->ConsTq};
+                                        this->ConsTq,
+                                        this->DoesNotNeedToSolve};
 };
 template void
 cuDFNsys::FlowDFN<double>::FlowSimulation(cuDFNsys::DFN<double> my_dfn,

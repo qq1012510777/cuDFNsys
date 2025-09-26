@@ -2484,6 +2484,7 @@ void cuDFNsys::ParticleTransport<T>::InitilizeParticles(
             }
             else
             {
+                std::cout << "\tResident injection at a plane " << InjectionPlane << std::endl;
                 uint NumOfParticles_uniform =
                     std::round(NumOfParticles * 1.0 /
                                NumParticlesEachElement_Center.size());
@@ -2498,8 +2499,15 @@ void cuDFNsys::ParticleTransport<T>::InitilizeParticles(
                 NumParticlesEachElement_Center[ElementID_max_flux] =
                     NumOfParticles;
             else
-                throw cuDFNsys::ExceptionsPause(
-                    "Did not find the element of maximum flux\n");
+            {
+                if (!fem.DoesNotNeedToSolve)
+                    throw cuDFNsys::ExceptionsPause(
+                        "Did not find the element of maximum flux\n");
+                else
+                {
+                    NumParticlesEachElement_Center[0] =  NumOfParticles;   
+                }
+            }
         }
         else
             throw cuDFNsys::ExceptionsPause(

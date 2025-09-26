@@ -55,7 +55,9 @@ int main(int argc, char *argv[])
     std::string FlowVisualFIle = "Flow_Visual";
     try
     {
-        if (!IfAFileExist(DFNH5 + ".h5"))
+        bool IFDFNFILEEXIST = IfAFileExist("DFNFile.txt");
+
+        if (!IfAFileExist(DFNH5 + ".h5") && !IFDFNFILEEXIST)
         {
             my_dfn.LoadDFNFromCSV(csvDFN);
             my_dfn.IdentifyIntersectionsClusters(true);
@@ -73,6 +75,7 @@ int main(int argc, char *argv[])
             
 
             my_flow.LoadParametersFromCSV(csvFlow);
+            my_flow.DoesNotNeedToSolve = true;
             my_flow.FlowSimulation(my_dfn, my_mesh);
             
             my_flow.Visualization(my_dfn,my_mesh, FlowVisualFIle, FlowVisualFIle, FlowVisualFIle);
@@ -85,14 +88,42 @@ int main(int argc, char *argv[])
             my_flow.StoreInH5(FlowH5);
             return 0;
         }
-        else
+        else if (IfAFileExist(DFNH5 + ".h5") && !IFDFNFILEEXIST)
         {
             my_dfn.LoadClassFromH5(DFNH5);
             my_mesh.LoadClassFromH5(MeshH5);
-            my_flow.LoadClassFromH5(FlowH5);   
+            my_flow.LoadClassFromH5(FlowH5); 
+            my_flow.FlowData.DoesNotNeedToSolve = true;  
+        }
+        else if (IFDFNFILEEXIST)
+        {
+            std::ifstream file("DFNFile.txt");  // open the file
+            if (!file.is_open()) {
+                std::cerr << "Could not open file `DFNFile.txt`!" << std::endl;
+                return 1;
+            }
+
+            std::string firstLine;
+            if (std::getline(file, firstLine)) {
+                std::cout << "First line: " << firstLine << std::endl;
+            } else {
+                std::cerr << "File is empty or error reading." << std::endl;
+            }
+
+            file.close();
+
+            my_dfn.LoadClassFromH5(firstLine + "/" + DFNH5);
+            my_mesh.LoadClassFromH5(firstLine + "/" + MeshH5);
+            my_flow.LoadClassFromH5(firstLine + "/" + FlowH5); 
+            my_flow.FlowData.DoesNotNeedToSolve = true; 
+        }
+        else
+        {
+            std::cout << "Wrong mode of loading dfn\n";
+            exit(0);
         };
 
-        if (IfAFileExist("./ParticlePositionResult/DispersionInfo.h5"))
+        if (IfAFileExist("./ParticlePositionResult/DispersionInfo.h5") && IfDiscontinueAfterFirstAbsorption_)
         {
             cuDFNsys::HDF5API hdf5_rw;
             std::vector<uint> tmp = 
@@ -142,29 +173,34 @@ int main(int argc, char *argv[])
     {
         std::cout << e.what() << "\n";
         
+        // int result = system("rm -rf ./*.h5");
+
         return 0;    
     }
     catch (cuDFNsys::ExceptionsIgnore &e)
     {
         std::cout << e.what() << "\n";
-        
+        // int result = system("rm -rf ./*.h5");
         return 0;    
     }
     catch (H5::Exception &e)
     {
         //std::cout << e.what() << "\n";
         std::cout << "H5::Exceptions: " << e.getDetailMsg() << endl;
+        // int result = system("rm -rf ./*.h5");
         return 0;    
     }
     catch (H5::FileIException &e)
     {
         //std::cout << e.what() << "\n";
         std::cout << "H5::Exceptions: " << e.getDetailMsg() << endl;
+        // int result = system("rm -rf ./*.h5");
         return 0;    
     }
     catch (...)
     {
         std::cout << "Unclear exception\n";
+        // int result = system("rm -rf ./*.h5");
         throw;
         return 0;
     }

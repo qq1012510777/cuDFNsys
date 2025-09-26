@@ -202,7 +202,8 @@ namespace cuDFNsys
 
     public:
         bool IfPeriodic = false;
-
+        bool DoesNotNeedToSolve = false;
+        
     public:
         FlowDFN() {};
         void FlowSimulation(cuDFNsys::DFN<T> my_dfn,

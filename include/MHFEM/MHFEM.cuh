@@ -67,6 +67,9 @@ namespace cuDFNsys
 
     public:
         int Dir = 2;
+    
+    public:
+        bool DoesNotNeedToSolve = false;
 
     public:
         MHFEM(){};
@@ -76,7 +79,7 @@ namespace cuDFNsys
               const T &inlet_p_, const T &outlet_p_, const int &dir_,
               const T &L, double3 DomainDimensionRatio = make_double3(1, 1, 1),
               bool if_CPU = false, int Nproc = 10, bool if_periodic = false,
-              T muOverRhoG = 1, T constant_qq = 1e-5);
+              T muOverRhoG = 1, T constant_qq = 1e-5, bool DoesNotNeedToSolve_ = false);
 
         double2 MatlabPlot(const string &mat_key, const string &command_key,
                            thrust::host_vector<cuDFNsys::Fracture<T>> Fracs,
