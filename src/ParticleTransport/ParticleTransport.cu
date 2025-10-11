@@ -2379,6 +2379,18 @@ void cuDFNsys::ParticleTransport<T>::InitilizeParticles(
         T maxFLux = 0;
         T Total_Flux = 0;
 
+        int ElementID_closerToCenter = -1;
+        T DistanceFrom3DCenterToCenter = 1e10;
+        cuDFNsys::Vector3<T> TheCenterOfDOmainAtThePlane =
+                        cuDFNsys::MakeVector3((T)0., (T)0., (T)0.);
+        T *pt_cc = &(TheCenterOfDOmainAtThePlane.x);
+        pt_cc[this->Dir] = InjectionPlane;
+        cuDFNsys::Vector3<T> CloestCenterOfElement;
+        if (Injection_mode == "Point")
+        {
+            std::cout << "\t" << "\tFinding injection point closer to " << pt_cc[0] << ", " << 
+                pt_cc[1] << ", " << pt_cc[2] << "\n";
+        }
         //cout << "1" << endl;
         //cout << "InjectionPlane: " << InjectionPlane << endl;
         //cout << "mesh.Element3D.size(): " << mesh.Element3D.size() << endl;
@@ -2386,7 +2398,7 @@ void cuDFNsys::ParticleTransport<T>::InitilizeParticles(
         {
             uint Node1 = mesh.Element3D[i].x - 1,
                  Node2 = mesh.Element3D[i].y - 1,
-                 Node3 = mesh.Element3D[i].y - 1;
+                 Node3 = mesh.Element3D[i].z - 1;
 
             /// cuDFNsys::Vector3<T> Node1Coord = mesh.Coordinate3D[Node1],
             ///                      Node2Coord = mesh.Coordinate3D[Node2],
@@ -2452,6 +2464,28 @@ void cuDFNsys::ParticleTransport<T>::InitilizeParticles(
                     maxFLux = norm_vp;
                     ElementID_max_flux = ElementCenterDomain.size();
                 }
+
+                {
+                    cuDFNsys::Vector3<T> center_3D_thisEle =
+                        cuDFNsys::MakeVector3( 
+                            (T)(1/3.) *(mesh.Coordinate3D[Node1].x +  mesh.Coordinate3D[Node2].x +  mesh.Coordinate3D[Node3].x),
+                            (T)(1/3.) *(mesh.Coordinate3D[Node1].y +  mesh.Coordinate3D[Node2].y +  mesh.Coordinate3D[Node3].y),
+                            (T)(1/3.) *(mesh.Coordinate3D[Node1].z +  mesh.Coordinate3D[Node2].z +  mesh.Coordinate3D[Node3].z)
+                        );
+                    
+                    cuDFNsys::Vector3<T> Norm_ccqs = cuDFNsys::MakeVector3(center_3D_thisEle.x - TheCenterOfDOmainAtThePlane.x,
+                        center_3D_thisEle.y - TheCenterOfDOmainAtThePlane.y,
+                        center_3D_thisEle.z - TheCenterOfDOmainAtThePlane.z);
+
+                    T distanceyccio = sqrt(Norm_ccqs.x * Norm_ccqs.x + Norm_ccqs.y * Norm_ccqs.y + 
+                        Norm_ccqs.z * Norm_ccqs.z);
+                    if (distanceyccio < DistanceFrom3DCenterToCenter)
+                    {
+                        DistanceFrom3DCenterToCenter = distanceyccio;
+                        ElementID_closerToCenter = ElementCenterDomain.size();
+                        CloestCenterOfElement = center_3D_thisEle;
+                    }
+                }
             }
         }
 
@@ -2496,7 +2530,7 @@ void cuDFNsys::ParticleTransport<T>::InitilizeParticles(
         else if (Injection_mode == "Point")
         {
             if (ElementID_max_flux != -1)
-                NumParticlesEachElement_Center[ElementID_max_flux] =
+                NumParticlesEachElement_Center[ElementID_max_flux-1] =
                     NumOfParticles;
             else
             {
@@ -2505,7 +2539,9 @@ void cuDFNsys::ParticleTransport<T>::InitilizeParticles(
                         "Did not find the element of maximum flux\n");
                 else
                 {
-                    NumParticlesEachElement_Center[0] =  NumOfParticles;   
+                    std::cout << "\t\tClosest center of element is " << CloestCenterOfElement.x << ", " <<
+                        CloestCenterOfElement.y << ", " << CloestCenterOfElement.z << "\n";
+                    NumParticlesEachElement_Center[ElementID_closerToCenter-1] =  NumOfParticles;   
                 }
             }
         }
